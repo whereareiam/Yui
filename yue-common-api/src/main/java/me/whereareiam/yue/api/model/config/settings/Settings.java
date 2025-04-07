@@ -1,7 +1,6 @@
 package me.whereareiam.yue.api.model.config.settings;
 
 public class Settings {
-
 	private DiscordSettings discord;
 
 	public DiscordSettings getDiscord() {

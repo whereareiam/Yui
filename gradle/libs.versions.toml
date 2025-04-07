@@ -2,6 +2,7 @@
 
 # general
 lombok = "1.18.38"
+jda = "5.3.2"
 spring = "3.4.4"
 jackson = "2.18.2"
 
@@ -9,6 +10,7 @@ jackson = "2.18.2"
 
 # general
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
 
 # spring
 spring-boot = { module = "org.springframework.boot:spring-boot-starter", version.ref = "spring" }

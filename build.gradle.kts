@@ -24,4 +24,10 @@ subprojects {
             "annotationProcessor"(rootProject.libs.lombok)
         }
     }
+
+    if (project.name != "yue-bootstrap") {
+        dependencies {
+            "compileOnly"(rootProject.libs.jda)
+        }
+    }
 }

@@ -1,6 +1,7 @@
 dependencies {
     "implementation"(libs.bundles.spring)
     "implementation"(libs.bundles.configuration)
+    "implementation"(libs.jda)
 
     // include all projects
     rootProject.subprojects.forEach { subproject ->
