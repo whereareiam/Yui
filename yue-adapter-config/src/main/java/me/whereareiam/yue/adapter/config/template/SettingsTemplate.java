@@ -12,8 +12,6 @@ public class SettingsTemplate implements DefaultConfig<Settings> {
 		Settings settings = new Settings();
 
 		// Default values
-		settings.setDebugLevel(2);
-
 		DiscordSettings discordSettings = new DiscordSettings();
 		discordSettings.setGuildId("SET_YOUR_GUILD_ID");
 		discordSettings.setToken("SET_YOUR_TOKEN");
