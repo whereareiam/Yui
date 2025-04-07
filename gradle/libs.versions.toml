@@ -3,6 +3,7 @@
 # general
 lombok = "1.18.38"
 jda = "5.3.2"
+postgres = "42.7.5"
 spring = "3.4.4"
 jackson = "2.18.2"
 
@@ -11,6 +12,7 @@ jackson = "2.18.2"
 # general
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
+postgres = { module = "org.postgresql:postgresql", version.ref = "postgres" }
 
 # spring
 spring-boot = { module = "org.springframework.boot:spring-boot-starter", version.ref = "spring" }
@@ -25,7 +27,8 @@ jackson-dataformat-yaml = { group = "com.fasterxml.jackson.dataformat", name = "
 [bundles]
 
 spring = [
-    "spring-boot"
+    "spring-boot",
+    "spring-boot-data-jpa"
 ]
 
 configuration = [
