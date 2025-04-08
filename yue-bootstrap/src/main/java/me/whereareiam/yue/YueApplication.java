@@ -25,4 +25,17 @@ public class YueApplication {
 	public Path dataPath() {
 		return System.getProperty("app.dir") != null ? Paths.get(System.getProperty("app.dir")) : Paths.get(System.getProperty("profile.dir"));
 	}
+
+	@Bean
+	@Qualifier("modulesPath")
+	public Path modulesPath(@Qualifier("dataPath") Path dataPath) {
+		Path modulesPath = dataPath.resolve("modules");
+
+		if (!modulesPath.toFile().exists()) {
+			boolean created = modulesPath.toFile().mkdirs();
+			if (!created) throw new RuntimeException("Failed to create modules directory");
+		}
+
+		return modulesPath;
+	}
 }
