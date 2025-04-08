@@ -16,9 +16,10 @@ subprojects {
         mavenCentral()
     }
 
-    if (project.name != "yue-common-api") {
+    if (project.name != "yue-common-api" && project.name != "yue-shared") {
         dependencies {
             "compileOnly"(project(":yue-common-api"))
+            "compileOnly"(project(":yue-shared"))
 
             "compileOnly"(rootProject.libs.lombok)
             "annotationProcessor"(rootProject.libs.lombok)
