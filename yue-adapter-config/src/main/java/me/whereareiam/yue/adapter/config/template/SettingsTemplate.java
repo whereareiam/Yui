@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Locale;
 
 @Component
 public class SettingsTemplate implements DefaultConfig<Settings> {
@@ -17,6 +18,8 @@ public class SettingsTemplate implements DefaultConfig<Settings> {
 		Settings settings = new Settings();
 
 		// Default values
+		settings.setLocale(Locale.ENGLISH);
+
 		DiscordSettings discordSettings = new DiscordSettings();
 		discordSettings.setGuildId("SET_YOUR_GUILD_ID");
 		discordSettings.setToken("SET_YOUR_TOKEN");
