@@ -23,6 +23,6 @@ public class YueApplication {
 	@Bean
 	@Qualifier("dataPath")
 	public Path dataPath() {
-		return System.getProperty("app.dir") != null ? Paths.get(System.getProperty("app.dir")) : Paths.get(System.getProperty("user.dir"));
+		return System.getProperty("app.dir") != null ? Paths.get(System.getProperty("app.dir")) : Paths.get(System.getProperty("profile.dir"));
 	}
 }

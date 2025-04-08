@@ -2,15 +2,15 @@ package me.whereareiam.yue.api.output.config;
 
 /**
  * Interface for merging configuration objects in the Yue Discord Bot framework.
- * Provides functionality to merge user configurations with default configurations,
+ * Provides functionality to merge profile configurations with default configurations,
  * ensuring that missing values are populated with defaults while preserving
- * user-defined settings.
+ * profile-defined settings.
  */
 public interface ConfigurationMerger {
 	/**
 	 * Merges a configuration object with its default configuration.
 	 *
-	 * @param config        the user configuration to be updated
+	 * @param config        the profile configuration to be updated
 	 * @param defaultConfig the default configuration to merge from
 	 * @param <T>           the type of configuration class
 	 */
