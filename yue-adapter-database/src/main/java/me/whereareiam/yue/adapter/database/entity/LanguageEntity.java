@@ -2,6 +2,8 @@ package me.whereareiam.yue.adapter.database.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.util.Locale;
 
@@ -10,7 +12,9 @@ import java.util.Locale;
 @Table(name = "yue_languages", indexes = {
 		@Index(name = "idx_language_locale", columnList = "locale")
 })
-public class Language {
+@SuperBuilder
+@NoArgsConstructor
+public class LanguageEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;

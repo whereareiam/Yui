@@ -16,6 +16,12 @@ subprojects {
         mavenCentral()
     }
 
+    apply(plugin = "java")
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
+
     if (project.name != "yue-common-api" && project.name != "yue-shared") {
         dependencies {
             "compileOnly"(project(":yue-common-api"))
@@ -23,6 +29,8 @@ subprojects {
 
             "compileOnly"(rootProject.libs.lombok)
             "annotationProcessor"(rootProject.libs.lombok)
+
+            "testImplementation"(project(":yue-common-api"))
         }
     }
 

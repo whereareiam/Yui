@@ -6,6 +6,7 @@ jda = "5.3.2"
 postgres = "42.7.5"
 spring = "3.4.4"
 jackson = "2.18.2"
+h2 = "2.3.232"
 
 [libraries]
 
@@ -13,9 +14,11 @@ jackson = "2.18.2"
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
 jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
 postgres = { module = "org.postgresql:postgresql", version.ref = "postgres" }
+h2 = { module = "com.h2database:h2", version.ref = "h2" }
 
 # spring
 spring-boot = { module = "org.springframework.boot:spring-boot-starter", version.ref = "spring" }
+spring-boot-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "spring" }
 spring-boot-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "spring" }
 
 # jackson
