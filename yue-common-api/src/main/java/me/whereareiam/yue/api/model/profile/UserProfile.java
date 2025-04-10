@@ -2,12 +2,12 @@ package me.whereareiam.yue.api.model.profile;
 
 import java.util.Locale;
 
-public class Profile {
+public class UserProfile {
 	private final long id;
 	private Locale primaryLanguage;
 	private Locale[] additionalLanguages;
 
-	public Profile(long id, Locale primaryLanguage, Locale[] additionalLanguages) {
+	public UserProfile(long id, Locale primaryLanguage, Locale[] additionalLanguages) {
 		this.id = id;
 		this.primaryLanguage = primaryLanguage;
 		this.additionalLanguages = additionalLanguages;

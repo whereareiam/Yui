@@ -1,12 +1,12 @@
 package me.whereareiam.yue.api.output.service;
 
-import me.whereareiam.yue.api.model.profile.Profile;
+import me.whereareiam.yue.api.model.profile.UserProfile;
 
 import java.util.Locale;
 import java.util.Optional;
 
-public interface ProfileService {
-	void createProfile(Profile profile);
+public interface UserProfileService {
+	void createProfile(UserProfile userProfile);
 
 	void createProfile(long id, Locale locale, Locale[] additionalLanguages);
 
@@ -18,5 +18,5 @@ public interface ProfileService {
 
 	void removeAdditionalLanguage(long id, Locale locale);
 
-	Optional<Profile> getProfile(long id);
+	Optional<UserProfile> getProfile(long id);
 }

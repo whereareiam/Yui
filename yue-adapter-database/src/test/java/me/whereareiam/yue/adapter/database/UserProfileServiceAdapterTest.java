@@ -1,12 +1,12 @@
 package me.whereareiam.yue.adapter.database;
 
-import me.whereareiam.yue.adapter.database.adapter.ProfileServiceAdapter;
+import me.whereareiam.yue.adapter.database.adapter.profile.UserProfileServiceAdapter;
 import me.whereareiam.yue.adapter.database.entity.LanguageEntity;
-import me.whereareiam.yue.adapter.database.entity.profile.ProfileEntity;
-import me.whereareiam.yue.adapter.database.entity.profile.ProfileLanguageEntity;
+import me.whereareiam.yue.adapter.database.entity.userprofile.UserProfileEntity;
+import me.whereareiam.yue.adapter.database.entity.userprofile.UserProfileLanguageEntity;
 import me.whereareiam.yue.adapter.database.repository.LanguageRepository;
 import me.whereareiam.yue.adapter.database.repository.ProfileRepository;
-import me.whereareiam.yue.api.model.profile.Profile;
+import me.whereareiam.yue.api.model.profile.UserProfile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class ProfileServiceAdapterTest {
+public class UserProfileServiceAdapterTest {
 
 	@Mock
 	private ProfileRepository profileRepository;
@@ -30,11 +30,11 @@ public class ProfileServiceAdapterTest {
 	@Mock
 	private LanguageRepository languageRepository;
 
-	private ProfileServiceAdapter profileService;
+	private UserProfileServiceAdapter profileService;
 
 	@BeforeEach
 	void setUp() {
-		profileService = new ProfileServiceAdapter(profileRepository, languageRepository);
+		profileService = new UserProfileServiceAdapter(profileRepository, languageRepository);
 	}
 
 	@Test
@@ -43,41 +43,42 @@ public class ProfileServiceAdapterTest {
 		long profileId = 1L;
 		Locale primaryLocale = Locale.ENGLISH;
 		Locale[] additionalLocales = new Locale[]{Locale.FRENCH};
-		Profile profile = new Profile(profileId, primaryLocale, additionalLocales);
+		UserProfile userProfile = new UserProfile(profileId, primaryLocale, additionalLocales);
 
 		LanguageEntity primaryLanguage = LanguageEntity.builder().locale(primaryLocale).build();
 		LanguageEntity frenchLanguage = LanguageEntity.builder().locale(Locale.FRENCH).build();
 
-		ProfileEntity savedEntity = ProfileEntity.builder()
+		UserProfileEntity savedEntity = UserProfileEntity.builder()
 				.id(profileId)
 				.primaryLanguage(primaryLanguage)
 				.additionalLanguages(new HashSet<>())
 				.build();
 
-		when(profileRepository.findById(profileId))
-				.thenReturn(Optional.empty())
-				.thenReturn(Optional.of(savedEntity));
+		// Mock existsById instead of relying on findById for existence check
+		when(profileRepository.existsById(profileId)).thenReturn(false);
+
+		// Always return the profile entity when findById is called
+		when(profileRepository.findById(profileId)).thenReturn(Optional.of(savedEntity));
 
 		when(languageRepository.findByLocale(primaryLocale)).thenReturn(Optional.of(primaryLanguage));
 		when(languageRepository.findByLocale(Locale.FRENCH)).thenReturn(Optional.of(frenchLanguage));
 
 		// Act
-		profileService.createProfile(profile);
+		profileService.createProfile(userProfile);
 
 		// Assert
-		// Verify save was called twice (once for profile creation, once for adding language)
-		verify(profileRepository, times(2)).save(any(ProfileEntity.class));
+		verify(profileRepository, times(2)).save(any(UserProfileEntity.class));
 	}
 
 	@Test
 	void createProfile_withProfile_whenProfileExists_shouldThrowException() {
 		// Arrange
 		long profileId = 1L;
-		Profile profile = new Profile(profileId, Locale.ENGLISH, null);
-		when(profileRepository.findById(profileId)).thenReturn(Optional.of(ProfileEntity.builder().build()));
+		UserProfile userProfile = new UserProfile(profileId, Locale.ENGLISH, null);
+		when(profileRepository.existsById(profileId)).thenReturn(true);
 
 		// Act & Assert
-		assertThrows(IllegalArgumentException.class, () -> profileService.createProfile(profile));
+		assertThrows(IllegalArgumentException.class, () -> profileService.createProfile(userProfile));
 	}
 
 	@Test
@@ -86,7 +87,7 @@ public class ProfileServiceAdapterTest {
 		long profileId = 1L;
 		Locale newLocale = Locale.FRENCH;
 
-		ProfileEntity existingProfile = ProfileEntity.builder().id(profileId).build();
+		UserProfileEntity existingProfile = UserProfileEntity.builder().id(profileId).build();
 		LanguageEntity newLanguage = LanguageEntity.builder().locale(newLocale).build();
 
 		when(profileRepository.findById(profileId)).thenReturn(Optional.of(existingProfile));
@@ -106,7 +107,7 @@ public class ProfileServiceAdapterTest {
 		long profileId = 1L;
 		Locale locale = Locale.FRENCH;
 
-		ProfileEntity existingProfile = ProfileEntity.builder()
+		UserProfileEntity existingProfile = UserProfileEntity.builder()
 				.id(profileId)
 				.additionalLanguages(new HashSet<>())
 				.build();
@@ -131,12 +132,12 @@ public class ProfileServiceAdapterTest {
 		Locale locale = Locale.FRENCH;
 
 		LanguageEntity language = LanguageEntity.builder().locale(locale).build();
-		ProfileEntity existingProfile = ProfileEntity.builder().id(profileId).build();
+		UserProfileEntity existingProfile = UserProfileEntity.builder().id(profileId).build();
 
-		Set<ProfileLanguageEntity> additionalLanguages = new HashSet<>();
-		ProfileLanguageEntity languageLink = ProfileLanguageEntity.builder()
+		Set<UserProfileLanguageEntity> additionalLanguages = new HashSet<>();
+		UserProfileLanguageEntity languageLink = UserProfileLanguageEntity.builder()
 				.languageEntity(language)
-				.profileEntity(existingProfile)
+				.userProfileEntity(existingProfile)
 				.build();
 		additionalLanguages.add(languageLink);
 
@@ -172,7 +173,7 @@ public class ProfileServiceAdapterTest {
 
 		LanguageEntity primaryLanguage = LanguageEntity.builder().locale(primaryLocale).build();
 
-		ProfileEntity entity = ProfileEntity.builder()
+		UserProfileEntity entity = UserProfileEntity.builder()
 				.id(profileId)
 				.primaryLanguage(primaryLanguage)
 				.additionalLanguages(new HashSet<>())
@@ -181,7 +182,7 @@ public class ProfileServiceAdapterTest {
 		when(profileRepository.findById(profileId)).thenReturn(Optional.of(entity));
 
 		// Act
-		Optional<Profile> result = profileService.getProfile(profileId);
+		Optional<UserProfile> result = profileService.getProfile(profileId);
 
 		// Assert
 		assertTrue(result.isPresent());
@@ -196,7 +197,7 @@ public class ProfileServiceAdapterTest {
 		when(profileRepository.findById(profileId)).thenReturn(Optional.empty());
 
 		// Act
-		Optional<Profile> result = profileService.getProfile(profileId);
+		Optional<UserProfile> result = profileService.getProfile(profileId);
 
 		// Assert
 		assertTrue(result.isEmpty());

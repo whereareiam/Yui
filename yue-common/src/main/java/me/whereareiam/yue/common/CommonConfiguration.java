@@ -4,6 +4,7 @@ import me.whereareiam.yue.api.model.config.settings.Settings;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -23,7 +24,8 @@ public class CommonConfiguration {
 			JDABuilder builder = JDABuilder
 					.createDefault(settings.getDiscord().getToken())
 					.setEnabledIntents(settings.getDiscord().getIntents())
-					.setChunkingFilter(ChunkingFilter.ALL);
+					.setChunkingFilter(ChunkingFilter.ALL)
+					.setMemberCachePolicy(MemberCachePolicy.ALL);
 
 			jda = builder.build().awaitReady();
 

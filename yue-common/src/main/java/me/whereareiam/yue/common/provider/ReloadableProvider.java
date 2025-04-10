@@ -1,4 +1,4 @@
-package me.whereareiam.yue.common;
+package me.whereareiam.yue.common.provider;
 
 import lombok.Getter;
 import me.whereareiam.yue.api.Reloadable;

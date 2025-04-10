@@ -1,12 +1,12 @@
 package me.whereareiam.yue.adapter.database.repository;
 
-import me.whereareiam.yue.adapter.database.entity.profile.ProfileEntity;
+import me.whereareiam.yue.adapter.database.entity.userprofile.UserProfileEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface ProfileRepository extends JpaRepository<ProfileEntity, Long> {
-	Optional<ProfileEntity> findById(Long id);
+public interface ProfileRepository extends JpaRepository<UserProfileEntity, Long> {
+	Optional<UserProfileEntity> findById(Long id);
 }

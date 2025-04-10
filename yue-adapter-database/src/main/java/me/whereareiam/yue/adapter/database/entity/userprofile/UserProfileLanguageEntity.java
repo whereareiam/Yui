@@ -1,4 +1,4 @@
-package me.whereareiam.yue.adapter.database.entity.profile;
+package me.whereareiam.yue.adapter.database.entity.userprofile;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -11,14 +11,14 @@ import me.whereareiam.yue.adapter.database.entity.LanguageEntity;
 @Table(name = "yue_profiles_languages")
 @SuperBuilder
 @NoArgsConstructor
-public class ProfileLanguageEntity {
+public class UserProfileLanguageEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@ManyToOne
 	@JoinColumn(name = "profile_id", nullable = false)
-	private ProfileEntity profileEntity;
+	private UserProfileEntity userProfileEntity;
 
 	@ManyToOne
 	@JoinColumn(name = "language_id", nullable = false)
