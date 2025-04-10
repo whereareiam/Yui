@@ -36,6 +36,7 @@ subprojects {
 
     if (project.name != "yue-bootstrap") {
         dependencies {
+            "compileOnly"(rootProject.libs.spring.boot)
             "compileOnly"(rootProject.libs.jda)
         }
     }
