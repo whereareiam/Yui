@@ -1,7 +1,6 @@
-package me.whereareiam.yue.common;
+package me.whereareiam.yue.common.adapter;
 
 import me.whereareiam.yue.api.model.profile.UserProfile;
-import me.whereareiam.yue.common.adapter.UserProfileCacheProviderAdapter;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.User;
 import org.junit.jupiter.api.BeforeEach;

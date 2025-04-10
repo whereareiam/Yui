@@ -14,24 +14,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Aggregates translations from all TranslationLoaders into a single big map:
- * domain -> (locale -> (key -> value)).
- * <p>
- * domain = "core" for framework translations, or the module's name for module translations.
- */
 @Service
 public class TranslationServiceAdapter implements TranslationService {
 	private final List<TranslationLoader> loaders;
 	private final UserProfileCacheProvider userProfileCache;
 	private final Settings settings;
 
-	/**
-	 * Master in-memory structure:
-	 * e.g.
-	 * "core" -> { en -> {"hello" -> "Hello!"}, ru -> {...} }
-	 * "music" -> { en -> {"play_button" -> "Play"}, ru -> {"play_button" -> "Играть"} }
-	 */
 	private final Map<String, Map<Locale, Map<String, String>>> translations = new ConcurrentHashMap<>();
 
 	public TranslationServiceAdapter(
@@ -77,11 +65,9 @@ public class TranslationServiceAdapter implements TranslationService {
 
 	@Override
 	public String translate(String key, long userId) {
-		// We'll interpret "module.<moduleName>.<subKey>" => domain=moduleName, subKey
-		// Otherwise domain="core" and subKey=key
 		final String prefix = "module.";
 		if (key.startsWith(prefix)) {
-			// parse domain + subKey
+			// Handle module.<moduleName>.<subKey> format
 			String remainder = key.substring(prefix.length()); // "music.play_button"
 			int dotIdx = remainder.indexOf('.');
 			if (dotIdx < 0) {
@@ -91,8 +77,16 @@ public class TranslationServiceAdapter implements TranslationService {
 			String domain = remainder.substring(0, dotIdx);   // e.g. "music"
 			String subKey = remainder.substring(dotIdx + 1); // e.g. "play_button"
 			return doTranslate(domain, subKey, userId);
+		}
+
+		// Also handle direct <domain>.<subKey> format
+		int dotIdx = key.indexOf('.');
+		if (dotIdx > 0) {
+			String domain = key.substring(0, dotIdx);
+			String subKey = key.substring(dotIdx + 1);
+			return doTranslate(domain, subKey, userId);
 		} else {
-			// treat key as subKey of domain "core"
+			// No dot, treat as subKey in core domain
 			return doTranslate("core", key, userId);
 		}
 	}

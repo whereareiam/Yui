@@ -1,7 +1,6 @@
-package me.whereareiam.yue.common;
+package me.whereareiam.yue.common.adapter;
 
 import me.whereareiam.yue.api.model.ComponentInfo;
-import me.whereareiam.yue.common.adapter.ComponentIdManagerAdapter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
