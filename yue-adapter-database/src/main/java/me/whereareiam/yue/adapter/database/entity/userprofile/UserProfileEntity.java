@@ -20,6 +20,6 @@ public class UserProfileEntity {
 	@ManyToOne
 	private LanguageEntity primaryLanguage;
 
-	@OneToMany(mappedBy = "userprofile")
+	@OneToMany(mappedBy = "userProfileEntity")
 	private Set<UserProfileLanguageEntity> additionalLanguages;
 }
