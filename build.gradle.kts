@@ -31,6 +31,8 @@ subprojects {
             "annotationProcessor"(rootProject.libs.lombok)
 
             "testImplementation"(project(":yue-common-api"))
+            "testImplementation"(rootProject.libs.spring.boot.test)
+            "testImplementation"(rootProject.libs.jda)
         }
     }
 
