@@ -30,10 +30,23 @@ public class UserProfileServiceAdapter implements UserProfileService {
 	}
 
 	@Override
-	public void createProfile(UserProfile userProfile) {
-		if (profileRepository.existsById(userProfile.getId())) {
+	public Optional<UserProfile> createProfile(long id) {
+		if (profileRepository.existsById(id))
+			throw new IllegalArgumentException("UserProfile with id " + id + " already exists");
+
+		UserProfileEntity userProfileEntity = UserProfileEntity.builder()
+				.id(id)
+				.build();
+
+		profileRepository.save(userProfileEntity);
+
+		return Optional.of(new UserProfile(id, null, new Locale[0]));
+	}
+
+	@Override
+	public Optional<UserProfile> createProfile(UserProfile userProfile) {
+		if (profileRepository.existsById(userProfile.getId()))
 			throw new IllegalArgumentException("UserProfile with id " + userProfile.getId() + " already exists");
-		}
 
 		UserProfileEntity userProfileEntity = UserProfileEntity.builder()
 				.id(userProfile.getId())
@@ -57,13 +70,14 @@ public class UserProfileServiceAdapter implements UserProfileService {
 				addAdditionalLanguage(userProfile.getId(), locale);
 			}
 		}
+
+		return Optional.of(userProfile);
 	}
 
 	@Override
 	public void createProfile(long id, Locale locale, Locale[] additionalLanguages) {
-		if (profileRepository.existsById(id)) {
+		if (profileRepository.existsById(id))
 			throw new IllegalArgumentException("UserProfile with id " + id + " already exists");
-		}
 
 		UserProfileEntity userProfileEntity = UserProfileEntity.builder()
 				.id(id)

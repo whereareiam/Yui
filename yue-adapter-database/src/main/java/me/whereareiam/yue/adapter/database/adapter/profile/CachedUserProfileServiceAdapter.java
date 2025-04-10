@@ -27,9 +27,17 @@ public class CachedUserProfileServiceAdapter implements UserProfileService {
 	}
 
 	@Override
-	public void createProfile(UserProfile userProfile) {
-		delegate.createProfile(userProfile);
-		cache.putProfile(userProfile.getId(), userProfile);
+	public Optional<UserProfile> createProfile(long id) {
+		Optional<UserProfile> createdProfile = delegate.createProfile(id);
+		createdProfile.ifPresent(profile -> cache.putProfile(id, profile));
+		return createdProfile;
+	}
+
+	@Override
+	public Optional<UserProfile> createProfile(UserProfile userProfile) {
+		Optional<UserProfile> createdProfile = delegate.createProfile(userProfile);
+		createdProfile.ifPresent(profile -> cache.putProfile(userProfile.getId(), profile));
+		return createdProfile;
 	}
 
 	@Override

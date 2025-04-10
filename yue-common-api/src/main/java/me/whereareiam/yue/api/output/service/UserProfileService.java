@@ -6,7 +6,9 @@ import java.util.Locale;
 import java.util.Optional;
 
 public interface UserProfileService {
-	void createProfile(UserProfile userProfile);
+	Optional<UserProfile> createProfile(long id);
+
+	Optional<UserProfile> createProfile(UserProfile userProfile);
 
 	void createProfile(long id, Locale locale, Locale[] additionalLanguages);
 

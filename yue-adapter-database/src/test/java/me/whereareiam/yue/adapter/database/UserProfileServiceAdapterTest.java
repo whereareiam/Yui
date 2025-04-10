@@ -38,6 +38,41 @@ public class UserProfileServiceAdapterTest {
 	}
 
 	@Test
+	void createProfile_withId_whenProfileDoesNotExist_shouldCreateProfile() {
+		// Arrange
+		long profileId = 1L;
+
+		when(profileRepository.existsById(profileId)).thenReturn(false);
+
+		UserProfileEntity savedEntity = UserProfileEntity.builder()
+				.id(profileId)
+				.build();
+
+		when(profileRepository.save(any(UserProfileEntity.class))).thenReturn(savedEntity);
+
+		// Act
+		Optional<UserProfile> result = profileService.createProfile(profileId);
+
+		// Assert
+		assertTrue(result.isPresent());
+		assertEquals(profileId, result.get().getId());
+		assertNull(result.get().getPrimaryLanguage());
+		assertEquals(0, result.get().getAdditionalLanguages().length);
+		verify(profileRepository).save(any(UserProfileEntity.class));
+	}
+
+	@Test
+	void createProfile_withId_whenProfileExists_shouldThrowException() {
+		// Arrange
+		long profileId = 1L;
+		when(profileRepository.existsById(profileId)).thenReturn(true);
+
+		// Act & Assert
+		assertThrows(IllegalArgumentException.class, () -> profileService.createProfile(profileId));
+		verify(profileRepository, never()).save(any());
+	}
+
+	@Test
 	void createProfile_withProfile_whenProfileDoesNotExist_shouldCreateProfile() {
 		// Arrange
 		long profileId = 1L;

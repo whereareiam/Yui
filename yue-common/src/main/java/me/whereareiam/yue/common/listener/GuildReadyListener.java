@@ -28,8 +28,13 @@ public class GuildReadyListener extends ListenerAdapter {
 			for (Member member : members) {
 				long userId = member.getIdLong();
 
-				userProfileService.getProfile(userId).ifPresent(profile ->
-						userProfileCacheProvider.putProfile(userId, profile)
+				userProfileService.getProfile(userId).ifPresentOrElse(
+						profile -> userProfileCacheProvider.putProfile(userId, profile),
+						() -> {
+							userProfileService.createProfile(userId).ifPresent(newProfile ->
+									userProfileCacheProvider.putProfile(userId, newProfile)
+							);
+						}
 				);
 			}
 		});

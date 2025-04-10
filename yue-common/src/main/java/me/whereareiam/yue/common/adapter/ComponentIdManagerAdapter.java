@@ -11,8 +11,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
-public class StandardComponentIdManager implements ComponentIdManager {
-	private static final Logger logger = LoggerFactory.getLogger(StandardComponentIdManager.class);
+public class ComponentIdManagerAdapter implements ComponentIdManager {
+	private static final Logger logger = LoggerFactory.getLogger(ComponentIdManagerAdapter.class);
 
 	private final Map<String, ComponentInfo> componentsById = new ConcurrentHashMap<>();
 
