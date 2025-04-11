@@ -3,7 +3,9 @@ package me.whereareiam.yue.adapter.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.whereareiam.yue.adapter.config.factory.ConfigurationTypeFactory;
 import me.whereareiam.yue.adapter.config.factory.ObjectMapperFactory;
+import me.whereareiam.yue.adapter.config.provider.MessagesProvider;
 import me.whereareiam.yue.adapter.config.provider.SettingsProvider;
+import me.whereareiam.yue.api.model.config.messages.Messages;
 import me.whereareiam.yue.api.model.config.settings.Settings;
 import me.whereareiam.yue.api.type.ConfigurationType;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +30,11 @@ public class ConfigConfiguration {
 
 	@Bean
 	public Settings settings(SettingsProvider provider) {
+		return provider.get();
+	}
+
+	@Bean
+	public Messages messages(MessagesProvider provider) {
 		return provider.get();
 	}
 }

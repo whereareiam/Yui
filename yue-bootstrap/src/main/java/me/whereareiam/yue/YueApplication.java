@@ -27,6 +27,19 @@ public class YueApplication {
 	}
 
 	@Bean
+	@Qualifier("languagesPath")
+	public Path languagesPath(@Qualifier("dataPath") Path dataPath) {
+		Path languagesPath = dataPath.resolve("languages");
+
+		if (!languagesPath.toFile().exists()) {
+			boolean created = languagesPath.toFile().mkdirs();
+			if (!created) throw new RuntimeException("Failed to create languages directory");
+		}
+
+		return languagesPath;
+	}
+
+	@Bean
 	@Qualifier("modulesPath")
 	public Path modulesPath(@Qualifier("dataPath") Path dataPath) {
 		Path modulesPath = dataPath.resolve("modules");

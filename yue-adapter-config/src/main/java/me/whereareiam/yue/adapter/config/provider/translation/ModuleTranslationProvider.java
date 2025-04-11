@@ -1,97 +1,55 @@
 package me.whereareiam.yue.adapter.config.provider.translation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
-import me.whereareiam.yue.api.input.translation.TranslationLoader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Component
-public class ModuleTranslationProvider implements TranslationLoader {
-
+public class ModuleTranslationProvider extends AbstractTranslationLoader {
+	private static final Logger logger = LoggerFactory.getLogger(ModuleTranslationProvider.class);
 	private final Path modulesPath;
-	private final ObjectMapper objectMapper;
-
-	/**
-	 * We store:
-	 * moduleName -> (locale -> (key -> text))
-	 */
-	private final Map<String, Map<Locale, Map<String, String>>> moduleTranslations = new ConcurrentHashMap<>();
 
 	public ModuleTranslationProvider(@Qualifier("modulesPath") Path modulesPath,
 	                                 ObjectMapper objectMapper) {
+		super(objectMapper);
 		this.modulesPath = modulesPath;
-		this.objectMapper = objectMapper;
-	}
-
-	@PostConstruct
-	public void init() {
-		loadAllModules();
-	}
-
-	private void loadAllModules() {
-		if (!Files.exists(modulesPath) || !Files.isDirectory(modulesPath)) {
-			return;
-		}
-
-		try (DirectoryStream<Path> ds = Files.newDirectoryStream(modulesPath)) {
-			for (Path moduleDir : ds) {
-				if (Files.isDirectory(moduleDir)) {
-					String moduleName = moduleDir.getFileName().toString();
-					loadModuleTranslations(moduleName, moduleDir);
-				}
-			}
-		} catch (IOException e) {
-			// log or handle
-		}
-	}
-
-	private void loadModuleTranslations(String moduleName, Path moduleDir) {
-		Path langDir = moduleDir.resolve("languages");
-		if (!Files.exists(langDir) || !Files.isDirectory(langDir)) {
-			return;
-		}
-
-		try (DirectoryStream<Path> ds = Files.newDirectoryStream(langDir, "*.json")) {
-			for (Path file : ds) {
-				loadSingleFile(moduleName, file);
-			}
-		} catch (IOException e) {
-			// log or handle
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private void loadSingleFile(String moduleName, Path file) {
-		String filename = file.getFileName().toString(); // e.g. "en.json"
-		String localeStr = filename.substring(0, filename.lastIndexOf('.'));
-		Locale locale = Locale.forLanguageTag(localeStr);
-
-		try {
-			Map<String, String> content =
-					objectMapper.readValue(Files.newInputStream(file), Map.class);
-
-			moduleTranslations
-					.computeIfAbsent(moduleName, x -> new ConcurrentHashMap<>())
-					.computeIfAbsent(locale, x -> new ConcurrentHashMap<>())
-					.putAll(content);
-
-		} catch (IOException e) {
-			// log or handle
-		}
 	}
 
 	@Override
 	public Map<String, Map<Locale, Map<String, String>>> loadAll() {
-		// Return everything in memory
-		return moduleTranslations;
+		logger.info("Loading module translations from modules path: {}", modulesPath);
+		Map<String, Map<Locale, Map<String, String>>> result = new HashMap<>();
+
+		try (var modulesDirStream = Files.list(modulesPath)) {
+			modulesDirStream
+					.filter(Files::isDirectory)
+					.forEach(moduleDir -> {
+						String moduleName = moduleDir.getFileName().toString();
+						String prefix = "module." + moduleName + ".";
+						logger.debug("Processing module: {} with prefix: {}", moduleName, prefix);
+
+						Path languageFolder = moduleDir.resolve("languages");
+						if (!Files.isDirectory(languageFolder)) {
+							logger.debug("No languages directory found for module: {}", moduleName);
+							return;
+						}
+
+						Map<Locale, Map<String, String>> localeMap = processLanguageFolder(languageFolder);
+						logger.info("Loaded translations for module {} with {} locales", moduleName, localeMap.size());
+						result.put(prefix, localeMap);
+					});
+		} catch (Exception e) {
+			logger.error("Error loading module translations", e);
+		}
+
+		return result;
 	}
 }

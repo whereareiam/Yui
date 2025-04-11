@@ -1,26 +1,38 @@
 package me.whereareiam.yue.common.adapter;
 
 import jakarta.annotation.PostConstruct;
+import me.whereareiam.yue.api.component.Translatable;
 import me.whereareiam.yue.api.input.translation.TranslationLoader;
 import me.whereareiam.yue.api.input.translation.TranslationService;
 import me.whereareiam.yue.api.model.config.settings.Settings;
-import me.whereareiam.yue.api.model.profile.UserProfile;
 import me.whereareiam.yue.api.output.provider.UserProfileCacheProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class TranslationServiceAdapter implements TranslationService {
+	private static final Logger logger = LoggerFactory.getLogger(TranslationServiceAdapter.class);
 	private final List<TranslationLoader> loaders;
 	private final UserProfileCacheProvider userProfileCache;
 	private final Settings settings;
 
-	private final Map<String, Map<Locale, Map<String, String>>> translations = new ConcurrentHashMap<>();
+	/**
+	 * Merged translations:
+	 * Map<Locale, Map<String, String>>
+	 * ^            ^
+	 * e.g. "en" -> { "vocabulary.cancel" -> "Cancel",
+	 * "module.music.vocabulary.cancel" -> "Stop",
+	 * ... }
+	 */
+	private final Map<Locale, Map<String, String>> translations = new java.util.concurrent.ConcurrentHashMap<>();
 
 	public TranslationServiceAdapter(
 			List<TranslationLoader> loaders,
@@ -34,100 +46,91 @@ public class TranslationServiceAdapter implements TranslationService {
 
 	@PostConstruct
 	public void init() {
-		// Aggregate all loader data
+		logger.info("Initializing translation service");
 		for (TranslationLoader loader : loaders) {
-			Map<String, Map<Locale, Map<String, String>>> map = loader.loadAll();
-			mergeAll(map);
+			logger.debug("Loading translations from: {}", loader.getClass().getSimpleName());
+			Map<String, Map<Locale, Map<String, String>>> loaderResult = loader.loadAll();
+			mergeLoaderResult(loaderResult);
 		}
+		logger.info("Translation service initialized with {} locales", translations.size());
 	}
 
-	private void mergeAll(Map<String, Map<Locale, Map<String, String>>> newData) {
-		// For each domain
-		for (Map.Entry<String, Map<Locale, Map<String, String>>> e : newData.entrySet()) {
-			String domain = e.getKey();
-			Map<Locale, Map<String, String>> localeMap = e.getValue();
+	@EventListener(ApplicationReadyEvent.class)
+	public void test() {
+		logger.info("Default bot locale: {}", settings.getLocale());
+		logger.info("Loaded translations: {}", translations);
+		logger.info("Test translation key: {}", Translatable.of("vocabulary.cancel", 0));
+		logger.info("Test translation result: {}", translate("vocabulary.cancel", 0));
+	}
 
-			// domain -> ...
-			translations.computeIfAbsent(domain, x -> new ConcurrentHashMap<>());
+	private void mergeLoaderResult(Map<String, Map<Locale, Map<String, String>>> loaderResult) {
+		logger.debug("Merging translation loader results");
+		for (Map.Entry<String, Map<Locale, Map<String, String>>> prefixEntry : loaderResult.entrySet()) {
+			String prefix = prefixEntry.getKey();
+			Map<Locale, Map<String, String>> localeMap = prefixEntry.getValue();
+			logger.debug("Processing prefix: '{}'", prefix);
 
-			// Merge locale submaps
-			for (Map.Entry<Locale, Map<String, String>> locEntry : localeMap.entrySet()) {
-				Locale loc = locEntry.getKey();
-				Map<String, String> newStrings = locEntry.getValue();
+			for (Map.Entry<Locale, Map<String, String>> localeEntry : localeMap.entrySet()) {
+				Locale locale = localeEntry.getKey();
+				Map<String, String> translationsForThatLocale = localeEntry.getValue();
+				logger.trace("Processing locale: {} with {} entries", locale, translationsForThatLocale.size());
 
-				Map<String, String> existingStrings =
-						translations.get(domain).computeIfAbsent(loc, x -> new ConcurrentHashMap<>());
+				Map<String, String> targetMap = translations.computeIfAbsent(locale, l -> new java.util.concurrent.ConcurrentHashMap<>());
 
-				existingStrings.putAll(newStrings);  // merge
+				for (Map.Entry<String, String> kv : translationsForThatLocale.entrySet()) {
+					String finalKey = prefix.isEmpty()
+							? kv.getKey()
+							: prefix + kv.getKey();
+					targetMap.put(finalKey, kv.getValue());
+				}
 			}
 		}
 	}
 
 	@Override
 	public String translate(String key, long userId) {
-		final String prefix = "module.";
-		if (key.startsWith(prefix)) {
-			// Handle module.<moduleName>.<subKey> format
-			String remainder = key.substring(prefix.length()); // "music.play_button"
-			int dotIdx = remainder.indexOf('.');
-			if (dotIdx < 0) {
-				// no further dot => not well-formed
-				return fallbackNoSubkey(remainder, userId);
-			}
-			String domain = remainder.substring(0, dotIdx);   // e.g. "music"
-			String subKey = remainder.substring(dotIdx + 1); // e.g. "play_button"
-			return doTranslate(domain, subKey, userId);
-		}
+		Locale defaultBotLocale = settings.getLocale();
+		logger.trace("Translating key '{}' for user {}", key, userId);
+		Locale[] userLocales = getUserLocalesOrDefault(userId, defaultBotLocale);
+		logger.trace("User locales: {}", (Object) userLocales);
 
-		// Also handle direct <domain>.<subKey> format
-		int dotIdx = key.indexOf('.');
-		if (dotIdx > 0) {
-			String domain = key.substring(0, dotIdx);
-			String subKey = key.substring(dotIdx + 1);
-			return doTranslate(domain, subKey, userId);
-		} else {
-			// No dot, treat as subKey in core domain
-			return doTranslate("core", key, userId);
-		}
-	}
-
-	private String doTranslate(String domain, String subKey, long userId) {
-		Optional<UserProfile> profileOpt = userProfileCache.getProfile(userId);
-
-		// 1) user’s primary
-		if (profileOpt.isPresent() && profileOpt.get().getPrimaryLanguage() != null) {
-			Locale primary = profileOpt.get().getPrimaryLanguage();
-			String text = fetch(domain, primary, subKey);
-			if (text != null) return text;
-		}
-
-		// 2) user’s additional
-		if (profileOpt.isPresent() && profileOpt.get().getAdditionalLanguages() != null) {
-			for (Locale additional : profileOpt.get().getAdditionalLanguages()) {
-				String text = fetch(domain, additional, subKey);
-				if (text != null) return text;
+		for (Locale locale : userLocales) {
+			String translation = getTranslatedString(locale, key);
+			if (translation != null) {
+				logger.trace("Found translation for key '{}' in locale {}: '{}'", key, locale, translation);
+				return translation;
 			}
 		}
 
-		// 3) bot default
-		String text = fetch(domain, settings.getLocale(), subKey);
-		if (text != null) return text;
-
-		// 4) fallback => subKey
-		return subKey;
+		logger.debug("No translation found for key: '{}'", key);
+		return key;
 	}
 
-	private String fetch(String domain, Locale locale, String subKey) {
-		Map<Locale, Map<String, String>> domainMap = translations.get(domain);
-		if (domainMap == null) return null;
+	private Locale[] getUserLocalesOrDefault(long userId, Locale defaultBotLocale) {
+		return userProfileCache.getProfile(userId)
+				.map(profile -> {
+					List<Locale> locales = new java.util.ArrayList<>();
+					if (profile.getPrimaryLanguage() != null)
+						locales.add(profile.getPrimaryLanguage());
 
-		Map<String, String> translations = domainMap.get(locale);
-		if (translations == null) return null;
+					if (profile.getAdditionalLanguages() != null)
+						locales.addAll(Arrays.asList(profile.getAdditionalLanguages()));
 
-		return translations.get(subKey);
+					locales.add(defaultBotLocale);
+					logger.trace("User {} locales: {}", userId, locales);
+					return locales.toArray(Locale[]::new);
+				})
+				.orElseGet(() -> {
+					logger.trace("No profile found for user {}, using default locale", userId);
+					return new Locale[]{defaultBotLocale};
+				});
 	}
 
-	private String fallbackNoSubkey(String domain, long userId) {
-		return domain;
+	private String getTranslatedString(Locale locale, String key) {
+		Map<String, String> translationsForLocale = translations.get(locale);
+		if (translationsForLocale != null)
+			return translationsForLocale.get(key);
+
+		return null;
 	}
 }

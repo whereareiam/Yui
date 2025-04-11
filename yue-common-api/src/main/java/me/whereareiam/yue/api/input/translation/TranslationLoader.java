@@ -3,14 +3,29 @@ package me.whereareiam.yue.api.input.translation;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Interface for loading translation resources from various sources.
+ * Implementations can provide translations from files, databases, or other resources.
+ * <p>
+ * Each loader returns a hierarchical map structure:
+ * <ul>
+ *   <li>The outer map keys are namespace prefixes (empty string for core translations,
+ *       "module.{name}." for module-specific translations)</li>
+ *   <li>The middle map contains {@link Locale} objects as keys for each supported language</li>
+ *   <li>The inner map contains the actual translation key-value pairs, where keys are
+ *       dot-notation paths and values are the translated strings</li>
+ * </ul>
+ * <p>
+ * The {@link TranslationService} will merge results from all loaders into a unified
+ * translation map, preserving the proper key prefixing.
+ */
 public interface TranslationLoader {
 	/**
-	 * Loads all translations for its domain(s).
-	 * <p>
-	 * For core:   returns a single entry "core" -> ...
-	 * For modules: returns multiple entries "moduleName" -> ...
+	 * Loads all translations from the implementing source.
 	 *
-	 * @return domain -> (locale -> (key -> text))
+	 * @return A map structure where:
+	 * - The key is the namespace prefix (e.g., "", "module.music.")
+	 * - The value is a map of locales to their translation key-value pairs
 	 */
 	Map<String, Map<Locale, Map<String, String>>> loadAll();
 }

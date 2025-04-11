@@ -5,12 +5,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * Provides a static method to quickly translate a key for a user:
- * String text = Translatable.of("module.music.play_button", userId);
+ * Utility component that provides static access to translations.
  * <p>
- * Under the hood, it calls the TranslationService via a static reference.
- * Note: static injection is generally not recommended, but we do it
- * here to meet the requirement of a single-line usage.
+ * This class serves as a convenient wrapper around the {@link TranslationService},
+ * allowing for easy access to translations from anywhere in the application without
+ * needing to inject the service directly.
+ * <p>
+ * Usage examples:
+ * <pre>{@code
+ * // Translate for a specific user
+ * String cancelText = Translatable.of("vocabulary.cancel", userId);
+ *
+ * // Translate using default locale
+ * String helpText = Translatable.of("vocabulary.help");
+ * }</pre>
+ * <p>
+ * The class handles the case when the translation service is not yet initialized
+ * by returning the original key.
+ *
+ * @see TranslationService
  */
 @Component
 public class Translatable {
@@ -18,7 +31,11 @@ public class Translatable {
 	private static TranslationService translationService;
 
 	/**
-	 * This setter is automatically called by Spring to inject the service bean.
+	 * Sets the translation service instance.
+	 * <p>
+	 * This method is called automatically by Spring during component initialization.
+	 *
+	 * @param translationService The translation service to use
 	 */
 	@Autowired
 	public void setTranslationService(TranslationService translationService) {
@@ -26,18 +43,37 @@ public class Translatable {
 	}
 
 	/**
-	 * Quick usage:
-	 * String label = Translatable.of("module.music.play_button", userId);
+	 * Translates a key for a specific user.
+	 *
+	 * @param key    The translation key to look up
+	 * @param userId The ID of the user for whom to translate
+	 * @return The translated string or the original key if translation is unavailable
 	 */
 	public static String of(String key, long userId) {
 		if (translationService == null) {
-			// fallback or throw an exception if service not injected
 			return key;
 		}
 		return translationService.translate(key, userId);
 	}
 
-	// Private constructor => no instances
+	/**
+	 * Translates a key using the default locale.
+	 * <p>
+	 * This is equivalent to calling {@code of(key, 0)}.
+	 *
+	 * @param key The translation key to look up
+	 * @return The translated string or the original key if translation is unavailable
+	 */
+	public static String of(String key) {
+		if (translationService == null) {
+			return key;
+		}
+		return translationService.translate(key, 0);
+	}
+
+	/**
+	 * Private constructor to prevent instantiation.
+	 */
 	private Translatable() {
 	}
 }
