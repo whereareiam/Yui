@@ -31,6 +31,7 @@ public abstract class AbstractTranslationLoader implements TranslationLoader {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	protected void flattenMap(String parentKey, Map<String, Object> raw, Map<String, String> flat) {
 		for (Map.Entry<String, Object> entry : raw.entrySet()) {
 			String key = parentKey.isEmpty()
@@ -46,7 +47,7 @@ public abstract class AbstractTranslationLoader implements TranslationLoader {
 	}
 
 	protected Map<Locale, Map<String, String>> processLanguageFolder(Path languageFolder) {
-		logger.info("Processing language folder: {}", languageFolder);
+		logger.debug("Processing language folder: {}", languageFolder);
 		Map<Locale, Map<String, String>> localeMap = new HashMap<>();
 
 		try (var langFiles = Files.list(languageFolder)) {
@@ -57,7 +58,6 @@ public abstract class AbstractTranslationLoader implements TranslationLoader {
 						if (filename.contains(".")) {
 							String[] parts = filename.split("\\.");
 							String languageCode = parts[0];
-							String extension = parts[1];
 
 							Locale locale = Locale.forLanguageTag(languageCode);
 							logger.debug("Processing language file: {} for locale: {}", file, locale);

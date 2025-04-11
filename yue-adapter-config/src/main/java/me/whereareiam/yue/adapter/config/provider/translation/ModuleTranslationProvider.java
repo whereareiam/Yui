@@ -25,7 +25,6 @@ public class ModuleTranslationProvider extends AbstractTranslationLoader {
 
 	@Override
 	public Map<String, Map<Locale, Map<String, String>>> loadAll() {
-		logger.info("Loading module translations from modules path: {}", modulesPath);
 		Map<String, Map<Locale, Map<String, String>>> result = new HashMap<>();
 
 		try (var modulesDirStream = Files.list(modulesPath)) {

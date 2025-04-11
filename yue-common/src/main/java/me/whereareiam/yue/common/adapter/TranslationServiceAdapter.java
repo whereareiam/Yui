@@ -1,21 +1,19 @@
 package me.whereareiam.yue.common.adapter;
 
 import jakarta.annotation.PostConstruct;
-import me.whereareiam.yue.api.component.Translatable;
 import me.whereareiam.yue.api.input.translation.TranslationLoader;
 import me.whereareiam.yue.api.input.translation.TranslationService;
 import me.whereareiam.yue.api.model.config.settings.Settings;
 import me.whereareiam.yue.api.output.provider.UserProfileCacheProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class TranslationServiceAdapter implements TranslationService {
@@ -32,7 +30,7 @@ public class TranslationServiceAdapter implements TranslationService {
 	 * "module.music.vocabulary.cancel" -> "Stop",
 	 * ... }
 	 */
-	private final Map<Locale, Map<String, String>> translations = new java.util.concurrent.ConcurrentHashMap<>();
+	private final Map<Locale, Map<String, String>> translations = new ConcurrentHashMap<>();
 
 	public TranslationServiceAdapter(
 			List<TranslationLoader> loaders,
@@ -46,21 +44,14 @@ public class TranslationServiceAdapter implements TranslationService {
 
 	@PostConstruct
 	public void init() {
-		logger.info("Initializing translation service");
+		logger.debug("Initializing translation service");
 		for (TranslationLoader loader : loaders) {
 			logger.debug("Loading translations from: {}", loader.getClass().getSimpleName());
 			Map<String, Map<Locale, Map<String, String>>> loaderResult = loader.loadAll();
 			mergeLoaderResult(loaderResult);
 		}
-		logger.info("Translation service initialized with {} locales", translations.size());
-	}
 
-	@EventListener(ApplicationReadyEvent.class)
-	public void test() {
-		logger.info("Default bot locale: {}", settings.getLocale());
-		logger.info("Loaded translations: {}", translations);
-		logger.info("Test translation key: {}", Translatable.of("vocabulary.cancel", 0));
-		logger.info("Test translation result: {}", translate("vocabulary.cancel", 0));
+		logger.info("Translation service initialized with {} {}", translations.size(), translations.size() == 1 ? "locale" : "locales");
 	}
 
 	private void mergeLoaderResult(Map<String, Map<Locale, Map<String, String>>> loaderResult) {
@@ -75,7 +66,7 @@ public class TranslationServiceAdapter implements TranslationService {
 				Map<String, String> translationsForThatLocale = localeEntry.getValue();
 				logger.trace("Processing locale: {} with {} entries", locale, translationsForThatLocale.size());
 
-				Map<String, String> targetMap = translations.computeIfAbsent(locale, l -> new java.util.concurrent.ConcurrentHashMap<>());
+				Map<String, String> targetMap = translations.computeIfAbsent(locale, l -> new ConcurrentHashMap<>());
 
 				for (Map.Entry<String, String> kv : translationsForThatLocale.entrySet()) {
 					String finalKey = prefix.isEmpty()

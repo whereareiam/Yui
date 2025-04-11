@@ -24,7 +24,6 @@ public class CoreTranslationProvider extends AbstractTranslationLoader {
 
 	@Override
 	public Map<String, Map<Locale, Map<String, String>>> loadAll() {
-		logger.info("Loading core translations from data path: {}", dataPath);
 		Map<String, Map<Locale, Map<String, String>>> result = new HashMap<>();
 
 		Path languagesDir = dataPath.resolve("languages");
@@ -34,7 +33,7 @@ public class CoreTranslationProvider extends AbstractTranslationLoader {
 		}
 
 		Map<Locale, Map<String, String>> localeMap = processLanguageFolder(languagesDir);
-		logger.info("Loaded core translations for {} locales", localeMap.size());
+		logger.info("Loaded core translations for {} {}", localeMap.size(), localeMap.size() == 1 ? "locale" : "locales");
 		result.put("", localeMap);
 
 		return result;
