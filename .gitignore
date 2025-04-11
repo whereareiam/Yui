@@ -1,4 +1,4 @@
-!**/src/main/**/target/
-!**/src/test/**/target/
-.idea/
-test/
+*.iml
+.idea
+build/
+.env

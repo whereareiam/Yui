@@ -1,0 +1,40 @@
+[versions]
+
+# general
+lombok = "1.18.38"
+jda = "5.3.2"
+postgres = "42.7.5"
+spring = "3.4.4"
+jackson = "2.18.2"
+h2 = "2.3.232"
+
+[libraries]
+
+# general
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+jda = { module = "net.dv8tion:JDA", version.ref = "jda" }
+postgres = { module = "org.postgresql:postgresql", version.ref = "postgres" }
+h2 = { module = "com.h2database:h2", version.ref = "h2" }
+
+# spring
+spring-boot = { module = "org.springframework.boot:spring-boot-starter", version.ref = "spring" }
+spring-boot-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "spring" }
+spring-boot-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "spring" }
+
+# jackson
+jackson = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
+jackson-dataformat-yaml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version.ref = "jackson" }
+
+[plugins]
+
+[bundles]
+
+spring = [
+    "spring-boot",
+    "spring-boot-data-jpa"
+]
+
+configuration = [
+    "jackson",
+    "jackson-dataformat-yaml"
+]

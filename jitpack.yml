@@ -1,7 +1,0 @@
-before_install:
-  - sdk update
-  - sdk install java 21-librca
-  - sdk use java 21-librca
-  - sdk install maven
-install:
-  - mvn -T 1C -pl yue-core-api install -DskipTests
