@@ -33,6 +33,18 @@ public class Module {
 	private final String main;
 
 	/**
+	 * Constructs a new Module instance with no specific values.
+	 * This constructor is typically used for deserialization purposes.
+	 */
+	public Module() {
+		this.name = null;
+		this.version = null;
+		this.authors = null;
+		this.supportedVersions = null;
+		this.main = null;
+	}
+
+	/**
 	 * Constructs a new Module instance with the specified parameters.
 	 *
 	 * @param name              The name of the module

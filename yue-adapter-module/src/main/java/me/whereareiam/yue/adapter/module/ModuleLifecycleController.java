@@ -6,7 +6,6 @@ import me.whereareiam.yue.api.type.ModuleState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ansi.AnsiColor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +39,7 @@ public class ModuleLifecycleController {
 			module.getModule().setWorkingPath(module.getPath().getParent().resolve(module.getName()));
 			ctx.getAutowireCapableBeanFactory().autowireBean(moduleInstance);
 
-			logger.info("Loaded module {}{}{} v{} [{}]", AnsiColor.YELLOW, module.getName(), AnsiColor.WHITE, module.getVersion(), String.join(", ", module.getAuthors()));
+			logger.info("Loaded module {} v{} [{}]", module.getName(), module.getVersion(), String.join(", ", module.getAuthors()));
 
 			module.getModule().onLoad();
 		} catch (MalformedURLException | ClassNotFoundException e) {

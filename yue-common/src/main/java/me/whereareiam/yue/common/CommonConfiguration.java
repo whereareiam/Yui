@@ -1,13 +1,16 @@
 package me.whereareiam.yue.common;
 
 import me.whereareiam.yue.api.model.config.settings.Settings;
+import me.whereareiam.yue.api.output.module.ModuleService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -16,6 +19,12 @@ import org.springframework.context.event.EventListener;
 @Configuration
 public class CommonConfiguration {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
+	private final ApplicationContext ctx;
+
+	@Autowired
+	public CommonConfiguration(ApplicationContext ctx) {
+		this.ctx = ctx;
+	}
 
 	@Bean
 	@Primary
@@ -36,9 +45,18 @@ public class CommonConfiguration {
 
 		return jda;
 	}
-	
+
 	@EventListener(ApplicationReadyEvent.class)
-	public void welcome() {
+	public void onApplicationReady() {
+		loadModules();
+		welcome();
+	}
+
+	private void loadModules() {
+		ctx.getBean(ModuleService.class).loadModules();
+	}
+
+	private void welcome() {
 		logger.info("");
 		logger.info("Yue has successfully linked with the Cardinal System.");
 		logger.info("『Greetings, Master. I am Yue. All systems are operational. Awaiting your command.』");
