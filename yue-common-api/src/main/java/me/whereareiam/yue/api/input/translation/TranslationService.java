@@ -8,11 +8,11 @@ package me.whereareiam.yue.api.input.translation;
  *   <li>Combines translations from multiple {@link TranslationLoader}s</li>
  *   <li>Resolves user-specific language preferences</li>
  *   <li>Falls back to default language when translations are missing</li>
- *   <li>Handles namespaced keys for core and module-specific translations</li>
+ *   <li>Handles namespaced keys for core and plugin-specific translations</li>
  * </ul>
  * <p>
  * Translations are organized in a hierarchical structure where keys use dot notation
- * (e.g., "vocabulary.cancel" or "module.music.vocabulary.play").
+ * (e.g., "vocabulary.cancel" or "plugin.music.vocabulary.play").
  * <p>
  * This service is typically used by the {@link me.whereareiam.yue.api.component.Translatable}
  * utility for convenient access to translations.

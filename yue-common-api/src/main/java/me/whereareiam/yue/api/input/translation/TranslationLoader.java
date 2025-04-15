@@ -10,7 +10,7 @@ import java.util.Map;
  * Each loader returns a hierarchical map structure:
  * <ul>
  *   <li>The outer map keys are namespace prefixes (empty string for core translations,
- *       "module.{name}." for module-specific translations)</li>
+ *       "plugin.{name}." for plugin-specific translations)</li>
  *   <li>The middle map contains {@link Locale} objects as keys for each supported language</li>
  *   <li>The inner map contains the actual translation key-value pairs, where keys are
  *       dot-notation paths and values are the translated strings</li>
@@ -24,7 +24,7 @@ public interface TranslationLoader {
 	 * Loads all translations from the implementing source.
 	 *
 	 * @return A map structure where:
-	 * - The key is the namespace prefix (e.g., "", "module.music.")
+	 * - The key is the namespace prefix (e.g., "", "plugin.music.")
 	 * - The value is a map of locales to their translation key-value pairs
 	 */
 	Map<String, Map<Locale, Map<String, String>>> loadAll();

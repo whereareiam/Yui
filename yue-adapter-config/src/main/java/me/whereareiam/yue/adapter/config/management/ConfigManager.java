@@ -61,7 +61,8 @@ public class ConfigManager implements ConfigurationManager {
 		}
 	}
 
-	private Class<?> getConfigClassFromDefaultConfig(DefaultConfig<?> defaultConfig) {
+	@Override
+	public Class<?> getConfigClassFromDefaultConfig(DefaultConfig<?> defaultConfig) {
 		Type[] interfaces = defaultConfig.getClass().getGenericInterfaces();
 		for (Type type : interfaces) {
 			if (type instanceof ParameterizedType &&

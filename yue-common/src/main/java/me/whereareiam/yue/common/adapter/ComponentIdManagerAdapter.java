@@ -17,15 +17,15 @@ public class ComponentIdManagerAdapter implements ComponentIdManager {
 	private final Map<String, ComponentInfo> componentsById = new ConcurrentHashMap<>();
 
 	@Override
-	public String registerComponent(String moduleId, String componentType, String componentName) {
-		if (moduleId == null || moduleId.isBlank())
-			throw new IllegalArgumentException("Module ID cannot be null or blank");
+	public String registerComponent(String pluginId, String componentType, String componentName) {
+		if (pluginId == null || pluginId.isBlank())
+			throw new IllegalArgumentException("YuePluginDescriptor ID cannot be null or blank");
 		if (componentType == null || componentType.isBlank())
 			throw new IllegalArgumentException("Component type cannot be null or blank");
 		if (componentName == null || componentName.isBlank())
 			throw new IllegalArgumentException("Component name cannot be null or blank");
 
-		String baseId = moduleId + ":" + componentType + ":" + componentName;
+		String baseId = pluginId + ":" + componentType + ":" + componentName;
 
 		String componentId = baseId;
 		int attempt = 0;
@@ -36,15 +36,15 @@ public class ComponentIdManagerAdapter implements ComponentIdManager {
 			attempt++;
 
 			if (attempt > 5) {
-				componentId = moduleId + ":" + UUID.randomUUID();
+				componentId = pluginId + ":" + UUID.randomUUID();
 				break;
 			}
 		}
 
-		ComponentInfo info = new ComponentInfo(componentId, moduleId, componentType, componentName);
+		ComponentInfo info = new ComponentInfo(componentId, pluginId, componentType, componentName);
 		componentsById.put(componentId, info);
 
-		logger.debug("Registered component: {} (type: {}) for module: {}", componentName, componentType, moduleId);
+		logger.debug("Registered component: {} (type: {}) for plugin: {}", componentName, componentType, pluginId);
 		return componentId;
 	}
 
@@ -57,25 +57,25 @@ public class ComponentIdManagerAdapter implements ComponentIdManager {
 	}
 
 	@Override
-	public Set<String> getModuleComponents(String moduleId) {
-		if (moduleId == null || moduleId.isBlank()) {
+	public Set<String> getPluginComponents(String pluginId) {
+		if (pluginId == null || pluginId.isBlank()) {
 			return Collections.emptySet();
 		}
 
 		return componentsById.values().stream()
-				.filter(info -> info.getModuleId().equals(moduleId))
+				.filter(info -> info.getPluginId().equals(pluginId))
 				.map(ComponentInfo::getComponentId)
 				.collect(Collectors.toSet());
 	}
 
 	@Override
-	public Set<String> getModuleComponentsByType(String moduleId, String componentType) {
-		if (moduleId == null || moduleId.isBlank() || componentType == null || componentType.isBlank()) {
+	public Set<String> getPluginComponentsByType(String pluginId, String componentType) {
+		if (pluginId == null || pluginId.isBlank() || componentType == null || componentType.isBlank()) {
 			return Collections.emptySet();
 		}
 
 		return componentsById.values().stream()
-				.filter(info -> info.getModuleId().equals(moduleId) &&
+				.filter(info -> info.getPluginId().equals(pluginId) &&
 						info.getComponentType().equals(componentType))
 				.map(ComponentInfo::getComponentId)
 				.collect(Collectors.toSet());
@@ -89,8 +89,8 @@ public class ComponentIdManagerAdapter implements ComponentIdManager {
 
 		ComponentInfo removed = componentsById.remove(componentId);
 		if (removed != null) {
-			logger.debug("Unregistered component: {} (type: {}) for module: {}",
-					removed.getComponentName(), removed.getComponentType(), removed.getModuleId());
+			logger.debug("Unregistered component: {} (type: {}) for plugin: {}",
+					removed.getComponentName(), removed.getComponentType(), removed.getPluginId());
 			return true;
 		}
 		return false;

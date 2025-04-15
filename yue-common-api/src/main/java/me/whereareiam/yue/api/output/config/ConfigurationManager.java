@@ -39,4 +39,12 @@ public interface ConfigurationManager {
 	 * @return the default configuration template
 	 */
 	<T> DefaultConfig<T> getTemplate(Class<T> clazz);
+
+	/**
+	 * Retrieves the class type associated with a default configuration template.
+	 *
+	 * @param defaultConfig the default configuration template
+	 * @return the class type associated with the template
+	 */
+	Class<?> getConfigClassFromDefaultConfig(DefaultConfig<?> defaultConfig);
 }

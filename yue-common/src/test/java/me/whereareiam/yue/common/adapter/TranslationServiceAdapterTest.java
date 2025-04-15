@@ -21,7 +21,7 @@ class TranslationServiceAdapterTest {
 	private TranslationLoader coreLoader;
 
 	@Mock
-	private TranslationLoader moduleLoader;
+	private TranslationLoader pluginLoader;
 
 	@Mock
 	private UserProfileCacheProvider userProfileCache;
@@ -49,26 +49,26 @@ class TranslationServiceAdapterTest {
 		coreLocaleMap.put(Locale.GERMAN, deCore);
 		coreTranslations.put("", coreLocaleMap);
 
-		// Module translations
-		Map<String, Map<Locale, Map<String, String>>> moduleTranslations = new HashMap<>();
-		Map<Locale, Map<String, String>> moduleLocaleMap = new HashMap<>();
+		// YuePluginDescriptor translations
+		Map<String, Map<Locale, Map<String, String>>> pluginTranslations = new HashMap<>();
+		Map<Locale, Map<String, String>> pluginLocaleMap = new HashMap<>();
 
-		Map<String, String> enModule = new HashMap<>();
-		enModule.put("vocabulary.play", "Play");
+		Map<String, String> enPlugin = new HashMap<>();
+		enPlugin.put("vocabulary.play", "Play");
 
-		Map<String, String> deModule = new HashMap<>();
-		deModule.put("vocabulary.play", "Abspielen");
+		Map<String, String> dePlugin = new HashMap<>();
+		dePlugin.put("vocabulary.play", "Abspielen");
 
-		moduleLocaleMap.put(Locale.ENGLISH, enModule);
-		moduleLocaleMap.put(Locale.GERMAN, deModule);
-		moduleTranslations.put("module.music.", moduleLocaleMap);
+		pluginLocaleMap.put(Locale.ENGLISH, enPlugin);
+		pluginLocaleMap.put(Locale.GERMAN, dePlugin);
+		pluginTranslations.put("plugin.music.", pluginLocaleMap);
 
 		when(coreLoader.loadAll()).thenReturn(coreTranslations);
-		when(moduleLoader.loadAll()).thenReturn(moduleTranslations);
+		when(pluginLoader.loadAll()).thenReturn(pluginTranslations);
 		when(settings.getLocale()).thenReturn(Locale.ENGLISH);
 
 		translationService = new TranslationServiceAdapter(
-				List.of(coreLoader, moduleLoader),
+				List.of(coreLoader, pluginLoader),
 				userProfileCache,
 				settings
 		);
@@ -84,7 +84,7 @@ class TranslationServiceAdapterTest {
 
 		// Act & Assert
 		assertEquals("Cancel", translationService.translate("vocabulary.cancel", 123L));
-		assertEquals("Play", translationService.translate("module.music.vocabulary.play", 123L));
+		assertEquals("Play", translationService.translate("plugin.music.vocabulary.play", 123L));
 	}
 
 	@Test
@@ -104,7 +104,7 @@ class TranslationServiceAdapterTest {
 
 		// Act & Assert
 		assertEquals("Abbrechen", translationService.translate("vocabulary.cancel", 456L));
-		assertEquals("Abspielen", translationService.translate("module.music.vocabulary.play", 456L));
+		assertEquals("Abspielen", translationService.translate("plugin.music.vocabulary.play", 456L));
 	}
 
 	@Test

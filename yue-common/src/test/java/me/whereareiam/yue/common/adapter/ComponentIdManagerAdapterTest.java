@@ -20,16 +20,16 @@ class ComponentIdManagerAdapterTest {
 	@Test
 	void registerComponent_withValidInput_shouldReturnComponentId() {
 		// Arrange
-		String moduleId = "test-module";
+		String pluginId = "test-plugin";
 		String componentType = "button";
 		String componentName = "test-button";
 
 		// Act
-		String componentId = componentIdManager.registerComponent(moduleId, componentType, componentName);
+		String componentId = componentIdManager.registerComponent(pluginId, componentType, componentName);
 
 		// Assert
 		assertNotNull(componentId);
-		assertTrue(componentId.contains(moduleId));
+		assertTrue(componentId.contains(pluginId));
 		assertTrue(componentId.contains(componentType));
 		assertTrue(componentId.contains(componentName));
 	}
@@ -40,18 +40,18 @@ class ComponentIdManagerAdapterTest {
 		assertThrows(IllegalArgumentException.class, () ->
 				componentIdManager.registerComponent("", "type", "name"));
 		assertThrows(IllegalArgumentException.class, () ->
-				componentIdManager.registerComponent("module", "", "name"));
+				componentIdManager.registerComponent("plugin", "", "name"));
 		assertThrows(IllegalArgumentException.class, () ->
-				componentIdManager.registerComponent("module", "type", ""));
+				componentIdManager.registerComponent("plugin", "type", ""));
 	}
 
 	@Test
 	void getComponentInfo_withExistingId_shouldReturnInfo() {
 		// Arrange
-		String moduleId = "test-module";
+		String pluginId = "test-plugin";
 		String componentType = "button";
 		String componentName = "test-button";
-		String componentId = componentIdManager.registerComponent(moduleId, componentType, componentName);
+		String componentId = componentIdManager.registerComponent(pluginId, componentType, componentName);
 
 		// Act
 		Optional<ComponentInfo> result = componentIdManager.getComponentInfo(componentId);
@@ -59,7 +59,7 @@ class ComponentIdManagerAdapterTest {
 		// Assert
 		assertTrue(result.isPresent());
 		assertEquals(componentId, result.get().getComponentId());
-		assertEquals(moduleId, result.get().getModuleId());
+		assertEquals(pluginId, result.get().getPluginId());
 		assertEquals(componentType, result.get().getComponentType());
 		assertEquals(componentName, result.get().getComponentName());
 	}
@@ -74,29 +74,29 @@ class ComponentIdManagerAdapterTest {
 	}
 
 	@Test
-	void getModuleComponents_withExistingModule_shouldReturnComponents() {
+	void getPluginComponents_withExistingPlugin_shouldReturnComponents() {
 		// Arrange
-		String moduleId = "test-module";
-		componentIdManager.registerComponent(moduleId, "button", "button1");
-		componentIdManager.registerComponent(moduleId, "select", "select1");
+		String pluginId = "test-plugin";
+		componentIdManager.registerComponent(pluginId, "button", "button1");
+		componentIdManager.registerComponent(pluginId, "select", "select1");
 
 		// Act
-		Set<String> result = componentIdManager.getModuleComponents(moduleId);
+		Set<String> result = componentIdManager.getPluginComponents(pluginId);
 
 		// Assert
 		assertEquals(2, result.size());
 	}
 
 	@Test
-	void getModuleComponentsByType_withValidInput_shouldReturnFilteredComponents() {
+	void getPluginComponentsByType_withValidInput_shouldReturnFilteredComponents() {
 		// Arrange
-		String moduleId = "test-module";
-		componentIdManager.registerComponent(moduleId, "button", "button1");
-		componentIdManager.registerComponent(moduleId, "button", "button2");
-		componentIdManager.registerComponent(moduleId, "select", "select1");
+		String pluginId = "test-plugin";
+		componentIdManager.registerComponent(pluginId, "button", "button1");
+		componentIdManager.registerComponent(pluginId, "button", "button2");
+		componentIdManager.registerComponent(pluginId, "select", "select1");
 
 		// Act
-		Set<String> result = componentIdManager.getModuleComponentsByType(moduleId, "button");
+		Set<String> result = componentIdManager.getPluginComponentsByType(pluginId, "button");
 
 		// Assert
 		assertEquals(2, result.size());
@@ -105,7 +105,7 @@ class ComponentIdManagerAdapterTest {
 	@Test
 	void unregisterComponent_withExistingId_shouldRemoveAndReturnTrue() {
 		// Arrange
-		String componentId = componentIdManager.registerComponent("module", "type", "name");
+		String componentId = componentIdManager.registerComponent("plugin", "type", "name");
 
 		// Act
 		boolean result = componentIdManager.unregisterComponent(componentId);

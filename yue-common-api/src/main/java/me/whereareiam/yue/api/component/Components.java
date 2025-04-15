@@ -36,15 +36,15 @@ public class Components implements ApplicationContextAware {
 	/**
 	 * Registers a component
 	 */
-	public static String register(String moduleId, String componentType, String componentName) {
-		return getManager().registerComponent(moduleId, componentType, componentName);
+	public static String register(String pluginId, String componentType, String componentName) {
+		return getManager().registerComponent(pluginId, componentType, componentName);
 	}
 
 	/**
 	 * Registers a button
 	 */
-	public static String registerButton(String moduleId, String buttonName) {
-		return getManager().registerButton(moduleId, buttonName);
+	public static String registerButton(String pluginId, String buttonName) {
+		return getManager().registerButton(pluginId, buttonName);
 	}
 
 	// Add other register methods...
@@ -58,40 +58,40 @@ public class Components implements ApplicationContextAware {
 	/**
 	 * Creates a primary button with an automatically registered ID
 	 */
-	public static Button primaryButton(String moduleId, String buttonName, String label) {
-		String id = registerButton(moduleId, buttonName);
+	public static Button primaryButton(String pluginId, String buttonName, String label) {
+		String id = registerButton(pluginId, buttonName);
 		return Button.primary(id, label);
 	}
 
 	/**
 	 * Creates a secondary button with an automatically registered ID
 	 */
-	public static Button secondaryButton(String moduleId, String buttonName, String label) {
-		String id = registerButton(moduleId, buttonName);
+	public static Button secondaryButton(String pluginId, String buttonName, String label) {
+		String id = registerButton(pluginId, buttonName);
 		return Button.secondary(id, label);
 	}
 
 	/**
 	 * Creates a button with the specified style and an automatically registered ID
 	 */
-	public static Button button(ButtonStyle style, String moduleId, String buttonName, String label) {
-		String id = registerButton(moduleId, buttonName);
+	public static Button button(ButtonStyle style, String pluginId, String buttonName, String label) {
+		String id = registerButton(pluginId, buttonName);
 		return Button.of(style, id, label);
 	}
 
 	/**
 	 * Creates a StringSelectMenu builder with an automatically registered ID
 	 */
-	public static StringSelectMenu.Builder selectMenu(String moduleId, String menuName) {
-		String id = getManager().registerSelectMenu(moduleId, menuName);
+	public static StringSelectMenu.Builder selectMenu(String pluginId, String menuName) {
+		String id = getManager().registerSelectMenu(pluginId, menuName);
 		return StringSelectMenu.create(id);
 	}
 
 	/**
 	 * Creates a Modal builder with an automatically registered ID
 	 */
-	public static Modal.Builder modal(String moduleId, String modalName, String title) {
-		String id = getManager().registerModal(moduleId, modalName);
+	public static Modal.Builder modal(String pluginId, String modalName, String title) {
+		String id = getManager().registerModal(pluginId, modalName);
 		return Modal.create(id, title);
 	}
 }

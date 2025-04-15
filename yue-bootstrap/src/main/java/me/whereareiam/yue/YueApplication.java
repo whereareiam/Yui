@@ -1,5 +1,6 @@
 package me.whereareiam.yue;
 
+import me.whereareiam.yue.shared.Constants;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -29,7 +30,7 @@ public class YueApplication {
 	@Bean
 	@Qualifier("languagesPath")
 	public Path languagesPath(@Qualifier("dataPath") Path dataPath) {
-		Path languagesPath = dataPath.resolve("languages");
+		Path languagesPath = dataPath.resolve(Constants.Structure.languagesDir);
 
 		if (!languagesPath.toFile().exists()) {
 			boolean created = languagesPath.toFile().mkdirs();
@@ -37,18 +38,5 @@ public class YueApplication {
 		}
 
 		return languagesPath;
-	}
-
-	@Bean
-	@Qualifier("modulesPath")
-	public Path modulesPath(@Qualifier("dataPath") Path dataPath) {
-		Path modulesPath = dataPath.resolve("modules");
-
-		if (!modulesPath.toFile().exists()) {
-			boolean created = modulesPath.toFile().mkdirs();
-			if (!created) throw new RuntimeException("Failed to create modules directory");
-		}
-
-		return modulesPath;
 	}
 }

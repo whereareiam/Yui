@@ -7,14 +7,14 @@ import java.time.Instant;
  */
 public class ComponentInfo {
 	private final String componentId;
-	private final String moduleId;
+	private final String pluginId;
 	private final String componentType;
 	private final String componentName;
 	private final Instant registrationTime;
 
-	public ComponentInfo(String componentId, String moduleId, String componentType, String componentName) {
+	public ComponentInfo(String componentId, String pluginId, String componentType, String componentName) {
 		this.componentId = componentId;
-		this.moduleId = moduleId;
+		this.pluginId = pluginId;
 		this.componentType = componentType;
 		this.componentName = componentName;
 		this.registrationTime = Instant.now();
@@ -24,8 +24,8 @@ public class ComponentInfo {
 		return componentId;
 	}
 
-	public String getModuleId() {
-		return moduleId;
+	public String getPluginId() {
+		return pluginId;
 	}
 
 	public String getComponentType() {

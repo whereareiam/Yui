@@ -27,7 +27,7 @@ public class TranslationServiceAdapter implements TranslationService {
 	 * Map<Locale, Map<String, String>>
 	 * ^            ^
 	 * e.g. "en" -> { "vocabulary.cancel" -> "Cancel",
-	 * "module.music.vocabulary.cancel" -> "Stop",
+	 * "plugin.music.vocabulary.cancel" -> "Stop",
 	 * ... }
 	 */
 	private final Map<Locale, Map<String, String>> translations = new ConcurrentHashMap<>();

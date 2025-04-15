@@ -1,6 +1,7 @@
 package me.whereareiam.yue.adapter.config.provider.translation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import me.whereareiam.yue.shared.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,7 +27,7 @@ public class CoreTranslationProvider extends AbstractTranslationLoader {
 	public Map<String, Map<Locale, Map<String, String>>> loadAll() {
 		Map<String, Map<Locale, Map<String, String>>> result = new HashMap<>();
 
-		Path languagesDir = dataPath.resolve("languages");
+		Path languagesDir = dataPath.resolve(Constants.Structure.languagesDir);
 		if (!Files.isDirectory(languagesDir)) {
 			logger.warn("Core languages directory not found: {}", languagesDir);
 			return result;

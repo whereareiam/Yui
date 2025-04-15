@@ -6,8 +6,9 @@ allprojects {
     apply(plugin = "java")
 
     tasks.withType<JavaCompile> {
-        sourceCompatibility = JavaVersion.VERSION_21.toString()
-        targetCompatibility = JavaVersion.VERSION_21.toString()
+        sourceCompatibility = JavaVersion.VERSION_23.toString()
+        targetCompatibility = JavaVersion.VERSION_23.toString()
+        options.compilerArgs.add("--enable-preview")
     }
 }
 

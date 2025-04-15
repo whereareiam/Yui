@@ -19,41 +19,41 @@ public interface ComponentIdManager {
 	String TYPE_TEXT_INPUT = "text_input";
 
 	/**
-	 * Registers a component with a specific module.
+	 * Registers a component with a specific plugin.
 	 *
-	 * @param moduleId      Identifier of the module registering the component
+	 * @param pluginId      Identifier of the plugin registering the component
 	 * @param componentType Type of the component (button, select, modal, etc.)
-	 * @param componentName Logical name of the component within the module
+	 * @param componentName Logical name of the component within the plugin
 	 * @return The globally unique component ID to use
 	 */
-	String registerComponent(String moduleId, String componentType, String componentName);
+	String registerComponent(String pluginId, String componentType, String componentName);
 
 	/**
 	 * Convenience method to register a button component.
 	 */
-	default String registerButton(String moduleId, String buttonName) {
-		return registerComponent(moduleId, TYPE_BUTTON, buttonName);
+	default String registerButton(String pluginId, String buttonName) {
+		return registerComponent(pluginId, TYPE_BUTTON, buttonName);
 	}
 
 	/**
 	 * Convenience method to register a select menu component.
 	 */
-	default String registerSelectMenu(String moduleId, String menuName) {
-		return registerComponent(moduleId, TYPE_SELECT_MENU, menuName);
+	default String registerSelectMenu(String pluginId, String menuName) {
+		return registerComponent(pluginId, TYPE_SELECT_MENU, menuName);
 	}
 
 	/**
 	 * Convenience method to register a modal component.
 	 */
-	default String registerModal(String moduleId, String modalName) {
-		return registerComponent(moduleId, TYPE_MODAL, modalName);
+	default String registerModal(String pluginId, String modalName) {
+		return registerComponent(pluginId, TYPE_MODAL, modalName);
 	}
 
 	/**
 	 * Convenience method to register a text input component.
 	 */
-	default String registerTextInput(String moduleId, String textInputName) {
-		return registerComponent(moduleId, TYPE_TEXT_INPUT, textInputName);
+	default String registerTextInput(String pluginId, String textInputName) {
+		return registerComponent(pluginId, TYPE_TEXT_INPUT, textInputName);
 	}
 
 	/**
@@ -62,14 +62,14 @@ public interface ComponentIdManager {
 	Optional<ComponentInfo> getComponentInfo(String componentId);
 
 	/**
-	 * Lists all registered component IDs for a specific module.
+	 * Lists all registered component IDs for a specific plugin.
 	 */
-	Set<String> getModuleComponents(String moduleId);
+	Set<String> getPluginComponents(String pluginId);
 
 	/**
-	 * Lists all registered component IDs for a specific module and component type.
+	 * Lists all registered component IDs for a specific plugin and component type.
 	 */
-	Set<String> getModuleComponentsByType(String moduleId, String componentType);
+	Set<String> getPluginComponentsByType(String pluginId, String componentType);
 
 	/**
 	 * Removes a component ID registration.
