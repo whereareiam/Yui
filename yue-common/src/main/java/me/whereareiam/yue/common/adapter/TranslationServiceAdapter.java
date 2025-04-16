@@ -98,6 +98,29 @@ public class TranslationServiceAdapter implements TranslationService {
 		return key;
 	}
 
+	@Override
+	public String translate(String key, DiscordLocale locale) {
+		logger.trace("Translating key '{}' for locale {}", key, locale);
+
+		// First try with the specified locale
+		String translation = getTranslatedString(locale, key);
+		if (translation != null) {
+			logger.trace("Found translation for key '{}' in specified locale {}: '{}'", key, locale, translation);
+			return translation;
+		}
+
+		// Fallback to the default bot locale
+		DiscordLocale defaultBotLocale = settings.getLocale();
+		translation = getTranslatedString(defaultBotLocale, key);
+		if (translation != null) {
+			logger.trace("Found translation for key '{}' in default locale {}: '{}'", key, defaultBotLocale, translation);
+			return translation;
+		}
+
+		logger.debug("No translation found for key: '{}'", key);
+		return key;
+	}
+
 	private DiscordLocale[] getUserLocalesOrDefault(long userId, DiscordLocale defaultBotLocale) {
 		return userProfileCache.getProfile(userId)
 				.map(profile -> {

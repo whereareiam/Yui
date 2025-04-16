@@ -88,7 +88,6 @@ public class CommandScanner {
 			definition.setBeanInstance(beanInstance);
 			definition.setMethod(commandMethod);
 			commandRegistry.update(definition);
-			log.info("Linked command '{}' to bean '{}'.", declaredName, beanEntry.getKey());
 		}
 	}
 

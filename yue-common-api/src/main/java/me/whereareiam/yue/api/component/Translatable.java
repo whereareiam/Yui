@@ -1,6 +1,7 @@
 package me.whereareiam.yue.api.component;
 
 import me.whereareiam.yue.api.input.translation.TranslationService;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -69,6 +70,21 @@ public class Translatable {
 			return key;
 		}
 		return translationService.translate(key, 0);
+	}
+
+	/**
+	 * Translates a key using the specified locale.
+	 * <p>
+	 * This is useful for translating messages that are not user-specific.
+	 *
+	 * @param key    The translation key to look up
+	 * @param locale The locale to usefor translation
+	 */
+	public static String of(String key, DiscordLocale locale) {
+		if (translationService == null) {
+			return key;
+		}
+		return translationService.translate(key, locale);
 	}
 
 	/**

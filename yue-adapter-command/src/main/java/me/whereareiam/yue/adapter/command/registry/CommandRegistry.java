@@ -37,6 +37,12 @@ public class CommandRegistry {
 		}
 	}
 
+	public void removeCommand(String commandName) {
+		if (commandName != null) {
+			definitions.remove(commandName.toLowerCase());
+		}
+	}
+
 	public CommandDefinition get(String commandName) {
 		if (commandName == null) return null;
 

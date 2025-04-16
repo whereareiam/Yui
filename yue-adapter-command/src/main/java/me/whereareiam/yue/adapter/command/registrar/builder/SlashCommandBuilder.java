@@ -1,6 +1,8 @@
 package me.whereareiam.yue.adapter.command.registrar.builder;
 
+import me.whereareiam.yue.api.component.Translatable;
 import me.whereareiam.yue.api.model.command.Command;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -20,6 +22,9 @@ import java.util.regex.Pattern;
  */
 @Component
 public class SlashCommandBuilder {
+	private static final Pattern TRANSLATE_PATTERN =
+			Pattern.compile("^\\s*translate\\(([^)]+)\\)\\s*$");
+
 	// Patterns for parsing parameters
 	private static final Pattern REQUIRED_PARAM_PATTERN = Pattern.compile("\\(([^)]+)\\)");
 	private static final Pattern OPTIONAL_PARAM_PATTERN = Pattern.compile("\\[([^\\]]+)\\]");
@@ -28,12 +33,12 @@ public class SlashCommandBuilder {
 	 * Creates a top-level (standalone) slash command from the given Command data.
 	 */
 	public SlashCommandData buildMainCommand(String commandName, Command command) {
-		SlashCommandData slashCommand = Commands.slash(commandName, command.getDescription());
+		String description = resolveDescription(command.getDescription());
+		SlashCommandData slashCommand = Commands.slash(commandName, description);
 
-		// Only add options if it is NOT a subcommand
-		if (!isSubcommand(command)) {
+		if (!isSubcommand(command))
 			addParametersToSlashCommand(slashCommand, command.getUsage());
-		}
+
 		return slashCommand;
 	}
 
@@ -41,14 +46,17 @@ public class SlashCommandBuilder {
 	 * Creates a SubcommandData instance for a given alias (e.g., /main help).
 	 */
 	public SubcommandData buildSubcommand(String subcommandAlias, Command command) {
-		SubcommandData subCmd = new SubcommandData(subcommandAlias, command.getDescription());
-		addParametersToSubcommand(subCmd, command.getUsage());
-		return subCmd;
+		String description = resolveDescription(command.getDescription());
+
+		SubcommandData subCommand = new SubcommandData(subcommandAlias, description);
+		addParametersToSubcommand(subCommand, command.getUsage());
+
+		return subCommand;
 	}
 
 	/**
 	 * Determine if this command is intended to be a subcommand by checking
-	 * if its usage string has "{command}" placeholder.
+	 * if its usage string has a "{command}" placeholder.
 	 */
 	public boolean isSubcommand(Command command) {
 		String usage = command.getUsage();
@@ -113,5 +121,17 @@ public class SlashCommandBuilder {
 		}
 
 		return options;
+	}
+
+	private static String resolveDescription(String raw) {
+		if (raw == null) {
+			return null;
+		}
+		Matcher m = TRANSLATE_PATTERN.matcher(raw);
+		if (m.matches()) {
+			String key = m.group(1).trim();
+			return Translatable.of(key, DiscordLocale.ENGLISH_US);
+		}
+		return raw;
 	}
 }

@@ -2,12 +2,15 @@ package me.whereareiam.yue.adapter.command;
 
 import jakarta.annotation.PostConstruct;
 import me.whereareiam.yue.adapter.command.registrar.CommandRegistrar;
+import me.whereareiam.yue.adapter.command.registry.CommandDefinition;
 import me.whereareiam.yue.adapter.command.registry.CommandRegistry;
 import me.whereareiam.yue.adapter.command.scanner.CommandScanner;
 import me.whereareiam.yue.api.model.command.Command;
 import me.whereareiam.yue.api.model.config.Commands;
 import me.whereareiam.yue.api.output.config.ConfigurationLoader;
 import me.whereareiam.yue.api.output.service.CommandService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,8 @@ import java.util.stream.Collectors;
  */
 @Service
 public class CommandServiceAdapter implements CommandService {
+	private final Logger logger = LoggerFactory.getLogger(CommandServiceAdapter.class);
+
 	private final ApplicationContext context;
 	private final CommandRegistry commandRegistry;
 	private final CommandScanner commandScanner;
@@ -51,6 +56,7 @@ public class CommandServiceAdapter implements CommandService {
 	@PostConstruct
 	public void init() {
 		Commands commands = configLoader.load(dataPath.resolve("commands"), Commands.class);
+
 		// Register a couple of known commands from config
 		register(context, "main", commands.getCommands().get("main"));
 		register(context, "help", commands.getCommands().get("help"));
@@ -58,9 +64,9 @@ public class CommandServiceAdapter implements CommandService {
 
 	@Override
 	public void register(ApplicationContext context, String commandName, Command command) {
-		if (command == null || !command.isEnabled()) {
+		if (command == null || !command.isEnabled())
 			return;
-		}
+
 		commandRegistry.registerConfig(commandName, command);
 		commandScanner.registerBeansInContext(context, commandName);
 		commandRegistrar.registerDiscordCommand(commandName, command);
@@ -68,9 +74,9 @@ public class CommandServiceAdapter implements CommandService {
 
 	@Override
 	public void register(ApplicationContext context, Map<String, Command> commands) {
-		if (commands == null || commands.isEmpty()) {
+		if (commands == null || commands.isEmpty())
 			return;
-		}
+
 		// Filter to enabled commands only
 		Map<String, Command> enabledCommands = commands.entrySet().stream()
 				.filter(e -> e.getValue() != null && e.getValue().isEnabled())
@@ -85,19 +91,37 @@ public class CommandServiceAdapter implements CommandService {
 		// Register bean methods in the context
 		commandScanner.registerBeansInContext(context, enabledCommands.keySet());
 		// Delegate final Discord registration
-		commandRegistrar.registerDiscordCommandsBulk(enabledCommands);
+		commandRegistrar.registerDiscordCommands(enabledCommands);
 	}
 
 	@Override
 	public void register(ApplicationContext context, Commands commands) {
-		if (commands == null || commands.getCommands() == null) {
+		if (commands == null || commands.getCommands() == null)
 			return;
-		}
+
 		register(context, commands.getCommands());
 	}
 
 	@Override
 	public void unregister(String commandName) {
+		CommandDefinition def = commandRegistry.get(commandName);
+		if (def == null) {
+			logger.warn("Cannot unregister. Command '{}' not found in registry.", commandName);
+			return;
+		}
+
+		// Remove from in-memory registry
+		commandRegistry.removeCommand(commandName);
+
+		// Rebuild the entire set of commands to reflect removal
+		Map<String, Command> remainingCommands = commandRegistry.getDefinitions().entrySet().stream()
+				.filter(e -> e.getValue().getCommandConfig() != null)
+				.collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getCommandConfig()));
+
+		// Bulk update in Discord
+		commandRegistrar.registerDiscordCommands(remainingCommands);
+
+		logger.info("Unregistered command '{}'.", commandName);
 	}
 
 	@Override
