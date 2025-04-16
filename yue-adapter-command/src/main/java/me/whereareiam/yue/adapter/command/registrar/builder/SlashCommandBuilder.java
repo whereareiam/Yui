@@ -110,23 +110,35 @@ public class SlashCommandBuilder {
 		Matcher requiredMatcher = REQUIRED_PARAM_PATTERN.matcher(cleanUsage);
 		while (requiredMatcher.find()) {
 			String name = requiredMatcher.group(1).trim();
-			options.add(new OptionData(OptionType.STRING, name, "Required: " + name, true));
+			String description = Translatable.of("commands.variables.required", DiscordLocale.ENGLISH_US) + name;
+			options.add(new OptionData(OptionType.STRING, name, description, true));
 		}
 
 		// Optional: [param]
 		Matcher optionalMatcher = OPTIONAL_PARAM_PATTERN.matcher(cleanUsage);
 		while (optionalMatcher.find()) {
 			String name = optionalMatcher.group(1).trim();
-			options.add(new OptionData(OptionType.STRING, name, "Optional: " + name, false));
+			String description = Translatable.of("commands.variables.optional", DiscordLocale.ENGLISH_US) + name;
+			options.add(new OptionData(OptionType.STRING, name, description, false));
 		}
 
 		return options;
 	}
 
+	/**
+	 * Resolves a command description that might contain a translation directive.
+	 * <p>
+	 * If the description contains a "translate(key)" directive, this method will
+	 * extract the key and use the translation service to get the localized text.
+	 * Otherwise, it returns the original description unchanged.
+	 *
+	 * @param raw The raw description text that might contain a translation directive
+	 * @return The resolved description text in English locale
+	 */
 	private static String resolveDescription(String raw) {
-		if (raw == null) {
+		if (raw == null)
 			return null;
-		}
+
 		Matcher m = TRANSLATE_PATTERN.matcher(raw);
 		if (m.matches()) {
 			String key = m.group(1).trim();
