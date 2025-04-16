@@ -3,13 +3,13 @@ package me.whereareiam.yue.common.adapter;
 import me.whereareiam.yue.api.model.profile.UserProfile;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Locale;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,7 +35,7 @@ class UserProfileCacheProviderAdapterTest {
 	void putAndGetProfile_shouldStoreAndRetrieveProfile() {
 		// Arrange
 		long userId = 123L;
-		UserProfile profile = new UserProfile(userId, Locale.ENGLISH, new Locale[0]);
+		UserProfile profile = new UserProfile(userId, DiscordLocale.ENGLISH_US, new DiscordLocale[0]);
 
 		// Act
 		cacheProvider.putProfile(userId, profile);
@@ -44,7 +44,7 @@ class UserProfileCacheProviderAdapterTest {
 		// Assert
 		assertTrue(result.isPresent());
 		assertEquals(userId, result.get().getId());
-		assertEquals(Locale.ENGLISH, result.get().getPrimaryLanguage());
+		assertEquals(DiscordLocale.ENGLISH_US, result.get().getPrimaryLanguage());
 	}
 
 	@Test
@@ -60,7 +60,7 @@ class UserProfileCacheProviderAdapterTest {
 	void evictProfile_shouldRemoveFromCache() {
 		// Arrange
 		long userId = 123L;
-		UserProfile profile = new UserProfile(userId, Locale.ENGLISH, new Locale[0]);
+		UserProfile profile = new UserProfile(userId, DiscordLocale.ENGLISH_US, new DiscordLocale[0]);
 		cacheProvider.putProfile(userId, profile);
 
 		// Act

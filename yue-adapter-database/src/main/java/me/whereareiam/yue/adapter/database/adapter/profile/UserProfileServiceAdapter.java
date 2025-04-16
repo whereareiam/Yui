@@ -3,15 +3,16 @@ package me.whereareiam.yue.adapter.database.adapter.profile;
 import me.whereareiam.yue.adapter.database.entity.LanguageEntity;
 import me.whereareiam.yue.adapter.database.entity.userprofile.UserProfileEntity;
 import me.whereareiam.yue.adapter.database.entity.userprofile.UserProfileLanguageEntity;
+import me.whereareiam.yue.adapter.database.mapper.ProfileMapper;
 import me.whereareiam.yue.adapter.database.repository.LanguageRepository;
 import me.whereareiam.yue.adapter.database.repository.ProfileRepository;
 import me.whereareiam.yue.api.model.profile.UserProfile;
 import me.whereareiam.yue.api.output.service.UserProfileService;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -40,7 +41,7 @@ public class UserProfileServiceAdapter implements UserProfileService {
 
 		profileRepository.save(userProfileEntity);
 
-		return Optional.of(new UserProfile(id, null, new Locale[0]));
+		return Optional.of(new UserProfile(id, null, new DiscordLocale[0]));
 	}
 
 	@Override
@@ -66,7 +67,7 @@ public class UserProfileServiceAdapter implements UserProfileService {
 
 		// Then handle additional languages
 		if (userProfile.getAdditionalLanguages() != null) {
-			for (Locale locale : userProfile.getAdditionalLanguages()) {
+			for (DiscordLocale locale : userProfile.getAdditionalLanguages()) {
 				addAdditionalLanguage(userProfile.getId(), locale);
 			}
 		}
@@ -75,7 +76,7 @@ public class UserProfileServiceAdapter implements UserProfileService {
 	}
 
 	@Override
-	public void createProfile(long id, Locale locale, Locale[] additionalLanguages) {
+	public void createProfile(long id, DiscordLocale locale, DiscordLocale[] additionalLanguages) {
 		if (profileRepository.existsById(id))
 			throw new IllegalArgumentException("UserProfile with id " + id + " already exists");
 
@@ -93,7 +94,7 @@ public class UserProfileServiceAdapter implements UserProfileService {
 
 		// Then handle additional languages
 		if (additionalLanguages != null) {
-			for (Locale lang : additionalLanguages) {
+			for (DiscordLocale lang : additionalLanguages) {
 				addAdditionalLanguage(id, lang);
 			}
 		}
@@ -105,7 +106,7 @@ public class UserProfileServiceAdapter implements UserProfileService {
 	}
 
 	@Override
-	public void changePrimaryLanguage(long id, Locale locale) {
+	public void changePrimaryLanguage(long id, DiscordLocale locale) {
 		UserProfileEntity userProfileEntity = profileRepository.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("UserProfile not found with id: " + id));
 
@@ -117,7 +118,7 @@ public class UserProfileServiceAdapter implements UserProfileService {
 	}
 
 	@Override
-	public void addAdditionalLanguage(long profileId, Locale locale) {
+	public void addAdditionalLanguage(long profileId, DiscordLocale locale) {
 		UserProfileEntity userProfileEntity = profileRepository.findById(profileId)
 				.orElseThrow(() -> new IllegalArgumentException("UserProfile not found with id: " + profileId));
 
@@ -144,7 +145,7 @@ public class UserProfileServiceAdapter implements UserProfileService {
 	}
 
 	@Override
-	public void removeAdditionalLanguage(long profileId, Locale locale) {
+	public void removeAdditionalLanguage(long profileId, DiscordLocale locale) {
 		UserProfileEntity userProfileEntity = profileRepository.findById(profileId)
 				.orElseThrow(() -> new IllegalArgumentException("UserProfile not found with id: " + profileId));
 
@@ -157,21 +158,6 @@ public class UserProfileServiceAdapter implements UserProfileService {
 
 	@Override
 	public Optional<UserProfile> getProfile(long id) {
-		return profileRepository.findById(id).map(this::mapToProfile);
-	}
-
-	private UserProfile mapToProfile(UserProfileEntity entity) {
-		Locale primaryLocale = entity.getPrimaryLanguage() != null
-				? entity.getPrimaryLanguage().getLocale()
-				: null;
-
-		Locale[] additionalLocales = entity.getAdditionalLanguages() != null
-				? entity.getAdditionalLanguages().stream()
-				.map(UserProfileLanguageEntity::getLanguageEntity)
-				.map(LanguageEntity::getLocale)
-				.toArray(Locale[]::new)
-				: new Locale[0];
-
-		return new UserProfile(entity.getId(), primaryLocale, additionalLocales);
+		return profileRepository.findById(id).map(ProfileMapper::toProfile);
 	}
 }

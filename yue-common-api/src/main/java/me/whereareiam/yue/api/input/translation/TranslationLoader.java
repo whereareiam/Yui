@@ -1,6 +1,7 @@
 package me.whereareiam.yue.api.input.translation;
 
-import java.util.Locale;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
+
 import java.util.Map;
 
 /**
@@ -11,7 +12,7 @@ import java.util.Map;
  * <ul>
  *   <li>The outer map keys are namespace prefixes (empty string for core translations,
  *       "plugin.{name}." for plugin-specific translations)</li>
- *   <li>The middle map contains {@link Locale} objects as keys for each supported language</li>
+ *   <li>The middle map contains {@link DiscordLocale} objects as keys for each supported language</li>
  *   <li>The inner map contains the actual translation key-value pairs, where keys are
  *       dot-notation paths and values are the translated strings</li>
  * </ul>
@@ -27,5 +28,5 @@ public interface TranslationLoader {
 	 * - The key is the namespace prefix (e.g., "", "plugin.music.")
 	 * - The value is a map of locales to their translation key-value pairs
 	 */
-	Map<String, Map<Locale, Map<String, String>>> loadAll();
+	Map<String, Map<DiscordLocale, Map<String, String>>> loadAll();
 }

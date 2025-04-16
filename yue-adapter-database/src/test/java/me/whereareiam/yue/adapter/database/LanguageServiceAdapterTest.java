@@ -3,6 +3,7 @@ package me.whereareiam.yue.adapter.database;
 import me.whereareiam.yue.adapter.database.adapter.LanguageServiceAdapter;
 import me.whereareiam.yue.adapter.database.entity.LanguageEntity;
 import me.whereareiam.yue.adapter.database.repository.LanguageRepository;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,7 +12,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -33,7 +33,7 @@ public class LanguageServiceAdapterTest {
 
 	@Test
 	void addLanguage_whenLanguageDoesNotExist_shouldSaveLanguage() {
-		Locale locale = Locale.ENGLISH;
+		DiscordLocale locale = DiscordLocale.ENGLISH_US;
 		when(languageRepository.findByLocale(locale)).thenReturn(Optional.empty());
 
 		languageService.addLanguage(locale);
@@ -43,7 +43,7 @@ public class LanguageServiceAdapterTest {
 
 	@Test
 	void addLanguage_whenLanguageExists_shouldNotSaveLanguage() {
-		Locale locale = Locale.ENGLISH;
+		DiscordLocale locale = DiscordLocale.ENGLISH_US;
 		when(languageRepository.findByLocale(locale)).thenReturn(Optional.of(LanguageEntity.builder().locale(locale).build()));
 
 		languageService.addLanguage(locale);
@@ -53,7 +53,7 @@ public class LanguageServiceAdapterTest {
 
 	@Test
 	void removeLanguage_shouldDeleteLanguageByLocale() {
-		Locale locale = Locale.ENGLISH;
+		DiscordLocale locale = DiscordLocale.ENGLISH_US;
 
 		languageService.removeLanguage(locale);
 
@@ -62,7 +62,7 @@ public class LanguageServiceAdapterTest {
 
 	@Test
 	void languageExists_whenLanguageExists_shouldReturnTrue() {
-		Locale locale = Locale.ENGLISH;
+		DiscordLocale locale = DiscordLocale.ENGLISH_US;
 		when(languageRepository.findByLocale(locale)).thenReturn(Optional.of(LanguageEntity.builder().locale(locale).build()));
 
 		boolean result = languageService.languageExists(locale);
@@ -72,7 +72,7 @@ public class LanguageServiceAdapterTest {
 
 	@Test
 	void languageExists_whenLanguageDoesNotExist_shouldReturnFalse() {
-		Locale locale = Locale.ENGLISH;
+		DiscordLocale locale = DiscordLocale.ENGLISH_US;
 		when(languageRepository.findByLocale(locale)).thenReturn(Optional.empty());
 
 		boolean result = languageService.languageExists(locale);
@@ -82,14 +82,14 @@ public class LanguageServiceAdapterTest {
 
 	@Test
 	void getAvailableLanguages_shouldReturnAllLanguages() {
-		LanguageEntity en = LanguageEntity.builder().locale(Locale.ENGLISH).build();
-		LanguageEntity fr = LanguageEntity.builder().locale(Locale.FRENCH).build();
+		LanguageEntity en = LanguageEntity.builder().locale(DiscordLocale.ENGLISH_US).build();
+		LanguageEntity fr = LanguageEntity.builder().locale(DiscordLocale.FRENCH).build();
 		when(languageRepository.findAll()).thenReturn(Arrays.asList(en, fr));
 
-		List<Locale> result = languageService.getAvailableLanguages();
+		List<DiscordLocale> result = languageService.getAvailableLanguages();
 
 		assertEquals(2, result.size());
-		assertTrue(result.contains(Locale.ENGLISH));
-		assertTrue(result.contains(Locale.FRENCH));
+		assertTrue(result.contains(DiscordLocale.ENGLISH_US));
+		assertTrue(result.contains(DiscordLocale.FRENCH));
 	}
 }

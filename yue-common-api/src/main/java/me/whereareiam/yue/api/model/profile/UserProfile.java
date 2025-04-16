@@ -1,22 +1,22 @@
 package me.whereareiam.yue.api.model.profile;
 
-import java.util.Locale;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 public class UserProfile {
 	private final long id;
-	private Locale primaryLanguage;
-	private Locale[] additionalLanguages;
+	private DiscordLocale primaryLanguage;
+	private DiscordLocale[] additionalLanguages;
 
 	public UserProfile(long id) {
 		this.id = id;
 	}
 
-	public UserProfile(long id, Locale primaryLanguage) {
+	public UserProfile(long id, DiscordLocale primaryLanguage) {
 		this.id = id;
 		this.primaryLanguage = primaryLanguage;
 	}
 
-	public UserProfile(long id, Locale primaryLanguage, Locale[] additionalLanguages) {
+	public UserProfile(long id, DiscordLocale primaryLanguage, DiscordLocale[] additionalLanguages) {
 		this.id = id;
 		this.primaryLanguage = primaryLanguage;
 		this.additionalLanguages = additionalLanguages;
@@ -26,19 +26,19 @@ public class UserProfile {
 		return id;
 	}
 
-	public Locale getPrimaryLanguage() {
+	public DiscordLocale getPrimaryLanguage() {
 		return primaryLanguage;
 	}
 
-	public void setPrimaryLanguage(Locale primaryLanguage) {
+	public void setPrimaryLanguage(DiscordLocale primaryLanguage) {
 		this.primaryLanguage = primaryLanguage;
 	}
 
-	public Locale[] getAdditionalLanguages() {
+	public DiscordLocale[] getAdditionalLanguages() {
 		return additionalLanguages;
 	}
 
-	public void setAdditionalLanguages(Locale[] additionalLanguages) {
+	public void setAdditionalLanguages(DiscordLocale[] additionalLanguages) {
 		this.additionalLanguages = additionalLanguages;
 	}
 }

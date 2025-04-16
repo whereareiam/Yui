@@ -19,7 +19,6 @@ public class CommandDefinition {
 
 	public void invoke(SlashCommandInteractionEvent event) {
 		try {
-			System.out.println("Invoking command: " + commandName);
 			method.invoke(beanInstance, event);
 		} catch (Exception e) {
 			e.printStackTrace();

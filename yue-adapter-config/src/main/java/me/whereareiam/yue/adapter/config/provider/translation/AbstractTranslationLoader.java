@@ -3,6 +3,7 @@ package me.whereareiam.yue.adapter.config.provider.translation;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.whereareiam.yue.api.input.translation.TranslationLoader;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 public abstract class AbstractTranslationLoader implements TranslationLoader {
@@ -46,9 +46,9 @@ public abstract class AbstractTranslationLoader implements TranslationLoader {
 		}
 	}
 
-	protected Map<Locale, Map<String, String>> processLanguageFolder(Path languageFolder) {
+	protected Map<DiscordLocale, Map<String, String>> processLanguageFolder(Path languageFolder) {
 		logger.debug("Processing language folder: {}", languageFolder);
-		Map<Locale, Map<String, String>> localeMap = new HashMap<>();
+		Map<DiscordLocale, Map<String, String>> localeMap = new HashMap<>();
 
 		try (var langFiles = Files.list(languageFolder)) {
 			langFiles
@@ -59,7 +59,7 @@ public abstract class AbstractTranslationLoader implements TranslationLoader {
 							String[] parts = filename.split("\\.");
 							String languageCode = parts[0];
 
-							Locale locale = Locale.forLanguageTag(languageCode);
+							DiscordLocale locale = DiscordLocale.from(languageCode);
 							logger.debug("Processing language file: {} for locale: {}", file, locale);
 							Map<String, String> current = localeMap.computeIfAbsent(locale, l -> new HashMap<>());
 

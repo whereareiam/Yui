@@ -4,8 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-
-import java.util.Locale;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 @Data
 @Entity
@@ -20,5 +19,5 @@ public class LanguageEntity {
 	private int id;
 
 	@Column(nullable = false, unique = true)
-	private Locale locale;
+	private DiscordLocale locale;
 }

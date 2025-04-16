@@ -1,19 +1,18 @@
 package me.whereareiam.yue.api.model.config.settings;
 
 import me.whereareiam.yue.api.model.config.settings.database.DatabaseSettings;
-
-import java.util.Locale;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 public class Settings {
-	private Locale locale;
+	private DiscordLocale locale;
 	private DiscordSettings discord;
 	private DatabaseSettings database;
-	
-	public Locale getLocale() {
+
+	public DiscordLocale getLocale() {
 		return locale;
 	}
 
-	public void setLocale(Locale locale) {
+	public void setLocale(DiscordLocale locale) {
 		this.locale = locale;
 	}
 

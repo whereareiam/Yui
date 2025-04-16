@@ -7,6 +7,7 @@ import me.whereareiam.yue.adapter.database.entity.userprofile.UserProfileLanguag
 import me.whereareiam.yue.adapter.database.repository.LanguageRepository;
 import me.whereareiam.yue.adapter.database.repository.ProfileRepository;
 import me.whereareiam.yue.api.model.profile.UserProfile;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
@@ -76,12 +76,12 @@ public class UserProfileServiceAdapterTest {
 	void createProfile_withProfile_whenProfileDoesNotExist_shouldCreateProfile() {
 		// Arrange
 		long profileId = 1L;
-		Locale primaryLocale = Locale.ENGLISH;
-		Locale[] additionalLocales = new Locale[]{Locale.FRENCH};
+		DiscordLocale primaryLocale = DiscordLocale.ENGLISH_US;
+		DiscordLocale[] additionalLocales = new DiscordLocale[]{DiscordLocale.FRENCH};
 		UserProfile userProfile = new UserProfile(profileId, primaryLocale, additionalLocales);
 
 		LanguageEntity primaryLanguage = LanguageEntity.builder().locale(primaryLocale).build();
-		LanguageEntity frenchLanguage = LanguageEntity.builder().locale(Locale.FRENCH).build();
+		LanguageEntity frenchLanguage = LanguageEntity.builder().locale(DiscordLocale.FRENCH).build();
 
 		UserProfileEntity savedEntity = UserProfileEntity.builder()
 				.id(profileId)
@@ -96,7 +96,7 @@ public class UserProfileServiceAdapterTest {
 		when(profileRepository.findById(profileId)).thenReturn(Optional.of(savedEntity));
 
 		when(languageRepository.findByLocale(primaryLocale)).thenReturn(Optional.of(primaryLanguage));
-		when(languageRepository.findByLocale(Locale.FRENCH)).thenReturn(Optional.of(frenchLanguage));
+		when(languageRepository.findByLocale(DiscordLocale.FRENCH)).thenReturn(Optional.of(frenchLanguage));
 
 		// Act
 		profileService.createProfile(userProfile);
@@ -109,7 +109,7 @@ public class UserProfileServiceAdapterTest {
 	void createProfile_withProfile_whenProfileExists_shouldThrowException() {
 		// Arrange
 		long profileId = 1L;
-		UserProfile userProfile = new UserProfile(profileId, Locale.ENGLISH, null);
+		UserProfile userProfile = new UserProfile(profileId, DiscordLocale.ENGLISH_US, null);
 		when(profileRepository.existsById(profileId)).thenReturn(true);
 
 		// Act & Assert
@@ -120,7 +120,7 @@ public class UserProfileServiceAdapterTest {
 	void changePrimaryLanguage_whenProfileExists_shouldUpdatePrimaryLanguage() {
 		// Arrange
 		long profileId = 1L;
-		Locale newLocale = Locale.FRENCH;
+		DiscordLocale newLocale = DiscordLocale.FRENCH;
 
 		UserProfileEntity existingProfile = UserProfileEntity.builder().id(profileId).build();
 		LanguageEntity newLanguage = LanguageEntity.builder().locale(newLocale).build();
@@ -140,7 +140,7 @@ public class UserProfileServiceAdapterTest {
 	void addAdditionalLanguage_whenProfileExistsAndLanguageNotAdded_shouldAddLanguage() {
 		// Arrange
 		long profileId = 1L;
-		Locale locale = Locale.FRENCH;
+		DiscordLocale locale = DiscordLocale.FRENCH;
 
 		UserProfileEntity existingProfile = UserProfileEntity.builder()
 				.id(profileId)
@@ -164,7 +164,7 @@ public class UserProfileServiceAdapterTest {
 	void removeAdditionalLanguage_whenProfileExists_shouldRemoveLanguage() {
 		// Arrange
 		long profileId = 1L;
-		Locale locale = Locale.FRENCH;
+		DiscordLocale locale = DiscordLocale.FRENCH;
 
 		LanguageEntity language = LanguageEntity.builder().locale(locale).build();
 		UserProfileEntity existingProfile = UserProfileEntity.builder().id(profileId).build();
@@ -204,7 +204,7 @@ public class UserProfileServiceAdapterTest {
 	void getProfile_whenProfileExists_shouldReturnProfile() {
 		// Arrange
 		long profileId = 1L;
-		Locale primaryLocale = Locale.ENGLISH;
+		DiscordLocale primaryLocale = DiscordLocale.ENGLISH_US;
 
 		LanguageEntity primaryLanguage = LanguageEntity.builder().locale(primaryLocale).build();
 

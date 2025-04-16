@@ -5,13 +5,14 @@ import me.whereareiam.yue.api.input.translation.TranslationLoader;
 import me.whereareiam.yue.api.input.translation.TranslationService;
 import me.whereareiam.yue.api.model.config.settings.Settings;
 import me.whereareiam.yue.api.output.provider.UserProfileCacheProvider;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -24,13 +25,13 @@ public class TranslationServiceAdapter implements TranslationService {
 
 	/**
 	 * Merged translations:
-	 * Map<Locale, Map<String, String>>
+	 * Map<DiscordLocale, Map<String, String>>
 	 * ^            ^
-	 * e.g. "en" -> { "vocabulary.cancel" -> "Cancel",
+	 * e.g. "en-US" -> { "vocabulary.cancel" -> "Cancel",
 	 * "plugin.music.vocabulary.cancel" -> "Stop",
 	 * ... }
 	 */
-	private final Map<Locale, Map<String, String>> translations = new ConcurrentHashMap<>();
+	private final Map<DiscordLocale, Map<String, String>> translations = new ConcurrentHashMap<>();
 
 	public TranslationServiceAdapter(
 			List<TranslationLoader> loaders,
@@ -47,26 +48,26 @@ public class TranslationServiceAdapter implements TranslationService {
 		logger.debug("Initializing translation service");
 		for (TranslationLoader loader : loaders) {
 			logger.debug("Loading translations from: {}", loader.getClass().getSimpleName());
-			Map<String, Map<Locale, Map<String, String>>> loaderResult = loader.loadAll();
+			Map<String, Map<DiscordLocale, Map<String, String>>> loaderResult = loader.loadAll();
 			mergeLoaderResult(loaderResult);
 		}
 
 		logger.info("Translation service initialized with {} {}", translations.size(), translations.size() == 1 ? "locale" : "locales");
 	}
 
-	private void mergeLoaderResult(Map<String, Map<Locale, Map<String, String>>> loaderResult) {
+	private void mergeLoaderResult(Map<String, Map<DiscordLocale, Map<String, String>>> loaderResult) {
 		logger.debug("Merging translation loader results");
-		for (Map.Entry<String, Map<Locale, Map<String, String>>> prefixEntry : loaderResult.entrySet()) {
+		for (Map.Entry<String, Map<DiscordLocale, Map<String, String>>> prefixEntry : loaderResult.entrySet()) {
 			String prefix = prefixEntry.getKey();
-			Map<Locale, Map<String, String>> localeMap = prefixEntry.getValue();
+			Map<DiscordLocale, Map<String, String>> localeMap = prefixEntry.getValue();
 			logger.debug("Processing prefix: '{}'", prefix);
 
-			for (Map.Entry<Locale, Map<String, String>> localeEntry : localeMap.entrySet()) {
-				Locale locale = localeEntry.getKey();
+			for (Map.Entry<DiscordLocale, Map<String, String>> localeEntry : localeMap.entrySet()) {
+				DiscordLocale locale = localeEntry.getKey();
 				Map<String, String> translationsForThatLocale = localeEntry.getValue();
 				logger.trace("Processing locale: {} with {} entries", locale, translationsForThatLocale.size());
 
-				Map<String, String> targetMap = translations.computeIfAbsent(locale, l -> new ConcurrentHashMap<>());
+				Map<String, String> targetMap = translations.computeIfAbsent(locale, _ -> new ConcurrentHashMap<>());
 
 				for (Map.Entry<String, String> kv : translationsForThatLocale.entrySet()) {
 					String finalKey = prefix.isEmpty()
@@ -80,12 +81,12 @@ public class TranslationServiceAdapter implements TranslationService {
 
 	@Override
 	public String translate(String key, long userId) {
-		Locale defaultBotLocale = settings.getLocale();
+		DiscordLocale defaultBotLocale = settings.getLocale();
 		logger.trace("Translating key '{}' for user {}", key, userId);
-		Locale[] userLocales = getUserLocalesOrDefault(userId, defaultBotLocale);
+		DiscordLocale[] userLocales = getUserLocalesOrDefault(userId, defaultBotLocale);
 		logger.trace("User locales: {}", (Object) userLocales);
 
-		for (Locale locale : userLocales) {
+		for (DiscordLocale locale : userLocales) {
 			String translation = getTranslatedString(locale, key);
 			if (translation != null) {
 				logger.trace("Found translation for key '{}' in locale {}: '{}'", key, locale, translation);
@@ -97,10 +98,10 @@ public class TranslationServiceAdapter implements TranslationService {
 		return key;
 	}
 
-	private Locale[] getUserLocalesOrDefault(long userId, Locale defaultBotLocale) {
+	private DiscordLocale[] getUserLocalesOrDefault(long userId, DiscordLocale defaultBotLocale) {
 		return userProfileCache.getProfile(userId)
 				.map(profile -> {
-					List<Locale> locales = new java.util.ArrayList<>();
+					List<DiscordLocale> locales = new ArrayList<>();
 					if (profile.getPrimaryLanguage() != null)
 						locales.add(profile.getPrimaryLanguage());
 
@@ -109,15 +110,15 @@ public class TranslationServiceAdapter implements TranslationService {
 
 					locales.add(defaultBotLocale);
 					logger.trace("User {} locales: {}", userId, locales);
-					return locales.toArray(Locale[]::new);
+					return locales.toArray(DiscordLocale[]::new);
 				})
 				.orElseGet(() -> {
 					logger.trace("No profile found for user {}, using default locale", userId);
-					return new Locale[]{defaultBotLocale};
+					return new DiscordLocale[]{defaultBotLocale};
 				});
 	}
 
-	private String getTranslatedString(Locale locale, String key) {
+	private String getTranslatedString(DiscordLocale locale, String key) {
 		Map<String, String> translationsForLocale = translations.get(locale);
 		if (translationsForLocale != null)
 			return translationsForLocale.get(key);

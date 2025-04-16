@@ -1,14 +1,15 @@
 package me.whereareiam.yue.api.output.service;
 
+import net.dv8tion.jda.api.interactions.DiscordLocale;
+
 import java.util.List;
-import java.util.Locale;
 
 public interface LanguageService {
-	void addLanguage(Locale locale);
+	void addLanguage(DiscordLocale locale);
 
-	void removeLanguage(Locale locale);
+	void removeLanguage(DiscordLocale locale);
 
-	boolean languageExists(Locale locale);
+	boolean languageExists(DiscordLocale locale);
 
-	List<Locale> getAvailableLanguages();
+	List<DiscordLocale> getAvailableLanguages();
 }
