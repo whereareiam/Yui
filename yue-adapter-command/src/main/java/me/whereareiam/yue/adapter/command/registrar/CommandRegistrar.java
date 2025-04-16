@@ -1,141 +1,148 @@
 package me.whereareiam.yue.adapter.command.registrar;
 
-import me.whereareiam.yue.adapter.command.registry.CommandDefinition;
-import me.whereareiam.yue.adapter.command.registry.CommandRegistry;
+import me.whereareiam.yue.adapter.command.registrar.builder.SlashCommandBuilder;
 import me.whereareiam.yue.api.model.command.Command;
-import me.whereareiam.yue.api.output.service.CommandService;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.*;
 
+/**
+ * Responsible for registering and updating Slash Commands in Discord via JDA.
+ */
 @Service
 public class CommandRegistrar {
 	private static final Logger logger = LoggerFactory.getLogger(CommandRegistrar.class);
+	private static final String MAIN_COMMAND_NAME = "main";
 
 	private final JDA jda;
-	private final CommandRegistry registry;
-	private final CommandService commandService;
+	private final SlashCommandBuilder slashCommandBuilder;
 
-	// Patterns for parsing parameters
-	private static final Pattern REQUIRED_PARAM_PATTERN = Pattern.compile("\\(([^)]+)\\)");
-	private static final Pattern OPTIONAL_PARAM_PATTERN = Pattern.compile("\\[([^\\]]+)\\]");
+	/**
+	 * Keep track of all known top-level slash commands that are currently upserted.
+	 * The key is the slash command name; the value is the command data.
+	 */
+	private final Map<String, SlashCommandData> knownCommands = new HashMap<>();
 
-	public CommandRegistrar(JDA jda, CommandRegistry registry, CommandService commandService) {
+	public CommandRegistrar(JDA jda, SlashCommandBuilder slashCommandBuilder) {
 		this.jda = jda;
-		this.registry = registry;
-		this.commandService = commandService;
+		this.slashCommandBuilder = slashCommandBuilder;
 	}
 
-	public void registerDiscordCommands() {
+	/**
+	 * Register or update a single command in Discord. This method internally
+	 * calls the more general bulk method to avoid code duplication.
+	 */
+	public void registerDiscordCommand(String commandName, Command command) {
+		if (command == null || !command.isEnabled()) {
+			logger.warn("Attempted to register disabled or null command '{}'. Ignoring.", commandName);
+			return;
+		}
+
+		// Wrap into a map and call bulk registration for consistency
+		Map<String, Command> singleEntry = Collections.singletonMap(commandName, command);
+		registerDiscordCommandsBulk(singleEntry);
+	}
+
+	/**
+	 * Bulk registration of multiple commands. This is useful on startup or
+	 * when reloading large command sets at once.
+	 */
+	public void registerDiscordCommandsBulk(Map<String, Command> commandsByName) {
+		if (commandsByName == null || commandsByName.isEmpty()) {
+			logger.debug("Command map is null or empty. Nothing to register.");
+			return;
+		}
+		logger.info("Registering multiple commands in bulk ({} total).", commandsByName.size());
+
+		// Maps to hold top-level slash commands and subcommands to attach
 		Map<String, SlashCommandData> mainCommands = new HashMap<>();
-		Map<String, List<SubcommandData>> subcommandGroups = new HashMap<>();
+		Map<String, List<SubcommandData>> subCommandsMap = new HashMap<>();
 
-		// First, identify the main command
-		Command mainCommand = commandService.getCommand("main");
+		// Identify "main" command, if present
+		Command mainCommand = commandsByName.get(MAIN_COMMAND_NAME);
 		if (mainCommand != null && mainCommand.isEnabled()) {
-			// Register main command aliases as top-level commands
+			// For each alias of "main", create a slash command
 			for (String alias : mainCommand.getAliases()) {
-				SlashCommandData cmd = Commands.slash(alias, mainCommand.getDescription());
-				mainCommands.put(alias, cmd);
-				subcommandGroups.put(alias, new ArrayList<>());
-				logger.info("Created main command: {}", alias);
+				SlashCommandData mainSlashCmd = slashCommandBuilder.buildMainCommand(alias, mainCommand);
+				mainCommands.put(alias, mainSlashCmd);
+				subCommandsMap.put(alias, new ArrayList<>());
 			}
 		}
 
-		// Process all other commands
-		for (CommandDefinition def : registry.getAllCommands()) {
-			String commandName = def.getCommandName();
-			Command config = def.getCommandConfig();
+		// Process other commands
+		for (Map.Entry<String, Command> entry : commandsByName.entrySet()) {
+			String cmdName = entry.getKey();
+			Command cmdConfig = entry.getValue();
 
-			if (!config.isEnabled() || "main".equals(commandName))
+			// Skip any null or disabled config
+			if (cmdConfig == null || !cmdConfig.isEnabled()) {
+				logger.debug("Skipping disabled/null command: {}", cmdName);
 				continue;
-
-			String usage = config.getUsage();
-			boolean isSubcommand = usage.contains("{command}");
-
-			if (isSubcommand && !mainCommands.isEmpty()) {
-				// It's a subcommand of a main command
-				for (String mainAlias : mainCommands.keySet()) {
-					for (String alias : config.getAliases()) {
-						SubcommandData subCmd = new SubcommandData(alias, config.getDescription());
-						addParametersFromUsage(subCmd, usage);
-						subcommandGroups.get(mainAlias).add(subCmd);
-						logger.info("Added subcommand '{}' to main command '{}'", alias, mainAlias);
-					}
-				}
-			} else {
-				// Standalone command
-				SlashCommandData cmd = Commands.slash(commandName, config.getDescription());
-				addParametersToCommand(cmd, usage);
-				mainCommands.put(commandName, cmd);
-				logger.info("Created standalone command: {}", commandName);
 			}
+			// Skip "main" since we've already handled it
+			if (MAIN_COMMAND_NAME.equalsIgnoreCase(cmdName)) {
+				continue;
+			}
+
+			// Subcommand logic
+			if (slashCommandBuilder.isSubcommand(cmdConfig) && !mainCommands.isEmpty()) {
+				attachSubcommandsToMainAliases(cmdConfig, mainCommands, subCommandsMap);
+				continue;
+			}
+
+			// Otherwise, treat as a standalone slash command
+			String slashName = cmdConfig.getAliases().isEmpty()
+					? cmdName
+					: cmdConfig.getAliases().getFirst();
+
+			SlashCommandData standaloneCmd = slashCommandBuilder.buildMainCommand(slashName, cmdConfig);
+			mainCommands.put(slashName, standaloneCmd);
+			// Ensure subCommandsMap also has an entry for the newly created slash command
+			subCommandsMap.putIfAbsent(slashName, new ArrayList<>());
 		}
 
-		// Add subcommands to main commands
-		for (Map.Entry<String, List<SubcommandData>> entry : subcommandGroups.entrySet()) {
+		// Attach subcommands to main commands
+		for (Map.Entry<String, List<SubcommandData>> entry : subCommandsMap.entrySet()) {
 			String mainAlias = entry.getKey();
-			List<SubcommandData> subcommands = entry.getValue();
-
-			SlashCommandData mainCmd = mainCommands.get(mainAlias);
-			if (mainCmd != null && !subcommands.isEmpty()) {
-				mainCmd.addSubcommands(subcommands);
+			List<SubcommandData> subs = entry.getValue();
+			if (!subs.isEmpty()) {
+				mainCommands.get(mainAlias).addSubcommands(subs);
 			}
 		}
 
-		// Register all commands with Discord
-		List<SlashCommandData> commands = new ArrayList<>(mainCommands.values());
-		jda.updateCommands().addCommands(commands).queue(
-				success -> logger.info("Successfully registered {} Discord commands", commands.size()),
-				error -> logger.error("Failed to register Discord commands", error)
+		// Perform a single bulk upsert
+		List<SlashCommandData> slashList = new ArrayList<>(mainCommands.values());
+		jda.updateCommands().addCommands(slashList).queue(
+				success -> logger.info("Successfully bulk-registered {} commands.", slashList.size()),
+				error -> logger.error("Failed to bulk-register commands", error)
 		);
-	}
 
-	private void addParametersToCommand(SlashCommandData cmd, String usage) {
-		for (OptionData option : parseParameters(usage))
-			cmd.addOptions(option);
-	}
-
-	private void addParametersFromUsage(SubcommandData cmd, String usage) {
-		for (OptionData option : parseParameters(usage))
-			cmd.addOptions(option);
-	}
-
-	private List<OptionData> parseParameters(String usage) {
-		List<OptionData> options = new ArrayList<>();
-
-		// Strip command and alias placeholders
-		String paramPart = usage.replace("{command}", "")
-				.replace("{alias}", "")
-				.trim();
-
-		// Parse required parameters
-		Matcher requiredMatcher = REQUIRED_PARAM_PATTERN.matcher(paramPart);
-		while (requiredMatcher.find()) {
-			String name = requiredMatcher.group(1);
-			options.add(new OptionData(OptionType.STRING, name, "Required parameter: " + name, true));
+		// Update knownCommands with the newly registered slash commands
+		knownCommands.clear();
+		for (SlashCommandData scd : slashList) {
+			knownCommands.put(scd.getName(), scd);
 		}
+	}
 
-		// Parse optional parameters
-		Matcher optionalMatcher = OPTIONAL_PARAM_PATTERN.matcher(paramPart);
-		while (optionalMatcher.find()) {
-			String name = optionalMatcher.group(1);
-			options.add(new OptionData(OptionType.STRING, name, "Optional parameter: " + name, false));
+	/**
+	 * For a subcommand command config, attach subcommand(s) to each main alias
+	 * that has already been built. Typically used only when we know a valid main
+	 * command is present.
+	 */
+	private void attachSubcommandsToMainAliases(Command subCmdConfig,
+	                                            Map<String, SlashCommandData> mainCommands,
+	                                            Map<String, List<SubcommandData>> subCommandsMap) {
+		for (String alias : subCmdConfig.getAliases()) {
+			SubcommandData subCmd = slashCommandBuilder.buildSubcommand(alias, subCmdConfig);
+			// Attach to each known main alias
+			for (String mainAlias : mainCommands.keySet()) {
+				subCommandsMap.computeIfAbsent(mainAlias, k -> new ArrayList<>()).add(subCmd);
+			}
 		}
-
-		return options;
 	}
 }

@@ -2,6 +2,7 @@ package me.whereareiam.yue.api.output.service;
 
 import me.whereareiam.yue.api.model.command.Command;
 import me.whereareiam.yue.api.model.config.Commands;
+import org.springframework.context.ApplicationContext;
 
 import java.util.Map;
 
@@ -9,17 +10,17 @@ public interface CommandService {
 	/**
 	 * Register a single command (by name) into the service’s in-memory storage.
 	 */
-	void register(String commandName, Command command);
+	void register(ApplicationContext context, String commandName, Command command);
 
 	/**
 	 * Register multiple commands (by name->command) at once.
 	 */
-	void register(Map<String, Command> commands);
+	void register(ApplicationContext context, Map<String, Command> commands);
 
 	/**
 	 * Register multiple commands from a Commands wrapper object.
 	 */
-	void register(Commands commands);
+	void register(ApplicationContext context, Commands commands);
 
 	/**
 	 * Unregister/remove a command from in-memory storage.

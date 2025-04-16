@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class MainCommand implements CommandBase {
-
 	@Command(name = "main")
 	public void onCommand(SlashCommandInteractionEvent event) {
+		event.reply("Main command").queue();
 	}
 }
