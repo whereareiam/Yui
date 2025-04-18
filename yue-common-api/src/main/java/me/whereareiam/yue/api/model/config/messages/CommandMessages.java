@@ -1,57 +1,25 @@
 package me.whereareiam.yue.api.model.config.messages;
 
-import java.util.Map;
+import me.whereareiam.yue.api.model.config.messages.command.HelpCommandMessages;
+import me.whereareiam.yue.api.model.config.messages.command.MainCommandMessages;
 
 public class CommandMessages {
-	private MainCommand main;
-	private HelpCommand help;
+	private MainCommandMessages main;
+	private HelpCommandMessages help;
 
-	public static class MainCommand {
-		private String description;
-
-		public String getDescription() {
-			return description;
-		}
-
-		public void setDescription(String description) {
-			this.description = description;
-		}
-	}
-
-	public static class HelpCommand {
-		private String description;
-		private Map<String, String> variables;
-
-		public String getDescription() {
-			return description;
-		}
-
-		public void setDescription(String description) {
-			this.description = description;
-		}
-
-		public Map<String, String> getVariables() {
-			return variables;
-		}
-
-		public void setVariables(Map<String, String> variables) {
-			this.variables = variables;
-		}
-	}
-
-	public MainCommand getMain() {
+	public MainCommandMessages getMain() {
 		return main;
 	}
 
-	public void setMain(MainCommand main) {
+	public void setMain(MainCommandMessages main) {
 		this.main = main;
 	}
 
-	public HelpCommand getHelp() {
+	public HelpCommandMessages getHelp() {
 		return help;
 	}
 
-	public void setHelp(HelpCommand help) {
+	public void setHelp(HelpCommandMessages help) {
 		this.help = help;
 	}
 }

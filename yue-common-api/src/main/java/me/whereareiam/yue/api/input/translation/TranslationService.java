@@ -23,6 +23,8 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
  * @see me.whereareiam.yue.api.component.Translatable
  */
 public interface TranslationService {
+	void initialize();
+
 	/**
 	 * Translates a key into localized text for a specific user.
 	 * <p>

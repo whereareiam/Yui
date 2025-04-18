@@ -1,5 +1,6 @@
 package me.whereareiam.yue.common;
 
+import me.whereareiam.yue.api.input.translation.TranslationService;
 import me.whereareiam.yue.api.model.config.settings.Settings;
 import me.whereareiam.yue.api.output.plugin.PluginService;
 import me.whereareiam.yue.api.output.service.CommandService;
@@ -50,6 +51,7 @@ public class CommonConfiguration {
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationReady() {
 		ctx.getBean(PluginService.class).loadPlugins();
+		ctx.getBean(TranslationService.class).initialize();
 		ctx.getBean(CommandService.class).initialize();
 
 		welcome();

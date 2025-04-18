@@ -1,6 +1,5 @@
 package me.whereareiam.yue.common.adapter;
 
-import jakarta.annotation.PostConstruct;
 import me.whereareiam.yue.api.input.translation.TranslationLoader;
 import me.whereareiam.yue.api.input.translation.TranslationService;
 import me.whereareiam.yue.api.model.config.settings.Settings;
@@ -43,8 +42,8 @@ public class TranslationServiceAdapter implements TranslationService {
 		this.settings = settings;
 	}
 
-	@PostConstruct
-	public void init() {
+	@Override
+	public void initialize() {
 		logger.debug("Initializing translation service");
 		for (TranslationLoader loader : loaders) {
 			logger.debug("Loading translations from: {}", loader.getClass().getSimpleName());

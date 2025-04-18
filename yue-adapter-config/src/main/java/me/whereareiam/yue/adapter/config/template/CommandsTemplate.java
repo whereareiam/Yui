@@ -33,7 +33,7 @@ public class CommandsTemplate implements DefaultConfig<Commands> {
 				"translate(commands.help.description)",
 				"{alias} [category]",
 				Map.of(
-						"category", "translate(commands.variables.category)"
+						"category", "translate(commands.help.variables.category)"
 				),
 				CommandCategory.UTILITY,
 				new CommandCooldown(false, 5, "")

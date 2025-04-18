@@ -4,25 +4,35 @@ public enum CommandCategory {
 	/**
 	 * Category for commands that are used for utility purposes.
 	 */
-	UTILITY,
+	UTILITY("vocabulary.category.utility"),
 
 	/**
 	 * Category for commands that are used for moderation purposes.
 	 */
-	MODERATION,
+	MODERATION("vocabulary.category.moderation"),
 
 	/**
 	 * Category for commands that are used for fun purposes.
 	 */
-	FUN,
+	FUN("vocabulary.category.fun"),
 
 	/**
 	 * Category for commands that are used for music purposes.
 	 */
-	ADMIN,
-	
+	ADMINISTRATION("vocabulary.category.administration"),
+
 	/**
 	 * Category for commands that shouldn't be shown in the help menu.
 	 */
-	NONE
+	NONE("vocabulary.category.none");
+
+	private final String key;
+
+	CommandCategory(String key) {
+		this.key = key;
+	}
+
+	public String getKey() {
+		return key;
+	}
 }
