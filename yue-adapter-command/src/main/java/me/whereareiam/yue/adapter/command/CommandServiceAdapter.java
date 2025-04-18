@@ -1,6 +1,5 @@
 package me.whereareiam.yue.adapter.command;
 
-import jakarta.annotation.PostConstruct;
 import me.whereareiam.yue.adapter.command.registrar.CommandRegistrar;
 import me.whereareiam.yue.adapter.command.registry.CommandDefinition;
 import me.whereareiam.yue.adapter.command.registry.CommandRegistry;
@@ -53,8 +52,8 @@ public class CommandServiceAdapter implements CommandService {
 		this.dataPath = dataPath;
 	}
 
-	@PostConstruct
-	public void init() {
+	@Override
+	public void initialize() {
 		Commands commands = configLoader.load(dataPath.resolve("commands"), Commands.class);
 
 		// Register a couple of known commands from config
@@ -121,7 +120,7 @@ public class CommandServiceAdapter implements CommandService {
 		// Bulk update in Discord
 		commandRegistrar.registerDiscordCommands(remainingCommands);
 
-		logger.info("Unregistered command '{}'.", commandName);
+		logger.debug("Unregistered command '{}'.", commandName);
 	}
 
 	@Override

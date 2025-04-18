@@ -9,6 +9,8 @@ import org.springframework.stereotype.Component;
 public class HelpCommand implements CommandBase {
 	@Command(name = "help")
 	public void onCommand(SlashCommandInteractionEvent event) {
-		event.reply("Help Command").queue();
+		event.reply("Help Command")
+				.setEphemeral(true)
+				.queue();
 	}
 }

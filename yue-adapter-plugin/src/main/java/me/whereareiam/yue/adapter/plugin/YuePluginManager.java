@@ -35,6 +35,11 @@ public class YuePluginManager extends SpringPluginManager {
 	}
 
 	@Override
+	protected PluginStatusProvider createPluginStatusProvider() {
+		return new YuePluginStatusProvider();
+	}
+
+	@Override
 	protected String getPluginLabel(PluginDescriptor pluginDescriptor) {
 		if (pluginDescriptor instanceof YuePluginDescriptor descriptor)
 			return descriptor.getName() + "@" + descriptor.getVersion();

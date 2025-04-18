@@ -121,7 +121,7 @@ public class CommandRegistrar {
 
 		List<SlashCommandData> payload = new ArrayList<>(mainCommands.values());
 		jda.updateCommands().addCommands(payload).queue(
-				_ -> logger.info("Up‑registered {} command(s).", payload.size()),
+				_ -> logger.debug("Up‑registered {} command(s).", payload.size()),
 				error -> logger.error("Failed to register commands", error)
 		);
 	}

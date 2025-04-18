@@ -2,6 +2,7 @@ package me.whereareiam.yue.common;
 
 import me.whereareiam.yue.api.model.config.settings.Settings;
 import me.whereareiam.yue.api.output.plugin.PluginService;
+import me.whereareiam.yue.api.output.service.CommandService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
@@ -48,12 +49,10 @@ public class CommonConfiguration {
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationReady() {
-		loadPlugins();
-		welcome();
-	}
-
-	private void loadPlugins() {
 		ctx.getBean(PluginService.class).loadPlugins();
+		ctx.getBean(CommandService.class).initialize();
+
+		welcome();
 	}
 
 	private void welcome() {

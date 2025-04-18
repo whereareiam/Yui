@@ -8,6 +8,7 @@ import me.whereareiam.yue.api.type.CommandCategory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class CommandsTemplate implements DefaultConfig<Commands> {
@@ -21,6 +22,7 @@ public class CommandsTemplate implements DefaultConfig<Commands> {
 				List.of("yue"),
 				"translate(commands.main.description)",
 				"{alias}",
+				Map.of(),
 				CommandCategory.NONE,
 				new CommandCooldown(false, 5, "")
 		);
@@ -30,6 +32,9 @@ public class CommandsTemplate implements DefaultConfig<Commands> {
 				List.of("help"),
 				"translate(commands.help.description)",
 				"{alias} [category]",
+				Map.of(
+						"category", "translate(commands.variables.category)"
+				),
 				CommandCategory.UTILITY,
 				new CommandCooldown(false, 5, "")
 		);
