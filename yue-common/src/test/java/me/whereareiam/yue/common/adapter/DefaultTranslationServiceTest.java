@@ -4,6 +4,7 @@ import me.whereareiam.yue.api.input.translation.TranslationLoader;
 import me.whereareiam.yue.api.model.config.settings.Settings;
 import me.whereareiam.yue.api.model.profile.UserProfile;
 import me.whereareiam.yue.api.output.provider.UserProfileCacheProvider;
+import me.whereareiam.yue.common.service.DefaultTranslationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class TranslationServiceAdapterTest {
+class DefaultTranslationServiceTest {
 	@Mock
 	private TranslationLoader coreLoader;
 
@@ -29,7 +30,7 @@ class TranslationServiceAdapterTest {
 	@Mock
 	private Settings settings;
 
-	private TranslationServiceAdapter translationService;
+	private DefaultTranslationService translationService;
 
 	@BeforeEach
 	void setUp() {
@@ -67,7 +68,7 @@ class TranslationServiceAdapterTest {
 		when(pluginLoader.loadAll()).thenReturn(pluginTranslations);
 		when(settings.getLocale()).thenReturn(Locale.ENGLISH);
 
-		translationService = new TranslationServiceAdapter(
+		translationService = new DefaultTranslationService(
 				List.of(coreLoader, pluginLoader),
 				userProfileCache,
 				settings

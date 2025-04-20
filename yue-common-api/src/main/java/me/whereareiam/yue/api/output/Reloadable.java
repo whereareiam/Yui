@@ -1,4 +1,4 @@
-package me.whereareiam.yue.api;
+package me.whereareiam.yue.api.output;
 
 /**
  * Interface for components that support reloading their configuration or state.

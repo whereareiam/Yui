@@ -1,7 +1,7 @@
 package me.whereareiam.yue.adapter.command.registrar.builder;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yue.api.component.Translatable;
+import me.whereareiam.yue.api.Translatable;
 import me.whereareiam.yue.api.model.command.Command;
 import me.whereareiam.yue.api.model.config.settings.Settings;
 import net.dv8tion.jda.api.interactions.DiscordLocale;

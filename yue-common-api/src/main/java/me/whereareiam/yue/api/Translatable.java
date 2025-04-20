@@ -1,4 +1,4 @@
-package me.whereareiam.yue.api.component;
+package me.whereareiam.yue.api;
 
 import me.whereareiam.yue.api.input.translation.TranslationService;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -28,7 +28,6 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class Translatable {
-
 	private static TranslationService translationService;
 
 	/**

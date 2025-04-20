@@ -1,4 +1,4 @@
-package me.whereareiam.yue.api.output.command;
+package me.whereareiam.yue.api.annotation;
 
 import java.lang.annotation.*;
 

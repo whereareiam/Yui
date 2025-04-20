@@ -2,9 +2,9 @@ package me.whereareiam.yue.adapter.config.provider;
 
 import jakarta.annotation.PostConstruct;
 import me.whereareiam.yue.adapter.config.management.ConfigLoader;
-import me.whereareiam.yue.api.Reloadable;
 import me.whereareiam.yue.api.input.Registry;
 import me.whereareiam.yue.api.model.config.settings.Settings;
+import me.whereareiam.yue.api.output.Reloadable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;

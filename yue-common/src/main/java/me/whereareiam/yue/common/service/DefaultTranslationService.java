@@ -1,4 +1,4 @@
-package me.whereareiam.yue.common.adapter;
+package me.whereareiam.yue.common.service;
 
 import me.whereareiam.yue.api.input.translation.TranslationLoader;
 import me.whereareiam.yue.api.input.translation.TranslationService;
@@ -16,8 +16,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class TranslationServiceAdapter implements TranslationService {
-	private static final Logger logger = LoggerFactory.getLogger(TranslationServiceAdapter.class);
+public class DefaultTranslationService implements TranslationService {
+	private static final Logger logger = LoggerFactory.getLogger(DefaultTranslationService.class);
 	private final List<TranslationLoader> loaders;
 	private final UserProfileCacheProvider userProfileCache;
 	private final Settings settings;
@@ -32,7 +32,7 @@ public class TranslationServiceAdapter implements TranslationService {
 	 */
 	private final Map<DiscordLocale, Map<String, String>> translations = new ConcurrentHashMap<>();
 
-	public TranslationServiceAdapter(
+	public DefaultTranslationService(
 			List<TranslationLoader> loaders,
 			UserProfileCacheProvider userProfileCache,
 			Settings settings

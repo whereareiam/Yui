@@ -2,7 +2,8 @@ package me.whereareiam.yue.adapter.command.scanner;
 
 import me.whereareiam.yue.adapter.command.registry.CommandDefinition;
 import me.whereareiam.yue.adapter.command.registry.CommandRegistry;
-import me.whereareiam.yue.api.output.command.CommandBase;
+import me.whereareiam.yue.api.annotation.Command;
+import me.whereareiam.yue.api.output.CommandBase;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,8 +63,8 @@ public class CommandScanner {
 			}
 
 			// Get annotation details
-			me.whereareiam.yue.api.output.command.Command annotation =
-					commandMethod.getAnnotation(me.whereareiam.yue.api.output.command.Command.class);
+			Command annotation =
+					commandMethod.getAnnotation(Command.class);
 			String declaredName = annotation.name();
 
 			// Only proceed if declaredName is in the requested set
@@ -99,7 +100,7 @@ public class CommandScanner {
 	 */
 	private Method findAnnotatedCommandMethod(Object beanInstance) {
 		for (Method m : beanInstance.getClass().getMethods()) {
-			if (m.isAnnotationPresent(me.whereareiam.yue.api.output.command.Command.class)
+			if (m.isAnnotationPresent(Command.class)
 					&& "onCommand".equals(m.getName())) {
 				Class<?>[] paramTypes = m.getParameterTypes();
 				if (paramTypes.length == 1 && paramTypes[0] == SlashCommandInteractionEvent.class) {

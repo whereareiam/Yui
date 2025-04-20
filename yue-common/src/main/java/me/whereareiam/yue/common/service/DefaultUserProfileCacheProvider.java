@@ -1,4 +1,4 @@
-package me.whereareiam.yue.common.adapter;
+package me.whereareiam.yue.common.service;
 
 import me.whereareiam.yue.api.model.profile.UserProfile;
 import me.whereareiam.yue.api.output.provider.UserProfileCacheProvider;
@@ -12,13 +12,13 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-public class UserProfileCacheProviderAdapter implements UserProfileCacheProvider {
+public class DefaultUserProfileCacheProvider implements UserProfileCacheProvider {
 	private final JDA jda;
 
 	private final Map<Long, UserProfile> profiles = new ConcurrentHashMap<>();
 
 	@Autowired
-	public UserProfileCacheProviderAdapter(JDA jda) {
+	public DefaultUserProfileCacheProvider(JDA jda) {
 		this.jda = jda;
 	}
 

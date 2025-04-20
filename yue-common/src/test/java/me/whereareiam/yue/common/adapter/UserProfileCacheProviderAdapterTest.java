@@ -1,6 +1,7 @@
 package me.whereareiam.yue.common.adapter;
 
 import me.whereareiam.yue.api.model.profile.UserProfile;
+import me.whereareiam.yue.common.service.DefaultUserProfileCacheProvider;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -24,11 +25,11 @@ class UserProfileCacheProviderAdapterTest {
 	@Mock
 	private User jdaUser;
 
-	private UserProfileCacheProviderAdapter cacheProvider;
+	private DefaultUserProfileCacheProvider cacheProvider;
 
 	@BeforeEach
 	void setUp() {
-		cacheProvider = new UserProfileCacheProviderAdapter(jda);
+		cacheProvider = new DefaultUserProfileCacheProvider(jda);
 	}
 
 	@Test

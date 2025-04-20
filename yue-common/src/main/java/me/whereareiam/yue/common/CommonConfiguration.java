@@ -4,6 +4,7 @@ import me.whereareiam.yue.api.input.translation.TranslationService;
 import me.whereareiam.yue.api.model.config.settings.Settings;
 import me.whereareiam.yue.api.output.plugin.PluginService;
 import me.whereareiam.yue.api.output.service.CommandService;
+import me.whereareiam.yue.common.scanner.ComponentListenerScanner;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
@@ -53,6 +54,7 @@ public class CommonConfiguration {
 		ctx.getBean(PluginService.class).loadPlugins();
 		ctx.getBean(TranslationService.class).initialize();
 		ctx.getBean(CommandService.class).initialize();
+		ctx.getBean(ComponentListenerScanner.class).scan();
 
 		welcome();
 	}

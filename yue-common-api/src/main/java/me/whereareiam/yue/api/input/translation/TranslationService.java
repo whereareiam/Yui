@@ -1,5 +1,6 @@
 package me.whereareiam.yue.api.input.translation;
 
+import me.whereareiam.yue.api.Translatable;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 /**
@@ -16,11 +17,11 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
  * Translations are organized in a hierarchical structure where keys use dot notation
  * (e.g., "vocabulary.cancel" or "plugin.music.vocabulary.play").
  * <p>
- * This service is typically used by the {@link me.whereareiam.yue.api.component.Translatable}
+ * This service is typically used by the {@link Translatable}
  * utility for convenient access to translations.
  *
  * @see TranslationLoader
- * @see me.whereareiam.yue.api.component.Translatable
+ * @see Translatable
  */
 public interface TranslationService {
 	void initialize();

@@ -1,8 +1,8 @@
 package me.whereareiam.yue.common.provider;
 
 import lombok.Getter;
-import me.whereareiam.yue.api.Reloadable;
 import me.whereareiam.yue.api.input.Registry;
+import me.whereareiam.yue.api.output.Reloadable;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;

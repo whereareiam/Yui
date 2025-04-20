@@ -1,4 +1,4 @@
-package me.whereareiam.yue.api.output.command;
+package me.whereareiam.yue.api.output;
 
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 

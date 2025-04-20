@@ -1,7 +1,3 @@
-dependencies {
-    "compileOnly"(libs.pf4j.spring)
-}
-
 plugins {
     id("maven-publish")
 }

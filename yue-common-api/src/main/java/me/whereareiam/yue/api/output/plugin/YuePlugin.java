@@ -33,7 +33,6 @@ public class YuePlugin extends SpringPlugin {
 		childContext.setClassLoader(getWrapper().getPluginClassLoader());
 		childContext.setParent(parentContext);
 
-		// Register plugin beans
 		childContext.registerBean(PluginWrapper.class, this::getWrapper);
 
 		childContext.scan(getClass().getPackage().getName());
