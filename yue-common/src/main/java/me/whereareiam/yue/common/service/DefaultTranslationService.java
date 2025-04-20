@@ -9,10 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -118,6 +115,40 @@ public class DefaultTranslationService implements TranslationService {
 
 		logger.debug("No translation found for key: '{}'", key);
 		return key;
+	}
+
+	@Override
+	public String translate(String key, long userId, Object... args) {
+		String pattern = translate(key, userId);
+		DiscordLocale locale = getEffectiveLocaleForUser(userId);
+		return format(pattern, locale, args);
+	}
+
+	@Override
+	public String translate(String key, DiscordLocale locale, Object... args) {
+		String pattern = translate(key, locale);
+		return format(pattern, locale, args);
+	}
+
+	private DiscordLocale getEffectiveLocaleForUser(long userId) {
+		DiscordLocale defaultLocale = settings.getLocale();
+		return userProfileCache.getProfile(userId)
+				.map(profile -> profile.getPrimaryLanguage() != null ? profile.getPrimaryLanguage() : defaultLocale)
+				.orElse(defaultLocale);
+	}
+
+	private String format(String pattern, DiscordLocale locale, Object... args) {
+		if (args == null || args.length == 0)
+			return pattern;
+
+		try {
+			Locale javaLocale = locale == null ? Locale.getDefault() : locale.toLocale();
+			return String.format(javaLocale, pattern, args);
+		} catch (IllegalFormatException ex) {
+			logger.warn("Failed to format translation '{}' with args {} for locale {} – returning unformatted",
+					pattern, Arrays.toString(args), locale, ex);
+			return pattern;
+		}
 	}
 
 	private DiscordLocale[] getUserLocalesOrDefault(long userId, DiscordLocale defaultBotLocale) {

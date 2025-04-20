@@ -43,20 +43,6 @@ public class Translatable {
 	}
 
 	/**
-	 * Translates a key for a specific user.
-	 *
-	 * @param key    The translation key to look up
-	 * @param userId The ID of the user for whom to translate
-	 * @return The translated string or the original key if translation is unavailable
-	 */
-	public static String of(String key, long userId) {
-		if (translationService == null) {
-			return key;
-		}
-		return translationService.translate(key, userId);
-	}
-
-	/**
 	 * Translates a key using the default locale.
 	 * <p>
 	 * This is equivalent to calling {@code of(key, 0)}.
@@ -65,10 +51,24 @@ public class Translatable {
 	 * @return The translated string or the original key if translation is unavailable
 	 */
 	public static String of(String key) {
-		if (translationService == null) {
+		if (translationService == null)
 			return key;
-		}
+
 		return translationService.translate(key, 0);
+	}
+
+	/**
+	 * Translates a key for a specific user.
+	 *
+	 * @param key    The translation key to look up
+	 * @param userId The ID of the user for whom to translate
+	 * @return The translated string or the original key if translation is unavailable
+	 */
+	public static String of(String key, long userId) {
+		if (translationService == null)
+			return key;
+
+		return translationService.translate(key, userId);
 	}
 
 	/**
@@ -80,10 +80,32 @@ public class Translatable {
 	 * @param locale The locale to usefor translation
 	 */
 	public static String of(String key, DiscordLocale locale) {
-		if (translationService == null) {
+		if (translationService == null)
 			return key;
-		}
+
 		return translationService.translate(key, locale);
+	}
+
+
+	public static String of(String key, Object... args) {
+		if (translationService == null)
+			return key;
+
+		return translationService.translate(key, 0, args);
+	}
+
+	public static String of(String key, long userId, Object... args) {
+		if (translationService == null)
+			return key;
+
+		return translationService.translate(key, userId, args);
+	}
+
+	public static String of(String key, DiscordLocale locale, Object... args) {
+		if (translationService == null)
+			return key;
+		
+		return translationService.translate(key, locale, args);
 	}
 
 	/**

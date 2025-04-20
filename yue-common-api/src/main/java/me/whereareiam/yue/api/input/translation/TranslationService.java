@@ -55,4 +55,8 @@ public interface TranslationService {
 	 * @return The translated string if found, or the original key if no translation exists
 	 */
 	String translate(String key, DiscordLocale locale);
+
+	String translate(String key, long userId, Object... args);
+
+	String translate(String key, DiscordLocale locale, Object... args);
 }
