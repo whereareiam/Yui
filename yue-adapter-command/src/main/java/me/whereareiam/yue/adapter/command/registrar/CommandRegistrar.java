@@ -9,135 +9,110 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/**
- * Handles the registration of commands with Discord's JDA API.
- * <p>
- * This service is responsible for translating command configurations into
- * JDA slash command objects and updating them with Discord. It manages both
- * top-level commands and subcommands within the main command group.
- */
 @Service
 public class CommandRegistrar {
-	private static final Logger logger = LoggerFactory.getLogger(CommandRegistrar.class);
-
-	/**
-	 * Name of the parent command that hosts subcommands (typically "yue")
-	 */
+	private static final Logger log = LoggerFactory.getLogger(CommandRegistrar.class);
 	private static final String MAIN_COMMAND_NAME = "main";
 
 	private final JDA jda;
-	private final SlashCommandBuilder slashCommandBuilder;
+	private final SlashCommandBuilder builder;
+	private final ConcurrentMap<String, Command> cache = new ConcurrentHashMap<>();
 
-	/**
-	 * Cached command configurations used for bulk registration
-	 */
-	private final ConcurrentMap<String, Command> cachedCommands = new ConcurrentHashMap<>();
-
-	public CommandRegistrar(JDA jda, SlashCommandBuilder slashCommandBuilder) {
+	public CommandRegistrar(JDA jda, SlashCommandBuilder builder) {
 		this.jda = jda;
-		this.slashCommandBuilder = slashCommandBuilder;
+		this.builder = builder;
 	}
 
-	/**
-	 * Registers a single command with Discord.
-	 * <p>
-	 * If the command is a subcommand, it will check for the presence of the main command.
-	 * All current commands are re-registered via bulk update to ensure consistency.
-	 *
-	 * @param commandName The internal name of the command
-	 * @param command     The command configuration
-	 */
-	public void registerDiscordCommand(String commandName, Command command) {
-		if (command == null || !command.isEnabled()) {
-			logger.warn("Attempted to register disabled or null command '{}'. Ignoring.", commandName);
-			return;
+	public void registerDiscordCommand(String name, Command cmd) {
+		if (cmd == null || !cmd.isEnabled()) cache.remove(name);
+		else cache.put(name, cmd);
+		syncWithDiscord();
+	}
+
+	public void registerDiscordCommands(Map<String, Command> cmds) {
+		if (cmds != null) cmds.forEach((n, c) -> {
+			if (c == null || !c.isEnabled()) cache.remove(n);
+			else cache.put(n, c);
+		});
+		syncWithDiscord();
+	}
+
+	private void syncWithDiscord() {
+		Map<String, SlashCommandData> roots = new HashMap<>();
+		Map<String, List<SubcommandData>> subsByRoot = new HashMap<>();
+		Set<String> subcommandAliases = new HashSet<>();
+		List<String> mainAliases = new ArrayList<>();
+
+		// 1‑a) main (/yue …)
+		Command mainCfg = cache.get(MAIN_COMMAND_NAME);
+		if (mainCfg != null && mainCfg.isEnabled()) {
+			for (String alias : mainCfg.getAliases()) {
+				roots.put(alias, builder.buildMainCommand(alias, mainCfg));
+				subsByRoot.put(alias, new ArrayList<>());
+				mainAliases.add(alias);
+			}
 		}
 
-		cachedCommands.put(commandName, command);
+		// 1‑b) every other command
+		cache.forEach((name, cfg) -> {
+			if (!cfg.isEnabled() || MAIN_COMMAND_NAME.equals(name)) return;
 
-		if (slashCommandBuilder.isSubcommand(command)) {
-			Command mainCfg = cachedCommands.get(MAIN_COMMAND_NAME);
-			if (mainCfg == null || !mainCfg.isEnabled()) {
-				logger.warn("Cannot register sub‑command '{}' because its parent '/yue' is missing or disabled.", commandName);
+			if (builder.isSubcommand(cfg)) {
+				subcommandAliases.addAll(cfg.getAliases());
+				if (!mainAliases.isEmpty())
+					attachSubcommand(cfg, mainAliases, subsByRoot);
+				else
+					log.debug("Deferred sub‑command '{}' – parent '/main' not registered yet.", name);
 				return;
 			}
-		}
 
-		registerDiscordCommands(new HashMap<>(cachedCommands));
-	}
-
-	/**
-	 * Registers multiple commands with Discord in a single update operation.
-	 * <p>
-	 * This method handles both top-level commands and subcommands, organizing them
-	 * appropriately before sending the update to Discord's API.
-	 *
-	 * @param commands Map of command names to their configurations
-	 */
-	public void registerDiscordCommands(Map<String, Command> commands) {
-		if (commands == null || commands.isEmpty()) {
-			logger.debug("Command map is null or empty. Nothing to register.");
-			return;
-		}
-
-		cachedCommands.putAll(commands);
-
-		Map<String, SlashCommandData> mainCommands = new HashMap<>();
-		Map<String, List<SubcommandData>> subCommands = new HashMap<>();
-
-		Command main = cachedCommands.get(MAIN_COMMAND_NAME);
-		if (main != null && main.isEnabled()) {
-			for (String alias : main.getAliases()) {
-				mainCommands.put(alias, slashCommandBuilder.buildMainCommand(alias, main));
-				subCommands.put(alias, new ArrayList<>());
-			}
-		}
-
-		for (Map.Entry<String, Command> e : cachedCommands.entrySet()) {
-			String name = e.getKey();
-			Command cfg = e.getValue();
-			if (!cfg.isEnabled() || MAIN_COMMAND_NAME.equalsIgnoreCase(name)) continue;
-
-			if (slashCommandBuilder.isSubcommand(cfg) && !mainCommands.isEmpty()) {
-				attachSubcommands(cfg, mainCommands, subCommands);
-				continue;
-			}
-
-			String slashName = cfg.getAliases().isEmpty() ? name : cfg.getAliases().getFirst();
-			mainCommands.put(slashName, slashCommandBuilder.buildMainCommand(slashName, cfg));
-			subCommands.putIfAbsent(slashName, new ArrayList<>());
-		}
-
-		subCommands.forEach((mainAlias, subs) -> {
-			if (!subs.isEmpty()) mainCommands.get(mainAlias).addSubcommands(subs);
+			String alias = cfg.getAliases().isEmpty() ? name : cfg.getAliases().getFirst();
+			roots.putIfAbsent(alias, builder.buildMainCommand(alias, cfg));
+			subsByRoot.putIfAbsent(alias, new ArrayList<>());
 		});
 
-		List<SlashCommandData> payload = new ArrayList<>(mainCommands.values());
-		jda.updateCommands().addCommands(payload).queue(
-				_ -> logger.debug("Up‑registered {} command(s).", payload.size()),
-				error -> logger.error("Failed to register commands", error)
+		mainAliases.forEach(root -> {
+			List<SubcommandData> list = subsByRoot.get(root);
+			if (list != null && !list.isEmpty()) roots.get(root).addSubcommands(list);
+		});
+
+		roots.forEach((alias, data) ->
+				jda.upsertCommand(data).queue(
+						cmd -> log.debug("Up‑serted /{} (id={})", cmd.getName(), cmd.getId()),
+						error -> log.error("Failed to up‑sert /" + alias, error))
 		);
+
+		subcommandAliases.forEach(this::removeIfStandalone);
+
+		cache.entrySet().stream()
+				.filter(e -> !e.getValue().isEnabled())
+				.forEach(e -> removeIfStandalone(e.getKey()));
 	}
 
-	/**
-	 * Attaches subcommands to their parent main commands.
-	 *
-	 * @param command      The subcommand configuration
-	 * @param mainCommands Map of main command names to their SlashCommandData
-	 * @param subCommands  Map tracking which subcommands belong to which main commands
-	 */
-	private void attachSubcommands(Command command, Map<String, SlashCommandData> mainCommands, Map<String, List<SubcommandData>> subCommands) {
-		for (String subAlias : command.getAliases()) {
-			SubcommandData sub = slashCommandBuilder.buildSubcommand(subAlias, command);
-			mainCommands.keySet().forEach(mainAlias ->
-					subCommands.computeIfAbsent(mainAlias, k -> new ArrayList<>()).add(sub));
+	private void attachSubcommand(
+			Command cfg, List<String> mainAliases,
+			Map<String, List<SubcommandData>> subsByRoot) {
+
+		for (String subAlias : cfg.getAliases()) {
+			SubcommandData sub = builder.buildSubcommand(subAlias, cfg);
+			mainAliases.forEach(root -> subsByRoot.get(root).add(sub));
 		}
+	}
+
+	private void removeIfStandalone(String slashName) {
+		jda.retrieveCommands().queue(list ->
+				list.stream()
+						.filter(cmd ->
+								cmd.getType() == net.dv8tion.jda.api.interactions.commands.Command.Type.SLASH &&
+										cmd.getName().equalsIgnoreCase(slashName))
+						.findFirst()
+						.ifPresent(cmd -> cmd.delete().queue(
+								__ -> log.debug("Deleted obsolete stand‑alone /{}", slashName),
+								err -> log.warn("Could not delete /{} – {}", slashName, err.getMessage())))
+		);
 	}
 }

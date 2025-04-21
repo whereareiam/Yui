@@ -5,12 +5,10 @@ import me.whereareiam.yue.api.model.command.CommandCooldown;
 import me.whereareiam.yue.api.model.config.Commands;
 import me.whereareiam.yue.api.output.config.DefaultConfig;
 import me.whereareiam.yue.api.type.CommandCategory;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
-@Component
 public class CommandsTemplate implements DefaultConfig<Commands> {
 	@Override
 	public Commands getDefault() {

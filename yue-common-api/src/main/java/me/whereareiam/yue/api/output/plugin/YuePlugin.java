@@ -3,6 +3,7 @@ package me.whereareiam.yue.api.output.plugin;
 import org.pf4j.PluginWrapper;
 import org.pf4j.spring.SpringPlugin;
 import org.pf4j.spring.SpringPluginManager;
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -37,6 +38,10 @@ public class YuePlugin extends SpringPlugin {
 
 		childContext.scan(getClass().getPackage().getName());
 		childContext.refresh();
+
+		AutowiredAnnotationBeanPostProcessor beanPostProcessor = new AutowiredAnnotationBeanPostProcessor();
+		beanPostProcessor.setBeanFactory(childContext.getAutowireCapableBeanFactory());
+		beanPostProcessor.processInjection(this);
 
 		this.applicationContext = childContext;
 

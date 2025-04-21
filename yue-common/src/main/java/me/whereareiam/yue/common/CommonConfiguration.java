@@ -62,9 +62,9 @@ public class CommonConfiguration {
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationReady() {
+		ctx.getBean(CommandService.class).initialize();
 		ctx.getBean(PluginService.class).loadPlugins();
 		ctx.getBean(TranslationService.class).initialize();
-		ctx.getBean(CommandService.class).initialize();
 		ctx.getBean(ComponentListenerScanner.class).scan();
 
 		welcome();

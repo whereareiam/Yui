@@ -32,4 +32,16 @@ public interface ConfigurationLoader {
 	 * @throws ConfigLoadException if loading or parsing fails
 	 */
 	<T> T load(InputStream stream, Class<T> clazz);
+
+	/**
+	 * Loads and deserializes a configuration file into the specified class type,
+	 * providing a default configuration object in case of failure.
+	 *
+	 * @param path          the path to the configuration file
+	 * @param clazz         the class type to deserialize into
+	 * @param defaultConfig the default configuration object to return if loading fails
+	 * @param <T>           the type of configuration class
+	 * @return the deserialized configuration object or the default configuration
+	 */
+	<T> T load(Path path, Class<T> clazz, DefaultConfig<T> defaultConfig);
 }
