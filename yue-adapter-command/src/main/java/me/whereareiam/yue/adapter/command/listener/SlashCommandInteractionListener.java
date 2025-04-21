@@ -50,7 +50,7 @@ public class SlashCommandInteractionListener extends ListenerAdapter {
 		} catch (Exception ex) {
 			logger.error("Exception while executing slash command '{}': ", commandName, ex);
 			event.replyEmbeds(StyleKit.embeds().error()
-							.setDescription(Translatable.of("commands.error.exception", event.getUser().getIdLong()))
+							.setTitle(Translatable.of("commands.error.exception", event.getUser().getIdLong()))
 							.build())
 					.setEphemeral(true)
 					.queue();

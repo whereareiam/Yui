@@ -6,12 +6,10 @@ import me.whereareiam.yue.api.style.Embeds;
 
 import java.util.Objects;
 
+@SuppressWarnings("unused")
 public final class StyleKit {
 	private static Palette palette;
 	private static Embeds embeds;
-
-	private StyleKit() {
-	}
 
 	public static synchronized void init(Palette palette, EmbedStyle embeds) {
 		StyleKit.palette = Objects.requireNonNull(palette, "Palette must not be null");

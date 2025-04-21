@@ -23,11 +23,11 @@ public class EmbedsTemplate implements DefaultConfig<EmbedStyle> {
 
 		embedStyle.setError(new Embed(
 				new Embed.Author("", "", ""),
-				new Embed.Footer("Yue", ""),
+				new Embed.Footer("", ""),
 				"",
 				"",
 				"",
-				true
+				false
 		));
 
 		return embedStyle;
