@@ -86,6 +86,16 @@ public class Translatable {
 		return translationService.translate(key, locale);
 	}
 
+	/**
+	 * Translates a key using the default locale and formats it with the provided arguments.
+	 * <p>
+	 * This method first translates the key, then formats the result using the arguments.
+	 * It's equivalent to calling {@code forUser(key, 0, args)}.
+	 *
+	 * @param key  The translation key to look up
+	 * @param args The arguments to use for formatting the translated string
+	 * @return The translated and formatted string, or the original key if translation is unavailable
+	 */
 	public static String of(String key, Object... args) {
 		if (translationService == null)
 			return key;
@@ -93,6 +103,17 @@ public class Translatable {
 		return translationService.translate(key, 0, args);
 	}
 
+	/**
+	 * Translates a key for a specific user and formats it with the provided arguments.
+	 * <p>
+	 * This method first translates the key based on the user's locale preference,
+	 * then formats the result using the arguments.
+	 *
+	 * @param key    The translation key to look up
+	 * @param userId The ID of the user for whom to translate
+	 * @param args   The arguments to use for formatting the translated string
+	 * @return The translated and formatted string, or the original key if translation is unavailable
+	 */
 	public static String forUser(String key, long userId, Object... args) {
 		if (translationService == null)
 			return key;
@@ -100,6 +121,17 @@ public class Translatable {
 		return translationService.translate(key, userId, args);
 	}
 
+	/**
+	 * Translates a key using the specified locale and formats it with the provided arguments.
+	 * <p>
+	 * This method first translates the key using the given locale,
+	 * then formats the result using the arguments.
+	 *
+	 * @param key    The translation key to look up
+	 * @param locale The locale to use for translation
+	 * @param args   The arguments to use for formatting the translated string
+	 * @return The translated and formatted string, or the original key if translation is unavailable
+	 */
 	public static String forLocale(String key, DiscordLocale locale, Object... args) {
 		if (translationService == null)
 			return key;
