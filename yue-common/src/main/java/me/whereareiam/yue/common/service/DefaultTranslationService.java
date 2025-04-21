@@ -4,12 +4,17 @@ import me.whereareiam.yue.api.input.translation.TranslationLoader;
 import me.whereareiam.yue.api.input.translation.TranslationService;
 import me.whereareiam.yue.api.model.config.settings.Settings;
 import me.whereareiam.yue.api.output.provider.UserProfileCacheProvider;
+import me.whereareiam.yue.api.util.TranslationTags;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
@@ -138,16 +143,23 @@ public class DefaultTranslationService implements TranslationService {
 	}
 
 	private String format(String pattern, DiscordLocale locale, Object... args) {
-		if (args == null || args.length == 0)
+		if (pattern == null || pattern.isEmpty())
 			return pattern;
 
+		if (args == null || args.length == 0)
+			return TranslationTags.resolve(pattern, locale);
+
 		try {
-			Locale javaLocale = locale == null ? Locale.getDefault() : locale.toLocale();
-			return String.format(javaLocale, pattern, args);
-		} catch (IllegalFormatException ex) {
-			logger.warn("Failed to format translation '{}' with args {} for locale {} – returning unformatted",
-					pattern, Arrays.toString(args), locale, ex);
-			return pattern;
+			MessageFormat messageFormat = new MessageFormat(pattern);
+			String formatted = messageFormat.format(args);
+
+			return TranslationTags.resolve(formatted, locale);
+		} catch (IllegalArgumentException ex) {
+			logger.warn(
+					"Failed to format translation '{}' with args {} for locale {} – returning unformatted",
+					pattern, Arrays.toString(args), locale, ex
+			);
+			return TranslationTags.resolve(pattern, locale);
 		}
 	}
 

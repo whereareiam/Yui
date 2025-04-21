@@ -9,6 +9,7 @@ public class Command {
 	private boolean enabled;
 	private List<String> aliases;
 	private String description;
+	private String example;
 	private String usage;
 
 	private Map<String, String> variables;
@@ -23,13 +24,16 @@ public class Command {
 			boolean enabled,
 			List<String> aliases,
 			String description,
-			String usage, Map<String, String> variables,
+			String example,
+			String usage,
+			Map<String, String> variables,
 			CommandCategory category,
 			CommandCooldown cooldown
 	) {
 		this.enabled = enabled;
 		this.aliases = aliases;
 		this.description = description;
+		this.example = example;
 		this.usage = usage;
 		this.variables = variables;
 		this.category = category;
@@ -46,6 +50,10 @@ public class Command {
 
 	public String getDescription() {
 		return description;
+	}
+
+	public String getExample() {
+		return example;
 	}
 
 	public String getUsage() {

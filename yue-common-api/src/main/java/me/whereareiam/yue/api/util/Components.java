@@ -1,4 +1,4 @@
-package me.whereareiam.yue.api;
+package me.whereareiam.yue.api.util;
 
 import me.whereareiam.yue.api.input.InteractionService;
 import net.dv8tion.jda.api.events.interaction.component.GenericComponentInteractionCreateEvent;

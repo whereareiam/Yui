@@ -4,12 +4,14 @@ import java.util.Map;
 
 public class HelpCommandMessages {
 	private String description;
+	private String example;
 	private Map<String, String> variables;
 	private Information information;
 	private Category category;
 
 	public static class Information {
 		private Global global;
+		private Specific specific;
 
 		public static class Global {
 			private String title;
@@ -32,12 +34,59 @@ public class HelpCommandMessages {
 			}
 		}
 
+		public static class Specific {
+			private String title;
+			private String description;
+			private String headFormat;
+			private String footFormat;
+
+			public String getTitle() {
+				return title;
+			}
+
+			public void setTitle(String title) {
+				this.title = title;
+			}
+
+			public String getDescription() {
+				return description;
+			}
+
+			public void setDescription(String description) {
+				this.description = description;
+			}
+
+			public String getHeadFormat() {
+				return headFormat;
+			}
+
+			public void setHeadFormat(String headFormat) {
+				this.headFormat = headFormat;
+			}
+
+			public String getFootFormat() {
+				return footFormat;
+			}
+
+			public void setFootFormat(String footFormat) {
+				this.footFormat = footFormat;
+			}
+		}
+
 		public Global getGlobal() {
 			return global;
 		}
 
 		public void setGlobal(Global global) {
 			this.global = global;
+		}
+
+		public Specific getSpecific() {
+			return specific;
+		}
+
+		public void setSpecific(Specific specific) {
+			this.specific = specific;
 		}
 	}
 
@@ -86,6 +135,14 @@ public class HelpCommandMessages {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getExample() {
+		return example;
+	}
+
+	public void setExample(String example) {
+		this.example = example;
 	}
 
 	public Map<String, String> getVariables() {

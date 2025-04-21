@@ -21,6 +21,7 @@ public class CommandsTemplate implements DefaultConfig<Commands> {
 				false,
 				List.of("yue"),
 				"translate(commands.main.description)",
+				"translate(commands.main.example)",
 				"{alias}",
 				Map.of(),
 				CommandCategory.NONE,
@@ -31,6 +32,7 @@ public class CommandsTemplate implements DefaultConfig<Commands> {
 				true,
 				List.of("help"),
 				"translate(commands.help.description)",
+				"translate(commands.help.example)",
 				"{alias} [category]",
 				Map.of(
 						"category", "translate(commands.help.variables.category)"

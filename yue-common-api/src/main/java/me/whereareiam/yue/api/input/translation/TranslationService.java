@@ -1,6 +1,6 @@
 package me.whereareiam.yue.api.input.translation;
 
-import me.whereareiam.yue.api.Translatable;
+import me.whereareiam.yue.api.util.Translatable;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 /**

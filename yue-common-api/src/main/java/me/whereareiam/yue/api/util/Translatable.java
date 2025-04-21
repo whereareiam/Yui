@@ -1,4 +1,4 @@
-package me.whereareiam.yue.api;
+package me.whereareiam.yue.api.util;
 
 import me.whereareiam.yue.api.input.translation.TranslationService;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -86,7 +86,6 @@ public class Translatable {
 		return translationService.translate(key, locale);
 	}
 
-
 	public static String of(String key, Object... args) {
 		if (translationService == null)
 			return key;
@@ -94,17 +93,17 @@ public class Translatable {
 		return translationService.translate(key, 0, args);
 	}
 
-	public static String of(String key, long userId, Object... args) {
+	public static String forUser(String key, long userId, Object... args) {
 		if (translationService == null)
 			return key;
 
 		return translationService.translate(key, userId, args);
 	}
 
-	public static String of(String key, DiscordLocale locale, Object... args) {
+	public static String forLocale(String key, DiscordLocale locale, Object... args) {
 		if (translationService == null)
 			return key;
-		
+
 		return translationService.translate(key, locale, args);
 	}
 

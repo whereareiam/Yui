@@ -1,10 +1,9 @@
 package me.whereareiam.yue.adapter.command.registrar.builder;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yue.api.Translatable;
 import me.whereareiam.yue.api.model.command.Command;
 import me.whereareiam.yue.api.model.config.settings.Settings;
-import net.dv8tion.jda.api.interactions.DiscordLocale;
+import me.whereareiam.yue.api.util.TranslationTags;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -28,10 +27,6 @@ import java.util.regex.Pattern;
 public class SlashCommandBuilder {
 	private final Settings settings;
 
-	// Pattern for parsing translation directives
-	private static final Pattern TRANSLATE_PATTERN =
-			Pattern.compile("^\\s*translate\\(([^)]+)\\)\\s*$");
-
 	// Patterns for parsing parameters
 	private static final Pattern REQUIRED_PARAM_PATTERN = Pattern.compile("\\(([^)]+)\\)");
 	private static final Pattern OPTIONAL_PARAM_PATTERN = Pattern.compile("\\[([^\\]]+)\\]");
@@ -44,7 +39,7 @@ public class SlashCommandBuilder {
 	 * @return A fully configured SlashCommandData object ready for registration
 	 */
 	public SlashCommandData buildMainCommand(String commandName, Command command) {
-		String description = resolveTranslation(command.getDescription());
+		String description = TranslationTags.resolve(command.getDescription(), settings.getLocale());
 		SlashCommandData slash = Commands.slash(commandName, description);
 
 		if (!isSubcommand(command))
@@ -61,7 +56,7 @@ public class SlashCommandBuilder {
 	 * @return A configured SubcommandData object ready to be attached to a parent command
 	 */
 	public SubcommandData buildSubcommand(String alias, Command command) {
-		String description = resolveTranslation(command.getDescription());
+		String description = TranslationTags.resolve(command.getDescription(), settings.getLocale());
 
 		SubcommandData sub = new SubcommandData(alias, description);
 		addParametersToSubcommand(sub, command);
@@ -162,29 +157,6 @@ public class SlashCommandBuilder {
 		String raw = variables.getOrDefault(param, "").trim();
 		if (raw.isEmpty()) return param;
 
-		return resolveTranslation(raw);
-	}
-
-	/**
-	 * Resolves translation placeholders in text using the translation service.
-	 * <p>
-	 * This method parses strings that may contain translation directives in the format
-	 * "translate(key)" and replaces them with the appropriate translated text.
-	 * It uses the default locale (ENGLISH_US) when no specific locale is provided.
-	 *
-	 * @param raw The raw string that may contain translation directives
-	 * @return The translated string, or the original string if no translation was needed
-	 * @see me.whereareiam.yue.api.input.translation.TranslationService#translate(String, DiscordLocale)
-	 */
-	private String resolveTranslation(String raw) {
-		if (raw == null) return null;
-
-		Matcher m = TRANSLATE_PATTERN.matcher(raw);
-		if (m.matches()) {
-			String key = m.group(1).trim();
-			return Translatable.of(key, settings.getLocale());
-		}
-
-		return raw;
+		return TranslationTags.resolve(raw, settings.getLocale());
 	}
 }

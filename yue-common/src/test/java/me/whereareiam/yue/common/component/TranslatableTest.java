@@ -1,7 +1,7 @@
 package me.whereareiam.yue.common.component;
 
-import me.whereareiam.yue.api.Translatable;
 import me.whereareiam.yue.api.input.translation.TranslationService;
+import me.whereareiam.yue.api.util.Translatable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
