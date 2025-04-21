@@ -22,6 +22,10 @@ public class Embeds {
 		return build(embedStyle.getPrimary(), palette.getPrimary());
 	}
 
+	public EmbedBuilder error() {
+		return build(embedStyle.getError(), palette.getError());
+	}
+
 	private EmbedBuilder build(Embed embed, Color color) {
 		EmbedBuilder builder = new EmbedBuilder();
 

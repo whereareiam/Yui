@@ -3,6 +3,8 @@ package me.whereareiam.yue.adapter.command.listener;
 import me.whereareiam.yue.adapter.command.cooldown.CooldownService;
 import me.whereareiam.yue.adapter.command.registry.CommandDefinition;
 import me.whereareiam.yue.adapter.command.registry.CommandRegistry;
+import me.whereareiam.yue.api.StyleKit;
+import me.whereareiam.yue.api.util.Translatable;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
@@ -47,7 +49,11 @@ public class SlashCommandInteractionListener extends ListenerAdapter {
 			definition.invoke(event);
 		} catch (Exception ex) {
 			logger.error("Exception while executing slash command '{}': ", commandName, ex);
-			event.reply("An error occurred while executing this command.").setEphemeral(true).queue();
+			event.replyEmbeds(StyleKit.embeds().error()
+							.setDescription(Translatable.of("commands.error.exception", event.getUser().getIdLong()))
+							.build())
+					.setEphemeral(true)
+					.queue();
 		}
 	}
 }

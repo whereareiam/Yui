@@ -21,6 +21,15 @@ public class EmbedsTemplate implements DefaultConfig<EmbedStyle> {
 				true
 		));
 
+		embedStyle.setError(new Embed(
+				new Embed.Author("", "", ""),
+				new Embed.Footer("Yue", ""),
+				"",
+				"",
+				"",
+				true
+		));
+
 		return embedStyle;
 	}
 }

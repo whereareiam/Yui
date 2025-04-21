@@ -19,6 +19,10 @@ public class MessagesTemplate implements DefaultConfig<Messages> {
 
 		// Default values
 		CommandMessages commandMessages = new CommandMessages();
+		CommandMessages.ErrorMessages errorMessages = new CommandMessages.ErrorMessages();
+		errorMessages.setException("An unexpected error occurred. Please try again later.");
+		commandMessages.setError(errorMessages);
+
 		MainCommandMessages mainCommand = new MainCommandMessages();
 		mainCommand.setDescription("The main command for the bot. In most cases, it is used as a prefix for other commands.");
 		mainCommand.setExample("/yue");
