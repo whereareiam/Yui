@@ -1,9 +1,9 @@
-package me.whereareiam.yue.adapter.config.provider;
+package me.whereareiam.yue.adapter.config.provider.style;
 
 import jakarta.annotation.PostConstruct;
 import me.whereareiam.yue.adapter.config.management.ConfigLoader;
 import me.whereareiam.yue.api.input.Registry;
-import me.whereareiam.yue.api.model.config.settings.Settings;
+import me.whereareiam.yue.api.model.config.style.Palette;
 import me.whereareiam.yue.api.output.Reloadable;
 import me.whereareiam.yue.api.output.provider.Provider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,17 +13,17 @@ import org.springframework.stereotype.Component;
 import java.nio.file.Path;
 
 @Component
-public class SettingsProvider implements Provider<Settings>, Reloadable {
-	private final Path dataPath;
+public class PaletteProvider implements Provider<Palette>, Reloadable {
+	private final Path stylesPath;
 	private final ConfigLoader configLoader;
 
-	private Settings settings;
+	private Palette palette;
 
 	@Autowired
-	public SettingsProvider(@Qualifier("dataPath") Path dataPath,
-	                        ConfigLoader configLoader,
-	                        Registry<Reloadable> registry) {
-		this.dataPath = dataPath;
+	public PaletteProvider(@Qualifier("stylesPath") Path stylesPath,
+	                       ConfigLoader configLoader,
+	                       Registry<Reloadable> registry) {
+		this.stylesPath = stylesPath;
 		this.configLoader = configLoader;
 
 		registry.register(this);
@@ -35,11 +35,11 @@ public class SettingsProvider implements Provider<Settings>, Reloadable {
 	}
 
 	@Override
-	public Settings get() {
-		if (settings == null) {
+	public Palette get() {
+		if (palette == null) {
 			load();
 		}
-		return settings;
+		return palette;
 	}
 
 	@Override
@@ -48,6 +48,6 @@ public class SettingsProvider implements Provider<Settings>, Reloadable {
 	}
 
 	private void load() {
-		settings = configLoader.load(dataPath.resolve("settings"), Settings.class);
+		palette = configLoader.load(stylesPath.resolve("palette"), Palette.class);
 	}
 }

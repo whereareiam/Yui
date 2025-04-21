@@ -28,6 +28,19 @@ public class YueApplication {
 	}
 
 	@Bean
+	@Qualifier("stylesPath")
+	public Path stylesPath(@Qualifier("dataPath") Path dataPath) {
+		Path stylesPath = dataPath.resolve(Constants.Structure.stylesDir);
+
+		if (!stylesPath.toFile().exists()) {
+			boolean created = stylesPath.toFile().mkdirs();
+			if (!created) throw new RuntimeException("Failed to create styles directory");
+		}
+
+		return stylesPath;
+	}
+
+	@Bean
 	@Qualifier("languagesPath")
 	public Path languagesPath(@Qualifier("dataPath") Path dataPath) {
 		Path languagesPath = dataPath.resolve(Constants.Structure.languagesDir);

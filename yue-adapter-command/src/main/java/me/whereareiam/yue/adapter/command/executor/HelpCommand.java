@@ -2,6 +2,7 @@ package me.whereareiam.yue.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
 import me.whereareiam.yue.adapter.command.registry.CommandRegistry;
+import me.whereareiam.yue.api.StyleKit;
 import me.whereareiam.yue.api.annotation.Command;
 import me.whereareiam.yue.api.annotation.ComponentListener;
 import me.whereareiam.yue.api.output.CommandBase;
@@ -17,7 +18,6 @@ import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import org.springframework.stereotype.Component;
 
-import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -48,10 +48,9 @@ public class HelpCommand implements CommandBase {
 	}
 
 	private void globalHelp(SlashCommandInteractionEvent event) {
-		EmbedBuilder embed = new EmbedBuilder();
+		EmbedBuilder embed = StyleKit.embeds().primary();
 		embed.setTitle(Translatable.of("commands.help.information.global.title", event.getUser().getIdLong()));
 		embed.setDescription(Translatable.of("commands.help.information.global.description", event.getUser().getIdLong()));
-		embed.setColor(Color.PINK);
 
 		for (CommandCategory category : CommandCategory.values()) {
 			if (category == CommandCategory.NONE)
@@ -83,7 +82,7 @@ public class HelpCommand implements CommandBase {
 	private void categoryHelp(IReplyCallback event, CommandCategory category) {
 		long userId = event.getUser().getIdLong();
 
-		EmbedBuilder embed = new EmbedBuilder();
+		EmbedBuilder embed = StyleKit.embeds().primary();
 		embed.setTitle(Translatable.forUser(
 				"commands.help.information.specific.title",
 				userId,
@@ -94,7 +93,6 @@ public class HelpCommand implements CommandBase {
 				userId,
 				Translatable.of(category.getKey(), userId)
 		));
-		embed.setColor(Color.PINK);
 
 		// Get commands for this category
 		commandRegistry.getDefinitions().values().stream()

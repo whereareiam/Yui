@@ -1,8 +1,10 @@
 package me.whereareiam.yue.common.service;
 
+import lombok.AllArgsConstructor;
 import me.whereareiam.yue.api.input.translation.TranslationLoader;
 import me.whereareiam.yue.api.input.translation.TranslationService;
 import me.whereareiam.yue.api.model.config.settings.Settings;
+import me.whereareiam.yue.api.output.provider.Provider;
 import me.whereareiam.yue.api.output.provider.UserProfileCacheProvider;
 import me.whereareiam.yue.api.util.TranslationTags;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -18,11 +20,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@AllArgsConstructor
 public class DefaultTranslationService implements TranslationService {
 	private static final Logger logger = LoggerFactory.getLogger(DefaultTranslationService.class);
 	private final List<TranslationLoader> loaders;
 	private final UserProfileCacheProvider userProfileCache;
-	private final Settings settings;
+	private final Provider<Settings> settings;
 
 	/**
 	 * Merged translations:
@@ -33,16 +36,6 @@ public class DefaultTranslationService implements TranslationService {
 	 * ... }
 	 */
 	private final Map<DiscordLocale, Map<String, String>> translations = new ConcurrentHashMap<>();
-
-	public DefaultTranslationService(
-			List<TranslationLoader> loaders,
-			UserProfileCacheProvider userProfileCache,
-			Settings settings
-	) {
-		this.loaders = loaders;
-		this.userProfileCache = userProfileCache;
-		this.settings = settings;
-	}
 
 	@Override
 	public void initialize() {
@@ -82,7 +75,7 @@ public class DefaultTranslationService implements TranslationService {
 
 	@Override
 	public String translate(String key, long userId) {
-		DiscordLocale defaultBotLocale = settings.getLocale();
+		DiscordLocale defaultBotLocale = settings.get().getLocale();
 		logger.trace("Translating key '{}' for user {}", key, userId);
 		DiscordLocale[] userLocales = getUserLocalesOrDefault(userId, defaultBotLocale);
 		logger.trace("User locales: {}", (Object) userLocales);
@@ -111,7 +104,7 @@ public class DefaultTranslationService implements TranslationService {
 		}
 
 		// Fallback to the default bot locale
-		DiscordLocale defaultBotLocale = settings.getLocale();
+		DiscordLocale defaultBotLocale = settings.get().getLocale();
 		translation = getTranslatedString(defaultBotLocale, key);
 		if (translation != null) {
 			logger.trace("Found translation for key '{}' in default locale {}: '{}'", key, defaultBotLocale, translation);
@@ -136,7 +129,7 @@ public class DefaultTranslationService implements TranslationService {
 	}
 
 	private DiscordLocale getEffectiveLocaleForUser(long userId) {
-		DiscordLocale defaultLocale = settings.getLocale();
+		DiscordLocale defaultLocale = settings.get().getLocale();
 		return userProfileCache.getProfile(userId)
 				.map(profile -> profile.getPrimaryLanguage() != null ? profile.getPrimaryLanguage() : defaultLocale)
 				.orElse(defaultLocale);

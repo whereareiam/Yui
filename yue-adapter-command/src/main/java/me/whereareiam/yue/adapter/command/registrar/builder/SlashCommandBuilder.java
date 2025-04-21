@@ -3,6 +3,7 @@ package me.whereareiam.yue.adapter.command.registrar.builder;
 import lombok.AllArgsConstructor;
 import me.whereareiam.yue.api.model.command.Command;
 import me.whereareiam.yue.api.model.config.settings.Settings;
+import me.whereareiam.yue.api.output.provider.Provider;
 import me.whereareiam.yue.api.util.TranslationTags;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -25,7 +26,7 @@ import java.util.regex.Pattern;
 @Component
 @AllArgsConstructor
 public class SlashCommandBuilder {
-	private final Settings settings;
+	private final Provider<Settings> settings;
 
 	// Patterns for parsing parameters
 	private static final Pattern REQUIRED_PARAM_PATTERN = Pattern.compile("\\(([^)]+)\\)");
@@ -39,7 +40,7 @@ public class SlashCommandBuilder {
 	 * @return A fully configured SlashCommandData object ready for registration
 	 */
 	public SlashCommandData buildMainCommand(String commandName, Command command) {
-		String description = TranslationTags.resolve(command.getDescription(), settings.getLocale());
+		String description = TranslationTags.resolve(command.getDescription(), settings.get().getLocale());
 		SlashCommandData slash = Commands.slash(commandName, description);
 
 		if (!isSubcommand(command))
@@ -56,7 +57,7 @@ public class SlashCommandBuilder {
 	 * @return A configured SubcommandData object ready to be attached to a parent command
 	 */
 	public SubcommandData buildSubcommand(String alias, Command command) {
-		String description = TranslationTags.resolve(command.getDescription(), settings.getLocale());
+		String description = TranslationTags.resolve(command.getDescription(), settings.get().getLocale());
 
 		SubcommandData sub = new SubcommandData(alias, description);
 		addParametersToSubcommand(sub, command);
@@ -157,6 +158,6 @@ public class SlashCommandBuilder {
 		String raw = variables.getOrDefault(param, "").trim();
 		if (raw.isEmpty()) return param;
 
-		return TranslationTags.resolve(raw, settings.getLocale());
+		return TranslationTags.resolve(raw, settings.get().getLocale());
 	}
 }
