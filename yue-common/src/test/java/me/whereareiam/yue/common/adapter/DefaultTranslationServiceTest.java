@@ -50,7 +50,7 @@ class DefaultTranslationServiceTest {
 		coreLocaleMap.put(Locale.GERMAN, deCore);
 		coreTranslations.put("", coreLocaleMap);
 
-		// YuePluginDescriptor translations
+		// Plugin translations
 		Map<String, Map<Locale, Map<String, String>>> pluginTranslations = new HashMap<>();
 		Map<Locale, Map<String, String>> pluginLocaleMap = new HashMap<>();
 
