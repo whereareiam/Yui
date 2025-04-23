@@ -1,6 +1,5 @@
 package me.whereareiam.yue.common.scanner;
 
-import jakarta.annotation.PostConstruct;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.slf4j.Logger;
@@ -22,8 +21,7 @@ public class ListenerScanner {
 		this.jda = jda;
 	}
 
-	@PostConstruct
-	public void registerListeners() {
+	public void scan() {
 		for (ListenerAdapter listener : listeners) {
 			jda.addEventListener(listener);
 			logger.debug("Registered listener: {}", listener.getClass().getSimpleName());

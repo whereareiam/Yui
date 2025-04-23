@@ -35,7 +35,7 @@ public class LanguageServiceAdapter implements LanguageService {
 
 	@Override
 	public boolean languageExists(DiscordLocale locale) {
-		return languageRepository.findByLocale((locale)).isPresent();
+		return languageRepository.findByLocale(locale).isPresent();
 	}
 
 	@Override

@@ -8,6 +8,7 @@ import me.whereareiam.yue.api.model.config.style.embed.EmbedStyle;
 import me.whereareiam.yue.api.output.plugin.PluginService;
 import me.whereareiam.yue.api.output.service.CommandService;
 import me.whereareiam.yue.common.scanner.ComponentListenerScanner;
+import me.whereareiam.yue.common.scanner.ListenerScanner;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
@@ -45,6 +46,7 @@ public class CommonConfiguration {
 					.setMemberCachePolicy(MemberCachePolicy.ALL);
 
 			jda = builder.build().awaitReady();
+
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
@@ -65,7 +67,9 @@ public class CommonConfiguration {
 		ctx.getBean(CommandService.class).initialize();
 		ctx.getBean(PluginService.class).loadPlugins();
 		ctx.getBean(TranslationService.class).initialize();
+
 		ctx.getBean(ComponentListenerScanner.class).scan();
+		ctx.getBean(ListenerScanner.class).scan();
 
 		welcome();
 	}

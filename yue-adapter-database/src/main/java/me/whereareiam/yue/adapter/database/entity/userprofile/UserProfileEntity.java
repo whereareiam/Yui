@@ -19,6 +19,7 @@ public class UserProfileEntity {
 	private long id;
 
 	@ManyToOne
+	@JoinColumn(name = "language_id")
 	private LanguageEntity primaryLanguage;
 
 	@OneToMany(mappedBy = "userProfileEntity")
