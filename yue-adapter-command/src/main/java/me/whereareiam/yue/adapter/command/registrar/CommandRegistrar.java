@@ -42,6 +42,11 @@ public class CommandRegistrar {
 	}
 
 	private void syncWithDiscord() {
+		if (jda.getStatus() == JDA.Status.SHUTTING_DOWN || jda.getStatus() == JDA.Status.SHUTDOWN) {
+			log.warn("Skipping syncWithDiscord: JDA is shutting down or already shut down.");
+			return;
+		}
+
 		Map<String, SlashCommandData> roots = new HashMap<>();
 		Map<String, List<SubcommandData>> subsByRoot = new HashMap<>();
 		Set<String> subcommandAliases = new HashSet<>();

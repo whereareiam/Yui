@@ -5,10 +5,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@EnableAsync
 @SpringBootApplication
 public class YueApplication {
 	public static void main(String[] args) {
