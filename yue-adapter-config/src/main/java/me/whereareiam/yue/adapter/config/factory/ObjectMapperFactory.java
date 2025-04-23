@@ -7,28 +7,28 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
+import lombok.RequiredArgsConstructor;
 import me.whereareiam.yue.adapter.config.deserializer.ColorDeserializer;
+import me.whereareiam.yue.adapter.config.deserializer.DiscordLocaleDeserializer;
 import me.whereareiam.yue.adapter.config.serializer.ColorSerializer;
+import me.whereareiam.yue.adapter.config.serializer.DiscordLocaleSerializer;
 import me.whereareiam.yue.api.type.ConfigurationType;
-import org.springframework.beans.factory.annotation.Autowired;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
 
 @Component
+@RequiredArgsConstructor
 public class ObjectMapperFactory {
 	private final ConfigurationType configurationType;
+
 	private final ColorDeserializer colorDeserializer;
 	private final ColorSerializer colorSerializer;
+	private final DiscordLocaleDeserializer discordLocaleDeserializer;
+	private final DiscordLocaleSerializer discordLocaleSerializer;
 
 	private ObjectMapper objectMapper;
-
-	@Autowired
-	public ObjectMapperFactory(ConfigurationType configurationType, ColorDeserializer colorDeserializer, ColorSerializer colorSerializer) {
-		this.configurationType = configurationType;
-		this.colorDeserializer = colorDeserializer;
-		this.colorSerializer = colorSerializer;
-	}
 
 	public ObjectMapper createObjectMapper() {
 		if (objectMapper != null) return objectMapper;
@@ -58,6 +58,8 @@ public class ObjectMapperFactory {
 
 		module.addDeserializer(Color.class, colorDeserializer);
 		module.addSerializer(Color.class, colorSerializer);
+		module.addDeserializer(DiscordLocale.class, discordLocaleDeserializer);
+		module.addSerializer(DiscordLocale.class, discordLocaleSerializer);
 
 		return module;
 	}

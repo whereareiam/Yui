@@ -1,5 +1,6 @@
 package me.whereareiam.yue.adapter.database.adapter.profile;
 
+import jakarta.transaction.Transactional;
 import me.whereareiam.yue.adapter.database.entity.LanguageEntity;
 import me.whereareiam.yue.adapter.database.entity.RoleEntity;
 import me.whereareiam.yue.adapter.database.entity.userprofile.UserProfileEntity;
@@ -149,6 +150,7 @@ public class UserProfileServiceAdapter implements UserProfileService {
 	}
 
 	@Override
+	@Transactional
 	public Optional<UserProfile> getProfile(long id) {
 		return userProfileRepository.findById(id).map(ProfileMapper::toProfile);
 	}

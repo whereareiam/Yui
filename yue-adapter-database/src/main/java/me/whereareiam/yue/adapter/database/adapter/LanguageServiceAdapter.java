@@ -1,5 +1,6 @@
 package me.whereareiam.yue.adapter.database.adapter;
 
+import jakarta.transaction.Transactional;
 import me.whereareiam.yue.adapter.database.entity.LanguageEntity;
 import me.whereareiam.yue.adapter.database.repository.LanguageRepository;
 import me.whereareiam.yue.api.output.service.LanguageService;
@@ -29,6 +30,7 @@ public class LanguageServiceAdapter implements LanguageService {
 	}
 
 	@Override
+	@Transactional
 	public void removeLanguage(DiscordLocale locale) {
 		languageRepository.deleteByLocale(locale);
 	}

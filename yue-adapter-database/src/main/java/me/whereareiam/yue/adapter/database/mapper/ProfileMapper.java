@@ -17,7 +17,6 @@ public class ProfileMapper {
 	}
 
 	public static UserProfile toProfile(UserProfileEntity entity) {
-
 		DiscordLocale primaryLocale = entity.getPrimaryLanguage() != null
 				? entity.getPrimaryLanguage().getLocale()
 				: null;
@@ -29,7 +28,7 @@ public class ProfileMapper {
 				.toArray(DiscordLocale[]::new);
 
 		long[] roleIds = entity.getRoles() == null || entity.getRoles().isEmpty()
-				? null                     // “zero roles, but not an empty list”
+				? null
 				: entity.getRoles().stream()
 				.mapToLong(RoleEntity::getId)
 				.toArray();

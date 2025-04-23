@@ -23,9 +23,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @AllArgsConstructor
 public class DefaultTranslationService implements TranslationService {
 	private static final Logger logger = LoggerFactory.getLogger(DefaultTranslationService.class);
+
+	private final Provider<Settings> settings;
 	private final List<TranslationLoader> loaders;
 	private final UserProfileCacheProvider userProfileCache;
-	private final Provider<Settings> settings;
 
 	/**
 	 * Merged translations:

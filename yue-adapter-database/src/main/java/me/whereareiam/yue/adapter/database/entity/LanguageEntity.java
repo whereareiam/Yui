@@ -19,5 +19,6 @@ public class LanguageEntity {
 	private int id;
 
 	@Column(nullable = false, unique = true)
+	@Enumerated(EnumType.STRING)
 	private DiscordLocale locale;
 }

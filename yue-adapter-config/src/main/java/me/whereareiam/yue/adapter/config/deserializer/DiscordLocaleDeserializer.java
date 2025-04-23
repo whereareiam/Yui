@@ -4,20 +4,13 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
-import me.whereareiam.yue.api.output.config.ConfigurationManager;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 
 @Component
 public class DiscordLocaleDeserializer extends JsonDeserializer<DiscordLocale> {
-	@Autowired
-	public DiscordLocaleDeserializer(ConfigurationManager configManager) {
-		configManager.addDeserializer(DiscordLocale.class, this);
-	}
-
 	@Override
 	public DiscordLocale deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException {
 		JsonNode node = parser.getCodec().readTree(parser);

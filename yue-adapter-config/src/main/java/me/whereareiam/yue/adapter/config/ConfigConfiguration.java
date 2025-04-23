@@ -3,9 +3,11 @@ package me.whereareiam.yue.adapter.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.whereareiam.yue.adapter.config.factory.ConfigurationTypeFactory;
 import me.whereareiam.yue.adapter.config.factory.ObjectMapperFactory;
+import me.whereareiam.yue.adapter.config.provider.RolesProvider;
 import me.whereareiam.yue.adapter.config.provider.SettingsProvider;
 import me.whereareiam.yue.adapter.config.provider.style.EmbedsProvider;
 import me.whereareiam.yue.adapter.config.provider.style.PaletteProvider;
+import me.whereareiam.yue.api.model.config.Roles;
 import me.whereareiam.yue.api.model.config.settings.Settings;
 import me.whereareiam.yue.api.model.config.style.Palette;
 import me.whereareiam.yue.api.model.config.style.embed.EmbedStyle;
@@ -32,6 +34,11 @@ public class ConfigConfiguration {
 
 	@Bean
 	public Settings settings(SettingsProvider provider) {
+		return provider.get();
+	}
+
+	@Bean
+	public Roles roles(RolesProvider provider) {
 		return provider.get();
 	}
 
