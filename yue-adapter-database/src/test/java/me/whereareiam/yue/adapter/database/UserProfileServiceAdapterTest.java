@@ -2,10 +2,12 @@ package me.whereareiam.yue.adapter.database;
 
 import me.whereareiam.yue.adapter.database.adapter.profile.UserProfileServiceAdapter;
 import me.whereareiam.yue.adapter.database.entity.LanguageEntity;
+import me.whereareiam.yue.adapter.database.entity.RoleEntity;
 import me.whereareiam.yue.adapter.database.entity.userprofile.UserProfileEntity;
 import me.whereareiam.yue.adapter.database.entity.userprofile.UserProfileLanguageEntity;
 import me.whereareiam.yue.adapter.database.repository.LanguageRepository;
-import me.whereareiam.yue.adapter.database.repository.ProfileRepository;
+import me.whereareiam.yue.adapter.database.repository.RoleRepository;
+import me.whereareiam.yue.adapter.database.repository.UserProfileRepository;
 import me.whereareiam.yue.api.model.profile.UserProfile;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,219 +24,197 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class UserProfileServiceAdapterTest {
+class UserProfileServiceAdapterTest {
 
 	@Mock
-	private ProfileRepository profileRepository;
-
+	private UserProfileRepository userProfileRepository;
 	@Mock
 	private LanguageRepository languageRepository;
+	@Mock
+	private RoleRepository roleRepository;
 
 	private UserProfileServiceAdapter profileService;
 
 	@BeforeEach
 	void setUp() {
-		profileService = new UserProfileServiceAdapter(profileRepository, languageRepository);
+		profileService = new UserProfileServiceAdapter(
+				userProfileRepository,
+				languageRepository,
+				roleRepository
+		);
 	}
 
 	@Test
 	void createProfile_withId_whenProfileDoesNotExist_shouldCreateProfile() {
-		// Arrange
 		long profileId = 1L;
+		when(userProfileRepository.existsById(profileId)).thenReturn(false);
 
-		when(profileRepository.existsById(profileId)).thenReturn(false);
+		when(userProfileRepository.save(any(UserProfileEntity.class)))
+				.thenAnswer(inv -> inv.getArgument(0));
 
-		UserProfileEntity savedEntity = UserProfileEntity.builder()
-				.id(profileId)
-				.build();
-
-		when(profileRepository.save(any(UserProfileEntity.class))).thenReturn(savedEntity);
-
-		// Act
 		Optional<UserProfile> result = profileService.createProfile(profileId);
 
-		// Assert
 		assertTrue(result.isPresent());
-		assertEquals(profileId, result.get().getId());
-		assertNull(result.get().getPrimaryLanguage());
-		assertEquals(0, result.get().getAdditionalLanguages().length);
-		verify(profileRepository).save(any(UserProfileEntity.class));
+		UserProfile profile = result.get();
+		assertEquals(profileId, profile.getId());
+		assertNull(profile.getPrimaryLanguage());
+		assertEquals(0, profile.getAdditionalLanguages().length);
+		assertNull(profile.getRoles());
+		verify(userProfileRepository).save(any(UserProfileEntity.class));
+		verifyNoInteractions(roleRepository);
 	}
 
 	@Test
 	void createProfile_withId_whenProfileExists_shouldThrowException() {
-		// Arrange
 		long profileId = 1L;
-		when(profileRepository.existsById(profileId)).thenReturn(true);
+		when(userProfileRepository.existsById(profileId)).thenReturn(true);
 
-		// Act & Assert
-		assertThrows(IllegalArgumentException.class, () -> profileService.createProfile(profileId));
-		verify(profileRepository, never()).save(any());
+		assertThrows(IllegalArgumentException.class,
+				() -> profileService.createProfile(profileId));
+
+		verify(userProfileRepository, never()).save(any());
 	}
 
 	@Test
 	void createProfile_withProfile_whenProfileDoesNotExist_shouldCreateProfile() {
-		// Arrange
 		long profileId = 1L;
 		DiscordLocale primaryLocale = DiscordLocale.ENGLISH_US;
-		DiscordLocale[] additionalLocales = new DiscordLocale[]{DiscordLocale.FRENCH};
-		UserProfile userProfile = new UserProfile(profileId, primaryLocale, additionalLocales);
+		DiscordLocale[] additionalLocales = {DiscordLocale.FRENCH};
+		long[] rolesArr = {5L, 6L};
 
-		LanguageEntity primaryLanguage = LanguageEntity.builder().locale(primaryLocale).build();
-		LanguageEntity frenchLanguage = LanguageEntity.builder().locale(DiscordLocale.FRENCH).build();
+		UserProfile userProfile = new UserProfile(
+				profileId, primaryLocale, additionalLocales, rolesArr);
 
-		UserProfileEntity savedEntity = UserProfileEntity.builder()
-				.id(profileId)
-				.primaryLanguage(primaryLanguage)
-				.additionalLanguages(new HashSet<>())
-				.build();
+		// languages ---------------------------------------------------------
+		LanguageEntity english = LanguageEntity.builder().locale(primaryLocale).build();
+		LanguageEntity french = LanguageEntity.builder().locale(DiscordLocale.FRENCH).build();
+		when(languageRepository.findByLocale(primaryLocale)).thenReturn(Optional.of(english));
+		when(languageRepository.findByLocale(DiscordLocale.FRENCH)).thenReturn(Optional.of(french));
 
-		// Mock existsById instead of relying on findById for existence check
-		when(profileRepository.existsById(profileId)).thenReturn(false);
+		// roles -------------------------------------------------------------
+		RoleEntity role5 = RoleEntity.builder().id(5L).build();
+		RoleEntity role6 = RoleEntity.builder().id(6L).build();
+		when(roleRepository.findById(5L)).thenReturn(Optional.empty());
+		when(roleRepository.findById(6L)).thenReturn(Optional.of(role6));  // mix of present / absent
+		when(roleRepository.save(argThat(r -> r.getId() == 5L))).thenReturn(role5);
 
-		// Always return the profile entity when findById is called
-		when(profileRepository.findById(profileId)).thenReturn(Optional.of(savedEntity));
+		// profile existence -------------------------------------------------
+		when(userProfileRepository.existsById(profileId)).thenReturn(false);
 
-		when(languageRepository.findByLocale(primaryLocale)).thenReturn(Optional.of(primaryLanguage));
-		when(languageRepository.findByLocale(DiscordLocale.FRENCH)).thenReturn(Optional.of(frenchLanguage));
+		when(userProfileRepository.save(any(UserProfileEntity.class)))
+				.thenAnswer(inv -> inv.getArgument(0));
 
-		// Act
 		profileService.createProfile(userProfile);
 
-		// Assert
-		verify(profileRepository, times(2)).save(any(UserProfileEntity.class));
+		verify(roleRepository).save(role5);
+		verify(userProfileRepository, times(2)).save(any(UserProfileEntity.class));
 	}
 
 	@Test
 	void createProfile_withProfile_whenProfileExists_shouldThrowException() {
-		// Arrange
 		long profileId = 1L;
-		UserProfile userProfile = new UserProfile(profileId, DiscordLocale.ENGLISH_US, null);
-		when(profileRepository.existsById(profileId)).thenReturn(true);
+		UserProfile userProfile =
+				new UserProfile(profileId, DiscordLocale.ENGLISH_US, null, null);
 
-		// Act & Assert
-		assertThrows(IllegalArgumentException.class, () -> profileService.createProfile(userProfile));
+		when(userProfileRepository.existsById(profileId)).thenReturn(true);
+
+		assertThrows(IllegalArgumentException.class,
+				() -> profileService.createProfile(userProfile));
 	}
 
 	@Test
 	void changePrimaryLanguage_whenProfileExists_shouldUpdatePrimaryLanguage() {
-		// Arrange
 		long profileId = 1L;
 		DiscordLocale newLocale = DiscordLocale.FRENCH;
 
-		UserProfileEntity existingProfile = UserProfileEntity.builder().id(profileId).build();
-		LanguageEntity newLanguage = LanguageEntity.builder().locale(newLocale).build();
+		UserProfileEntity entity = UserProfileEntity.builder().id(profileId).build();
+		LanguageEntity lang = LanguageEntity.builder().locale(newLocale).build();
 
-		when(profileRepository.findById(profileId)).thenReturn(Optional.of(existingProfile));
-		when(languageRepository.findByLocale(newLocale)).thenReturn(Optional.of(newLanguage));
+		when(userProfileRepository.findById(profileId)).thenReturn(Optional.of(entity));
+		when(languageRepository.findByLocale(newLocale)).thenReturn(Optional.of(lang));
 
-		// Act
 		profileService.changePrimaryLanguage(profileId, newLocale);
 
-		// Assert
-		verify(profileRepository).save(existingProfile);
-		assertEquals(newLanguage, existingProfile.getPrimaryLanguage());
+		verify(userProfileRepository).save(entity);
+		assertEquals(lang, entity.getPrimaryLanguage());
 	}
 
 	@Test
 	void addAdditionalLanguage_whenProfileExistsAndLanguageNotAdded_shouldAddLanguage() {
-		// Arrange
 		long profileId = 1L;
 		DiscordLocale locale = DiscordLocale.FRENCH;
 
-		UserProfileEntity existingProfile = UserProfileEntity.builder()
+		UserProfileEntity entity = UserProfileEntity.builder()
 				.id(profileId)
 				.additionalLanguages(new HashSet<>())
 				.build();
 
-		LanguageEntity language = LanguageEntity.builder().locale(locale).build();
+		LanguageEntity lang = LanguageEntity.builder().locale(locale).build();
 
-		when(profileRepository.findById(profileId)).thenReturn(Optional.of(existingProfile));
-		when(languageRepository.findByLocale(locale)).thenReturn(Optional.of(language));
+		when(userProfileRepository.findById(profileId)).thenReturn(Optional.of(entity));
+		when(languageRepository.findByLocale(locale)).thenReturn(Optional.of(lang));
 
-		// Act
 		profileService.addAdditionalLanguage(profileId, locale);
 
-		// Assert
-		verify(profileRepository).save(existingProfile);
-		assertEquals(1, existingProfile.getAdditionalLanguages().size());
+		verify(userProfileRepository).save(entity);
+		assertEquals(1, entity.getAdditionalLanguages().size());
 	}
 
 	@Test
 	void removeAdditionalLanguage_whenProfileExists_shouldRemoveLanguage() {
-		// Arrange
 		long profileId = 1L;
 		DiscordLocale locale = DiscordLocale.FRENCH;
 
-		LanguageEntity language = LanguageEntity.builder().locale(locale).build();
-		UserProfileEntity existingProfile = UserProfileEntity.builder().id(profileId).build();
+		LanguageEntity lang = LanguageEntity.builder().locale(locale).build();
+		UserProfileEntity entity = UserProfileEntity.builder().id(profileId).build();
 
-		Set<UserProfileLanguageEntity> additionalLanguages = new HashSet<>();
-		UserProfileLanguageEntity languageLink = UserProfileLanguageEntity.builder()
-				.languageEntity(language)
-				.userProfileEntity(existingProfile)
-				.build();
-		additionalLanguages.add(languageLink);
+		Set<UserProfileLanguageEntity> links = new HashSet<>();
+		links.add(UserProfileLanguageEntity.builder()
+				.languageEntity(lang)
+				.userProfileEntity(entity)
+				.build());
+		entity.setAdditionalLanguages(links);
 
-		existingProfile.setAdditionalLanguages(additionalLanguages);
+		when(userProfileRepository.findById(profileId)).thenReturn(Optional.of(entity));
 
-		when(profileRepository.findById(profileId)).thenReturn(Optional.of(existingProfile));
-
-		// Act
 		profileService.removeAdditionalLanguage(profileId, locale);
 
-		// Assert
-		verify(profileRepository).save(existingProfile);
-		assertTrue(existingProfile.getAdditionalLanguages().isEmpty());
+		verify(userProfileRepository).save(entity);
+		assertTrue(entity.getAdditionalLanguages().isEmpty());
 	}
 
 	@Test
 	void deleteProfile_shouldDeleteProfileById() {
-		// Arrange
 		long profileId = 1L;
-
-		// Act
 		profileService.deleteProfile(profileId);
-
-		// Assert
-		verify(profileRepository).deleteById(profileId);
+		verify(userProfileRepository).deleteById(profileId);
 	}
 
 	@Test
 	void getProfile_whenProfileExists_shouldReturnProfile() {
-		// Arrange
 		long profileId = 1L;
-		DiscordLocale primaryLocale = DiscordLocale.ENGLISH_US;
+		DiscordLocale locale = DiscordLocale.ENGLISH_US;
 
-		LanguageEntity primaryLanguage = LanguageEntity.builder().locale(primaryLocale).build();
-
+		LanguageEntity lang = LanguageEntity.builder().locale(locale).build();
 		UserProfileEntity entity = UserProfileEntity.builder()
 				.id(profileId)
-				.primaryLanguage(primaryLanguage)
-				.additionalLanguages(new HashSet<>())
+				.primaryLanguage(lang)
 				.build();
 
-		when(profileRepository.findById(profileId)).thenReturn(Optional.of(entity));
+		when(userProfileRepository.findById(profileId)).thenReturn(Optional.of(entity));
 
-		// Act
 		Optional<UserProfile> result = profileService.getProfile(profileId);
 
-		// Assert
 		assertTrue(result.isPresent());
-		assertEquals(profileId, result.get().getId());
-		assertEquals(primaryLocale, result.get().getPrimaryLanguage());
+		UserProfile profile = result.get();
+		assertEquals(profileId, profile.getId());
+		assertEquals(locale, profile.getPrimaryLanguage());
+		assertNull(profile.getRoles());
 	}
 
 	@Test
 	void getProfile_whenProfileDoesNotExist_shouldReturnEmpty() {
-		// Arrange
-		long profileId = 1L;
-		when(profileRepository.findById(profileId)).thenReturn(Optional.empty());
-
-		// Act
-		Optional<UserProfile> result = profileService.getProfile(profileId);
-
-		// Assert
-		assertTrue(result.isEmpty());
+		when(userProfileRepository.findById(1L)).thenReturn(Optional.empty());
+		assertTrue(profileService.getProfile(1L).isEmpty());
 	}
 }

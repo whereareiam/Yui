@@ -1,52 +1,60 @@
 package me.whereareiam.yue.adapter.database.adapter.profile;
 
 import me.whereareiam.yue.adapter.database.entity.LanguageEntity;
+import me.whereareiam.yue.adapter.database.entity.RoleEntity;
 import me.whereareiam.yue.adapter.database.entity.userprofile.UserProfileEntity;
 import me.whereareiam.yue.adapter.database.entity.userprofile.UserProfileLanguageEntity;
 import me.whereareiam.yue.adapter.database.mapper.ProfileMapper;
 import me.whereareiam.yue.adapter.database.repository.LanguageRepository;
-import me.whereareiam.yue.adapter.database.repository.ProfileRepository;
+import me.whereareiam.yue.adapter.database.repository.RoleRepository;
+import me.whereareiam.yue.adapter.database.repository.UserProfileRepository;
 import me.whereareiam.yue.api.model.profile.UserProfile;
 import me.whereareiam.yue.api.output.service.UserProfileService;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class UserProfileServiceAdapter implements UserProfileService {
 
-	private final ProfileRepository profileRepository;
+	private final UserProfileRepository userProfileRepository;
 	private final LanguageRepository languageRepository;
+	private final RoleRepository roleRepository;
 
 	@Autowired
 	public UserProfileServiceAdapter(
-			ProfileRepository profileRepository,
-			LanguageRepository languageRepository
+			UserProfileRepository userProfileRepository,
+			LanguageRepository languageRepository,
+			RoleRepository roleRepository
 	) {
-		this.profileRepository = profileRepository;
+		this.userProfileRepository = userProfileRepository;
 		this.languageRepository = languageRepository;
+		this.roleRepository = roleRepository;
 	}
 
 	@Override
 	public Optional<UserProfile> createProfile(long id) {
-		if (profileRepository.existsById(id))
+		if (userProfileRepository.existsById(id))
 			throw new IllegalArgumentException("UserProfile with id " + id + " already exists");
 
 		UserProfileEntity userProfileEntity = UserProfileEntity.builder()
 				.id(id)
 				.build();
 
-		profileRepository.save(userProfileEntity);
+		userProfileRepository.save(userProfileEntity);
 
-		return Optional.of(new UserProfile(id, null, new DiscordLocale[0]));
+		return Optional.of(new UserProfile(id, null, new DiscordLocale[0], null));
 	}
 
 	@Override
 	public Optional<UserProfile> createProfile(UserProfile userProfile) {
-		if (profileRepository.existsById(userProfile.getId()))
+		if (userProfileRepository.existsById(userProfile.getId()))
 			throw new IllegalArgumentException("UserProfile with id " + userProfile.getId() + " already exists");
 
 		UserProfileEntity userProfileEntity = UserProfileEntity.builder()
@@ -62,8 +70,17 @@ public class UserProfileServiceAdapter implements UserProfileService {
 			userProfileEntity.setPrimaryLanguage(primaryLanguageEntity);
 		}
 
+		// If the roles are present, load or save them all, then set the userProfile's roles field to the loaded roles
+		if (userProfile.getRoles() != null && userProfile.getRoles().length > 0) {
+			Set<RoleEntity> roleEntities = Arrays.stream(userProfile.getRoles())
+					.mapToObj(roleId -> roleRepository.findById(roleId)
+							.orElseGet(() -> roleRepository.save(RoleEntity.builder().id(roleId).build())))
+					.collect(Collectors.toSet());
+			userProfileEntity.setRoles(roleEntities);
+		}
+
 		// Save the bare userProfile first
-		profileRepository.save(userProfileEntity);
+		userProfileRepository.save(userProfileEntity);
 
 		// Then handle additional languages
 		if (userProfile.getAdditionalLanguages() != null) {
@@ -76,50 +93,25 @@ public class UserProfileServiceAdapter implements UserProfileService {
 	}
 
 	@Override
-	public void createProfile(long id, DiscordLocale locale, DiscordLocale[] additionalLanguages) {
-		if (profileRepository.existsById(id))
-			throw new IllegalArgumentException("UserProfile with id " + id + " already exists");
-
-		UserProfileEntity userProfileEntity = UserProfileEntity.builder()
-				.id(id)
-				.build();
-
-		if (locale != null) {
-			LanguageEntity primaryLanguageEntity = languageRepository.findByLocale(locale)
-					.orElseThrow(() -> new IllegalArgumentException("Primary language not found: " + locale));
-			userProfileEntity.setPrimaryLanguage(primaryLanguageEntity);
-		}
-
-		profileRepository.save(userProfileEntity);
-
-		// Then handle additional languages
-		if (additionalLanguages != null) {
-			for (DiscordLocale lang : additionalLanguages) {
-				addAdditionalLanguage(id, lang);
-			}
-		}
-	}
-
-	@Override
 	public void deleteProfile(long id) {
-		profileRepository.deleteById(id);
+		userProfileRepository.deleteById(id);
 	}
 
 	@Override
 	public void changePrimaryLanguage(long id, DiscordLocale locale) {
-		UserProfileEntity userProfileEntity = profileRepository.findById(id)
+		UserProfileEntity userProfileEntity = userProfileRepository.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("UserProfile not found with id: " + id));
 
 		LanguageEntity primaryLanguageEntity = languageRepository.findByLocale(locale)
 				.orElseThrow(() -> new IllegalArgumentException("Primary language not found: " + locale));
 
 		userProfileEntity.setPrimaryLanguage(primaryLanguageEntity);
-		profileRepository.save(userProfileEntity);
+		userProfileRepository.save(userProfileEntity);
 	}
 
 	@Override
 	public void addAdditionalLanguage(long profileId, DiscordLocale locale) {
-		UserProfileEntity userProfileEntity = profileRepository.findById(profileId)
+		UserProfileEntity userProfileEntity = userProfileRepository.findById(profileId)
 				.orElseThrow(() -> new IllegalArgumentException("UserProfile not found with id: " + profileId));
 
 		LanguageEntity languageEntity = languageRepository.findByLocale(locale)
@@ -140,24 +132,24 @@ public class UserProfileServiceAdapter implements UserProfileService {
 			}
 
 			userProfileEntity.getAdditionalLanguages().add(languageLink);
-			profileRepository.save(userProfileEntity);
+			userProfileRepository.save(userProfileEntity);
 		}
 	}
 
 	@Override
 	public void removeAdditionalLanguage(long profileId, DiscordLocale locale) {
-		UserProfileEntity userProfileEntity = profileRepository.findById(profileId)
+		UserProfileEntity userProfileEntity = userProfileRepository.findById(profileId)
 				.orElseThrow(() -> new IllegalArgumentException("UserProfile not found with id: " + profileId));
 
 		if (userProfileEntity.getAdditionalLanguages() != null) {
 			userProfileEntity.getAdditionalLanguages().removeIf(pl ->
 					pl.getLanguageEntity().getLocale().equals(locale));
-			profileRepository.save(userProfileEntity);
+			userProfileRepository.save(userProfileEntity);
 		}
 	}
 
 	@Override
 	public Optional<UserProfile> getProfile(long id) {
-		return profileRepository.findById(id).map(ProfileMapper::toProfile);
+		return userProfileRepository.findById(id).map(ProfileMapper::toProfile);
 	}
 }

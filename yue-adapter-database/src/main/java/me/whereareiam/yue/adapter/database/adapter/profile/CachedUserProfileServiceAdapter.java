@@ -41,13 +41,6 @@ public class CachedUserProfileServiceAdapter implements UserProfileService {
 	}
 
 	@Override
-	public void createProfile(long id, DiscordLocale locale, DiscordLocale[] additionalLanguages) {
-		delegate.createProfile(id, locale, additionalLanguages);
-		UserProfile newUserProfile = new UserProfile(id, locale, additionalLanguages);
-		cache.putProfile(id, newUserProfile);
-	}
-
-	@Override
 	public void deleteProfile(long id) {
 		delegate.deleteProfile(id);
 		cache.evictProfile(id);

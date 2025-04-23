@@ -46,6 +46,8 @@ public class DatabaseConfiguration {
 		em.setPackagesToScan(getClass().getPackage().getName() + ".entity");
 
 		HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+		vendorAdapter.setGenerateDdl(true);
+
 		em.setJpaVendorAdapter(vendorAdapter);
 
 		return em;

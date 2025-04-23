@@ -10,8 +10,6 @@ public interface UserProfileService {
 
 	Optional<UserProfile> createProfile(UserProfile userProfile);
 
-	void createProfile(long id, DiscordLocale locale, DiscordLocale[] additionalLanguages);
-
 	void deleteProfile(long id);
 
 	void changePrimaryLanguage(long id, DiscordLocale locale);

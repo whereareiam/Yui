@@ -7,6 +7,8 @@ public class UserProfile {
 	private DiscordLocale primaryLanguage;
 	private DiscordLocale[] additionalLanguages;
 
+	private long[] roles;
+
 	public UserProfile(long id) {
 		this.id = id;
 	}
@@ -16,7 +18,7 @@ public class UserProfile {
 		this.primaryLanguage = primaryLanguage;
 	}
 
-	public UserProfile(long id, DiscordLocale primaryLanguage, DiscordLocale[] additionalLanguages) {
+	public UserProfile(long id, DiscordLocale primaryLanguage, DiscordLocale[] additionalLanguages, long[] roles) {
 		this.id = id;
 		this.primaryLanguage = primaryLanguage;
 		this.additionalLanguages = additionalLanguages;
@@ -40,5 +42,13 @@ public class UserProfile {
 
 	public void setAdditionalLanguages(DiscordLocale[] additionalLanguages) {
 		this.additionalLanguages = additionalLanguages;
+	}
+
+	public long[] getRoles() {
+		return roles;
+	}
+
+	public void setRoles(long[] roles) {
+		this.roles = roles;
 	}
 }
