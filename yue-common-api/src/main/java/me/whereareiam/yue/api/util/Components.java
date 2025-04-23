@@ -17,7 +17,7 @@ public class Components {
 	private static InteractionService interactions;
 
 	@Autowired
-	public void setInteractionService(InteractionService interactionService) {
+	public void init(InteractionService interactionService) {
 		Components.interactions = interactionService;
 	}
 

@@ -13,19 +13,24 @@ import org.springframework.stereotype.Service;
 public class StyleKitReloadService implements Reloadable {
 	private final Provider<Palette> palette;
 	private final Provider<EmbedStyle> embedStyle;
+	private final StyleKit styleKit;
 
 	@Autowired
-	public StyleKitReloadService(Provider<Palette> palette,
-	                             Provider<EmbedStyle> embedStyle,
-	                             ReloadableProvider reloadableProvider
+	public StyleKitReloadService(
+			Provider<Palette> palette,
+			Provider<EmbedStyle> embedStyle,
+			ReloadableProvider reloadableProvider,
+			StyleKit styleKit
 	) {
 		this.palette = palette;
 		this.embedStyle = embedStyle;
+		this.styleKit = styleKit;
+		
 		reloadableProvider.register(this);
 	}
 
 	@Override
 	public void reload() {
-		StyleKit.init(palette.get(), embedStyle.get());
+		styleKit.init(palette.get(), embedStyle.get());
 	}
 }

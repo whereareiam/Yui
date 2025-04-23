@@ -38,7 +38,7 @@ public class Translatable {
 	 * @param translationService The translation service to use
 	 */
 	@Autowired
-	public void setTranslationService(TranslationService translationService) {
+	public void init(TranslationService translationService) {
 		Translatable.translationService = translationService;
 	}
 
