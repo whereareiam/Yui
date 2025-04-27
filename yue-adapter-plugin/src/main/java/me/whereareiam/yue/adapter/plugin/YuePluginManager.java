@@ -1,166 +1,136 @@
 package me.whereareiam.yue.adapter.plugin;
 
-import me.whereareiam.yue.api.exception.PluginLoadException;
+import me.whereareiam.yue.adapter.plugin.bean.PluginBeanRegistry;
+import me.whereareiam.yue.adapter.plugin.descriptor.PluginDescriptorReader;
+import me.whereareiam.yue.adapter.plugin.factory.PluginClassLoaderFactory;
+import me.whereareiam.yue.adapter.plugin.factory.PluginContextFactory;
 import me.whereareiam.yue.api.model.plugin.InternalPlugin;
 import me.whereareiam.yue.api.model.plugin.Plugin;
-import me.whereareiam.yue.api.output.config.ConfigurationLoader;
 import me.whereareiam.yue.api.output.plugin.PluginManager;
 import me.whereareiam.yue.api.output.plugin.YuePlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
-import java.io.InputStream;
-import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-@Component
+@Service
 public class YuePluginManager implements PluginManager {
 	private static final Logger LOG = LoggerFactory.getLogger(YuePluginManager.class);
 
-	private final ApplicationContext ctx;
-	private final ConfigurationLoader configLoader;
-	private final PluginStorage storage;
 	private final Path pluginsPath;
+	private final PluginStorage storage;
+	private final PluginDescriptorReader descriptorReader;
+	private final PluginClassLoaderFactory classLoaderFactory;
+	private final PluginContextFactory contextFactory;
+	private final PluginBeanRegistry registry;
 
 	private final ReentrantLock lock = new ReentrantLock(true);
 
 	public YuePluginManager(
-			ApplicationContext ctx,
-			ConfigurationLoader configLoader,
+			@Qualifier("pluginsPath") Path pluginsPath,
 			PluginStorage storage,
-			@Qualifier("pluginsPath") Path pluginsPath
+			PluginDescriptorReader descriptorReader,
+			PluginClassLoaderFactory classLoaderFactory,
+			PluginContextFactory contextFactory,
+			PluginBeanRegistry registry
 	) {
-		this.ctx = ctx;
-		this.configLoader = configLoader;
 		this.storage = storage;
 		this.pluginsPath = pluginsPath;
+		this.descriptorReader = descriptorReader;
+		this.classLoaderFactory = classLoaderFactory;
+		this.contextFactory = contextFactory;
+		this.registry = registry;
 	}
 
 	@Override
 	public void initialize() {
 		try (Stream<Path> jars = Files.list(pluginsPath)) {
-			jars.filter(p -> p.toString().endsWith(".jar"))
-					.forEach(this::load);
+			jars.filter(p -> p.toString().endsWith(".jar")).forEach(this::load);
 		} catch (Exception e) {
-			LOG.error("Failed to load plugins from {}", pluginsPath, e);
+			LOG.error("Failed to load plugins", e);
 		}
 	}
 
 	@Override
 	public void load(Path path) {
-		if (Files.notExists(path)) {
-			LOG.warn("Plugin path not found: {}", path);
-			return;
-		}
-
+		if (Files.notExists(path)) return;
 		lock.lock();
-
 		try {
-			Plugin plugin = readPlugin(path);
-			if (storage.byId(plugin.getId()).isPresent()) {
-				LOG.info("Plugin {} already loaded", plugin.getId());
-				return;
-			}
+			Plugin plugin = descriptorReader.read(path);
 
-			URLClassLoader classLoader = createClassLoader(path);
+			if (storage.byId(plugin.getId()).isPresent()) return;
 
-			AnnotationConfigApplicationContext childContext = buildPluginContext(classLoader, plugin);
+			URLClassLoader loader = classLoaderFactory.create(path);
+			AnnotationConfigApplicationContext pluginCtx = contextFactory.build(loader, plugin);
 
-			YuePlugin pluginBean = childContext.getBean(YuePlugin.class);
-			pluginBean.onLoad();
+			YuePlugin bean = pluginCtx.getBean(YuePlugin.class);
+			bean.onLoad();
 
-			storage.add(new InternalPlugin(plugin, classLoader, childContext, pluginBean));
-
-			LOG.info("Loaded plugin {}", plugin.getId());
+			storage.add(new InternalPlugin(plugin, loader, pluginCtx, bean));
 		} catch (Exception e) {
-			LOG.error("Failed to load plugin from {}", path, e);
+			LOG.error("Failed loading plugin {}", path, e);
 		} finally {
 			lock.unlock();
 		}
 	}
 
-	private Plugin readPlugin(Path jar) throws Exception {
-		try (FileSystem fs = FileSystems.newFileSystem(jar);
-		     InputStream in = Files.newInputStream(fs.getPath("/plugin.json"))) {
-			Plugin plugin = configLoader.load(in, Plugin.class);
+	@Override
+	public <T> void injectBean(String beanName, Class<T> beanClass, Supplier<T> supplier) {
+		lock.lock();
+		try {
+			registry.register(beanName, beanClass, supplier);
 
-			if (plugin.getId() == null || plugin.getName() == null || plugin.getEntrypoint() == null) {
-				throw new PluginLoadException("Plugin missing required fields: " +
-						"id=" + plugin.getId() +
-						", name=" + plugin.getName() +
-						", entrypoint=" + plugin.getEntrypoint());
-			}
-
-			return plugin;
+			storage.all().forEach(obj -> {
+				if (obj instanceof InternalPlugin p) {
+					registry.apply(p.getContext());
+					p.getContext().refresh();
+				}
+			});
+		} finally {
+			lock.unlock();
 		}
 	}
 
-	private URLClassLoader createClassLoader(Path jar) throws Exception {
-		URL url = jar.toUri().toURL();
+	@Override
+	public void removeInjectedBean(String beanName) {
+		lock.lock();
+		try {
+			registry.remove(beanName);
 
-		return new URLClassLoader(new URL[]{url}, ctx.getClassLoader()) {
-			@Override
-			protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-				try {
-					return findClass(name);
-				} catch (ClassNotFoundException ex) {
-					return super.loadClass(name, resolve);
+			storage.all().forEach(obj -> {
+				if (obj instanceof InternalPlugin p) {
+					if (p.getContext().containsBean(beanName)) {
+						p.getContext().removeBeanDefinition(beanName);
+						p.getContext().refresh();
+					}
 				}
-			}
-		};
-	}
-
-	private AnnotationConfigApplicationContext buildPluginContext(ClassLoader pluginClassLoader, Plugin plugin) throws ClassNotFoundException {
-		String entrypoint = plugin.getEntrypoint();
-		String basePackage = entrypoint.substring(0, entrypoint.lastIndexOf('.'));
-
-		Class<?> pluginMainClass = Class.forName(entrypoint, true, pluginClassLoader);
-
-		AnnotationConfigApplicationContext childContext = new AnnotationConfigApplicationContext();
-		childContext.setParent(ctx);
-		childContext.setClassLoader(pluginClassLoader);
-		childContext.registerBean(pluginMainClass);
-		childContext.scan(basePackage);
-
-		// inject plugin-specific beans
-		childContext.registerBean("pluginPath", Path.class, () -> pluginsPath.resolve(plugin.getId()));
-
-		childContext.refresh();
-
-		return childContext;
+			});
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	@Override
 	public Optional<YuePlugin> enable(String id) {
 		lock.lock();
 		try {
-			return storage.byId(id).flatMap(plugin -> {
-				if (plugin.isEnabled()) return
-						Optional.of(plugin.getYuePlugin());
-
-				plugin.getContext().refresh();
-				plugin.getYuePlugin().onEnable();
-				plugin.setEnabled(true);
-
-				LOG.info("Enabled plugin {}", id);
-
-				return Optional.of(plugin.getYuePlugin());
+			return storage.byId(id).flatMap(p -> {
+				if (p.isEnabled()) return Optional.of(p.getYuePlugin());
+				p.getContext().refresh();
+				p.getYuePlugin().onEnable();
+				p.setEnabled(true);
+				return Optional.of(p.getYuePlugin());
 			});
-		} catch (Exception e) {
-			LOG.error("Error enabling plugin {}", id, e);
-			return Optional.empty();
 		} finally {
 			lock.unlock();
 		}
@@ -170,21 +140,13 @@ public class YuePluginManager implements PluginManager {
 	public Optional<YuePlugin> disable(String id) {
 		lock.lock();
 		try {
-			return storage.byId(id).flatMap(plugin -> {
-				if (!plugin.isEnabled())
-					return Optional.of(plugin.getYuePlugin());
-
-				plugin.getYuePlugin().onDisable();
-				plugin.getContext().stop();
-				plugin.setEnabled(false);
-
-				LOG.info("Disabled plugin {}", id);
-
-				return Optional.of(plugin.getYuePlugin());
+			return storage.byId(id).flatMap(p -> {
+				if (!p.isEnabled()) return Optional.of(p.getYuePlugin());
+				p.getYuePlugin().onDisable();
+				p.getContext().stop();
+				p.setEnabled(false);
+				return Optional.of(p.getYuePlugin());
 			});
-		} catch (Exception e) {
-			LOG.error("Error disabling plugin {}", id, e);
-			return Optional.empty();
 		} finally {
 			lock.unlock();
 		}
@@ -194,27 +156,18 @@ public class YuePluginManager implements PluginManager {
 	public Optional<YuePlugin> unload(String id) {
 		lock.lock();
 		try {
-			return storage.byId(id).flatMap(plugin -> {
-				if (plugin.isEnabled()) {
-					plugin.getYuePlugin().onDisable();
-					plugin.getContext().stop();
-					plugin.setEnabled(false);
-
-					LOG.info("Auto-disabled {} before unload", id);
+			return storage.byId(id).flatMap(p -> {
+				if (p.isEnabled()) {
+					p.getYuePlugin().onDisable();
+					p.getContext().stop();
+					p.setEnabled(false);
 				}
-
-				plugin.getYuePlugin().onUnload();
-				plugin.getContext().close();
-				close(plugin.getClassLoader());
+				p.getYuePlugin().onUnload();
+				p.getContext().close();
+				close(p.getClassLoader());
 				storage.remove(id);
-
-				LOG.info("Unloaded plugin {}", id);
-
-				return Optional.of(plugin.getYuePlugin());
+				return Optional.of(p.getYuePlugin());
 			});
-		} catch (Exception e) {
-			LOG.error("Error unloading plugin {}", id, e);
-			return Optional.empty();
 		} finally {
 			lock.unlock();
 		}
@@ -233,8 +186,7 @@ public class YuePluginManager implements PluginManager {
 	private void close(URLClassLoader cl) {
 		try {
 			cl.close();
-		} catch (Exception e) {
-			LOG.warn("Failed closing classloader", e);
+		} catch (Exception ignored) {
 		}
 	}
 }

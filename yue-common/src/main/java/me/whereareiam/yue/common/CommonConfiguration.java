@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -21,21 +20,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
 
-import java.nio.file.Path;
-
 @Configuration
 public class CommonConfiguration {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private final ApplicationContext ctx;
-	private final Path pluginsPath;
 
 	@Autowired
 	public CommonConfiguration(
-			ApplicationContext ctx,
-			@Qualifier("pluginsPath") Path pluginsPath
+			ApplicationContext ctx
 	) {
 		this.ctx = ctx;
-		this.pluginsPath = pluginsPath;
 	}
 
 	@Bean
