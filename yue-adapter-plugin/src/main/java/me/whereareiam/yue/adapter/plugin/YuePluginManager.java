@@ -109,7 +109,7 @@ public class YuePluginManager implements PluginManager {
 			storage.all().forEach(obj -> {
 				if (obj instanceof InternalPlugin p) {
 					registry.apply(p.getContext());
-					p.getContext().refresh();
+					safeRefresh(p.getContext());
 				}
 			});
 		} finally {
@@ -127,7 +127,7 @@ public class YuePluginManager implements PluginManager {
 				if (obj instanceof InternalPlugin p) {
 					if (p.getContext().containsBean(beanName)) {
 						p.getContext().removeBeanDefinition(beanName);
-						p.getContext().refresh();
+						safeRefresh(p.getContext());
 					}
 				}
 			});
@@ -147,7 +147,7 @@ public class YuePluginManager implements PluginManager {
 				eventPublisher.publishEvent(event);
 				if (event.isCancelled()) return Optional.empty();
 
-				p.getContext().refresh();
+				p.getContext().start();
 				p.getYuePlugin().onEnable();
 				p.setState(PluginState.ENABLED);
 
@@ -220,5 +220,10 @@ public class YuePluginManager implements PluginManager {
 			cl.close();
 		} catch (Exception ignored) {
 		}
+	}
+
+	private void safeRefresh(AnnotationConfigApplicationContext ctx) {
+		if (!ctx.isActive())
+			ctx.refresh();
 	}
 }
