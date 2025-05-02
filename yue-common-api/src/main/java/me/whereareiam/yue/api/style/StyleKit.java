@@ -1,8 +1,7 @@
-package me.whereareiam.yue.api;
+package me.whereareiam.yue.api.style;
 
 import me.whereareiam.yue.api.model.config.style.Palette;
 import me.whereareiam.yue.api.model.config.style.embed.EmbedStyle;
-import me.whereareiam.yue.api.style.Embeds;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

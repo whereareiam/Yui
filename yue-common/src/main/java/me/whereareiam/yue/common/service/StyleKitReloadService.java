@@ -1,10 +1,10 @@
 package me.whereareiam.yue.common.service;
 
-import me.whereareiam.yue.api.StyleKit;
 import me.whereareiam.yue.api.model.config.style.Palette;
 import me.whereareiam.yue.api.model.config.style.embed.EmbedStyle;
 import me.whereareiam.yue.api.output.Reloadable;
 import me.whereareiam.yue.api.output.provider.Provider;
+import me.whereareiam.yue.api.style.StyleKit;
 import me.whereareiam.yue.common.provider.ReloadableProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,7 +25,7 @@ public class StyleKitReloadService implements Reloadable {
 		this.palette = palette;
 		this.embedStyle = embedStyle;
 		this.styleKit = styleKit;
-		
+
 		reloadableProvider.register(this);
 	}
 

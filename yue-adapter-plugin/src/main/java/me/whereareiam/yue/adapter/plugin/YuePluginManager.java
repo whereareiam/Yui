@@ -4,6 +4,10 @@ import me.whereareiam.yue.adapter.plugin.bean.PluginBeanRegistry;
 import me.whereareiam.yue.adapter.plugin.descriptor.PluginDescriptorReader;
 import me.whereareiam.yue.adapter.plugin.factory.PluginClassLoaderFactory;
 import me.whereareiam.yue.adapter.plugin.factory.PluginContextFactory;
+import me.whereareiam.yue.api.event.plugin.PluginDisabledEvent;
+import me.whereareiam.yue.api.event.plugin.PluginEnabledEvent;
+import me.whereareiam.yue.api.event.plugin.PluginLoadedEvent;
+import me.whereareiam.yue.api.event.plugin.PluginUnloadedEvent;
 import me.whereareiam.yue.api.model.plugin.InternalPlugin;
 import me.whereareiam.yue.api.model.plugin.Plugin;
 import me.whereareiam.yue.api.output.plugin.PluginManager;
@@ -11,6 +15,7 @@ import me.whereareiam.yue.api.output.plugin.YuePlugin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +30,7 @@ import java.util.stream.Stream;
 
 @Service
 public class YuePluginManager implements PluginManager {
-	private static final Logger LOG = LoggerFactory.getLogger(YuePluginManager.class);
+	private static final Logger logger = LoggerFactory.getLogger(YuePluginManager.class);
 
 	private final Path pluginsPath;
 	private final PluginStorage storage;
@@ -33,6 +38,7 @@ public class YuePluginManager implements PluginManager {
 	private final PluginClassLoaderFactory classLoaderFactory;
 	private final PluginContextFactory contextFactory;
 	private final PluginBeanRegistry registry;
+	private final ApplicationEventPublisher eventPublisher;
 
 	private final ReentrantLock lock = new ReentrantLock(true);
 
@@ -42,7 +48,8 @@ public class YuePluginManager implements PluginManager {
 			PluginDescriptorReader descriptorReader,
 			PluginClassLoaderFactory classLoaderFactory,
 			PluginContextFactory contextFactory,
-			PluginBeanRegistry registry
+			PluginBeanRegistry registry,
+			ApplicationEventPublisher eventPublisher
 	) {
 		this.storage = storage;
 		this.pluginsPath = pluginsPath;
@@ -50,6 +57,7 @@ public class YuePluginManager implements PluginManager {
 		this.classLoaderFactory = classLoaderFactory;
 		this.contextFactory = contextFactory;
 		this.registry = registry;
+		this.eventPublisher = eventPublisher;
 	}
 
 	@Override
@@ -57,7 +65,7 @@ public class YuePluginManager implements PluginManager {
 		try (Stream<Path> jars = Files.list(pluginsPath)) {
 			jars.filter(p -> p.toString().endsWith(".jar")).forEach(this::load);
 		} catch (Exception e) {
-			LOG.error("Failed to load plugins", e);
+			logger.error("Failed to load plugins", e);
 		}
 	}
 
@@ -72,13 +80,18 @@ public class YuePluginManager implements PluginManager {
 
 			URLClassLoader loader = classLoaderFactory.create(path);
 			AnnotationConfigApplicationContext pluginCtx = contextFactory.build(loader, plugin);
-
 			YuePlugin bean = pluginCtx.getBean(YuePlugin.class);
-			bean.onLoad();
 
-			storage.add(new InternalPlugin(plugin, loader, pluginCtx, bean));
+			InternalPlugin internalPlugin = new InternalPlugin(plugin, loader, pluginCtx, bean);
+			PluginLoadedEvent event = new PluginLoadedEvent(internalPlugin);
+			eventPublisher.publishEvent(event);
+
+			if (!event.isCancelled())
+				bean.onLoad();
+
+			storage.add(internalPlugin);
 		} catch (Exception e) {
-			LOG.error("Failed loading plugin {}", path, e);
+			logger.error("Failed loading plugin {}", path, e);
 		} finally {
 			lock.unlock();
 		}
@@ -126,9 +139,15 @@ public class YuePluginManager implements PluginManager {
 		try {
 			return storage.byId(id).flatMap(p -> {
 				if (p.isEnabled()) return Optional.of(p.getYuePlugin());
+
+				PluginEnabledEvent event = new PluginEnabledEvent(p);
+				eventPublisher.publishEvent(event);
+				if (event.isCancelled()) return Optional.empty();
+
 				p.getContext().refresh();
 				p.getYuePlugin().onEnable();
 				p.setEnabled(true);
+
 				return Optional.of(p.getYuePlugin());
 			});
 		} finally {
@@ -142,9 +161,15 @@ public class YuePluginManager implements PluginManager {
 		try {
 			return storage.byId(id).flatMap(p -> {
 				if (!p.isEnabled()) return Optional.of(p.getYuePlugin());
+
+				PluginDisabledEvent event = new PluginDisabledEvent(p);
+				eventPublisher.publishEvent(event);
+				if (event.isCancelled()) return Optional.empty();
+
 				p.getYuePlugin().onDisable();
 				p.getContext().stop();
 				p.setEnabled(false);
+
 				return Optional.of(p.getYuePlugin());
 			});
 		} finally {
@@ -162,6 +187,11 @@ public class YuePluginManager implements PluginManager {
 					p.getContext().stop();
 					p.setEnabled(false);
 				}
+
+				PluginUnloadedEvent event = new PluginUnloadedEvent(p);
+				eventPublisher.publishEvent(event);
+				if (event.isCancelled()) return Optional.empty();
+
 				p.getYuePlugin().onUnload();
 				p.getContext().close();
 				close(p.getClassLoader());
