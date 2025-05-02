@@ -1,28 +1,14 @@
 package me.whereareiam.yue.api.model.command;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CommandCooldown {
 	private boolean enabled;
 	private int cooldown;
 	private String group;
-
-	public CommandCooldown() {
-	}
-
-	public CommandCooldown(boolean enabled, int cooldown, String group) {
-		this.enabled = enabled;
-		this.cooldown = cooldown;
-		this.group = group;
-	}
-
-	public boolean isEnabled() {
-		return enabled;
-	}
-
-	public int getCooldown() {
-		return cooldown;
-	}
-
-	public String getGroup() {
-		return group;
-	}
 }
