@@ -1,5 +1,6 @@
 package me.whereareiam.yue.common;
 
+import me.whereareiam.yue.api.input.UserRoleService;
 import me.whereareiam.yue.api.input.translation.TranslationService;
 import me.whereareiam.yue.api.model.config.settings.Settings;
 import me.whereareiam.yue.api.model.plugin.InternalPlugin;
@@ -62,6 +63,7 @@ public class CommonConfiguration {
 
 		ctx.getBean(ComponentListenerScanner.class).scan();
 		ctx.getBean(ListenerScanner.class).scan();
+		ctx.getBean(UserRoleService.class).syncAll();
 
 		welcome();
 	}

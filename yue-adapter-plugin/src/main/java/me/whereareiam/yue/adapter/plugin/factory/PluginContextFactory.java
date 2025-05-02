@@ -39,7 +39,7 @@ public class PluginContextFactory {
 		childContext.registerBean(mainClass);
 		childContext.scan(basePackage);
 		
-		childContext.registerBean("pluginPath", Path.class, () -> pluginsPath.resolve(plugin.getId()));
+		childContext.registerBean("pluginPath", Path.class, () -> pluginsPath.resolve(plugin.getName()));
 
 		registry.apply(childContext);
 

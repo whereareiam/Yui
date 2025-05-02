@@ -15,9 +15,9 @@ import net.dv8tion.jda.api.entities.Role;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -28,6 +28,14 @@ public class DefaultUserRoleService implements UserRoleService {
 	private final RoleService roleService;
 	private final ApplicationEventPublisher eventPublisher;
 	private final JDA jda;
+
+
+	private static final int PARALLELISM =
+			Math.max(2, Runtime.getRuntime().availableProcessors());
+
+	private final ExecutorService syncPool =
+			Executors.newFixedThreadPool(PARALLELISM, r -> new Thread(r, "yue-role-sync"));
+
 
 	@Override
 	public void addRoleToUser(long userId, long roleId) {
@@ -51,7 +59,7 @@ public class DefaultUserRoleService implements UserRoleService {
 				.reason("Yue automatic role assign")
 				.queue(
 						v -> {
-							updateProfile(userId, roleId, true);
+							updateProfile(userId, Set.of(roleId), Set.of());
 							eventPublisher.publishEvent(new RoleAddedEvent(userId, roleId));
 							log.debug("Role id={} added to user id={}", roleId, userId);
 						},
@@ -73,7 +81,7 @@ public class DefaultUserRoleService implements UserRoleService {
 				.reason("Yue automatic role remove")
 				.queue(
 						v -> {
-							updateProfile(userId, roleId, false);
+							updateProfile(userId, Set.of(), Set.of(roleId));
 							eventPublisher.publishEvent(new RoleRemovedEvent(userId, roleId));
 							log.debug("Role id={} removed from user id={}", roleId, userId);
 						},
@@ -114,9 +122,17 @@ public class DefaultUserRoleService implements UserRoleService {
 	@Override
 	public void syncAll() {
 		Guild guild = resolveGuild();
-		guild.loadMembers()
-				.onSuccess(members -> members.forEach(member -> syncUser(member.getIdLong())))
-				.onError(err -> log.error("Global role-sync failed!", err));
+		Set<Long> allowedRoles = LongStream.of(roleService.getAvailableRoles())
+				.boxed()
+				.collect(Collectors.toSet());
+
+		guild.loadMembers().onSuccess(members -> {
+			log.info("Starting role synchronisation for {} member(s)…", members.size());
+
+			members.forEach(member ->
+					syncPool.execute(() -> fastSyncMember(member, allowedRoles))
+			);
+		}).onError(err -> log.error("Global role-sync failed!", err));
 	}
 
 	private Guild resolveGuild() {
@@ -131,18 +147,63 @@ public class DefaultUserRoleService implements UserRoleService {
 		}
 	}
 
-	private void updateProfile(long userId, long roleId, boolean add) {
-		Users.get(userId).ifPresent(profile -> {
-			Set<Long> set = profile.getRoles() == null
+	private void updateProfile(long userId, Set<Long> add, Set<Long> remove) {
+		Users.get(userId).ifPresent(p -> {
+			Set<Long> roles = p.getRoles() == null
 					? new HashSet<>()
-					: Arrays.stream(profile.getRoles()).boxed().collect(Collectors.toSet());
+					: Arrays.stream(p.getRoles()).boxed().collect(Collectors.toSet());
 
-			if (add) {
-				set.add(roleId);
-			} else {
-				set.remove(roleId);
-			}
-			profile.setRoles(set.stream().mapToLong(Long::longValue).toArray());
+			roles.addAll(add);
+			roles.removeAll(remove);
+
+			p.setRoles(roles.stream().mapToLong(Long::longValue).toArray());
 		});
 	}
+
+	private void fastSyncMember(Member member, Set<Long> allowedRoles) {
+		long userId = member.getIdLong();
+
+		Set<Long> onDiscord = member.getRoles().stream()
+				.map(Role::getIdLong)
+				.filter(allowedRoles::contains)
+				.collect(Collectors.toSet());
+
+		Set<Long> stored = Users.get(userId)
+				.map(UserProfile::getRoles)
+				.map(arr -> Arrays.stream(arr).boxed().collect(Collectors.toSet()))
+				.orElseGet(HashSet::new);
+
+		Set<Long> toAdd = new HashSet<>(stored);
+		toAdd.removeAll(onDiscord);
+
+		Set<Long> toRemove = new HashSet<>(onDiscord);
+		toRemove.removeAll(stored);
+
+		if (toAdd.isEmpty() && toRemove.isEmpty())
+			return;
+
+		List<Role> addRoles = toAdd.stream()
+				.map(member.getGuild()::getRoleById)
+				.filter(Objects::nonNull)
+				.toList();
+
+		List<Role> removeRoles = toRemove.stream()
+				.map(member.getGuild()::getRoleById)
+				.filter(Objects::nonNull)
+				.toList();
+
+		// Single REST request for both directions
+		member.getGuild()
+				.modifyMemberRoles(member, addRoles, removeRoles)
+				.reason("Yue automatic role sync")
+				.queue(
+						v -> {
+							// keep cache aligned
+							updateProfile(userId, toAdd, toRemove);
+							log.debug("Synced roles for user {}", userId);
+						},
+						err -> log.error("Failed syncing roles for user {}", userId, err)
+				);
+	}
+
 }
