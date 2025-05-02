@@ -12,6 +12,7 @@ import me.whereareiam.yue.api.model.plugin.InternalPlugin;
 import me.whereareiam.yue.api.model.plugin.Plugin;
 import me.whereareiam.yue.api.output.plugin.PluginManager;
 import me.whereareiam.yue.api.output.plugin.YuePlugin;
+import me.whereareiam.yue.api.type.PluginState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -148,7 +149,7 @@ public class YuePluginManager implements PluginManager {
 
 				p.getContext().refresh();
 				p.getYuePlugin().onEnable();
-				p.setEnabled(true);
+				p.setState(PluginState.ENABLED);
 
 				return Optional.of(p.getYuePlugin());
 			});
@@ -170,7 +171,7 @@ public class YuePluginManager implements PluginManager {
 
 				p.getYuePlugin().onDisable();
 				p.getContext().stop();
-				p.setEnabled(false);
+				p.setState(PluginState.DISABLED);
 
 				return Optional.of(p.getYuePlugin());
 			});
@@ -184,20 +185,19 @@ public class YuePluginManager implements PluginManager {
 		lock.lock();
 		try {
 			return storage.byId(id).flatMap(p -> {
-				if (p.isEnabled()) {
-					p.getYuePlugin().onDisable();
-					p.getContext().stop();
-					p.setEnabled(false);
-				}
+				if (p.isEnabled())
+					disable(id);
 
 				PluginUnloadedEvent event = new PluginUnloadedEvent(p);
 				eventPublisher.publishEvent(event);
 				if (event.isCancelled()) return Optional.empty();
 
 				p.getYuePlugin().onUnload();
+				p.setState(PluginState.UNLOADED);
 				p.getContext().close();
 				close(p.getClassLoader());
 				storage.remove(id);
+
 				return Optional.of(p.getYuePlugin());
 			});
 		} finally {

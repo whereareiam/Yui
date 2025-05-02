@@ -1,6 +1,7 @@
 package me.whereareiam.yue.api.model.plugin;
 
 import me.whereareiam.yue.api.output.plugin.YuePlugin;
+import me.whereareiam.yue.api.type.PluginState;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.net.URLClassLoader;
@@ -10,7 +11,7 @@ public final class InternalPlugin {
 	private final URLClassLoader classLoader;
 	private final AnnotationConfigApplicationContext context;
 	private final YuePlugin instance;
-	private boolean enabled;
+	private PluginState state = PluginState.LOADED;
 
 	public InternalPlugin(
 			Plugin descriptor,
@@ -40,11 +41,15 @@ public final class InternalPlugin {
 		return instance;
 	}
 
-	public boolean isEnabled() {
-		return enabled;
+	public PluginState getState() {
+		return state;
 	}
 
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
+	public void setState(PluginState state) {
+		this.state = state;
+	}
+
+	public boolean isEnabled() {
+		return state == PluginState.ENABLED;
 	}
 }
