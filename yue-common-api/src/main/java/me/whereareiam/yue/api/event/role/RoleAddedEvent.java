@@ -1,23 +1,15 @@
 package me.whereareiam.yue.api.event.role;
 
-import me.whereareiam.yue.api.event.YueEvent;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import me.whereareiam.yue.api.event.Cancellable;
 
-public class RoleAddedEvent extends YueEvent {
+@Getter
+@Setter
+@RequiredArgsConstructor
+public class RoleAddedEvent implements Cancellable {
 	private final long User;
 	private final long Role;
-
-	public RoleAddedEvent(Object source, long user, long role) {
-		super(source);
-
-		User = user;
-		Role = role;
-	}
-
-	public long getUser() {
-		return User;
-	}
-
-	public long getRole() {
-		return Role;
-	}
+	private boolean cancelled;
 }

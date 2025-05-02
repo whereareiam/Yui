@@ -28,9 +28,6 @@ subprojects {
             "compileOnly"(project(":yue-common-api"))
             "compileOnly"(project(":yue-shared"))
 
-            "compileOnly"(rootProject.libs.lombok)
-            "annotationProcessor"(rootProject.libs.lombok)
-
             "testImplementation"(project(":yue-common-api"))
             "testImplementation"(rootProject.libs.spring.boot.test)
             "testImplementation"(rootProject.libs.jda)
@@ -41,6 +38,9 @@ subprojects {
         dependencies {
             "compileOnly"(rootProject.libs.spring.boot)
             "compileOnly"(rootProject.libs.jda)
+
+            "compileOnly"(rootProject.libs.lombok)
+            "annotationProcessor"(rootProject.libs.lombok)
         }
     }
 }
