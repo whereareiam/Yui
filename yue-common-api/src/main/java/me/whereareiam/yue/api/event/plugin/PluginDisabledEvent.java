@@ -4,11 +4,11 @@ import me.whereareiam.yue.api.event.Cancellable;
 import me.whereareiam.yue.api.event.plugin.base.PluginLifecycleEvent;
 import me.whereareiam.yue.api.model.plugin.InternalPlugin;
 
-public class PluginLoadedEvent implements PluginLifecycleEvent, Cancellable {
+public class PluginDisabledEvent implements PluginLifecycleEvent, Cancellable {
 	private final InternalPlugin plugin;
 	private boolean cancelled = false;
 
-	public PluginLoadedEvent(InternalPlugin plugin) {
+	public PluginDisabledEvent(InternalPlugin plugin) {
 		this.plugin = plugin;
 	}
 

@@ -3,7 +3,7 @@ package me.whereareiam.yue.adapter.command.listener;
 import me.whereareiam.yue.adapter.command.cooldown.CooldownService;
 import me.whereareiam.yue.adapter.command.registry.CommandDefinition;
 import me.whereareiam.yue.adapter.command.registry.CommandRegistry;
-import me.whereareiam.yue.api.StyleKit;
+import me.whereareiam.yue.api.style.StyleKit;
 import me.whereareiam.yue.api.util.Translatable;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;

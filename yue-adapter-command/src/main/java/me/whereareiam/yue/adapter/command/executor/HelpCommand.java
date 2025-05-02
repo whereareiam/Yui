@@ -2,10 +2,10 @@ package me.whereareiam.yue.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
 import me.whereareiam.yue.adapter.command.registry.CommandRegistry;
-import me.whereareiam.yue.api.StyleKit;
 import me.whereareiam.yue.api.annotation.Command;
 import me.whereareiam.yue.api.annotation.ComponentListener;
 import me.whereareiam.yue.api.output.CommandBase;
+import me.whereareiam.yue.api.style.StyleKit;
 import me.whereareiam.yue.api.type.CommandCategory;
 import me.whereareiam.yue.api.util.Components;
 import me.whereareiam.yue.api.util.Translatable;

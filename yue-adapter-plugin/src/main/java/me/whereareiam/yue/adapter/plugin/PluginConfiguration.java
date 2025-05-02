@@ -12,13 +12,13 @@ public class PluginConfiguration {
 	@Bean
 	@Qualifier("pluginsPath")
 	public Path pluginsPath(@Qualifier("dataPath") Path dataPath) {
-		Path plugins = dataPath.resolve(Constants.Structure.pluginsDir);
+		Path pluginsPath = dataPath.resolve(Constants.Structure.pluginsDir);
 
-		if (!plugins.toFile().exists()) {
-			boolean created = plugins.toFile().mkdirs();
+		if (!pluginsPath.toFile().exists()) {
+			boolean created = pluginsPath.toFile().mkdirs();
 			if (!created) throw new RuntimeException("Failed to create plugins directory");
 		}
 
-		return plugins;
+		return pluginsPath;
 	}
 }

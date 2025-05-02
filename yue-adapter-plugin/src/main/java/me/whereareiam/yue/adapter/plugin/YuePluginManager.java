@@ -1,108 +1,222 @@
 package me.whereareiam.yue.adapter.plugin;
 
-import me.whereareiam.yue.adapter.plugin.descriptor.JsonPluginDescriptorFinder;
-import me.whereareiam.yue.api.event.plugin.PluginDisableEvent;
-import me.whereareiam.yue.api.event.plugin.PluginEnableEvent;
+import me.whereareiam.yue.adapter.plugin.bean.PluginBeanRegistry;
+import me.whereareiam.yue.adapter.plugin.descriptor.PluginDescriptorReader;
+import me.whereareiam.yue.adapter.plugin.factory.PluginClassLoaderFactory;
+import me.whereareiam.yue.adapter.plugin.factory.PluginContextFactory;
+import me.whereareiam.yue.api.event.plugin.PluginDisabledEvent;
+import me.whereareiam.yue.api.event.plugin.PluginEnabledEvent;
 import me.whereareiam.yue.api.event.plugin.PluginLoadedEvent;
 import me.whereareiam.yue.api.event.plugin.PluginUnloadedEvent;
-import me.whereareiam.yue.api.model.YuePluginDescriptor;
-import me.whereareiam.yue.api.output.config.ConfigurationLoader;
-import org.pf4j.*;
-import org.pf4j.spring.SpringPluginManager;
+import me.whereareiam.yue.api.model.plugin.InternalPlugin;
+import me.whereareiam.yue.api.model.plugin.Plugin;
+import me.whereareiam.yue.api.output.plugin.PluginManager;
+import me.whereareiam.yue.api.output.plugin.YuePlugin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Service;
 
+import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 @Service
-public class YuePluginManager extends SpringPluginManager {
+public class YuePluginManager implements PluginManager {
+	private static final Logger logger = LoggerFactory.getLogger(YuePluginManager.class);
+
+	private final Path pluginsPath;
+	private final PluginStorage storage;
+	private final PluginDescriptorReader descriptorReader;
+	private final PluginClassLoaderFactory classLoaderFactory;
+	private final PluginContextFactory contextFactory;
+	private final PluginBeanRegistry registry;
 	private final ApplicationEventPublisher eventPublisher;
-	private final ConfigurationLoader configurationLoader;
+
+	private final ReentrantLock lock = new ReentrantLock(true);
 
 	public YuePluginManager(
 			@Qualifier("pluginsPath") Path pluginsPath,
-			ApplicationEventPublisher eventPublisher,
-			ConfigurationLoader configurationLoader
+			PluginStorage storage,
+			PluginDescriptorReader descriptorReader,
+			PluginClassLoaderFactory classLoaderFactory,
+			PluginContextFactory contextFactory,
+			PluginBeanRegistry registry,
+			ApplicationEventPublisher eventPublisher
 	) {
+		this.storage = storage;
+		this.pluginsPath = pluginsPath;
+		this.descriptorReader = descriptorReader;
+		this.classLoaderFactory = classLoaderFactory;
+		this.contextFactory = contextFactory;
+		this.registry = registry;
 		this.eventPublisher = eventPublisher;
-		this.configurationLoader = configurationLoader;
-
-		super(pluginsPath);
 	}
 
 	@Override
-	public String loadPlugin(Path pluginPath) {
-		String context = super.loadPlugin(pluginPath);
-
-		eventPublisher.publishEvent(new PluginLoadedEvent(this, pluginPath));
-
-		return context;
+	public void initialize() {
+		try (Stream<Path> jars = Files.list(pluginsPath)) {
+			jars.filter(p -> p.toString().endsWith(".jar")).forEach(this::load);
+		} catch (Exception e) {
+			logger.error("Failed to load plugins", e);
+		}
 	}
 
 	@Override
-	protected PluginWrapper loadPluginFromPath(Path pluginPath) {
-		PluginWrapper wrapper = super.loadPluginFromPath(pluginPath);
+	public void load(Path path) {
+		if (Files.notExists(path)) return;
+		lock.lock();
+		try {
+			Plugin plugin = descriptorReader.read(path);
 
-		eventPublisher.publishEvent(new PluginLoadedEvent(this, pluginPath));
+			if (storage.byId(plugin.getId()).isPresent()) return;
 
-		return wrapper;
+			URLClassLoader loader = classLoaderFactory.create(path);
+			AnnotationConfigApplicationContext pluginCtx = contextFactory.build(loader, plugin);
+			YuePlugin bean = pluginCtx.getBean(YuePlugin.class);
+
+			InternalPlugin internalPlugin = new InternalPlugin(plugin, loader, pluginCtx, bean);
+			PluginLoadedEvent event = new PluginLoadedEvent(internalPlugin);
+			eventPublisher.publishEvent(event);
+
+			if (!event.isCancelled())
+				bean.onLoad();
+
+			storage.add(internalPlugin);
+		} catch (Exception e) {
+			logger.error("Failed loading plugin {}", path, e);
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	@Override
-	public boolean enablePlugin(String pluginId) {
-		boolean status = super.enablePlugin(pluginId);
+	public <T> void injectBean(String beanName, Class<T> beanClass, Supplier<T> supplier) {
+		lock.lock();
+		try {
+			registry.register(beanName, beanClass, supplier);
 
-		eventPublisher.publishEvent(new PluginEnableEvent(this, pluginId));
-
-		return status;
+			storage.all().forEach(obj -> {
+				if (obj instanceof InternalPlugin p) {
+					registry.apply(p.getContext());
+					p.getContext().refresh();
+				}
+			});
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	@Override
-	public boolean disablePlugin(String pluginId) {
-		boolean status = super.disablePlugin(pluginId);
+	public void removeInjectedBean(String beanName) {
+		lock.lock();
+		try {
+			registry.remove(beanName);
 
-		eventPublisher.publishEvent(new PluginDisableEvent(this, pluginId));
-
-		return status;
+			storage.all().forEach(obj -> {
+				if (obj instanceof InternalPlugin p) {
+					if (p.getContext().containsBean(beanName)) {
+						p.getContext().removeBeanDefinition(beanName);
+						p.getContext().refresh();
+					}
+				}
+			});
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	@Override
-	public boolean unloadPlugin(String pluginId) {
-		boolean status = super.unloadPlugin(pluginId);
+	public Optional<YuePlugin> enable(String id) {
+		lock.lock();
+		try {
+			return storage.byId(id).flatMap(p -> {
+				if (p.isEnabled()) return Optional.of(p.getYuePlugin());
 
-		eventPublisher.publishEvent(new PluginUnloadedEvent(this, pluginId));
+				PluginEnabledEvent event = new PluginEnabledEvent(p);
+				eventPublisher.publishEvent(event);
+				if (event.isCancelled()) return Optional.empty();
 
-		return status;
+				p.getContext().refresh();
+				p.getYuePlugin().onEnable();
+				p.setEnabled(true);
+
+				return Optional.of(p.getYuePlugin());
+			});
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	@Override
-	protected PluginDescriptorFinder createPluginDescriptorFinder() {
-		return new JsonPluginDescriptorFinder(configurationLoader);
+	public Optional<YuePlugin> disable(String id) {
+		lock.lock();
+		try {
+			return storage.byId(id).flatMap(p -> {
+				if (!p.isEnabled()) return Optional.of(p.getYuePlugin());
+
+				PluginDisabledEvent event = new PluginDisabledEvent(p);
+				eventPublisher.publishEvent(event);
+				if (event.isCancelled()) return Optional.empty();
+
+				p.getYuePlugin().onDisable();
+				p.getContext().stop();
+				p.setEnabled(false);
+
+				return Optional.of(p.getYuePlugin());
+			});
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	@Override
-	protected PluginRepository createPluginRepository() {
-		return new CompoundPluginRepository()
-				.add(new JarPluginRepository(getPluginsRoots()), this::isNotDevelopment);
+	public Optional<YuePlugin> unload(String id) {
+		lock.lock();
+		try {
+			return storage.byId(id).flatMap(p -> {
+				if (p.isEnabled()) {
+					p.getYuePlugin().onDisable();
+					p.getContext().stop();
+					p.setEnabled(false);
+				}
+
+				PluginUnloadedEvent event = new PluginUnloadedEvent(p);
+				eventPublisher.publishEvent(event);
+				if (event.isCancelled()) return Optional.empty();
+
+				p.getYuePlugin().onUnload();
+				p.getContext().close();
+				close(p.getClassLoader());
+				storage.remove(id);
+				return Optional.of(p.getYuePlugin());
+			});
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	@Override
-	protected PluginLoader createPluginLoader() {
-		return new CompoundPluginLoader()
-				.add(new JarPluginLoader(this), this::isNotDevelopment);
+	public Optional<InternalPlugin> whichPlugin(Class<?> type) {
+		return storage.byType(type);
 	}
 
 	@Override
-	protected PluginStatusProvider createPluginStatusProvider() {
-		return new YuePluginStatusProvider();
+	public Collection<?> plugins() {
+		return storage.all();
 	}
 
-	@Override
-	protected String getPluginLabel(PluginDescriptor pluginDescriptor) {
-		if (pluginDescriptor instanceof YuePluginDescriptor descriptor)
-			return descriptor.getName() + "@" + descriptor.getVersion();
-
-		return super.getPluginLabel(pluginDescriptor);
+	private void close(URLClassLoader cl) {
+		try {
+			cl.close();
+		} catch (Exception ignored) {
+		}
 	}
 }

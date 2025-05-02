@@ -1,6 +1,7 @@
 package me.whereareiam.yue.common.service;
 
 import me.whereareiam.yue.api.input.InteractionService;
+import me.whereareiam.yue.api.output.plugin.PluginManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.component.GenericComponentInteractionCreateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -8,8 +9,6 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
-import org.pf4j.PluginManager;
-import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -52,8 +51,11 @@ public class DefaultInteractionService implements InteractionService, Initializi
 		Class<?> c = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
 				.walk(s -> s.skip(2).findFirst().map(StackWalker.StackFrame::getDeclaringClass).orElse(null));
 		if (c == null) return INTERNAL;
-		PluginWrapper w = pluginManager.whichPlugin(c);
-		return w == null ? INTERNAL : w.getPluginId();
+
+		return pluginManager.whichPlugin(c)
+				.map(plugin -> plugin.getPlugin().getId())
+				.orElse(INTERNAL);
+
 	}
 
 	private String full(String path) {

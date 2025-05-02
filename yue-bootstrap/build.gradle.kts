@@ -1,7 +1,6 @@
 dependencies {
     "implementation"(libs.bundles.spring)
     "implementation"(libs.bundles.configuration)
-    "implementation"(libs.bundles.pf4j)
     "implementation"(libs.jda)
     "implementation"(libs.postgres)
 

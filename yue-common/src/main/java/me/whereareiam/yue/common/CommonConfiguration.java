@@ -2,7 +2,7 @@ package me.whereareiam.yue.common;
 
 import me.whereareiam.yue.api.input.translation.TranslationService;
 import me.whereareiam.yue.api.model.config.settings.Settings;
-import me.whereareiam.yue.api.output.plugin.PluginService;
+import me.whereareiam.yue.api.output.plugin.PluginManager;
 import me.whereareiam.yue.api.output.service.CommandService;
 import me.whereareiam.yue.common.scanner.ComponentListenerScanner;
 import me.whereareiam.yue.common.scanner.ListenerScanner;
@@ -27,7 +27,9 @@ public class CommonConfiguration {
 	private final ApplicationContext ctx;
 
 	@Autowired
-	public CommonConfiguration(ApplicationContext ctx) {
+	public CommonConfiguration(
+			ApplicationContext ctx
+	) {
 		this.ctx = ctx;
 	}
 
@@ -55,7 +57,7 @@ public class CommonConfiguration {
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationReady() {
 		ctx.getBean(CommandService.class).initialize();
-		ctx.getBean(PluginService.class).loadPlugins();
+		ctx.getBean(PluginManager.class).initialize();
 		ctx.getBean(TranslationService.class).initialize();
 
 		ctx.getBean(ComponentListenerScanner.class).scan();
