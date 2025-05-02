@@ -47,7 +47,12 @@ public class DefaultTranslationService implements TranslationService {
 			mergeLoaderResult(loaderResult);
 		}
 
-		logger.info("Translation service initialized with {} {}", translations.size(), translations.size() == 1 ? "locale" : "locales");
+		logger.info(
+				"Translation service initialized with {} {} ({} keys)",
+				translations.size(),
+				translations.size() == 1 ? "locale" : "locales",
+				translations.values().stream().mapToInt(Map::size).sum()
+		);
 	}
 
 	private void mergeLoaderResult(Map<String, Map<DiscordLocale, Map<String, String>>> loaderResult) {
