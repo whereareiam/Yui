@@ -67,6 +67,8 @@ public class YuePluginManager implements PluginManager {
 		} catch (Exception e) {
 			logger.error("Failed to load plugins", e);
 		}
+
+		storage.all().forEach(p -> enable(p.getPlugin().getId()));
 	}
 
 	@Override
