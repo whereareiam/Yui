@@ -18,6 +18,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.EventListener;
 
 @Configuration
@@ -63,6 +64,11 @@ public class CommonConfiguration {
 		ctx.getBean(ListenerScanner.class).scan();
 
 		welcome();
+	}
+
+	@EventListener(ContextClosedEvent.class)
+	public void onContextClosed() {
+		ctx.getBean(PluginService.class).unloadPlugins();
 	}
 
 	private void welcome() {
