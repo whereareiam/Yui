@@ -1,5 +1,6 @@
 package me.whereareiam.yue.adapter.command;
 
+import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yue.adapter.command.registrar.CommandRegistrar;
 import me.whereareiam.yue.adapter.command.registry.CommandDefinition;
 import me.whereareiam.yue.adapter.command.registry.CommandRegistry;
@@ -8,8 +9,6 @@ import me.whereareiam.yue.api.model.command.Command;
 import me.whereareiam.yue.api.model.config.Commands;
 import me.whereareiam.yue.api.output.config.ConfigurationLoader;
 import me.whereareiam.yue.api.output.service.CommandService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -24,10 +23,9 @@ import java.util.stream.Collectors;
  * into an in-memory map and also delegates the registration to JDA
  * (through CommandRegistrar).
  */
+@Slf4j
 @Service
 public class CommandServiceAdapter implements CommandService {
-	private final Logger logger = LoggerFactory.getLogger(CommandServiceAdapter.class);
-
 	private final ApplicationContext context;
 	private final CommandRegistry commandRegistry;
 	private final CommandScanner commandScanner;
@@ -105,7 +103,7 @@ public class CommandServiceAdapter implements CommandService {
 	public void unregister(String commandName) {
 		CommandDefinition def = commandRegistry.get(commandName);
 		if (def == null) {
-			logger.warn("Cannot unregister. Command '{}' not found in registry.", commandName);
+			log.warn("Cannot unregister. Command '{}' not found in registry.", commandName);
 			return;
 		}
 
@@ -120,7 +118,7 @@ public class CommandServiceAdapter implements CommandService {
 		// Bulk update in Discord
 		commandRegistrar.registerDiscordCommands(remainingCommands);
 
-		logger.debug("Unregistered command '{}'.", commandName);
+		log.debug("Unregistered command '{}'.", commandName);
 	}
 
 	@Override

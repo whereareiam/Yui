@@ -1,7 +1,7 @@
 package me.whereareiam.yue.common.adapter;
 
 import me.whereareiam.yue.api.model.profile.UserProfile;
-import me.whereareiam.yue.common.service.DefaultUserProfileCacheProvider;
+import me.whereareiam.yue.common.service.user.DefaultUserProfileCacheProvider;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.DiscordLocale;

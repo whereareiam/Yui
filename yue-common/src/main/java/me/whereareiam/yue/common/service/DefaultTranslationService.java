@@ -1,6 +1,7 @@
 package me.whereareiam.yue.common.service;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yue.api.input.translation.TranslationLoader;
 import me.whereareiam.yue.api.input.translation.TranslationService;
 import me.whereareiam.yue.api.model.config.settings.Settings;
@@ -8,8 +9,6 @@ import me.whereareiam.yue.api.output.provider.Provider;
 import me.whereareiam.yue.api.output.provider.UserProfileCacheProvider;
 import me.whereareiam.yue.api.util.TranslationTags;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
@@ -19,11 +18,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class DefaultTranslationService implements TranslationService {
-	private static final Logger logger = LoggerFactory.getLogger(DefaultTranslationService.class);
-
 	private final Provider<Settings> settings;
 	private final List<TranslationLoader> loaders;
 	private final UserProfileCacheProvider userProfileCache;
@@ -40,14 +38,14 @@ public class DefaultTranslationService implements TranslationService {
 
 	@Override
 	public void initialize() {
-		logger.debug("Initializing translation service");
+		log.debug("Initializing translation service");
 		for (TranslationLoader loader : loaders) {
-			logger.debug("Loading translations from: {}", loader.getClass().getSimpleName());
+			log.debug("Loading translations from: {}", loader.getClass().getSimpleName());
 			Map<String, Map<DiscordLocale, Map<String, String>>> loaderResult = loader.loadAll();
 			mergeLoaderResult(loaderResult);
 		}
 
-		logger.info(
+		log.info(
 				"Translation service initialized with {} {} ({} keys)",
 				translations.size(),
 				translations.size() == 1 ? "locale" : "locales",
@@ -56,16 +54,16 @@ public class DefaultTranslationService implements TranslationService {
 	}
 
 	private void mergeLoaderResult(Map<String, Map<DiscordLocale, Map<String, String>>> loaderResult) {
-		logger.debug("Merging translation loader results");
+		log.debug("Merging translation loader results");
 		for (Map.Entry<String, Map<DiscordLocale, Map<String, String>>> prefixEntry : loaderResult.entrySet()) {
 			String prefix = prefixEntry.getKey();
 			Map<DiscordLocale, Map<String, String>> localeMap = prefixEntry.getValue();
-			logger.debug("Processing prefix: '{}'", prefix);
+			log.debug("Processing prefix: '{}'", prefix);
 
 			for (Map.Entry<DiscordLocale, Map<String, String>> localeEntry : localeMap.entrySet()) {
 				DiscordLocale locale = localeEntry.getKey();
 				Map<String, String> translationsForThatLocale = localeEntry.getValue();
-				logger.trace("Processing locale: {} with {} entries", locale, translationsForThatLocale.size());
+				log.trace("Processing locale: {} with {} entries", locale, translationsForThatLocale.size());
 
 				Map<String, String> targetMap = translations.computeIfAbsent(locale, _ -> new ConcurrentHashMap<>());
 
@@ -82,30 +80,30 @@ public class DefaultTranslationService implements TranslationService {
 	@Override
 	public String translate(String key, long userId) {
 		DiscordLocale defaultBotLocale = settings.get().getLocale();
-		logger.trace("Translating key '{}' for user {}", key, userId);
+		log.trace("Translating key '{}' for user {}", key, userId);
 		DiscordLocale[] userLocales = getUserLocalesOrDefault(userId, defaultBotLocale);
-		logger.trace("User locales: {}", (Object) userLocales);
+		log.trace("User locales: {}", (Object) userLocales);
 
 		for (DiscordLocale locale : userLocales) {
 			String translation = getTranslatedString(locale, key);
 			if (translation != null) {
-				logger.trace("Found translation for key '{}' in locale {}: '{}'", key, locale, translation);
+				log.trace("Found translation for key '{}' in locale {}: '{}'", key, locale, translation);
 				return translation;
 			}
 		}
 
-		logger.debug("No translation found for key: '{}'", key);
+		log.debug("No translation found for key: '{}'", key);
 		return key;
 	}
 
 	@Override
 	public String translate(String key, DiscordLocale locale) {
-		logger.trace("Translating key '{}' for locale {}", key, locale);
+		log.trace("Translating key '{}' for locale {}", key, locale);
 
 		// First try with the specified locale
 		String translation = getTranslatedString(locale, key);
 		if (translation != null) {
-			logger.trace("Found translation for key '{}' in specified locale {}: '{}'", key, locale, translation);
+			log.trace("Found translation for key '{}' in specified locale {}: '{}'", key, locale, translation);
 			return translation;
 		}
 
@@ -113,11 +111,11 @@ public class DefaultTranslationService implements TranslationService {
 		DiscordLocale defaultBotLocale = settings.get().getLocale();
 		translation = getTranslatedString(defaultBotLocale, key);
 		if (translation != null) {
-			logger.trace("Found translation for key '{}' in default locale {}: '{}'", key, defaultBotLocale, translation);
+			log.trace("Found translation for key '{}' in default locale {}: '{}'", key, defaultBotLocale, translation);
 			return translation;
 		}
 
-		logger.debug("No translation found for key: '{}'", key);
+		log.debug("No translation found for key: '{}'", key);
 		return key;
 	}
 
@@ -154,7 +152,7 @@ public class DefaultTranslationService implements TranslationService {
 
 			return TranslationTags.resolve(formatted, locale);
 		} catch (IllegalArgumentException ex) {
-			logger.warn(
+			log.warn(
 					"Failed to format translation '{}' with args {} for locale {} – returning unformatted",
 					pattern, Arrays.toString(args), locale, ex
 			);
@@ -173,11 +171,11 @@ public class DefaultTranslationService implements TranslationService {
 						locales.addAll(Arrays.asList(profile.getAdditionalLanguages()));
 
 					locales.add(defaultBotLocale);
-					logger.trace("User {} locales: {}", userId, locales);
+					log.trace("User {} locales: {}", userId, locales);
 					return locales.toArray(DiscordLocale[]::new);
 				})
 				.orElseGet(() -> {
-					logger.trace("No profile found for user {}, using default locale", userId);
+					log.trace("No profile found for user {}, using default locale", userId);
 					return new DiscordLocale[]{defaultBotLocale};
 				});
 	}

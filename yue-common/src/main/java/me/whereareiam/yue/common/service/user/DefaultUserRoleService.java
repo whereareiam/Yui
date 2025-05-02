@@ -1,4 +1,4 @@
-package me.whereareiam.yue.common.service;
+package me.whereareiam.yue.common.service.user;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

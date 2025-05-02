@@ -1,14 +1,13 @@
 package me.whereareiam.yue.common.service.initialization;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yue.api.model.config.Roles;
 import me.whereareiam.yue.api.output.provider.Provider;
 import me.whereareiam.yue.api.output.service.RoleService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -16,11 +15,10 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Component
 @AllArgsConstructor
 public class RolesInitializationService {
-	private static final Logger logger = LoggerFactory.getLogger(RolesInitializationService.class);
-
 	private final Provider<Roles> rolesProvider;
 	private final RoleService roleService;
 	private final JDA jda;
@@ -29,7 +27,7 @@ public class RolesInitializationService {
 	public void init() {
 		Guild guild = jda.getGuilds().getFirst();
 		if (guild == null) {
-			logger.warn("No guild is connected in the bot.");
+			log.warn("No guild is connected in the bot.");
 			return;
 		}
 
@@ -48,9 +46,9 @@ public class RolesInitializationService {
 		for (Role role : removableRoles) {
 			try {
 				roleService.removeRole(role.getIdLong());
-				logger.info("Removed obsolete role: {} (id={})", role.getName(), role.getIdLong());
+				log.info("Removed obsolete role: {} (id={})", role.getName(), role.getIdLong());
 			} catch (Exception e) {
-				logger.warn("Failed to remove role: {}", role.getName(), e);
+				log.warn("Failed to remove role: {}", role.getName(), e);
 			}
 		}
 	}
@@ -60,9 +58,9 @@ public class RolesInitializationService {
 			if (!roleService.roleExists(id)) {
 				try {
 					roleService.addRole(id);
-					logger.info("Created new role: {} (id={})", name, id);
+					log.info("Created new role: {} (id={})", name, id);
 				} catch (Exception e) {
-					logger.warn("Failed to create role: {} (id={})", name, id, e);
+					log.warn("Failed to create role: {} (id={})", name, id, e);
 				}
 			}
 		});

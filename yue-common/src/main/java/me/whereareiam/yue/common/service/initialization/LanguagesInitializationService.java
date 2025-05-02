@@ -1,12 +1,11 @@
 package me.whereareiam.yue.common.service.initialization;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yue.api.model.config.Roles;
 import me.whereareiam.yue.api.output.provider.Provider;
 import me.whereareiam.yue.api.output.service.LanguageService;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -15,11 +14,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Component
 @AllArgsConstructor
 public class LanguagesInitializationService {
-	private static final Logger logger = LoggerFactory.getLogger(LanguagesInitializationService.class);
-
 	private final Provider<Roles> rolesProvider;
 	private final LanguageService languageService;
 
@@ -38,7 +36,7 @@ public class LanguagesInitializationService {
 		languageService.getAvailableLanguages().stream()
 				.filter(lang -> !languageRolesSet.contains(lang))
 				.forEach(lang -> {
-					logger.info("Removing obsolete language: {}", lang);
+					log.info("Removing obsolete language: {}", lang);
 					languageService.removeLanguage(lang);
 				});
 	}
@@ -48,7 +46,7 @@ public class LanguagesInitializationService {
 		languageRoles.stream()
 				.filter(lang -> !availableLanguagesSet.contains(lang))
 				.forEach(lang -> {
-					logger.info("Adding missing language: {}", lang);
+					log.info("Adding missing language: {}", lang);
 					languageService.addLanguage(lang);
 				});
 	}

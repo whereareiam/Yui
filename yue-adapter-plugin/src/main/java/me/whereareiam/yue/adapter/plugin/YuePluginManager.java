@@ -1,5 +1,6 @@
 package me.whereareiam.yue.adapter.plugin;
 
+import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yue.adapter.plugin.bean.PluginBeanRegistry;
 import me.whereareiam.yue.adapter.plugin.descriptor.PluginDescriptorReader;
 import me.whereareiam.yue.adapter.plugin.factory.PluginClassLoaderFactory;
@@ -13,8 +14,6 @@ import me.whereareiam.yue.api.model.plugin.Plugin;
 import me.whereareiam.yue.api.output.plugin.PluginManager;
 import me.whereareiam.yue.api.output.plugin.YuePlugin;
 import me.whereareiam.yue.api.type.PluginState;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -29,10 +28,9 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 public class YuePluginManager implements PluginManager {
-	private static final Logger logger = LoggerFactory.getLogger(YuePluginManager.class);
-
 	private final Path pluginsPath;
 	private final PluginStorage storage;
 	private final PluginDescriptorReader descriptorReader;
@@ -66,7 +64,7 @@ public class YuePluginManager implements PluginManager {
 		try (Stream<Path> jars = Files.list(pluginsPath)) {
 			jars.filter(p -> p.toString().endsWith(".jar")).forEach(this::load);
 		} catch (Exception e) {
-			logger.error("Failed to load plugins", e);
+			log.error("Failed to load plugins", e);
 		}
 
 		storage.all().forEach(p -> enable(p.getPlugin().getId()));
@@ -94,7 +92,7 @@ public class YuePluginManager implements PluginManager {
 
 			storage.add(internalPlugin);
 		} catch (Exception e) {
-			logger.error("Failed loading plugin {}", path, e);
+			log.error("Failed loading plugin {}", path, e);
 		} finally {
 			lock.unlock();
 		}

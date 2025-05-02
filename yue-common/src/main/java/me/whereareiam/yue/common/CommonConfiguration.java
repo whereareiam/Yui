@@ -1,5 +1,7 @@
 package me.whereareiam.yue.common;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yue.api.input.UserRoleService;
 import me.whereareiam.yue.api.input.translation.TranslationService;
 import me.whereareiam.yue.api.model.config.settings.Settings;
@@ -12,9 +14,6 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -22,17 +21,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
 
+@Slf4j
 @Configuration
+@RequiredArgsConstructor
 public class CommonConfiguration {
-	private final Logger logger = LoggerFactory.getLogger(getClass());
 	private final ApplicationContext ctx;
-
-	@Autowired
-	public CommonConfiguration(
-			ApplicationContext ctx
-	) {
-		this.ctx = ctx;
-	}
 
 	@Bean
 	@Primary
@@ -69,11 +62,11 @@ public class CommonConfiguration {
 	}
 
 	private void welcome() {
-		logger.info("");
-		logger.info("Yue has successfully linked with the Cardinal System.");
-		logger.info("『Greetings, Master. I am Yue. All systems are operational. Awaiting your command.』");
-		logger.info("");
-		logger.info("Loaded {} plugin{}", ctx.getBean(PluginManager.class).plugins().stream().filter(InternalPlugin::isEnabled).count(), ctx.getBean(PluginManager.class).plugins().size() == 1 ? "" : "s");
-		logger.info("");
+		log.info("");
+		log.info("Yue has successfully linked with the Cardinal System.");
+		log.info("『Greetings, Master. I am Yue. All systems are operational. Awaiting your command.』");
+		log.info("");
+		log.info("Loaded {} plugin{}", ctx.getBean(PluginManager.class).plugins().stream().filter(InternalPlugin::isEnabled).count(), ctx.getBean(PluginManager.class).plugins().size() == 1 ? "" : "s");
+		log.info("");
 	}
 }

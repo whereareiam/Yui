@@ -1,4 +1,4 @@
-package me.whereareiam.yue.common.service;
+package me.whereareiam.yue.common.service.user;
 
 import me.whereareiam.yue.api.model.profile.UserProfile;
 import me.whereareiam.yue.api.output.provider.UserProfileCacheProvider;
