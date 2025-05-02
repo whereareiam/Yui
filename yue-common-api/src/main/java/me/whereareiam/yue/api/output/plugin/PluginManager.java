@@ -24,5 +24,5 @@ public interface PluginManager {
 
 	Optional<InternalPlugin> whichPlugin(Class<?> type);
 
-	Collection<?> plugins();
+	Collection<InternalPlugin> plugins();
 }

@@ -2,6 +2,7 @@ package me.whereareiam.yue.common;
 
 import me.whereareiam.yue.api.input.translation.TranslationService;
 import me.whereareiam.yue.api.model.config.settings.Settings;
+import me.whereareiam.yue.api.model.plugin.InternalPlugin;
 import me.whereareiam.yue.api.output.plugin.PluginManager;
 import me.whereareiam.yue.api.output.service.CommandService;
 import me.whereareiam.yue.common.scanner.ComponentListenerScanner;
@@ -69,6 +70,8 @@ public class CommonConfiguration {
 		logger.info("");
 		logger.info("Yue has successfully linked with the Cardinal System.");
 		logger.info("『Greetings, Master. I am Yue. All systems are operational. Awaiting your command.』");
+		logger.info("");
+		logger.info("Loaded {} plugin{}", ctx.getBean(PluginManager.class).plugins().stream().filter(InternalPlugin::isEnabled).count(), ctx.getBean(PluginManager.class).plugins().size() == 1 ? "" : "s");
 		logger.info("");
 	}
 }

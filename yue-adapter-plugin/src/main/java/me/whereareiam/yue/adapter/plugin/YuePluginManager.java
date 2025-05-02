@@ -209,7 +209,7 @@ public class YuePluginManager implements PluginManager {
 	}
 
 	@Override
-	public Collection<?> plugins() {
+	public Collection<InternalPlugin> plugins() {
 		return storage.all();
 	}
 
