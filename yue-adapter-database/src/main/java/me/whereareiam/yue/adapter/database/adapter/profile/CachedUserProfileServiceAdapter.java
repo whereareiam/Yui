@@ -66,6 +66,18 @@ public class CachedUserProfileServiceAdapter implements UserProfileService {
 	}
 
 	@Override
+	public void addRole(long profileId, long roleId) {
+		delegate.addRole(profileId, roleId);
+		delegate.getProfile(profileId).ifPresent(updated -> cache.putProfile(profileId, updated));
+	}
+
+	@Override
+	public void removeRole(long profileId, long roleId) {
+		delegate.removeRole(profileId, roleId);
+		delegate.getProfile(profileId).ifPresent(updated -> cache.putProfile(profileId, updated));
+	}
+
+	@Override
 	public Optional<UserProfile> getProfile(long id) {
 		// First check cache
 		Optional<UserProfile> cachedProfile = cache.getProfile(id);

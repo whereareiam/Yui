@@ -9,7 +9,7 @@ import me.whereareiam.yue.api.event.Cancellable;
 @Setter
 @RequiredArgsConstructor
 public class RoleRemovedEvent implements Cancellable {
-	private final long User;
-	private final long Role;
+	private final long user;
+	private final long role;
 	private boolean cancelled;
 }

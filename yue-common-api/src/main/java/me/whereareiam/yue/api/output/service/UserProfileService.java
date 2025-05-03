@@ -18,5 +18,9 @@ public interface UserProfileService {
 
 	void removeAdditionalLanguage(long id, DiscordLocale locale);
 
+	void addRole(long profileId, long roleId);
+
+	void removeRole(long profileId, long roleId);
+
 	Optional<UserProfile> getProfile(long id);
 }

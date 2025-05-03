@@ -9,10 +9,14 @@ import me.whereareiam.yue.adapter.database.mapper.ProfileMapper;
 import me.whereareiam.yue.adapter.database.repository.LanguageRepository;
 import me.whereareiam.yue.adapter.database.repository.RoleRepository;
 import me.whereareiam.yue.adapter.database.repository.UserProfileRepository;
+import me.whereareiam.yue.api.event.language.AdditionalLanguageAddedEvent;
+import me.whereareiam.yue.api.event.language.AdditionalLanguageRemovedEvent;
+import me.whereareiam.yue.api.event.language.LanguageChangeEvent;
 import me.whereareiam.yue.api.model.profile.UserProfile;
 import me.whereareiam.yue.api.output.service.UserProfileService;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -22,21 +26,24 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class UserProfileServiceAdapter implements UserProfileService {
-
 	private final UserProfileRepository userProfileRepository;
 	private final LanguageRepository languageRepository;
 	private final RoleRepository roleRepository;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Autowired
 	public UserProfileServiceAdapter(
 			UserProfileRepository userProfileRepository,
 			LanguageRepository languageRepository,
-			RoleRepository roleRepository
+			RoleRepository roleRepository,
+			ApplicationEventPublisher eventPublisher
 	) {
 		this.userProfileRepository = userProfileRepository;
 		this.languageRepository = languageRepository;
 		this.roleRepository = roleRepository;
+		this.eventPublisher = eventPublisher;
 	}
 
 	@Override
@@ -62,7 +69,6 @@ public class UserProfileServiceAdapter implements UserProfileService {
 				.id(userProfile.getId())
 				.build();
 
-		// If the primary language is present, load or throw
 		if (userProfile.getPrimaryLanguage() != null) {
 			LanguageEntity primaryLanguageEntity = languageRepository.findByLocale(userProfile.getPrimaryLanguage())
 					.orElseThrow(() -> new IllegalArgumentException(
@@ -103,8 +109,22 @@ public class UserProfileServiceAdapter implements UserProfileService {
 		UserProfileEntity userProfileEntity = userProfileRepository.findById(id)
 				.orElseThrow(() -> new IllegalArgumentException("UserProfile not found with id: " + id));
 
-		LanguageEntity primaryLanguageEntity = languageRepository.findByLocale(locale)
-				.orElseThrow(() -> new IllegalArgumentException("Primary language not found: " + locale));
+		DiscordLocale current = userProfileEntity.getPrimaryLanguage() == null
+				? null
+				: userProfileEntity.getPrimaryLanguage().getLocale();
+
+		LanguageChangeEvent event = new LanguageChangeEvent(id, current);
+		event.setLanguage(locale);
+
+		eventPublisher.publishEvent(event);
+
+		if (event.isCancelled()) {
+			return;
+		}
+
+		DiscordLocale newLocale = event.getLanguage();
+		LanguageEntity primaryLanguageEntity = languageRepository.findByLocale(newLocale)
+				.orElseThrow(() -> new IllegalArgumentException("Primary language not found: " + newLocale));
 
 		userProfileEntity.setPrimaryLanguage(primaryLanguageEntity);
 		userProfileRepository.save(userProfileEntity);
@@ -112,15 +132,25 @@ public class UserProfileServiceAdapter implements UserProfileService {
 
 	@Override
 	public void addAdditionalLanguage(long profileId, DiscordLocale locale) {
+		AdditionalLanguageAddedEvent event = new AdditionalLanguageAddedEvent(profileId);
+		event.setLanguage(locale);
+
+		eventPublisher.publishEvent(event);
+		if (event.isCancelled())
+			return;
+
+		locale = event.getLanguage();
+
+		DiscordLocale finalLocale = locale;
 		UserProfileEntity userProfileEntity = userProfileRepository.findById(profileId)
 				.orElseThrow(() -> new IllegalArgumentException("UserProfile not found with id: " + profileId));
 
 		LanguageEntity languageEntity = languageRepository.findByLocale(locale)
-				.orElseThrow(() -> new IllegalArgumentException("Language not found: " + locale));
+				.orElseThrow(() -> new IllegalArgumentException("Language not found: " + finalLocale));
 
 		boolean alreadyExists = userProfileEntity.getAdditionalLanguages() != null &&
 				userProfileEntity.getAdditionalLanguages().stream()
-						.anyMatch(pl -> pl.getLanguageEntity().getLocale().equals(locale));
+						.anyMatch(pl -> pl.getLanguageEntity().getLocale().equals(finalLocale));
 
 		if (!alreadyExists) {
 			UserProfileLanguageEntity languageLink = UserProfileLanguageEntity.builder()
@@ -128,9 +158,8 @@ public class UserProfileServiceAdapter implements UserProfileService {
 					.languageEntity(languageEntity)
 					.build();
 
-			if (userProfileEntity.getAdditionalLanguages() == null) {
+			if (userProfileEntity.getAdditionalLanguages() == null)
 				userProfileEntity.setAdditionalLanguages(new HashSet<>());
-			}
 
 			userProfileEntity.getAdditionalLanguages().add(languageLink);
 			userProfileRepository.save(userProfileEntity);
@@ -139,18 +168,55 @@ public class UserProfileServiceAdapter implements UserProfileService {
 
 	@Override
 	public void removeAdditionalLanguage(long profileId, DiscordLocale locale) {
+		AdditionalLanguageRemovedEvent event = new AdditionalLanguageRemovedEvent(profileId);
+		event.setLanguage(locale);
+
+		eventPublisher.publishEvent(event);
+		if (event.isCancelled())
+			return;
+
+		locale = event.getLanguage();
+
+		DiscordLocale finalLocale = locale;
 		UserProfileEntity userProfileEntity = userProfileRepository.findById(profileId)
 				.orElseThrow(() -> new IllegalArgumentException("UserProfile not found with id: " + profileId));
 
 		if (userProfileEntity.getAdditionalLanguages() != null) {
 			userProfileEntity.getAdditionalLanguages().removeIf(pl ->
-					pl.getLanguageEntity().getLocale().equals(locale));
+					pl.getLanguageEntity().getLocale().equals(finalLocale));
 			userProfileRepository.save(userProfileEntity);
 		}
 	}
 
 	@Override
-	@Transactional
+	public void addRole(long profileId, long roleId) {
+		UserProfileEntity userProfileEntity = userProfileRepository.findById(profileId)
+				.orElseThrow(() -> new IllegalArgumentException("UserProfile not found with id: " + profileId));
+
+		RoleEntity roleEntity = roleRepository.findById(roleId)
+				.orElseGet(() -> roleRepository.save(RoleEntity.builder().id(roleId).build()));
+
+		if (userProfileEntity.getRoles() == null)
+			userProfileEntity.setRoles(new HashSet<>());
+
+		if (!userProfileEntity.getRoles().contains(roleEntity)) {
+			userProfileEntity.getRoles().add(roleEntity);
+			userProfileRepository.save(userProfileEntity);
+		}
+	}
+
+	@Override
+	public void removeRole(long profileId, long roleId) {
+		UserProfileEntity userProfileEntity = userProfileRepository.findById(profileId)
+				.orElseThrow(() -> new IllegalArgumentException("UserProfile not found with id: " + profileId));
+
+		if (userProfileEntity.getRoles() != null &&
+				userProfileEntity.getRoles().removeIf(role -> role.getId() == roleId)) {
+			userProfileRepository.save(userProfileEntity);
+		}
+	}
+
+	@Override
 	public Optional<UserProfile> getProfile(long id) {
 		return userProfileRepository.findById(id).map(ProfileMapper::toProfile);
 	}

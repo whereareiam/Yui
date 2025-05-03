@@ -1,15 +1,16 @@
-package me.whereareiam.yue.api.event.role;
+package me.whereareiam.yue.api.event.language;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import me.whereareiam.yue.api.event.Cancellable;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class RoleAddedEvent implements Cancellable {
+public class AdditionalLanguageRemovedEvent implements Cancellable {
 	private final long user;
-	private final long role;
+	private DiscordLocale language;
 	private boolean cancelled;
 }

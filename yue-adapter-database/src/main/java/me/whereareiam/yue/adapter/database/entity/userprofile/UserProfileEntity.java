@@ -22,7 +22,7 @@ public class UserProfileEntity {
 	@JoinColumn(name = "language_id")
 	private LanguageEntity primaryLanguage;
 
-	@OneToMany(mappedBy = "userProfileEntity")
+	@OneToMany(mappedBy = "userProfileEntity", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<UserProfileLanguageEntity> additionalLanguages;
 
 	@ManyToMany

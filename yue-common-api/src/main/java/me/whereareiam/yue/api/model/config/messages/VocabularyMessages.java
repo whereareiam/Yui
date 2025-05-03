@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 public class VocabularyMessages {
 	private String cancel;
+	private String proceed;
 	private Category category;
 
 	@Getter

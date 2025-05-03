@@ -76,6 +76,7 @@ public class MessagesTemplate implements DefaultConfig<Messages> {
 	private static VocabularyMessages getVocabularyMessages() {
 		VocabularyMessages vocabulary = new VocabularyMessages();
 		vocabulary.setCancel("Cancel");
+		vocabulary.setProceed("Continue");
 
 		VocabularyMessages.Category category = new VocabularyMessages.Category();
 		category.setUtility("🛠️ Utility");
