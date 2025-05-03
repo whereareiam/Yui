@@ -10,7 +10,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class AbstractTranslationLoader implements TranslationLoader {
@@ -37,10 +39,16 @@ public abstract class AbstractTranslationLoader implements TranslationLoader {
 					? entry.getKey()
 					: (parentKey + "." + entry.getKey());
 
-			if (entry.getValue() instanceof Map) {
-				flattenMap(key, (Map<String, Object>) entry.getValue(), flat);
+			Object value = entry.getValue();
+			if (value instanceof Map) {
+				flattenMap(key, (Map<String, Object>) value, flat);
+			} else if (value instanceof List<?> list) {
+				String joined = list.stream()
+						.map(String::valueOf)
+						.collect(Collectors.joining("\n"));
+				flat.put(key, joined);
 			} else {
-				flat.put(key, String.valueOf(entry.getValue()));
+				flat.put(key, String.valueOf(value));
 			}
 		}
 	}

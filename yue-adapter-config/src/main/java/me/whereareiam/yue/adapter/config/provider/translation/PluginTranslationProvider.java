@@ -31,7 +31,7 @@ public class PluginTranslationProvider extends AbstractTranslationLoader {
 			pluginsDirStream
 					.filter(Files::isDirectory)
 					.forEach(pluginDir -> {
-						String pluginName = pluginDir.getFileName().toString();
+						String pluginName = pluginDir.getFileName().toString().toLowerCase();
 						String prefix = "plugin." + pluginName + ".";
 						log.debug("Processing plugin: {} with prefix: {}", pluginName, prefix);
 
@@ -42,7 +42,7 @@ public class PluginTranslationProvider extends AbstractTranslationLoader {
 						}
 
 						Map<DiscordLocale, Map<String, String>> localeMap = processLanguageFolder(languageFolder);
-						log.info("Loaded translations for plugin {} with {} locales", pluginName, localeMap.size());
+						log.debug("Loaded translations for plugin {} with {} locales", pluginName, localeMap.size());
 						result.put(prefix, localeMap);
 					});
 		} catch (Exception e) {

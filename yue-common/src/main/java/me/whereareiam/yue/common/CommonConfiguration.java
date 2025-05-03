@@ -68,8 +68,8 @@ public class CommonConfiguration {
 	public void onApplicationReady() {
 		ctx.getBean(DefaultTemporaryChannelService.class).purgeChannels();
 		ctx.getBean(CommandService.class).initialize();
-		ctx.getBean(PluginManager.class).initialize();
 		ctx.getBean(TranslationService.class).initialize();
+		ctx.getBean(PluginManager.class).initialize();
 
 		ctx.getBean(ComponentListenerScanner.class).scan();
 		ctx.getBean(ListenerScanner.class).scan();
