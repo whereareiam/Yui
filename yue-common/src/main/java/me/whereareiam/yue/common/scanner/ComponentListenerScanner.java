@@ -2,9 +2,12 @@ package me.whereareiam.yue.common.scanner;
 
 import lombok.AllArgsConstructor;
 import me.whereareiam.yue.api.annotation.ComponentListener;
+import me.whereareiam.yue.api.event.plugin.PluginEnabledEvent;
 import me.whereareiam.yue.api.input.InteractionService;
+import me.whereareiam.yue.api.model.plugin.InternalPlugin;
 import net.dv8tion.jda.api.events.interaction.component.GenericComponentInteractionCreateEvent;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ReflectionUtils;
@@ -14,12 +17,16 @@ import java.util.function.Consumer;
 
 @Component
 @AllArgsConstructor
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class ComponentListenerScanner {
 	private final InteractionService interactions;
-	private final ApplicationContext ctx;
+	private final ApplicationContext rootCtx;
 
-	@SuppressWarnings({"unchecked", "rawtypes"})
 	public void scan() {
+		scan(rootCtx);
+	}
+
+	private void scan(ApplicationContext ctx) {
 		for (String n : ctx.getBeanDefinitionNames()) {
 			Object bean;
 			try {
@@ -44,5 +51,11 @@ public class ComponentListenerScanner {
 				interactions.registerHandler(path, (Class) type, (Consumer) c);
 			}
 		}
+	}
+
+	@EventListener
+	public void onPluginEnabledEvent(PluginEnabledEvent event) {
+		InternalPlugin plugin = event.getPlugin();
+		scan(plugin.getContext());
 	}
 }

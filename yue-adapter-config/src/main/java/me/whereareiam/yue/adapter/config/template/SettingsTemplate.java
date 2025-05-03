@@ -33,6 +33,10 @@ public class SettingsTemplate implements DefaultConfig<Settings> {
 				GatewayIntent.SCHEDULED_EVENTS
 		));
 
+		DiscordSettings.Channels channels = new DiscordSettings.Channels();
+		channels.setTempChannelCategoryId("SET_YOUR_TEMP_CHANNEL_CATEGORY_ID");
+		discordSettings.setChannels(channels);
+
 		settings.setDiscord(discordSettings);
 
 		DatabaseSettings databaseSettings = getDatabaseSettings();

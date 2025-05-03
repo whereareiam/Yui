@@ -1,8 +1,11 @@
 package me.whereareiam.yue.api.util;
 
 import me.whereareiam.yue.api.input.InteractionService;
+import me.whereareiam.yue.api.model.PayloadButton;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.GenericComponentInteractionCreateEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
@@ -21,8 +24,20 @@ public class Components {
 		Components.interactions = interactionService;
 	}
 
-	public static Button button(String path, String label) {
-		return interactions.createButton(path, label);
+	public static Button button(ButtonStyle style, String path, String label) {
+		return interactions.createButton(style, path, label);
+	}
+
+	public static Button button(ButtonStyle style, String path, Emoji emoji) {
+		return interactions.createButton(style, path, emoji);
+	}
+
+	public static PayloadButton button(ButtonStyle style, String path, String label, String payload) {
+		return interactions.createButton(style, path, label, payload);
+	}
+
+	public static PayloadButton button(ButtonStyle style, String path, Emoji emoji, String payload) {
+		return interactions.createButton(style, path, emoji, payload);
 	}
 
 	public static StringSelectMenu menu(String path, List<SelectOption> options) {
@@ -31,6 +46,10 @@ public class Components {
 
 	public static EntitySelectMenu menu(String path, EntitySelectMenu.SelectTarget t, int min, int max) {
 		return interactions.createEntitySelectMenu(path, t, min, max);
+	}
+
+	public static String payload(GenericComponentInteractionCreateEvent event) {
+		return interactions.getPayload(event);
 	}
 
 	public static <E extends GenericComponentInteractionCreateEvent> void on(String path, Class<E> type, Consumer<E> handler) {

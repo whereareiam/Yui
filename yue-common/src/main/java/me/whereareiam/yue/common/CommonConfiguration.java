@@ -10,6 +10,7 @@ import me.whereareiam.yue.api.output.plugin.PluginManager;
 import me.whereareiam.yue.api.output.service.CommandService;
 import me.whereareiam.yue.common.scanner.ComponentListenerScanner;
 import me.whereareiam.yue.common.scanner.ListenerScanner;
+import me.whereareiam.yue.common.service.DefaultTemporaryChannelService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
@@ -33,6 +34,12 @@ public class CommonConfiguration {
 		JDA jda;
 
 		try {
+			if (settings.getDiscord().getGuildId().equals("SET_YOUR_GUILD_ID"))
+				throw new IllegalStateException("Discord guild id is not set");
+
+			if (settings.getDiscord().getToken().equals("SET_YOUR_TOKEN"))
+				throw new IllegalStateException("Discord token is not set");
+
 			JDABuilder builder = JDABuilder
 					.createDefault(settings.getDiscord().getToken())
 					.setEnabledIntents(settings.getDiscord().getIntents())
@@ -40,6 +47,15 @@ public class CommonConfiguration {
 					.setMemberCachePolicy(MemberCachePolicy.ALL);
 
 			jda = builder.build().awaitReady();
+
+			jda.getGuilds()
+					.stream()
+					.filter(guild -> !guild.getId().equals(settings.getDiscord().getGuildId()))
+					.forEach(guild -> {
+						log.info("Leaving guild '{}' ({})", guild.getName(), guild.getId());
+						guild.leave().queue();
+					});
+
 
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
@@ -50,6 +66,7 @@ public class CommonConfiguration {
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationReady() {
+		ctx.getBean(DefaultTemporaryChannelService.class).purgeChannels();
 		ctx.getBean(CommandService.class).initialize();
 		ctx.getBean(PluginManager.class).initialize();
 		ctx.getBean(TranslationService.class).initialize();

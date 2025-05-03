@@ -12,4 +12,11 @@ public class DiscordSettings {
 	private String guildId;
 	private String token;
 	private List<GatewayIntent> intents;
+	private Channels channels;
+
+	@Getter
+	@Setter
+	public static class Channels {
+		private String tempChannelCategoryId;
+	}
 }

@@ -2,7 +2,7 @@ package me.whereareiam.yue.api.input;
 
 /**
  * A generic registry interface that provides registration functionality for
- * different types of components in the Socialismus plugin.
+ * different types of components in the framework.
  *
  * <p>This interface allows for type-safe registration of various elements
  * such as commands, events, or integrations. The generic type parameter T
@@ -14,7 +14,7 @@ public interface Registry<T> {
 	/**
 	 * Registers a new element in this registry.
 	 *
-	 * @param integration the element to register
+	 * @param object the element to register
 	 */
-	void register(T integration);
+	void register(T object);
 }

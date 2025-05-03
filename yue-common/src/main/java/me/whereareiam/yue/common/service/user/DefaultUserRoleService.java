@@ -29,13 +29,11 @@ public class DefaultUserRoleService implements UserRoleService {
 	private final ApplicationEventPublisher eventPublisher;
 	private final JDA jda;
 
-
 	private static final int PARALLELISM =
 			Math.max(2, Runtime.getRuntime().availableProcessors());
 
 	private final ExecutorService syncPool =
 			Executors.newFixedThreadPool(PARALLELISM, r -> new Thread(r, "yue-role-sync"));
-
 
 	@Override
 	public void addRoleToUser(long userId, long roleId) {
