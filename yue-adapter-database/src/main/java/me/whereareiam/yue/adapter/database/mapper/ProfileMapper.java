@@ -24,7 +24,7 @@ public class ProfileMapper {
 		DiscordLocale[] additionalLocales = entity.getAdditionalLanguages() == null
 				? new DiscordLocale[0]
 				: entity.getAdditionalLanguages().stream()
-				.map(pl -> pl.getLanguageEntity().getLocale())
+				.map(LanguageEntity::getLocale)
 				.toArray(DiscordLocale[]::new);
 
 		long[] roleIds = entity.getRoles() == null || entity.getRoles().isEmpty()

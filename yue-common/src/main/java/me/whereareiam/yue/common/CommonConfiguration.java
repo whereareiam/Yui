@@ -69,11 +69,11 @@ public class CommonConfiguration {
 		ctx.getBean(DefaultTemporaryChannelService.class).purgeChannels();
 		ctx.getBean(CommandService.class).initialize();
 		ctx.getBean(TranslationService.class).initialize();
+		ctx.getBean(UserRoleService.class).syncAll();
 		ctx.getBean(PluginManager.class).initialize();
 
 		ctx.getBean(ComponentListenerScanner.class).scan();
 		ctx.getBean(ListenerScanner.class).scan();
-		ctx.getBean(UserRoleService.class).syncAll();
 
 		welcome();
 	}

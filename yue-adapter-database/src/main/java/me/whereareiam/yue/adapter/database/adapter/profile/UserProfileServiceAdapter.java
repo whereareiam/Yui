@@ -4,7 +4,6 @@ import jakarta.transaction.Transactional;
 import me.whereareiam.yue.adapter.database.entity.LanguageEntity;
 import me.whereareiam.yue.adapter.database.entity.RoleEntity;
 import me.whereareiam.yue.adapter.database.entity.userprofile.UserProfileEntity;
-import me.whereareiam.yue.adapter.database.entity.userprofile.UserProfileLanguageEntity;
 import me.whereareiam.yue.adapter.database.mapper.ProfileMapper;
 import me.whereareiam.yue.adapter.database.repository.LanguageRepository;
 import me.whereareiam.yue.adapter.database.repository.RoleRepository;
@@ -148,20 +147,11 @@ public class UserProfileServiceAdapter implements UserProfileService {
 		LanguageEntity languageEntity = languageRepository.findByLocale(locale)
 				.orElseThrow(() -> new IllegalArgumentException("Language not found: " + finalLocale));
 
-		boolean alreadyExists = userProfileEntity.getAdditionalLanguages() != null &&
-				userProfileEntity.getAdditionalLanguages().stream()
-						.anyMatch(pl -> pl.getLanguageEntity().getLocale().equals(finalLocale));
+		if (userProfileEntity.getAdditionalLanguages() == null)
+			userProfileEntity.setAdditionalLanguages(new HashSet<>());
 
-		if (!alreadyExists) {
-			UserProfileLanguageEntity languageLink = UserProfileLanguageEntity.builder()
-					.userProfileEntity(userProfileEntity)
-					.languageEntity(languageEntity)
-					.build();
-
-			if (userProfileEntity.getAdditionalLanguages() == null)
-				userProfileEntity.setAdditionalLanguages(new HashSet<>());
-
-			userProfileEntity.getAdditionalLanguages().add(languageLink);
+		if (!userProfileEntity.getAdditionalLanguages().contains(languageEntity)) {
+			userProfileEntity.getAdditionalLanguages().add(languageEntity);
 			userProfileRepository.save(userProfileEntity);
 		}
 	}
@@ -181,9 +171,8 @@ public class UserProfileServiceAdapter implements UserProfileService {
 		UserProfileEntity userProfileEntity = userProfileRepository.findById(profileId)
 				.orElseThrow(() -> new IllegalArgumentException("UserProfile not found with id: " + profileId));
 
-		if (userProfileEntity.getAdditionalLanguages() != null) {
-			userProfileEntity.getAdditionalLanguages().removeIf(pl ->
-					pl.getLanguageEntity().getLocale().equals(finalLocale));
+		if (userProfileEntity.getAdditionalLanguages() != null &&
+				userProfileEntity.getAdditionalLanguages().removeIf(language -> language.getLocale() == finalLocale)) {
 			userProfileRepository.save(userProfileEntity);
 		}
 	}
@@ -194,7 +183,7 @@ public class UserProfileServiceAdapter implements UserProfileService {
 				.orElseThrow(() -> new IllegalArgumentException("UserProfile not found with id: " + profileId));
 
 		RoleEntity roleEntity = roleRepository.findById(roleId)
-				.orElseGet(() -> roleRepository.save(RoleEntity.builder().id(roleId).build()));
+				.orElseThrow(() -> new IllegalArgumentException("Role not found: " + roleId));
 
 		if (userProfileEntity.getRoles() == null)
 			userProfileEntity.setRoles(new HashSet<>());

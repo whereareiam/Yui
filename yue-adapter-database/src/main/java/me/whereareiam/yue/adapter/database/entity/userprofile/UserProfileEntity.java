@@ -22,8 +22,12 @@ public class UserProfileEntity {
 	@JoinColumn(name = "language_id")
 	private LanguageEntity primaryLanguage;
 
-	@OneToMany(mappedBy = "userProfileEntity", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<UserProfileLanguageEntity> additionalLanguages;
+	@OneToMany
+	@JoinTable(
+			name = "yue_profiles_languages",
+			joinColumns = @JoinColumn(name = "profile_id"),
+			inverseJoinColumns = @JoinColumn(name = "language_id"))
+	private Set<LanguageEntity> additionalLanguages;
 
 	@ManyToMany
 	@JoinTable(
