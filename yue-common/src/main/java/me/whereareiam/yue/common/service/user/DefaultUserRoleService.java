@@ -42,68 +42,55 @@ public class DefaultUserRoleService implements UserRoleService {
 
 	@Override
 	public void addRoleToUser(long userId, long roleId) {
-		if (!syncing.add(userId))
+		Guild guild = resolveGuild();
+
+		if (!roleService.roleExists(roleId)) {
+			log.warn("Role id={} is not registered in database, refusing to add.", roleId);
 			return;
-
-		try {
-			Guild guild = resolveGuild();
-			if (!roleService.roleExists(roleId)) {
-				log.warn("Role id={} is not registered in database, refusing to add.", roleId);
-				return;
-			}
-
-			Role discordRole = guild.getRoleById(roleId);
-			if (discordRole == null) {
-				log.warn("Role id={} does not exist on the guild.", roleId);
-				return;
-			}
-
-			Member member = fetchMember(guild, userId);
-			if (member == null || member.getRoles().contains(discordRole))
-				return;
-
-			guild.addRoleToMember(member, discordRole)
-					.reason("Yue automatic role assign")
-					.queue(
-							v -> {
-								updateProfile(userId, Set.of(roleId), Set.of());
-								eventPublisher.publishEvent(new RoleAddedEvent(userId, roleId));
-								log.debug("Role id={} added to user id={}", roleId, userId);
-							},
-							err -> log.error("Failed adding role id={} to user id={}", roleId, userId, err)
-					);
-		} finally {
-			syncing.remove(userId);
 		}
+
+		Role discordRole = guild.getRoleById(roleId);
+		if (discordRole == null) {
+			log.warn("Role id={} does not exist on the guild.", roleId);
+			return;
+		}
+
+		Member member = fetchMember(guild, userId);
+		if (member == null || member.getRoles().contains(discordRole)) return;
+
+		updateProfile(userId, Set.of(roleId), Set.of());
+
+		guild.addRoleToMember(member, discordRole)
+				.reason("Yue automatic role assign")
+				.queue(
+						v -> eventPublisher.publishEvent(new RoleAddedEvent(userId, roleId)),
+						err -> {
+							updateProfile(userId, Set.of(), Set.of(roleId));
+							log.error("Failed adding role id={} to user id={}", roleId, userId, err);
+						}
+				);
 	}
 
 	@Override
 	public void removeRoleFromUser(long userId, long roleId) {
-		if (!syncing.add(userId))
-			return;
+		Guild guild = resolveGuild();
+		Role discordRole = guild.getRoleById(roleId);
+		if (discordRole == null) return;
 
-		try {
-			Guild guild = resolveGuild();
-			Role discordRole = guild.getRoleById(roleId);
-			if (discordRole == null) return;
+		Member member = fetchMember(guild, userId);
+		if (member == null || !member.getRoles().contains(discordRole)) return;
 
-			Member member = fetchMember(guild, userId);
-			if (member == null || !member.getRoles().contains(discordRole))
-				return;
+		updateProfile(userId, Set.of(), Set.of(roleId));
 
-			guild.removeRoleFromMember(member, discordRole)
-					.reason("Yue automatic role remove")
-					.queue(
-							v -> {
-								updateProfile(userId, Set.of(), Set.of(roleId));
-								eventPublisher.publishEvent(new RoleRemovedEvent(userId, roleId));
-								log.debug("Role id={} removed from user id={}", roleId, userId);
-							},
-							err -> log.error("Failed removing role id={} from user id={}", roleId, userId, err)
-					);
-		} finally {
-			syncing.remove(userId);
-		}
+		guild.removeRoleFromMember(member, discordRole)
+				.reason("Yue automatic role remove")
+				.queue(
+						v -> eventPublisher.publishEvent(new RoleRemovedEvent(userId, roleId)),
+						err -> {
+							updateProfile(userId, Set.of(roleId), Set.of());
+							log.error("Failed removing role id={} from user id={}", roleId, userId, err);
+						}
+				);
 	}
 
 	@Override
@@ -198,19 +185,25 @@ public class DefaultUserRoleService implements UserRoleService {
 				.filter(allowedRoles::contains)
 				.collect(Collectors.toSet());
 
-		Set<Long> stored = Users.get(userId)
-				.map(UserProfile::getRoles)
-				.map(arr -> Arrays.stream(arr).boxed().collect(Collectors.toSet()))
-				.orElseGet(HashSet::new);
+		Optional<UserProfile> cachedProfile = Users.get(userId);
+		if (cachedProfile.isEmpty()) {
+			if (!onDiscord.isEmpty()) {
+				updateProfile(userId, onDiscord, Set.of());
+				log.debug("Boot-strap – stored roles of user {} from Discord {}", userId, onDiscord);
+			}
+			return;
+		}
+
+		Set<Long> stored = Arrays.stream(
+				Optional.ofNullable(cachedProfile.get().getRoles()).orElse(new long[0])
+		).boxed().collect(Collectors.toSet());
 
 		Set<Long> toAdd = new HashSet<>(stored);
 		toAdd.removeAll(onDiscord);
-
 		Set<Long> toRemove = new HashSet<>(onDiscord);
 		toRemove.removeAll(stored);
 
-		if (toAdd.isEmpty() && toRemove.isEmpty())
-			return;
+		if (toAdd.isEmpty() && toRemove.isEmpty()) return;
 
 		List<Role> addRoles = toAdd.stream()
 				.map(member.getGuild()::getRoleById)
@@ -222,7 +215,6 @@ public class DefaultUserRoleService implements UserRoleService {
 				.filter(Objects::nonNull)
 				.toList();
 
-		// Single REST request for both directions
 		member.getGuild()
 				.modifyMemberRoles(member, addRoles, removeRoles)
 				.reason("Yue automatic role sync")
