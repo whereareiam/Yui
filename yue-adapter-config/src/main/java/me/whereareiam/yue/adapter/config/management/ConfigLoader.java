@@ -57,7 +57,9 @@ public class ConfigLoader implements ConfigurationLoader {
 			throw new ConfigLoadException("Failed to load configuration from " + configPath, e);
 		}
 
-		configMerger.merge(config, defaultConfig);
+		if (defaultConfig.getDefault() != null)
+			configMerger.merge(config, defaultConfig.getDefault());
+		
 		configSaver.save(configPath, config);
 
 		return config;
