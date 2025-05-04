@@ -95,15 +95,16 @@ public class YuePluginManager implements PluginManager {
 
 		plugins.forEach((id, plugin) -> {
 			List<String> deps = new ArrayList<>();
-			plugin.getDependencies().forEach(d -> {
-				if (!plugins.containsKey(d.getId())) {
-					if (d.isRequired()) return;
-					log.error("Plugin {} is missing required dependency {}", id, d.getId());
-					skipped.add(id);
-					return;
-				}
-				deps.add(d.getId());
-			});
+			if (plugin.getDependencies() != null)
+				plugin.getDependencies().forEach(d -> {
+					if (!plugins.containsKey(d.getId())) {
+						if (d.isRequired()) return;
+						log.error("Plugin {} is missing required dependency {}", id, d.getId());
+						skipped.add(id);
+						return;
+					}
+					deps.add(d.getId());
+				});
 			adj.put(id, deps);
 		});
 
