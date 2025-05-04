@@ -7,5 +7,10 @@ import lombok.Setter;
 @Setter
 public class EmbedStyle {
 	private Embed primary;
+	private Embed secondary;
+	private Embed success;
+	private Embed warning;
 	private Embed error;
+	private Embed info;
+
 }

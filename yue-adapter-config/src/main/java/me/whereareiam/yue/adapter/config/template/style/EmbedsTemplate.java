@@ -21,7 +21,43 @@ public class EmbedsTemplate implements DefaultConfig<EmbedStyle> {
 				true
 		));
 
+		embedStyle.setSecondary(new Embed(
+				new Embed.Author("", "", ""),
+				new Embed.Footer("", ""),
+				"",
+				"",
+				"",
+				false
+		));
+
+		embedStyle.setSuccess(new Embed(
+				new Embed.Author("", "", ""),
+				new Embed.Footer("", ""),
+				"",
+				"",
+				"",
+				false
+		));
+
+		embedStyle.setWarning(new Embed(
+				new Embed.Author("", "", ""),
+				new Embed.Footer("", ""),
+				"",
+				"",
+				"",
+				false
+		));
+
 		embedStyle.setError(new Embed(
+				new Embed.Author("", "", ""),
+				new Embed.Footer("", ""),
+				"",
+				"",
+				"",
+				false
+		));
+
+		embedStyle.setInfo(new Embed(
 				new Embed.Author("", "", ""),
 				new Embed.Footer("", ""),
 				"",

@@ -8,6 +8,7 @@ import me.whereareiam.yue.api.input.UserRoleService;
 import me.whereareiam.yue.api.model.config.Roles;
 import me.whereareiam.yue.api.output.provider.Provider;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -17,6 +18,7 @@ public class LanguageChangeListener {
 	private final Provider<Roles> roles;
 
 	@EventListener
+	@Order(0)
 	public void onLanguageChangeEvent(LanguageChangeEvent event) {
 		if (event.getLanguage().equals(event.getOldLanguage()))
 			return;

@@ -11,8 +11,8 @@ public class Palette {
 	private Color primary;
 	private Color secondary;
 
-	private Color error;
-	private Color warning;
 	private Color success;
+	private Color warning;
+	private Color error;
 	private Color info;
 }
