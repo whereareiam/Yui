@@ -3,7 +3,6 @@ dependencies {
     "implementation"(libs.bundles.configuration)
     "implementation"(libs.jda)
     "implementation"(libs.postgres)
-    "implementation"(libs.emoji)
 
     // include all projects
     rootProject.subprojects.forEach { subproject ->

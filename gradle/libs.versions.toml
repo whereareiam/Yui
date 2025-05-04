@@ -7,7 +7,6 @@ postgres = "42.7.5"
 spring = "3.4.4"
 jackson = "2.18.2"
 h2 = "2.3.232"
-emoji = "5.1.1"
 
 [libraries]
 
@@ -16,7 +15,6 @@ lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" 
 jda = { group = "net.dv8tion", name = "JDA", version.ref = "jda" }
 postgres = { group = "org.postgresql", name = "postgresql", version.ref = "postgres" }
 h2 = { group = "com.h2database", name = "h2", version.ref = "h2" }
-emoji = { group = "com.vdurmont", name = "emoji-java", version.ref = "emoji" }
 
 # spring
 spring-boot = { group = "org.springframework.boot", name = "spring-boot-starter", version.ref = "spring" }

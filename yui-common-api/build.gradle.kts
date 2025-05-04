@@ -2,10 +2,6 @@ plugins {
     id("maven-publish")
 }
 
-dependencies {
-    "compileOnly"(libs.emoji)
-}
-
 java {
     withSourcesJar()
     withJavadocJar()
