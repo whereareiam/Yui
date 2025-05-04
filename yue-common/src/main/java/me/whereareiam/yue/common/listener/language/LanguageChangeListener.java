@@ -18,6 +18,9 @@ public class LanguageChangeListener {
 
 	@EventListener
 	public void onLanguageChangeEvent(LanguageChangeEvent event) {
+		if (event.getLanguage().equals(event.getOldLanguage()))
+			return;
+
 		if (event.getOldLanguage() != null)
 			userRoleService.removeRoleFromUser(event.getUser(), getRoleId(event.getOldLanguage().getLocale()));
 
