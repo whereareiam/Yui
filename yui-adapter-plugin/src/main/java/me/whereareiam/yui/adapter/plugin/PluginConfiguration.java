@@ -1,0 +1,24 @@
+package me.whereareiam.yui.adapter.plugin;
+
+import me.whereareiam.yui.shared.Constants;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.nio.file.Path;
+
+@Configuration
+public class PluginConfiguration {
+	@Bean
+	@Qualifier("pluginsPath")
+	public Path pluginsPath(@Qualifier("dataPath") Path dataPath) {
+		Path pluginsPath = dataPath.resolve(Constants.Structure.pluginsDir);
+
+		if (!pluginsPath.toFile().exists()) {
+			boolean created = pluginsPath.toFile().mkdirs();
+			if (!created) throw new RuntimeException("Failed to create plugins directory");
+		}
+
+		return pluginsPath;
+	}
+}

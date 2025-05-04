@@ -1,10 +1,10 @@
-rootProject.name = "Yue"
+rootProject.name = "Yui"
 
-include("yue-adapter-database")
-include("yue-adapter-command")
-include("yue-adapter-plugin")
-include("yue-adapter-config")
-include("yue-common-api")
-include("yue-bootstrap")
-include("yue-common")
-include("yue-shared")
+include("yui-adapter-database")
+include("yui-adapter-command")
+include("yui-adapter-plugin")
+include("yui-adapter-config")
+include("yui-common-api")
+include("yui-bootstrap")
+include("yui-common")
+include("yui-shared")

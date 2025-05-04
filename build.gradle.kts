@@ -23,18 +23,18 @@ subprojects {
         useJUnitPlatform()
     }
 
-    if (project.name != "yue-common-api" && project.name != "yue-shared") {
+    if (project.name != "yui-common-api" && project.name != "yui-shared") {
         dependencies {
-            "compileOnly"(project(":yue-common-api"))
-            "compileOnly"(project(":yue-shared"))
+            "compileOnly"(project(":yui-common-api"))
+            "compileOnly"(project(":yui-shared"))
 
-            "testImplementation"(project(":yue-common-api"))
+            "testImplementation"(project(":yui-common-api"))
             "testImplementation"(rootProject.libs.spring.boot.test)
             "testImplementation"(rootProject.libs.jda)
         }
     }
 
-    if (project.name != "yue-bootstrap") {
+    if (project.name != "yui-bootstrap") {
         dependencies {
             "compileOnly"(rootProject.libs.spring.boot)
             "compileOnly"(rootProject.libs.jda)

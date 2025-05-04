@@ -1,0 +1,28 @@
+package me.whereareiam.yui.api.output.plugin;
+
+import me.whereareiam.yui.api.model.plugin.InternalPlugin;
+
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.function.Supplier;
+
+public interface PluginManager {
+	void initialize();
+
+	void load(Path jar);
+
+	<T> void injectBean(String beanName, Class<T> beanClass, Supplier<T> supplier);
+
+	void removeInjectedBean(String beanName);
+
+	Optional<YuiPlugin> enable(String id);
+
+	Optional<YuiPlugin> disable(String id);
+
+	Optional<YuiPlugin> unload(String id);
+
+	Optional<InternalPlugin> whichPlugin(Class<?> type);
+
+	Collection<InternalPlugin> plugins();
+}
