@@ -4,6 +4,9 @@ import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yue.api.input.TemporaryChannelService;
 import me.whereareiam.yue.api.model.ChannelDecoration;
 import me.whereareiam.yue.api.model.config.settings.Settings;
+import me.whereareiam.yue.api.style.StyleKit;
+import me.whereareiam.yue.api.util.Translatable;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
@@ -15,8 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 
 @Slf4j
 @Component
@@ -26,6 +28,13 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService {
 
 	private final Map<Long, Set<Long>> channelUsers = new ConcurrentHashMap<>();
 	private final Map<Long, Long> userChannel = new ConcurrentHashMap<>();
+
+	private final ScheduledExecutorService scheduler =
+			Executors.newSingleThreadScheduledExecutor(r -> {
+				Thread t = new Thread(r, "temp-channel-closer");
+				t.setDaemon(true);
+				return t;
+			});
 
 	private static final EnumSet<Permission> PERMISSIONS =
 			EnumSet.of(Permission.VIEW_CHANNEL,
@@ -125,6 +134,44 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService {
 
 		return future;
 	}
+
+	@Override
+	public CompletableFuture<Void> close(TextChannel channel, long delay) {
+		if (channel == null)
+			return CompletableFuture.completedFuture(null);
+
+		CompletableFuture<Void> future = new CompletableFuture<>();
+
+		Set<Long> userIds = channelUsers.get(channel.getIdLong());
+		Long userId = (userIds != null && !userIds.isEmpty()) ? userIds.iterator().next() : null;
+
+		EmbedBuilder builder = StyleKit.embeds().warning();
+		if (userId != null) {
+			builder.setTitle(Translatable.of("general.temporaryChannels.close.title", userId));
+			builder.setDescription(Translatable.forUser("general.temporaryChannels.close.description", userId, delay));
+		} else {
+			builder.setTitle(Translatable.of("general.temporaryChannels.close.title"));
+			builder.setDescription(Translatable.of("general.temporaryChannels.close.description", String.valueOf(delay)));
+		}
+
+		channel.sendMessageEmbeds(builder.build()).queue();
+		channel.sendMessageEmbeds(builder.build())
+				.queue(
+						_ -> scheduler.schedule(() ->
+										close(channel)
+												.whenComplete((_, ex) -> {
+													if (ex == null)
+														future.complete(null);
+													else
+														future.completeExceptionally(ex);
+												}),
+								delay, TimeUnit.SECONDS),
+						future::completeExceptionally
+				);
+
+		return future;
+	}
+
 
 	@Override
 	public Optional<TextChannel> findByUser(long userId) {

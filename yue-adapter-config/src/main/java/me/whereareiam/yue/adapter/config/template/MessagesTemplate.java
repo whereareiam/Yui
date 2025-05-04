@@ -1,6 +1,7 @@
 package me.whereareiam.yue.adapter.config.template;
 
 import me.whereareiam.yue.api.model.config.messages.CommandMessages;
+import me.whereareiam.yue.api.model.config.messages.GeneralMessages;
 import me.whereareiam.yue.api.model.config.messages.Messages;
 import me.whereareiam.yue.api.model.config.messages.VocabularyMessages;
 import me.whereareiam.yue.api.model.config.messages.command.HelpCommandMessages;
@@ -18,6 +19,16 @@ public class MessagesTemplate implements DefaultConfig<Messages> {
 		Messages messages = new Messages();
 
 		// Default values
+		GeneralMessages generalMessages = new GeneralMessages();
+		GeneralMessages.TemporaryChannels temporaryChannels = new GeneralMessages.TemporaryChannels();
+		GeneralMessages.TemporaryChannels.Close close = new GeneralMessages.TemporaryChannels.Close();
+		close.setTitle("Temporary Channel Closing");
+		close.setDescription("This temporary channel will be closed in *{0}* seconds.");
+		temporaryChannels.setClose(close);
+
+		generalMessages.setTemporaryChannels(temporaryChannels);
+		messages.setGeneral(generalMessages);
+
 		CommandMessages commandMessages = new CommandMessages();
 		CommandMessages.ErrorMessages errorMessages = new CommandMessages.ErrorMessages();
 		errorMessages.setException("An unexpected error occurred. Please try again later.");

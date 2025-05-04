@@ -14,5 +14,7 @@ public interface TemporaryChannelService {
 
 	CompletableFuture<Void> close(TextChannel channel);
 
+	CompletableFuture<Void> close(TextChannel channel, long delay);
+
 	Optional<TextChannel> findByUser(long userId);
 }

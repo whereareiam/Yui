@@ -6,6 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Messages {
+	private GeneralMessages general;
 	private CommandMessages commands;
 	private VocabularyMessages vocabulary;
 }
