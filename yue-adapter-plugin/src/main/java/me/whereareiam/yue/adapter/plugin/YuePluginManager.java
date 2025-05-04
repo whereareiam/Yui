@@ -22,8 +22,7 @@ import org.springframework.stereotype.Service;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -61,13 +60,82 @@ public class YuePluginManager implements PluginManager {
 
 	@Override
 	public void initialize() {
-		try (Stream<Path> jars = Files.list(pluginsPath)) {
-			jars.filter(p -> p.toString().endsWith(".jar")).forEach(this::load);
+		lock.lock();
+		try {
+			Map<String, Path> jarById = new HashMap<>();
+			Map<String, Plugin> descriptorById = new HashMap<>();
+
+			try (Stream<Path> jars = Files.list(pluginsPath)) {
+				jars.filter(p -> p.toString().endsWith(".jar")).forEach(jar -> {
+					try {
+						Plugin plugin = descriptorReader.read(jar);
+						jarById.put(plugin.getId(), jar);
+						descriptorById.put(plugin.getId(), plugin);
+					} catch (Exception e) {
+						log.error("Failed reading descriptor for {}", jar, e);
+					}
+				});
+			}
+
+			List<String> orderedIds = topologicalSort(descriptorById);
+
+			orderedIds.forEach(id -> load(jarById.get(id)));
 		} catch (Exception e) {
-			log.error("Failed to load plugins", e);
+			log.error("Failed to initialise plugins", e);
+		} finally {
+			lock.unlock();
 		}
 
 		storage.all().forEach(p -> enable(p.getPlugin().getId()));
+	}
+
+	private List<String> topologicalSort(Map<String, Plugin> plugins) {
+		Map<String, List<String>> adj = new HashMap<>();
+		Set<String> skipped = new HashSet<>();
+
+		plugins.forEach((id, plugin) -> {
+			List<String> deps = new ArrayList<>();
+			plugin.getDependencies().forEach(d -> {
+				if (!plugins.containsKey(d.getId())) {
+					if (d.isRequired()) return;
+					log.error("Plugin {} is missing required dependency {}", id, d.getId());
+					skipped.add(id);
+					return;
+				}
+				deps.add(d.getId());
+			});
+			adj.put(id, deps);
+		});
+
+		List<String> sorted = new ArrayList<>();
+		Set<String> visiting = new HashSet<>();
+		Set<String> visited = new HashSet<>();
+
+		for (String id : adj.keySet()) {
+			if (skipped.contains(id) || visited.contains(id)) continue;
+			if (dfs(id, adj, visiting, visited, sorted)) {
+				log.error("Circular dependency detected while loading plugins");
+				return Collections.emptyList();
+			}
+		}
+		Collections.reverse(sorted);
+
+		return sorted.stream().filter(id -> !skipped.contains(id)).toList();
+	}
+
+	private boolean dfs(String id, Map<String, List<String>> adj, Set<String> visiting, Set<String> visited, List<String> out) {
+		if (visiting.contains(id)) return true;
+		if (visited.contains(id)) return false;
+
+		visiting.add(id);
+		for (String dep : adj.getOrDefault(id, List.of()))
+			if (dfs(dep, adj, visiting, visited, out)) return true;
+
+		visiting.remove(id);
+		visited.add(id);
+		out.add(id);
+
+		return false;
 	}
 
 	@Override
