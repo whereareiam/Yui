@@ -8,6 +8,7 @@ import me.whereareiam.yue.api.output.service.LanguageService;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
@@ -21,6 +22,7 @@ public class LanguagesInitializationService {
 	private final Provider<Roles> rolesProvider;
 	private final LanguageService languageService;
 
+	@Order(Integer.MIN_VALUE)
 	@EventListener(ApplicationReadyEvent.class)
 	public void init() {
 		List<DiscordLocale> languageRoles = rolesProvider.get().getLanguageRoles().keySet().stream()

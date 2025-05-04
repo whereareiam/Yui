@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -16,6 +17,7 @@ public class UserProfileInitializationService {
 	private final UserProfileCacheProvider cacheProvider;
 	private final JDA jda;
 
+	@Order(Integer.MIN_VALUE)
 	@EventListener(ApplicationReadyEvent.class)
 	public void init() {
 		jda.getGuilds().forEach(this::initializeForGuild);

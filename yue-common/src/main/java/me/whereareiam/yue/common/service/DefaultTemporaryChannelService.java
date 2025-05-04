@@ -154,7 +154,6 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService {
 			builder.setDescription(Translatable.of("general.temporaryChannels.close.description", String.valueOf(delay)));
 		}
 
-		channel.sendMessageEmbeds(builder.build()).queue();
 		channel.sendMessageEmbeds(builder.build())
 				.queue(
 						_ -> scheduler.schedule(() ->
