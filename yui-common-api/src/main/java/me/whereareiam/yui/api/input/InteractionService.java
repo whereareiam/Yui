@@ -6,10 +6,8 @@ import net.dv8tion.jda.api.events.interaction.component.GenericComponentInteract
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu;
-import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 public interface InteractionService {
@@ -21,9 +19,9 @@ public interface InteractionService {
 
 	PayloadButton createButton(ButtonStyle style, String path, Emoji emoji, String payload);
 
-	StringSelectMenu createStringSelectMenu(String path, List<SelectOption> options);
+	StringSelectMenu.Builder createStringSelectMenu(String path);
 
-	EntitySelectMenu createEntitySelectMenu(String path, EntitySelectMenu.SelectTarget target, int min, int max);
+	EntitySelectMenu.Builder createEntitySelectMenu(String path, EntitySelectMenu.SelectTarget t);
 
 	String getPayload(GenericComponentInteractionCreateEvent event);
 

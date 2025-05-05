@@ -11,12 +11,10 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu;
-import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -92,13 +90,13 @@ public class DefaultInteractionService implements InteractionService, Initializi
 	}
 
 	@Override
-	public StringSelectMenu createStringSelectMenu(String path, List<SelectOption> o) {
-		return StringSelectMenu.create(full(path)).addOptions(o).build();
+	public StringSelectMenu.Builder createStringSelectMenu(String path) {
+		return StringSelectMenu.create(full(path));
 	}
 
 	@Override
-	public EntitySelectMenu createEntitySelectMenu(String path, EntitySelectMenu.SelectTarget t, int min, int max) {
-		return EntitySelectMenu.create(full(path), t).setRequiredRange(min, max).build();
+	public EntitySelectMenu.Builder createEntitySelectMenu(String path, EntitySelectMenu.SelectTarget t) {
+		return EntitySelectMenu.create(full(path), t);
 	}
 
 	@Override

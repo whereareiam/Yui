@@ -16,5 +16,13 @@ public final class Dependency {
 	 * Defaults to {@code false}.
 	 */
 	private boolean required;
+
+	/**
+	 * If {@code true} the dependent plug‑in will receive this dependency’s
+	 * class‑loader on its own search path (in addition to its own JAR and
+	 * the application class‑path).
+	 * Defaults to {@code false} to preserve today’s behaviour.
+	 */
+	private boolean injectClassLoader;
 }
 

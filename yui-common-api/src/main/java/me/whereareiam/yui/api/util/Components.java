@@ -7,12 +7,10 @@ import net.dv8tion.jda.api.events.interaction.component.GenericComponentInteract
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu;
-import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.function.Consumer;
 
 @Component
@@ -40,12 +38,12 @@ public class Components {
 		return interactions.createButton(style, path, emoji, payload);
 	}
 
-	public static StringSelectMenu menu(String path, List<SelectOption> options) {
-		return interactions.createStringSelectMenu(path, options);
+	public static StringSelectMenu.Builder menu(String path) {
+		return interactions.createStringSelectMenu(path);
 	}
 
-	public static EntitySelectMenu menu(String path, EntitySelectMenu.SelectTarget t, int min, int max) {
-		return interactions.createEntitySelectMenu(path, t, min, max);
+	public static EntitySelectMenu.Builder menu(String path, EntitySelectMenu.SelectTarget t) {
+		return interactions.createEntitySelectMenu(path, t);
 	}
 
 	public static String payload(GenericComponentInteractionCreateEvent event) {

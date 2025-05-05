@@ -9,6 +9,7 @@ import me.whereareiam.yui.api.event.plugin.PluginDisabledEvent;
 import me.whereareiam.yui.api.event.plugin.PluginEnabledEvent;
 import me.whereareiam.yui.api.event.plugin.PluginLoadedEvent;
 import me.whereareiam.yui.api.event.plugin.PluginUnloadedEvent;
+import me.whereareiam.yui.api.model.plugin.Dependency;
 import me.whereareiam.yui.api.model.plugin.InternalPlugin;
 import me.whereareiam.yui.api.model.plugin.Plugin;
 import me.whereareiam.yui.api.output.plugin.PluginManager;
@@ -119,9 +120,10 @@ public class YuiPluginManager implements PluginManager {
 				return Collections.emptyList();
 			}
 		}
-		Collections.reverse(sorted);
 
-		return sorted.stream().filter(id -> !skipped.contains(id)).toList();
+		return sorted.stream()
+				.filter(id -> !skipped.contains(id))
+				.toList();
 	}
 
 	private boolean dfs(String id, Map<String, List<String>> adj, Set<String> visiting, Set<String> visited, List<String> out) {
@@ -142,24 +144,35 @@ public class YuiPluginManager implements PluginManager {
 	@Override
 	public void load(Path path) {
 		if (Files.notExists(path)) return;
+
 		lock.lock();
 		try {
 			Plugin plugin = descriptorReader.read(path);
 
-			if (storage.byId(plugin.getId()).isPresent()) return;
+			if (storage.byId(plugin.getId()).isPresent())
+				return;
 
-			URLClassLoader loader = classLoaderFactory.create(path);
-			AnnotationConfigApplicationContext pluginCtx = contextFactory.build(loader, plugin);
+			List<ClassLoader> deps = Optional.ofNullable(plugin.getDependencies())
+					.orElse(List.of())
+					.stream()
+					.filter(Dependency::isInjectClassLoader)
+					.map(d -> storage.byId(d.getId()).orElse(null))
+					.filter(Objects::nonNull)
+					.map(InternalPlugin::getClassLoader)
+					.toList();
+
+			URLClassLoader loader = classLoaderFactory.create(path, deps);
+
+			AnnotationConfigApplicationContext pluginCtx =
+					contextFactory.build(loader, plugin);
+
 			YuiPlugin bean = pluginCtx.getBean(YuiPlugin.class);
+			InternalPlugin internal = new InternalPlugin(plugin, loader, pluginCtx, bean);
 
-			InternalPlugin internalPlugin = new InternalPlugin(plugin, loader, pluginCtx, bean);
-			PluginLoadedEvent event = new PluginLoadedEvent(internalPlugin);
-			eventPublisher.publishEvent(event);
+			eventPublisher.publishEvent(new PluginLoadedEvent(internal));
+			bean.onLoad();
+			storage.add(internal);
 
-			if (!event.isCancelled())
-				bean.onLoad();
-
-			storage.add(internalPlugin);
 		} catch (Exception e) {
 			log.error("Failed loading plugin {}", path, e);
 		} finally {
@@ -208,17 +221,17 @@ public class YuiPluginManager implements PluginManager {
 		lock.lock();
 		try {
 			return storage.byId(id).flatMap(p -> {
-				if (p.isEnabled()) return Optional.of(p.getYuiPlugin());
+				if (p.isEnabled()) return Optional.of(p.getInstance());
 
 				PluginEnabledEvent event = new PluginEnabledEvent(p);
 				eventPublisher.publishEvent(event);
 				if (event.isCancelled()) return Optional.empty();
 
 				p.getContext().start();
-				p.getYuiPlugin().onEnable();
+				p.getInstance().onEnable();
 				p.setState(PluginState.ENABLED);
 
-				return Optional.of(p.getYuiPlugin());
+				return Optional.of(p.getInstance());
 			});
 		} finally {
 			lock.unlock();
@@ -230,17 +243,17 @@ public class YuiPluginManager implements PluginManager {
 		lock.lock();
 		try {
 			return storage.byId(id).flatMap(p -> {
-				if (!p.isEnabled()) return Optional.of(p.getYuiPlugin());
+				if (!p.isEnabled()) return Optional.of(p.getInstance());
 
 				PluginDisabledEvent event = new PluginDisabledEvent(p);
 				eventPublisher.publishEvent(event);
 				if (event.isCancelled()) return Optional.empty();
 
-				p.getYuiPlugin().onDisable();
+				p.getInstance().onDisable();
 				p.getContext().stop();
 				p.setState(PluginState.DISABLED);
 
-				return Optional.of(p.getYuiPlugin());
+				return Optional.of(p.getInstance());
 			});
 		} finally {
 			lock.unlock();
@@ -259,13 +272,13 @@ public class YuiPluginManager implements PluginManager {
 				eventPublisher.publishEvent(event);
 				if (event.isCancelled()) return Optional.empty();
 
-				p.getYuiPlugin().onUnload();
+				p.getInstance().onUnload();
 				p.setState(PluginState.UNLOADED);
 				p.getContext().close();
 				close(p.getClassLoader());
 				storage.remove(id);
 
-				return Optional.of(p.getYuiPlugin());
+				return Optional.of(p.getInstance());
 			});
 		} finally {
 			lock.unlock();
@@ -282,10 +295,12 @@ public class YuiPluginManager implements PluginManager {
 		return storage.all();
 	}
 
-	private void close(URLClassLoader cl) {
-		try {
-			cl.close();
-		} catch (Exception ignored) {
+	private void close(ClassLoader cl) {
+		if (cl instanceof URLClassLoader url) {
+			try {
+				url.close();
+			} catch (Exception ignored) {
+			}
 		}
 	}
 

@@ -1,21 +1,23 @@
 package me.whereareiam.yui.api.model.plugin;
 
+import lombok.Getter;
+import lombok.Setter;
 import me.whereareiam.yui.api.output.plugin.YuiPlugin;
 import me.whereareiam.yui.api.type.PluginState;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import java.net.URLClassLoader;
-
+@Getter
 public final class InternalPlugin {
 	private final Plugin descriptor;
-	private final URLClassLoader classLoader;
+	private final ClassLoader classLoader;
 	private final AnnotationConfigApplicationContext context;
 	private final YuiPlugin instance;
+	@Setter
 	private PluginState state = PluginState.LOADED;
 
 	public InternalPlugin(
 			Plugin descriptor,
-			URLClassLoader classLoader,
+			ClassLoader classLoader,
 			AnnotationConfigApplicationContext context,
 			YuiPlugin instance
 	) {
@@ -27,26 +29,6 @@ public final class InternalPlugin {
 
 	public Plugin getPlugin() {
 		return descriptor;
-	}
-
-	public URLClassLoader getClassLoader() {
-		return classLoader;
-	}
-
-	public AnnotationConfigApplicationContext getContext() {
-		return context;
-	}
-
-	public YuiPlugin getYuiPlugin() {
-		return instance;
-	}
-
-	public PluginState getState() {
-		return state;
-	}
-
-	public void setState(PluginState state) {
-		this.state = state;
 	}
 
 	public boolean isEnabled() {
