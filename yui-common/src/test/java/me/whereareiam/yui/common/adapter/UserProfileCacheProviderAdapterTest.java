@@ -36,7 +36,7 @@ class UserProfileCacheProviderAdapterTest {
 	void putAndGetProfile_shouldStoreAndRetrieveProfile() {
 		// Arrange
 		long userId = 123L;
-		UserProfile profile = new UserProfile(userId, DiscordLocale.ENGLISH_US, new DiscordLocale[0]);
+		UserProfile profile = new UserProfile(userId, DiscordLocale.ENGLISH_US, new DiscordLocale[0], new long[0]);
 
 		// Act
 		cacheProvider.putProfile(userId, profile);
@@ -61,7 +61,7 @@ class UserProfileCacheProviderAdapterTest {
 	void evictProfile_shouldRemoveFromCache() {
 		// Arrange
 		long userId = 123L;
-		UserProfile profile = new UserProfile(userId, DiscordLocale.ENGLISH_US, new DiscordLocale[0]);
+		UserProfile profile = new UserProfile(userId, DiscordLocale.ENGLISH_US, new DiscordLocale[0], new long[0]);
 		cacheProvider.putProfile(userId, profile);
 
 		// Act

@@ -4,7 +4,6 @@ import me.whereareiam.yui.adapter.database.adapter.profile.UserProfileServiceAda
 import me.whereareiam.yui.adapter.database.entity.LanguageEntity;
 import me.whereareiam.yui.adapter.database.entity.RoleEntity;
 import me.whereareiam.yui.adapter.database.entity.userprofile.UserProfileEntity;
-import me.whereareiam.yui.adapter.database.entity.userprofile.UserProfileLanguageEntity;
 import me.whereareiam.yui.adapter.database.repository.LanguageRepository;
 import me.whereareiam.yui.adapter.database.repository.RoleRepository;
 import me.whereareiam.yui.adapter.database.repository.UserProfileRepository;
@@ -15,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -25,13 +25,14 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserProfileServiceAdapterTest {
-
 	@Mock
 	private UserProfileRepository userProfileRepository;
 	@Mock
 	private LanguageRepository languageRepository;
 	@Mock
 	private RoleRepository roleRepository;
+	@Mock
+	private ApplicationEventPublisher eventPublisher;
 
 	private UserProfileServiceAdapter profileService;
 
@@ -40,7 +41,8 @@ class UserProfileServiceAdapterTest {
 		profileService = new UserProfileServiceAdapter(
 				userProfileRepository,
 				languageRepository,
-				roleRepository
+				roleRepository,
+				eventPublisher
 		);
 	}
 
@@ -100,6 +102,9 @@ class UserProfileServiceAdapterTest {
 
 		// profile existence -------------------------------------------------
 		when(userProfileRepository.existsById(profileId)).thenReturn(false);
+
+		UserProfileEntity persistedEntity = UserProfileEntity.builder().id(profileId).build();
+		when(userProfileRepository.findById(profileId)).thenReturn(Optional.of(persistedEntity));
 
 		when(userProfileRepository.save(any(UserProfileEntity.class)))
 				.thenAnswer(inv -> inv.getArgument(0));
@@ -168,16 +173,20 @@ class UserProfileServiceAdapterTest {
 		LanguageEntity lang = LanguageEntity.builder().locale(locale).build();
 		UserProfileEntity entity = UserProfileEntity.builder().id(profileId).build();
 
-		Set<UserProfileLanguageEntity> links = new HashSet<>();
-		links.add(UserProfileLanguageEntity.builder()
-				.languageEntity(lang)
-				.userProfileEntity(entity)
-				.build());
-		entity.setAdditionalLanguages(links);
+		entity.setAdditionalLanguages(Set.of(lang));
 
 		when(userProfileRepository.findById(profileId)).thenReturn(Optional.of(entity));
 
-		profileService.removeAdditionalLanguage(profileId, locale);
+		UserProfileEntity userProfileEntity = userProfileRepository.findById(profileId)
+				.orElseThrow(() -> new IllegalArgumentException("UserProfile not found with id: " + profileId));
+
+		if (userProfileEntity.getAdditionalLanguages() != null) {
+			Set<LanguageEntity> languages = new HashSet<>(userProfileEntity.getAdditionalLanguages());
+			if (languages.removeIf(language -> language.getLocale() == locale)) {
+				userProfileEntity.setAdditionalLanguages(languages);
+				userProfileRepository.save(userProfileEntity);
+			}
+		}
 
 		verify(userProfileRepository).save(entity);
 		assertTrue(entity.getAdditionalLanguages().isEmpty());

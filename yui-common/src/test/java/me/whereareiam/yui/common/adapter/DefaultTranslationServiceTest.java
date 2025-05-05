@@ -3,17 +3,23 @@ package me.whereareiam.yui.common.adapter;
 import me.whereareiam.yui.api.input.translation.TranslationLoader;
 import me.whereareiam.yui.api.model.config.settings.Settings;
 import me.whereareiam.yui.api.model.profile.UserProfile;
+import me.whereareiam.yui.api.output.provider.Provider;
 import me.whereareiam.yui.api.output.provider.UserProfileCacheProvider;
 import me.whereareiam.yui.common.service.DefaultTranslationService;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,15 +34,19 @@ class DefaultTranslationServiceTest {
 	private UserProfileCacheProvider userProfileCache;
 
 	@Mock
-	private Settings settings;
+	private Provider<Settings> settings;
 
 	private DefaultTranslationService translationService;
 
 	@BeforeEach
 	void setUp() {
+		Settings botSettings = mock(Settings.class);
+		when(botSettings.getLocale()).thenReturn(DiscordLocale.ENGLISH_US);
+		when(settings.get()).thenReturn(botSettings);
+
 		// Core translations
-		Map<String, Map<Locale, Map<String, String>>> coreTranslations = new HashMap<>();
-		Map<Locale, Map<String, String>> coreLocaleMap = new HashMap<>();
+		Map<String, Map<DiscordLocale, Map<String, String>>> coreTranslations = new HashMap<>();
+		Map<DiscordLocale, Map<String, String>> coreLocaleMap = new HashMap<>();
 
 		Map<String, String> enCore = new HashMap<>();
 		enCore.put("vocabulary.cancel", "Cancel");
@@ -46,13 +56,13 @@ class DefaultTranslationServiceTest {
 		deCore.put("vocabulary.cancel", "Abbrechen");
 		deCore.put("vocabulary.ok", "OK");
 
-		coreLocaleMap.put(Locale.ENGLISH, enCore);
-		coreLocaleMap.put(Locale.GERMAN, deCore);
+		coreLocaleMap.put(DiscordLocale.ENGLISH_US, enCore);
+		coreLocaleMap.put(DiscordLocale.GERMAN, deCore);
 		coreTranslations.put("", coreLocaleMap);
 
 		// Plugin translations
-		Map<String, Map<Locale, Map<String, String>>> pluginTranslations = new HashMap<>();
-		Map<Locale, Map<String, String>> pluginLocaleMap = new HashMap<>();
+		Map<String, Map<DiscordLocale, Map<String, String>>> pluginTranslations = new HashMap<>();
+		Map<DiscordLocale, Map<String, String>> pluginLocaleMap = new HashMap<>();
 
 		Map<String, String> enPlugin = new HashMap<>();
 		enPlugin.put("vocabulary.play", "Play");
@@ -60,27 +70,26 @@ class DefaultTranslationServiceTest {
 		Map<String, String> dePlugin = new HashMap<>();
 		dePlugin.put("vocabulary.play", "Abspielen");
 
-		pluginLocaleMap.put(Locale.ENGLISH, enPlugin);
-		pluginLocaleMap.put(Locale.GERMAN, dePlugin);
+		pluginLocaleMap.put(DiscordLocale.ENGLISH_US, enPlugin);
+		pluginLocaleMap.put(DiscordLocale.GERMAN, dePlugin);
 		pluginTranslations.put("plugin.music.", pluginLocaleMap);
 
 		when(coreLoader.loadAll()).thenReturn(coreTranslations);
 		when(pluginLoader.loadAll()).thenReturn(pluginTranslations);
-		when(settings.getLocale()).thenReturn(Locale.ENGLISH);
 
 		translationService = new DefaultTranslationService(
+				settings,
 				List.of(coreLoader, pluginLoader),
-				userProfileCache,
-				settings
+				userProfileCache
 		);
 
-		translationService.init();
+		translationService.initialize();
 	}
 
 	@Test
 	void translate_withExistingKey_shouldReturnTranslation() {
 		// Arrange
-		UserProfile profile = new UserProfile(123, Locale.ENGLISH);
+		UserProfile profile = new UserProfile(123, DiscordLocale.ENGLISH_US);
 		when(userProfileCache.getProfile(123L)).thenReturn(Optional.of(profile));
 
 		// Act & Assert
@@ -100,7 +109,7 @@ class DefaultTranslationServiceTest {
 	@Test
 	void translate_withLocaleFallback_shouldSelectCorrectTranslation() {
 		// Arrange
-		UserProfile profile = new UserProfile(456, Locale.GERMAN);
+		UserProfile profile = new UserProfile(456, DiscordLocale.GERMAN);
 		when(userProfileCache.getProfile(456L)).thenReturn(Optional.of(profile));
 
 		// Act & Assert
