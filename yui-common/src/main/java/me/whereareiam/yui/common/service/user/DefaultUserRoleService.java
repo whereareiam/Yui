@@ -56,17 +56,18 @@ public class DefaultUserRoleService implements UserRoleService {
 		}
 
 		Member member = fetchMember(guild, userId);
-		if (member == null || member.getRoles().contains(discordRole)) return;
+		if (member == null || member.getRoles().contains(discordRole))
+			return;
 
 		updateProfile(userId, Set.of(roleId), Set.of());
 
 		guild.addRoleToMember(member, discordRole)
 				.reason("Yui automatic role assign")
 				.queue(
-						v -> eventPublisher.publishEvent(new RoleAddedEvent(userId, roleId)),
+						_ -> eventPublisher.publishEvent(new RoleAddedEvent(userId, roleId)),
 						err -> {
-							updateProfile(userId, Set.of(), Set.of(roleId));
 							log.error("Failed adding role id={} to user id={}", roleId, userId, err);
+							updateProfile(userId, Set.of(), Set.of(roleId));
 						}
 				);
 	}
@@ -78,17 +79,18 @@ public class DefaultUserRoleService implements UserRoleService {
 		if (discordRole == null) return;
 
 		Member member = fetchMember(guild, userId);
-		if (member == null || !member.getRoles().contains(discordRole)) return;
+		if (member == null || !member.getRoles().contains(discordRole))
+			return;
 
 		updateProfile(userId, Set.of(), Set.of(roleId));
 
 		guild.removeRoleFromMember(member, discordRole)
 				.reason("Yui automatic role remove")
 				.queue(
-						v -> eventPublisher.publishEvent(new RoleRemovedEvent(userId, roleId)),
+						_ -> eventPublisher.publishEvent(new RoleRemovedEvent(userId, roleId)),
 						err -> {
-							updateProfile(userId, Set.of(roleId), Set.of());
 							log.error("Failed removing role id={} from user id={}", roleId, userId, err);
+							updateProfile(userId, Set.of(roleId), Set.of());
 						}
 				);
 	}

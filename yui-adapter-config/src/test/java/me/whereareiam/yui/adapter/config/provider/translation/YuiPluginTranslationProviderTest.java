@@ -38,7 +38,7 @@ class YuiPluginTranslationProviderTest {
 		Path langDir = musicPlugin.resolve("languages");
 		Files.createDirectory(langDir);
 
-		Path enFile = langDir.resolve("en.json");
+		Path enFile = langDir.resolve("en-US.json");
 		Files.writeString(enFile, "{}");
 
 		// Setup mock behavior

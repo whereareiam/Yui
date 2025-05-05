@@ -36,7 +36,7 @@ class CoreTranslationProviderTest {
 		Files.createDirectory(langDir);
 
 		// Create sample translation files
-		Path enFile = langDir.resolve("en.json");
+		Path enFile = langDir.resolve("en-US.json");
 		Files.writeString(enFile, "{}");
 
 		// Setup mock behavior
