@@ -72,7 +72,7 @@ public class HelpCommand implements CommandBase {
 				.toList();
 
 		StringSelectMenu selectMenu = Components.menu("help_category")
-				.setDefaultOptions(options)
+				.addOptions(options)
 				.build();
 
 		event.replyEmbeds(embed.build())
