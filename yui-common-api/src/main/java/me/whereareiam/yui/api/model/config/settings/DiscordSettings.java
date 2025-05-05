@@ -17,6 +17,6 @@ public class DiscordSettings {
 	@Getter
 	@Setter
 	public static class Channels {
-		private String tempChannelCategoryId;
+		private List<String> tempChannelCategories;
 	}
 }

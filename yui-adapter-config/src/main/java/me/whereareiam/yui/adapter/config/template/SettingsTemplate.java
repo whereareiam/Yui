@@ -34,7 +34,7 @@ public class SettingsTemplate implements DefaultConfig<Settings> {
 		));
 
 		DiscordSettings.Channels channels = new DiscordSettings.Channels();
-		channels.setTempChannelCategoryId("SET_YOUR_TEMP_CHANNEL_CATEGORY_ID");
+		channels.setTempChannelCategories(List.of("SET_YOUR_TEMP_CHANNEL_CATEGORY_ID"));
 		discordSettings.setChannels(channels);
 
 		settings.setDiscord(discordSettings);

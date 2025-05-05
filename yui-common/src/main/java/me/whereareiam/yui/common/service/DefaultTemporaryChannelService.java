@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -23,8 +24,10 @@ import java.util.concurrent.*;
 @Slf4j
 @Component
 public class DefaultTemporaryChannelService implements TemporaryChannelService {
+	private static final int DISCORD_CATEGORY_LIMIT = 50;
+
 	private final JDA jda;
-	private final long categoryId;
+	private final List<Long> categoryIds;
 
 	private final Map<Long, Set<Long>> channelUsers = new ConcurrentHashMap<>();
 	private final Map<Long, Long> userChannel = new ConcurrentHashMap<>();
@@ -49,26 +52,37 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService {
 			Settings settings
 	) {
 		this.jda = jda;
-		this.categoryId = Long.parseLong(settings.getDiscord().getChannels().getTempChannelCategoryId());
+		this.categoryIds = settings.getDiscord()
+				.getChannels()
+				.getTempChannelCategories()
+				.stream()
+				.map(Long::parseLong)
+				.toList();
 	}
+
 
 	public void purgeChannels() {
-		jda.getGuilds().forEach(g -> {
-			Category category = g.getCategoryById(categoryId);
-			if (category == null) return;
+		jda.getGuilds().forEach(guild -> {
+			for (long cid : categoryIds) {
+				Category cat = guild.getCategoryById(cid);
+				if (cat == null) continue;
 
-			category.getChannels().forEach(ch ->
-					ch.delete().reason("Yui restart – removing stale temp channel").queue());
+				cat.getChannels()
+						.forEach(ch -> ch.delete()
+								.reason("Yui restart – removing stale temp channel")
+								.queue());
+			}
 		});
+
 		log.info("TemporaryChannelService – startup purge completed");
 	}
+
 
 	@Override
 	public CompletableFuture<TextChannel> create(Collection<Long> userIds) {
 		return create(userIds, ChannelDecoration.builder()
 				.name("#" + new Random().nextInt())
-				.build()
-		);
+				.build());
 	}
 
 	@Override
@@ -77,14 +91,42 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService {
 			return CompletableFuture.failedFuture(new IllegalArgumentException("No users specified"));
 
 		Guild guild = jda.getGuilds().getFirst();
-		Category category = guild.getCategoryById(categoryId);
-		if (category == null)
-			return CompletableFuture.failedFuture(new IllegalArgumentException("Category doesn't exist"));
-
 		long firstUser = userIds.iterator().next();
+
 		Optional<TextChannel> existing = findByUser(firstUser);
 		if (existing.isPresent())
 			return CompletableFuture.completedFuture(existing.get());
+
+		CompletableFuture<TextChannel> result = new CompletableFuture<>();
+		tryCreateRecursive(guild, userIds, decoration, 0, result);
+		return result;
+	}
+
+
+	/**
+	 * Tries to create the channel in {@code categoryIds[index]}.
+	 * On {@code CHANNEL_PARENT_MAX_CHANNELS} error automatically retries
+	 * with the next category (if any).
+	 */
+	private void tryCreateRecursive(
+			Guild guild,
+			Collection<Long> userIds,
+			ChannelDecoration decoration,
+			int index,
+			CompletableFuture<TextChannel> result
+	) {
+		if (index >= categoryIds.size()) {
+			result.completeExceptionally(
+					new IllegalStateException("All configured categories reached the 50-channel limit"));
+			return;
+		}
+
+		Long cid = categoryIds.get(index);
+		Category category = guild.getCategoryById(cid);
+		if (category == null || category.getChannels().size() >= DISCORD_CATEGORY_LIMIT) {
+			tryCreateRecursive(guild, userIds, decoration, index + 1, result);
+			return;
+		}
 
 		ChannelAction<TextChannel> action = category
 				.createTextChannel(decoration.getName())
@@ -99,27 +141,35 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService {
 				action = action.addPermissionOverride(member, PERMISSIONS, null);
 		}
 
-		CompletableFuture<TextChannel> future = new CompletableFuture<>();
-		action.queue(channel -> {
-			channelUsers.put(channel.getIdLong(), new HashSet<>(userIds));
-			userChannel.put(firstUser, channel.getIdLong());
+		action.queue(
+				channel -> {
+					channelUsers.put(channel.getIdLong(), new HashSet<>(userIds));
+					userChannel.put(userIds.iterator().next(), channel.getIdLong());
 
-			if (decoration.isMention() || (decoration.getMessage() != null && !decoration.getMessage().isBlank())) {
-				StringBuilder sb = new StringBuilder();
+					if (decoration.isMention() || (decoration.getMessage() != null && !decoration.getMessage().isBlank())) {
+						StringBuilder sb = new StringBuilder();
+						if (decoration.isMention())
+							userIds.forEach(id -> sb.append("<@").append(id).append("> "));
+						if (decoration.getMessage() != null && !decoration.getMessage().isBlank())
+							sb.append(decoration.getMessage());
+						channel.sendMessage(sb.toString().trim()).queue();
+					}
+					result.complete(channel);
+				},
+				failure -> {
+					boolean categoryFull =
+							failure instanceof ErrorResponseException ex
+									&& ex.getErrorCode() == 50035
+									&& ex.getMessage() != null
+									&& ex.getMessage().contains("CHANNEL_PARENT_MAX_CHANNELS");
 
-				if (decoration.isMention())
-					userIds.forEach(id -> sb.append("<@").append(id).append("> "));
+					if (categoryFull) {
+						tryCreateRecursive(guild, userIds, decoration, index + 1, result);
+						return;
+					}
 
-				if (decoration.getMessage() != null && !decoration.getMessage().isBlank())
-					sb.append(decoration.getMessage());
-
-				channel.sendMessage(sb.toString().trim()).queue();
-			}
-
-			future.complete(channel);
-		}, future::completeExceptionally);
-
-		return future;
+					result.completeExceptionally(failure);
+				});
 	}
 
 	@Override
@@ -131,7 +181,6 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService {
 		channel.delete()
 				.reason("Closed via TemporaryChannelService")
 				.queue(__ -> future.complete(null), future::completeExceptionally);
-
 		return future;
 	}
 
@@ -148,7 +197,8 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService {
 		EmbedBuilder builder = StyleKit.embeds().warning();
 		if (userId != null) {
 			builder.setTitle(Translatable.of("general.temporaryChannels.close.title", userId));
-			builder.setDescription(Translatable.forUser("general.temporaryChannels.close.description", userId, delay));
+			builder.setDescription(
+					Translatable.forUser("general.temporaryChannels.close.description", userId, delay));
 		} else {
 			builder.setTitle(Translatable.of("general.temporaryChannels.close.title"));
 			builder.setDescription(Translatable.of("general.temporaryChannels.close.description", String.valueOf(delay)));
@@ -165,24 +215,19 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService {
 														future.completeExceptionally(ex);
 												}),
 								delay, TimeUnit.SECONDS),
-						future::completeExceptionally
-				);
+						future::completeExceptionally);
 
 		return future;
 	}
 
-
 	@Override
 	public Optional<TextChannel> findByUser(long userId) {
 		Long chId = userChannel.get(userId);
-
 		return Optional.ofNullable(chId).map(jda::getTextChannelById);
 	}
 
 	public void handleChannelDeletion(long channelId) {
 		Set<Long> users = channelUsers.remove(channelId);
-		if (users != null) {
-			users.forEach(userChannel::remove);
-		}
+		if (users != null) users.forEach(userChannel::remove);
 	}
 }
