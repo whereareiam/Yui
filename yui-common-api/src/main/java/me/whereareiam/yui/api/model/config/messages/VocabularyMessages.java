@@ -8,6 +8,7 @@ import lombok.Setter;
 public class VocabularyMessages {
 	private String cancel;
 	private String proceed;
+	private String confirm;
 	private String back;
 	private String next;
 	private String yes;

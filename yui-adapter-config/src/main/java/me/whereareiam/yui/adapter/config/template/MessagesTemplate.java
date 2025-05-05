@@ -88,6 +88,7 @@ public class MessagesTemplate implements DefaultConfig<Messages> {
 		VocabularyMessages vocabulary = new VocabularyMessages();
 		vocabulary.setCancel("Cancel");
 		vocabulary.setProceed("Continue");
+		vocabulary.setConfirm("Confirm");
 		vocabulary.setBack("Back");
 		vocabulary.setNext("Next");
 		vocabulary.setYes("Yes");
