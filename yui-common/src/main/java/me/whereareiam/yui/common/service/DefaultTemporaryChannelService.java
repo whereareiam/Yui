@@ -2,7 +2,8 @@ package me.whereareiam.yui.common.service;
 
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.api.input.TemporaryChannelService;
-import me.whereareiam.yui.api.model.ChannelDecoration;
+import me.whereareiam.yui.api.model.channel.ChannelDecoration;
+import me.whereareiam.yui.api.model.channel.ChannelRequest;
 import me.whereareiam.yui.api.model.config.settings.Settings;
 import me.whereareiam.yui.api.style.StyleKit;
 import me.whereareiam.yui.api.util.Translatable;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Component
@@ -31,6 +33,8 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService {
 
 	private final Map<Long, Set<Long>> channelUsers = new ConcurrentHashMap<>();
 	private final Map<Long, Long> userChannel = new ConcurrentHashMap<>();
+	private final Queue<ChannelRequest> pendingRequests = new ConcurrentLinkedQueue<>();
+	private final AtomicBoolean drainingQueue = new AtomicBoolean(false);
 
 	private final ScheduledExecutorService scheduler =
 			Executors.newSingleThreadScheduledExecutor(r -> {
@@ -108,16 +112,11 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService {
 	 * On {@code CHANNEL_PARENT_MAX_CHANNELS} error automatically retries
 	 * with the next category (if any).
 	 */
-	private void tryCreateRecursive(
-			Guild guild,
-			Collection<Long> userIds,
-			ChannelDecoration decoration,
-			int index,
-			CompletableFuture<TextChannel> result
-	) {
+	private void tryCreateRecursive(Guild guild, Collection<Long> userIds, ChannelDecoration decoration, int index, CompletableFuture<TextChannel> result) {
 		if (index >= categoryIds.size()) {
-			result.completeExceptionally(
-					new IllegalStateException("All configured categories reached the 50-channel limit"));
+			pendingRequests.add(new ChannelRequest(userIds, decoration, result));
+			log.info("All temporary-channel categories are full – queued a request for {} user(s)",
+					userIds.size());
 			return;
 		}
 
@@ -229,5 +228,37 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService {
 	public void handleChannelDeletion(long channelId) {
 		Set<Long> users = channelUsers.remove(channelId);
 		if (users != null) users.forEach(userChannel::remove);
+
+		drainQueue();
+	}
+
+	private void drainQueue() {
+		if (!drainingQueue.compareAndSet(false, true)) return;
+
+		scheduler.execute(() -> {
+			try {
+				ChannelRequest req;
+				while ((req = pendingRequests.peek()) != null) {
+					Guild guild = jda.getGuilds().getFirst();
+
+					CompletableFuture<TextChannel> marker = new CompletableFuture<>();
+					tryCreateRecursive(guild, req.getUserIds(), req.getDecoration(), 0, marker);
+
+					ChannelRequest finalReq = req;
+					marker.whenComplete((ch, ex) -> {
+						if (ex == null) {
+							pendingRequests.poll();
+							finalReq.getFuture().complete(ch);
+						} else {
+							drainingQueue.set(false);
+						}
+					});
+
+					if (!marker.isDone()) break;
+				}
+			} finally {
+				drainingQueue.set(false);
+			}
+		});
 	}
 }

@@ -1,4 +1,4 @@
-package me.whereareiam.yui.api.model;
+package me.whereareiam.yui.api.model.channel;
 
 import lombok.Builder;
 import lombok.Getter;

@@ -1,6 +1,6 @@
 package me.whereareiam.yui.api.input;
 
-import me.whereareiam.yui.api.model.ChannelDecoration;
+import me.whereareiam.yui.api.model.channel.ChannelDecoration;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 
 import java.util.Collection;
