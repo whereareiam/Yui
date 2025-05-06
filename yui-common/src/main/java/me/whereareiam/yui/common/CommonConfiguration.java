@@ -77,16 +77,22 @@ public class CommonConfiguration {
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void onApplicationReady() {
-		ctx.getBean(DefaultTemporaryChannelService.class).purgeChannels();
-		ctx.getBean(CommandService.class).initialize();
-		ctx.getBean(TranslationService.class).initialize();
-		ctx.getBean(UserRoleService.class).syncAll();
-		ctx.getBean(PluginManager.class).initialize();
+		ctx.getBean(DefaultTemporaryChannelService.class).purgeChannels()
+				.thenRun(() -> {
+					ctx.getBean(CommandService.class).initialize();
+					ctx.getBean(TranslationService.class).initialize();
+					ctx.getBean(UserRoleService.class).syncAll();
+					ctx.getBean(PluginManager.class).initialize();
 
-		ctx.getBean(ComponentListenerScanner.class).scan();
-		ctx.getBean(ListenerScanner.class).scan();
+					ctx.getBean(ComponentListenerScanner.class).scan();
+					ctx.getBean(ListenerScanner.class).scan();
 
-		welcome();
+					welcome();
+				})
+				.exceptionally(ex -> {
+					log.error("Error during channel purge", ex);
+					return null;
+				});
 	}
 
 	private void welcome() {

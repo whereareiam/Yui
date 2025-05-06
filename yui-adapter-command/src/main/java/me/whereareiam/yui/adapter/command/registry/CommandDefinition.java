@@ -1,6 +1,7 @@
 package me.whereareiam.yui.adapter.command.registry;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -13,16 +14,12 @@ import java.lang.reflect.Method;
 @Getter
 @Setter
 @ToString
+@RequiredArgsConstructor
 public class CommandDefinition {
 	private final String commandName;
 	private final Command commandConfig;
 	private Object beanInstance;
 	private Method method;
-
-	public CommandDefinition(String commandName, Command commandConfig) {
-		this.commandName = commandName;
-		this.commandConfig = commandConfig;
-	}
 
 	/**
 	 * Invokes the method associated with this command definition on its bean.

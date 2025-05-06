@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
@@ -64,23 +66,52 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService {
 				.toList();
 	}
 
+	public CompletableFuture<Void> purgeChannels() {
+		CompletableFuture<Void> result = new CompletableFuture<>();
+		Guild guild = jda.getGuilds().getFirst();
 
-	public void purgeChannels() {
-		jda.getGuilds().forEach(guild -> {
-			for (long cid : categoryIds) {
-				Category cat = guild.getCategoryById(cid);
-				if (cat == null) continue;
+		List<GuildChannel> channelsToDelete = new ArrayList<>();
+		for (long cid : categoryIds) {
+			Category cat = guild.getCategoryById(cid);
+			if (cat == null) continue;
+			channelsToDelete.addAll(cat.getChannels());
+		}
 
-				cat.getChannels()
-						.forEach(ch -> ch.delete()
-								.reason("Yui restart – removing stale temp channel")
-								.queue());
-			}
-		});
+		// No channels to delete
+		if (channelsToDelete.isEmpty()) {
+			log.info("TemporaryChannelService – no channels to purge");
+			return CompletableFuture.completedFuture(null);
+		}
 
-		log.info("TemporaryChannelService – startup purge completed");
+		log.info("TemporaryChannelService – queuing {} channels for purge", channelsToDelete.size());
+
+		// Rate-limited deletion with 1 second delay between requests
+		AtomicInteger remaining = new AtomicInteger(channelsToDelete.size());
+		for (int i = 0; i < channelsToDelete.size(); i++) {
+			final int index = i;
+			scheduler.schedule(() -> {
+				channelsToDelete.get(index).delete()
+						.reason("Yui restart – removing stale temp channel")
+						.queue(
+								__ -> {
+									if (remaining.decrementAndGet() == 0) {
+										log.info("TemporaryChannelService – startup purge completed");
+										result.complete(null);
+									}
+								},
+								ex -> {
+									log.warn("Failed to delete channel {}: {}",
+											channelsToDelete.get(index).getName(), ex.getMessage());
+									if (remaining.decrementAndGet() == 0) {
+										result.complete(null);
+									}
+								}
+						);
+			}, i * 1000L, TimeUnit.MILLISECONDS);
+		}
+
+		return result;
 	}
-
 
 	@Override
 	public CompletableFuture<TextChannel> create(Collection<Long> userIds) {

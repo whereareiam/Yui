@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,17 +24,6 @@ public class CommandRegistrar {
 	private final JDA jda;
 	private final SlashCommandBuilder builder;
 	private final ConcurrentMap<String, Command> cache = new ConcurrentHashMap<>();
-
-	public void unregisterAll() {
-		cache.clear();
-		jda.retrieveCommands().queue(list ->
-				list.stream()
-						.filter(cmd -> cmd.getType() == net.dv8tion.jda.api.interactions.commands.Command.Type.SLASH)
-						.forEach(cmd -> cmd.delete().queue(
-								_ -> log.debug("Deleted obsolete stand‑alone /{}", cmd.getName()),
-								err -> log.warn("Could not delete /{} – {}", cmd.getName(), err.getMessage())))
-		);
-	}
 
 	public void registerDiscordCommand(String name, Command cmd) {
 		if (cmd == null || !cmd.isEnabled()) cache.remove(name);
@@ -60,7 +50,7 @@ public class CommandRegistrar {
 		Set<String> subcommandAliases = new HashSet<>();
 		List<String> mainAliases = new ArrayList<>();
 
-		// 1‑a) main (/yui …)
+		// 1-a) main (/yui …)
 		Command mainCfg = cache.get(MAIN_COMMAND_NAME);
 		if (mainCfg != null && mainCfg.isEnabled()) {
 			for (String alias : mainCfg.getAliases()) {
@@ -70,37 +60,55 @@ public class CommandRegistrar {
 			}
 		}
 
-		// 1‑b) every other command
+		// 1-b) every other command
 		cache.forEach((name, cfg) -> {
 			if (!cfg.isEnabled() || MAIN_COMMAND_NAME.equals(name)) return;
 
 			if (builder.isSubcommand(cfg)) {
 				subcommandAliases.addAll(cfg.getAliases());
-				if (!mainAliases.isEmpty())
+				if (!mainAliases.isEmpty()) {
 					attachSubcommand(cfg, mainAliases, subsByRoot);
-				else
-					log.debug("Deferred sub‑command '{}' – parent '/main' not registered yet.", name);
-				return;
+				} else {
+					log.debug("Deferred sub-command '{}' – parent '/main' not registered yet.", name);
+				}
+			} else {
+				String alias = cfg.getAliases().isEmpty() ? name : cfg.getAliases().getFirst();
+				roots.putIfAbsent(alias, builder.buildMainCommand(alias, cfg));
+				subsByRoot.putIfAbsent(alias, new ArrayList<>());
 			}
-
-			String alias = cfg.getAliases().isEmpty() ? name : cfg.getAliases().getFirst();
-			roots.putIfAbsent(alias, builder.buildMainCommand(alias, cfg));
-			subsByRoot.putIfAbsent(alias, new ArrayList<>());
 		});
 
-		mainAliases.forEach(root -> {
+		// 2) add subcommand lists into each root's SlashCommandData
+		for (String root : mainAliases) {
 			List<SubcommandData> list = subsByRoot.get(root);
-			if (list != null && !list.isEmpty()) roots.get(root).addSubcommands(list);
-		});
+			if (list != null && !list.isEmpty()) {
+				roots.get(root).addSubcommands(list);
+			}
+		}
 
+		// 3) upsert each current command
 		roots.forEach((alias, data) ->
 				jda.upsertCommand(data).queue(
-						cmd -> log.debug("Up‑serted /{} (id={})", cmd.getName(), cmd.getId()),
-						error -> log.error("Failed to up‑sert /" + alias, error))
+						cmd -> log.debug("Up-serted /{} (id={})", cmd.getName(), cmd.getId()),
+						err -> log.error("Failed to up-sert /{}", alias, err))
 		);
 
-		subcommandAliases.forEach(this::removeIfStandalone);
+		// 4) collect the set of “wanted” names
+		Set<String> wanted = roots.keySet().stream()
+				.map(String::toLowerCase)
+				.collect(Collectors.toSet());
 
+		// 5) retrieve all registered slash commands and delete the orphans
+		jda.retrieveCommands().queue(all -> all.stream()
+				.filter(cmd -> cmd.getType() == net.dv8tion.jda.api.interactions.commands.Command.Type.SLASH)
+				.filter(cmd -> !wanted.contains(cmd.getName().toLowerCase()))
+				.forEach(orphan -> orphan.delete().queue(
+						_ -> log.debug("Deleted stale /{}", orphan.getName()),
+						err -> log.warn("Could not delete stale /{}: {}", orphan.getName(), err.getMessage())
+				)));
+
+		// 6) (Optional) also delete any disabled subcommands standing alone
+		subcommandAliases.forEach(this::removeIfStandalone);
 		cache.entrySet().stream()
 				.filter(e -> !e.getValue().isEnabled())
 				.forEach(e -> removeIfStandalone(e.getKey()));

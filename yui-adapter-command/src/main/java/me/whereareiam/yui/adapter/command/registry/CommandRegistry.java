@@ -19,11 +19,15 @@ public class CommandRegistry {
 		definitions.put(definition.getCommandName().toLowerCase(), definition);
 	}
 
-	public void registerConfig(String commandName, Command command) {
-		definitions.put(
-				commandName.toLowerCase(),
-				new CommandDefinition(commandName, command)
-		);
+	public void registerConfig(String commandName, Command commandConfig) {
+		CommandDefinition def = new CommandDefinition(commandName, commandConfig);
+		definitions.put(commandName.toLowerCase(), def);
+
+		if (commandConfig.getAliases() != null) {
+			for (String alias : commandConfig.getAliases()) {
+				definitions.put(alias.toLowerCase(), def);
+			}
+		}
 	}
 
 	public void registerConfigs(Map<String, Command> commandMap) {
@@ -38,9 +42,11 @@ public class CommandRegistry {
 	}
 
 	public void removeCommand(String commandName) {
-		if (commandName != null) {
-			definitions.remove(commandName.toLowerCase());
-		}
+		CommandDefinition def = definitions.remove(commandName.toLowerCase());
+		if (def == null) return;
+
+		for (String alias : def.getCommandConfig().getAliases())
+			definitions.remove(alias.toLowerCase());
 	}
 
 	public CommandDefinition get(String commandName) {

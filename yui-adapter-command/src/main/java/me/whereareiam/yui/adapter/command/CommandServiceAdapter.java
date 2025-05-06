@@ -52,7 +52,6 @@ public class CommandServiceAdapter implements CommandService {
 
 	@Override
 	public void initialize() {
-		commandRegistrar.unregisterAll();
 		Commands commands = configLoader.load(dataPath.resolve("commands"), Commands.class);
 
 		// Register a couple of known commands from config
