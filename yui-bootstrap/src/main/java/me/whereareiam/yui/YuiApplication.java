@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableAsync;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -26,7 +27,22 @@ public class YuiApplication {
 	@Bean
 	@Qualifier("dataPath")
 	public Path dataPath() {
-		return System.getProperty("app.dir") != null ? Paths.get(System.getProperty("app.dir")) : Paths.get(System.getProperty("userprofile.dir"));
+		String dir = System.getProperty("app.dir");
+
+		if (dir == null || dir.isEmpty())
+			dir = Paths.get(".").toAbsolutePath().normalize().toString();
+
+		Path dataPath = Paths.get(dir);
+
+		if (!Files.exists(dataPath)) {
+			try {
+				Files.createDirectories(dataPath);
+			} catch (Exception e) {
+				throw new IllegalStateException("Failed to create data directory: " + dataPath, e);
+			}
+		}
+
+		return dataPath;
 	}
 
 	@Bean

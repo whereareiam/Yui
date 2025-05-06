@@ -22,6 +22,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.event.EventListener;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
@@ -62,6 +65,14 @@ public class CommonConfiguration {
 		}
 
 		return jda;
+	}
+
+	@Bean(destroyMethod = "shutdown")
+	public ExecutorService syncPool() {
+		return Executors.newFixedThreadPool(
+				Math.max(2, Runtime.getRuntime().availableProcessors()),
+				r -> new Thread(r, "yui-role-sync")
+		);
 	}
 
 	@EventListener(ApplicationReadyEvent.class)

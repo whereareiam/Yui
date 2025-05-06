@@ -1,5 +1,6 @@
 package me.whereareiam.yui.adapter.command.registrar;
 
+import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.adapter.command.registrar.builder.SlashCommandBuilder;
 import me.whereareiam.yui.api.model.command.Command;
 import net.dv8tion.jda.api.JDA;
@@ -14,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 @Service
+@RequiredArgsConstructor
 public class CommandRegistrar {
 	private static final Logger log = LoggerFactory.getLogger(CommandRegistrar.class);
 	private static final String MAIN_COMMAND_NAME = "main";
@@ -22,9 +24,15 @@ public class CommandRegistrar {
 	private final SlashCommandBuilder builder;
 	private final ConcurrentMap<String, Command> cache = new ConcurrentHashMap<>();
 
-	public CommandRegistrar(JDA jda, SlashCommandBuilder builder) {
-		this.jda = jda;
-		this.builder = builder;
+	public void unregisterAll() {
+		cache.clear();
+		jda.retrieveCommands().queue(list ->
+				list.stream()
+						.filter(cmd -> cmd.getType() == net.dv8tion.jda.api.interactions.commands.Command.Type.SLASH)
+						.forEach(cmd -> cmd.delete().queue(
+								_ -> log.debug("Deleted obsolete stand‑alone /{}", cmd.getName()),
+								err -> log.warn("Could not delete /{} – {}", cmd.getName(), err.getMessage())))
+		);
 	}
 
 	public void registerDiscordCommand(String name, Command cmd) {
