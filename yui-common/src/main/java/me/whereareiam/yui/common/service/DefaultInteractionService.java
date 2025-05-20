@@ -42,9 +42,11 @@ public class DefaultInteractionService implements InteractionService, Initializi
 				String base = cid.contains("|") ? cid.substring(0, cid.indexOf('|')) : cid;
 
 				var r = handlers.get(base);
-				if (r != null && r.type().isInstance(event))
+				if (r != null && r.type().isInstance(event)) {
+					if (!event.isAcknowledged())
+						event.deferReply().queue();
 					((Consumer) r.consumer()).accept(event);
-
+				}
 			}
 		});
 	}
@@ -73,7 +75,6 @@ public class DefaultInteractionService implements InteractionService, Initializi
 
 		payloadStore.put(customId, payload);
 		return new PayloadButton(btn, payload);
-
 	}
 
 	@Override
@@ -86,7 +87,6 @@ public class DefaultInteractionService implements InteractionService, Initializi
 
 		payloadStore.put(customId, payload);
 		return new PayloadButton(btn, payload);
-
 	}
 
 	@Override
