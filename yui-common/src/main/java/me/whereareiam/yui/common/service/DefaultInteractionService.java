@@ -42,11 +42,8 @@ public class DefaultInteractionService implements InteractionService, Initializi
 				String base = cid.contains("|") ? cid.substring(0, cid.indexOf('|')) : cid;
 
 				var r = handlers.get(base);
-				if (r != null && r.type().isInstance(event)) {
-					if (!event.isAcknowledged())
-						event.deferReply().queue();
+				if (r != null && r.type().isInstance(event))
 					((Consumer) r.consumer()).accept(event);
-				}
 			}
 		});
 	}
