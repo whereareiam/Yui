@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
+import java.util.Objects;
+
 @Data
 @Entity
 @Table(name = "yui_languages", indexes = {
@@ -21,4 +23,16 @@ public class LanguageEntity {
 	@Column(nullable = false, unique = true)
 	@Enumerated(EnumType.STRING)
 	private DiscordLocale locale;
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof LanguageEntity other)) return false;
+		return Objects.equals(id, other.id);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
+	}
 }

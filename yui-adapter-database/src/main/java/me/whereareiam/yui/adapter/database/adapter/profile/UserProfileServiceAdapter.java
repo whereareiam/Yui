@@ -18,10 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -150,7 +147,11 @@ public class UserProfileServiceAdapter implements UserProfileService {
 		if (userProfileEntity.getAdditionalLanguages() == null)
 			userProfileEntity.setAdditionalLanguages(new HashSet<>());
 
-		if (!userProfileEntity.getAdditionalLanguages().contains(languageEntity)) {
+		boolean alreadyPresent = userProfileEntity.getAdditionalLanguages()
+				.stream()
+				.anyMatch(lang -> Objects.equals(lang.getId(), languageEntity.getId()));
+
+		if (!alreadyPresent) {
 			userProfileEntity.getAdditionalLanguages().add(languageEntity);
 			userProfileRepository.save(userProfileEntity);
 		}
