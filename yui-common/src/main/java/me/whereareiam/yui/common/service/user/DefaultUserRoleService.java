@@ -11,7 +11,6 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -25,7 +24,6 @@ import java.util.stream.Collectors;
 public class DefaultUserRoleService implements UserRoleService {
 	private final RoleService roleService;
 	private final UserProfileService userProfileService;
-	private final ApplicationEventPublisher eventPublisher;
 	private final ExecutorService syncPool;
 	private final JDA jda;
 
@@ -69,7 +67,8 @@ public class DefaultUserRoleService implements UserRoleService {
 					.filter(allowed::contains)
 					.collect(Collectors.toSet());
 
-			UserProfile p = Users.get(userId).orElse(new UserProfile(userId));
+			UserProfile p = userProfileService.getProfile(userId)
+					.orElseGet(() -> Users.get(userId).orElse(new UserProfile(userId)));
 			Set<Long> desired = Arrays.stream(
 					Optional.ofNullable(p.getRoles()).orElse(new long[0])
 			).boxed().collect(Collectors.toSet());
