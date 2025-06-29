@@ -11,6 +11,7 @@ import me.whereareiam.yui.adapter.database.repository.UserProfileRepository;
 import me.whereareiam.yui.api.event.language.AdditionalLanguageAddedEvent;
 import me.whereareiam.yui.api.event.language.AdditionalLanguageRemovedEvent;
 import me.whereareiam.yui.api.event.language.LanguageChangeEvent;
+import me.whereareiam.yui.api.event.user.UserProfileCreatedEvent;
 import me.whereareiam.yui.api.model.profile.UserProfile;
 import me.whereareiam.yui.api.output.service.UserProfileService;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -53,7 +54,10 @@ public class UserProfileServiceAdapter implements UserProfileService {
 
 		userProfileRepository.save(userProfileEntity);
 
-		return Optional.of(new UserProfile(id, null, new DiscordLocale[0], null));
+		UserProfile userProfile = new UserProfile(id, null, new DiscordLocale[0], null);
+		eventPublisher.publishEvent(new UserProfileCreatedEvent(userProfile));
+
+		return Optional.of(userProfile);
 	}
 
 	@Override
@@ -91,6 +95,8 @@ public class UserProfileServiceAdapter implements UserProfileService {
 				addAdditionalLanguage(userProfile.getId(), locale);
 			}
 		}
+
+		eventPublisher.publishEvent(new UserProfileCreatedEvent(userProfile));
 
 		return Optional.of(userProfile);
 	}
