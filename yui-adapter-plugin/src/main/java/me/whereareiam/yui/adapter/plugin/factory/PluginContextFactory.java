@@ -5,6 +5,7 @@ import me.whereareiam.yui.api.model.plugin.Plugin;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Path;
@@ -38,12 +39,19 @@ public class PluginContextFactory {
 		childContext.setClassLoader(pluginClassLoader);
 		childContext.registerBean(mainClass);
 		childContext.scan(basePackage);
-		
+
 		childContext.registerBean("pluginPath", Path.class, () -> pluginsPath.resolve(plugin.getName()));
 
 		registry.apply(childContext);
 
 		childContext.refresh();
+
+		ApplicationEventMulticaster parentMulticaster =
+				parent.getBean(ApplicationEventMulticaster.class);
+		ApplicationEventMulticaster childMulticaster =
+				childContext.getBean(ApplicationEventMulticaster.class);
+
+		parentMulticaster.addApplicationListener(childMulticaster::multicastEvent);
 
 		return childContext;
 	}
