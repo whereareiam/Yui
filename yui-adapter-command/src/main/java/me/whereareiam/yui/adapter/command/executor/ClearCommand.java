@@ -74,8 +74,10 @@ public class ClearCommand implements CommandBase {
 		String payload = Components.payload(event);
 		if (payload == null) {
 			event.getHook().editOriginalEmbeds(StyleKit.embeds().error()
-					.setTitle(Translatable.of("commands.error.validation.invalidButton", event.getUser().getIdLong()))
-					.build()).queue();
+							.setTitle(Translatable.of("commands.error.validation.invalidButton", event.getUser().getIdLong()))
+							.build())
+					.setComponents()
+					.queue();
 			return;
 		}
 
@@ -95,7 +97,9 @@ public class ClearCommand implements CommandBase {
 					false
 			);
 
-			event.getHook().editOriginalEmbeds(successEmbed.build()).queue();
+			event.getHook().editOriginalEmbeds(successEmbed.build())
+					.setComponents()
+					.queue();
 		} else {
 			// Use predefined error embed with exception message
 			event.getHook().editOriginalEmbeds(StyleKit.embeds().error()
@@ -111,8 +115,10 @@ public class ClearCommand implements CommandBase {
 
 		// Show cancellation message
 		event.getHook().editOriginalEmbeds(StyleKit.embeds().info()
-				.setTitle(Translatable.of("commands.clear.cancelled.title", event.getUser().getIdLong()))
-				.setDescription(Translatable.of("commands.clear.cancelled.description", event.getUser().getIdLong()))
-				.build()).queue();
+						.setTitle(Translatable.of("commands.clear.cancelled.title", event.getUser().getIdLong()))
+						.setDescription(Translatable.of("commands.clear.cancelled.description", event.getUser().getIdLong()))
+						.build())
+				.setComponents()
+				.queue();
 	}
 }
