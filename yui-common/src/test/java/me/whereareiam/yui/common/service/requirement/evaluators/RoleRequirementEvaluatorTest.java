@@ -4,26 +4,69 @@ import me.whereareiam.yui.api.model.profile.UserProfile;
 import me.whereareiam.yui.api.model.requirement.RoleRequirement;
 import me.whereareiam.yui.api.output.requirement.RequirementContext;
 import me.whereareiam.yui.api.type.RequirementCondition;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.when;
 
 class RoleRequirementEvaluatorTest {
 	private RoleRequirementEvaluator evaluator;
 	private UserProfile userProfile;
 	private RequirementContext context;
+	
+	@Mock private SlashCommandInteractionEvent mockEvent;
+	@Mock private Guild mockGuild;
+	@Mock private User mockUser;
+	@Mock private Member mockMember;
+	@Mock private Role role100;
+	@Mock private Role role200;
+	@Mock private Role role300;
 
 	@BeforeEach
 	void setUp() {
+		MockitoAnnotations.openMocks(this);
 		evaluator = new RoleRequirementEvaluator();
+		
+		// Setup mock user profile
 		userProfile = new UserProfile(12345L);
 		userProfile.setRoles(new long[]{100L, 200L, 300L});
-		context = new RequirementContext("test", userProfile);
+		
+		// Setup mock Discord event with roles
+		setupMockDiscordEvent();
+		
+		// Create context with mock Discord event
+		context = new RequirementContext(mockEvent, userProfile);
+	}
+	
+	private void setupMockDiscordEvent() {
+		// Setup mock roles
+		when(role100.getIdLong()).thenReturn(100L);
+		when(role100.getName()).thenReturn("Role100");
+		when(role200.getIdLong()).thenReturn(200L);
+		when(role200.getName()).thenReturn("Role200");
+		when(role300.getIdLong()).thenReturn(300L);
+		when(role300.getName()).thenReturn("Role300");
+		
+		// Setup mock member with roles
+		when(mockMember.getRoles()).thenReturn(Arrays.asList(role100, role200, role300));
+		
+		// Setup mock event
+		when(mockEvent.getMember()).thenReturn(mockMember);
+		when(mockEvent.getUser()).thenReturn(mockUser);
+		when(mockEvent.getGuild()).thenReturn(mockGuild);
+		when(mockUser.getIdLong()).thenReturn(12345L);
 	}
 
 	@Test
@@ -215,12 +258,69 @@ class RoleRequirementEvaluatorTest {
 		RoleRequirement roleReq = new RoleRequirement(
 				RequirementCondition.HAS,
 				true,
-				Arrays.asList("Admin", "Moderator"),
+				Arrays.asList("Role100", "Role200"),
 				"NAME"
 		);
-		// When matching by NAME, it will try to extract from context
-		// Since our test context has no original context, it should return empty list
-		// and the evaluation should fail
+		// When matching by NAME, it extracts from Discord member context
+		// Our mock member has roles [Role100, Role200, Role300]
+		// Required roles are ["Role100", "Role200"] 
+		// HAS condition: user must have ALL required roles
+		// Result: user has both Role100 and Role200, so result = true
+		assertTrue(evaluator.evaluate(context, roleReq));
+	}
+
+	@Test
+	void testEvaluateWithNameRoleMatchByMissingRole() {
+		RoleRequirement roleReq = new RoleRequirement(
+				RequirementCondition.HAS,
+				true,
+				Arrays.asList("Role100", "Role400"),
+				"NAME"
+		);
+		// When matching by NAME, it extracts from Discord member context
+		// Our mock member has roles [Role100, Role200, Role300]
+		// Required roles are ["Role100", "Role400"] 
+		// HAS condition: user must have ALL required roles
+		// Result: user is missing Role400, so result = false
 		assertFalse(evaluator.evaluate(context, roleReq));
+	}
+
+	@Test
+	void testEvaluateWithNoDiscordContext() {
+		// Create context without Discord event (fallback to user profile)
+		RequirementContext noDiscordContext = new RequirementContext("test", userProfile);
+		
+		RoleRequirement roleReq = new RoleRequirement(
+				RequirementCondition.HAS,
+				true,
+				Arrays.asList("100", "200"),
+				"ID"
+		);
+		// When there's no Discord context, it falls back to user profile
+		// Our user profile has roles [100, 200, 300]
+		// Required roles are ["100", "200"] 
+		// HAS condition: user must have ALL required roles
+		// Result: user has both 100 and 200, so result = true
+		assertTrue(evaluator.evaluate(noDiscordContext, roleReq));
+	}
+
+	@Test
+	void testEvaluateWithNoDiscordContextNameMatching() {
+		// Create context without Discord event (fallback to user profile)
+		RequirementContext noDiscordContext = new RequirementContext("test", userProfile);
+		
+		RoleRequirement roleReq = new RoleRequirement(
+				RequirementCondition.HAS,
+				true,
+				Arrays.asList("100", "200"),
+				"NAME"
+		);
+		// When matching by NAME with no Discord context, it falls back to user profile
+		// Note: This will actually match by ID since user profile only stores IDs
+		// Our user profile has roles [100, 200, 300]
+		// Required roles are ["100", "200"] 
+		// HAS condition: user must have ALL required roles
+		// Result: user has both 100 and 200, so result = true
+		assertTrue(evaluator.evaluate(noDiscordContext, roleReq));
 	}
 }
