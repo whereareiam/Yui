@@ -18,6 +18,10 @@ public class GuildMemberRoleRemoveListener extends ListenerAdapter {
 	public void onGuildMemberRoleRemove(GuildMemberRoleRemoveEvent event) {
 		long userId = event.getUser().getIdLong();
 		
+		// Skip if this user is already being synced by our bot
+		if (userRoleService.isUserBeingSynced(userId))
+			return;
+		
 		syncPool.execute(() -> userRoleService.syncUser(userId));
 	}
 }

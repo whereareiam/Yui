@@ -8,4 +8,9 @@ public interface UserRoleService {
 	void syncUser(long userId);
 
 	void syncAll();
+
+	/**
+	 * Check if a user is currently being synced by the bot
+	 */
+	boolean isUserBeingSynced(long userId);
 }
