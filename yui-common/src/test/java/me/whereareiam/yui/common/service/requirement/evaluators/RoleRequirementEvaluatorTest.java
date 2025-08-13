@@ -161,4 +161,66 @@ class RoleRequirementEvaluatorTest {
 		System.out.println("Debug: expected=false, user has all required roles, raw result=" + result);
 		assertTrue(result); // Raw evaluator should return true
 	}
+
+	@Test
+	void testEvaluateWithNullRoleMatchBy() {
+		RoleRequirement roleReq = new RoleRequirement(
+				RequirementCondition.HAS,
+				true,
+				Arrays.asList("100", "200"),
+				null
+		);
+		// Should default to ID matching when roleMatchBy is null
+		assertTrue(evaluator.evaluate(context, roleReq));
+	}
+
+	@Test
+	void testEvaluateWithEmptyRoleMatchBy() {
+		RoleRequirement roleReq = new RoleRequirement(
+				RequirementCondition.HAS,
+				true,
+				Arrays.asList("100", "200"),
+				""
+		);
+		// Should default to ID matching when roleMatchBy is empty
+		assertTrue(evaluator.evaluate(context, roleReq));
+	}
+
+	@Test
+	void testEvaluateWithInvalidRoleMatchBy() {
+		RoleRequirement roleReq = new RoleRequirement(
+				RequirementCondition.HAS,
+				true,
+				Arrays.asList("100", "200"),
+				"INVALID"
+		);
+		// Should fallback to ID matching for unknown match types
+		assertTrue(evaluator.evaluate(context, roleReq));
+	}
+
+	@Test
+	void testEvaluateWithCaseInsensitiveRoleMatchBy() {
+		RoleRequirement roleReq = new RoleRequirement(
+				RequirementCondition.HAS,
+				true,
+				Arrays.asList("100", "200"),
+				"id"
+		);
+		// Should work with lowercase "id"
+		assertTrue(evaluator.evaluate(context, roleReq));
+	}
+
+	@Test
+	void testEvaluateWithNameRoleMatchBy() {
+		RoleRequirement roleReq = new RoleRequirement(
+				RequirementCondition.HAS,
+				true,
+				Arrays.asList("Admin", "Moderator"),
+				"NAME"
+		);
+		// When matching by NAME, it will try to extract from context
+		// Since our test context has no original context, it should return empty list
+		// and the evaluation should fail
+		assertFalse(evaluator.evaluate(context, roleReq));
+	}
 }
