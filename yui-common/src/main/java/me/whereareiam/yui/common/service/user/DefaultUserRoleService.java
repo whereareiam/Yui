@@ -28,13 +28,6 @@ public class DefaultUserRoleService implements UserRoleService {
 	// Simple flag to prevent concurrent syncs for the same user
 	private final Set<Long> syncing = new HashSet<>();
 
-	/**
-	 * Check if a user is currently being synced by the bot
-	 */
-	public boolean isUserBeingSynced(long userId) {
-		return syncing.contains(userId);
-	}
-
 	@Override
 	public void addRoleToUser(long userId, long roleId) {
 		if (!roleService.roleExists(roleId)) {
