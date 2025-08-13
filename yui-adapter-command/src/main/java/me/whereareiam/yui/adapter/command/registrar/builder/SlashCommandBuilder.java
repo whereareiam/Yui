@@ -50,6 +50,21 @@ public class SlashCommandBuilder {
 	}
 
 	/**
+	 * Creates a top-level (standalone) slash command for a command that might also be used as a subcommand.
+	 * Unlike {@link #buildMainCommand(String, Command)}, this always adds parameters based on the usage string.
+	 *
+	 * @param commandName The name that will be used for the slash command
+	 * @param command     The command configuration containing description and parameters
+	 * @return A fully configured SlashCommandData object ready for registration
+	 */
+	public SlashCommandData buildStandaloneCommand(String commandName, Command command) {
+		String description = TranslationTags.resolve(command.getDescription(), settings.get().getLocale());
+		SlashCommandData slash = Commands.slash(commandName, description);
+		addParametersToSlashCommand(slash, command);
+		return slash;
+	}
+
+	/**
 	 * Creates a SubcommandData instance for a given alias (e.g., /main help).
 	 *
 	 * @param alias   The name that will be used for the subcommand
