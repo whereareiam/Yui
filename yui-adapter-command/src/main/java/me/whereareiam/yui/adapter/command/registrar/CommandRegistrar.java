@@ -138,4 +138,14 @@ public class CommandRegistrar {
 								err -> log.warn("Could not delete /{} – {}", slashName, err.getMessage())))
 		);
 	}
+
+	/**
+	 * Clears all cached commands and syncs with Discord to remove them.
+	 * This is used during reload to ensure a completely fresh start.
+	 */
+	public void clear() {
+		log.debug("Clearing command registrar cache");
+		cache.clear();
+		syncWithDiscord();
+	}
 }

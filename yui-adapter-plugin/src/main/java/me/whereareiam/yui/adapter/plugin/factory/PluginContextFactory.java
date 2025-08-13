@@ -42,16 +42,35 @@ public class PluginContextFactory {
 
 		childContext.registerBean("pluginPath", Path.class, () -> pluginsPath.resolve(plugin.getName()));
 
+		// Apply registry beans before refresh
 		registry.apply(childContext);
 
-		childContext.refresh();
+		try {
+			childContext.refresh();
+		} catch (Exception e) {
+			// If refresh fails, close the context to prevent resource leaks
+			try {
+				childContext.close();
+			} catch (Exception closeException) {
+				// Log but don't throw - we want to preserve the original error
+			}
+			throw e;
+		}
 
-		ApplicationEventMulticaster parentMulticaster =
-				parent.getBean(ApplicationEventMulticaster.class);
-		ApplicationEventMulticaster childMulticaster =
-				childContext.getBean(ApplicationEventMulticaster.class);
+		// Only set up event multicasting if context is active
+		if (childContext.isActive()) {
+			try {
+				ApplicationEventMulticaster parentMulticaster =
+						parent.getBean(ApplicationEventMulticaster.class);
+				ApplicationEventMulticaster childMulticaster =
+						childContext.getBean(ApplicationEventMulticaster.class);
 
-		parentMulticaster.addApplicationListener(childMulticaster::multicastEvent);
+				parentMulticaster.addApplicationListener(childMulticaster::multicastEvent);
+			} catch (Exception e) {
+				// Log but don't fail the entire plugin load
+				// This is not critical for plugin functionality
+			}
+		}
 
 		return childContext;
 	}

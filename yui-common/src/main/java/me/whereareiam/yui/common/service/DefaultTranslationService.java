@@ -1,14 +1,16 @@
 package me.whereareiam.yui.common.service;
 
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.yui.api.input.Registry;
 import me.whereareiam.yui.api.input.translation.TranslationLoader;
 import me.whereareiam.yui.api.input.translation.TranslationService;
 import me.whereareiam.yui.api.model.config.settings.Settings;
+import me.whereareiam.yui.api.output.Reloadable;
 import me.whereareiam.yui.api.output.provider.Provider;
 import me.whereareiam.yui.api.output.provider.UserProfileCacheProvider;
 import me.whereareiam.yui.api.util.TranslationTags;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
@@ -20,8 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
-@AllArgsConstructor
-public class DefaultTranslationService implements TranslationService {
+public class DefaultTranslationService implements TranslationService, Reloadable {
 	private final Provider<Settings> settings;
 	private final List<TranslationLoader> loaders;
 	private final UserProfileCacheProvider userProfileCache;
@@ -35,6 +36,20 @@ public class DefaultTranslationService implements TranslationService {
 	 * ... }
 	 */
 	private final Map<DiscordLocale, Map<String, String>> translations = new ConcurrentHashMap<>();
+
+	@Autowired
+	public DefaultTranslationService(
+			Provider<Settings> settings,
+			List<TranslationLoader> loaders,
+			UserProfileCacheProvider userProfileCache,
+			Registry<Reloadable> reloadableRegistry
+	) {
+		this.settings = settings;
+		this.loaders = loaders;
+		this.userProfileCache = userProfileCache;
+
+		reloadableRegistry.register(this);
+	}
 
 	@Override
 	public void initialize() {
@@ -51,6 +66,14 @@ public class DefaultTranslationService implements TranslationService {
 				translations.size() == 1 ? "locale" : "locales",
 				translations.values().stream().mapToInt(Map::size).sum()
 		);
+	}
+
+	@Override
+	public void reload() {
+		log.debug("Reloading translation service");
+		translations.clear();
+		initialize();
+		log.debug("Translation service reloaded successfully");
 	}
 
 	private void mergeLoaderResult(Map<String, Map<DiscordLocale, Map<String, String>>> loaderResult) {

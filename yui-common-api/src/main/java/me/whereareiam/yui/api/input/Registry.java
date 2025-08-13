@@ -1,5 +1,7 @@
 package me.whereareiam.yui.api.input;
 
+import java.util.Collection;
+
 /**
  * A generic registry interface that provides registration functionality for
  * different types of components in the framework.
@@ -17,4 +19,11 @@ public interface Registry<T> {
 	 * @param object the element to register
 	 */
 	void register(T object);
+
+	/**
+	 * Gets all registered elements from this registry.
+	 *
+	 * @return a collection of all registered elements
+	 */
+	Collection<T> getAll();
 }

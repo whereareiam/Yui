@@ -9,9 +9,11 @@ import me.whereareiam.yui.api.event.plugin.PluginDisabledEvent;
 import me.whereareiam.yui.api.event.plugin.PluginEnabledEvent;
 import me.whereareiam.yui.api.event.plugin.PluginLoadedEvent;
 import me.whereareiam.yui.api.event.plugin.PluginUnloadedEvent;
+import me.whereareiam.yui.api.input.Registry;
 import me.whereareiam.yui.api.model.plugin.Dependency;
 import me.whereareiam.yui.api.model.plugin.InternalPlugin;
 import me.whereareiam.yui.api.model.plugin.Plugin;
+import me.whereareiam.yui.api.output.Reloadable;
 import me.whereareiam.yui.api.output.plugin.PluginManager;
 import me.whereareiam.yui.api.output.plugin.YuiPlugin;
 import me.whereareiam.yui.api.type.PluginState;
@@ -30,7 +32,7 @@ import java.util.stream.Stream;
 
 @Slf4j
 @Service
-public class YuiPluginManager implements PluginManager {
+public class YuiPluginManager implements PluginManager, Reloadable {
 	private final Path pluginsPath;
 	private final PluginStorage storage;
 	private final PluginDescriptorReader descriptorReader;
@@ -48,7 +50,8 @@ public class YuiPluginManager implements PluginManager {
 			PluginClassLoaderFactory classLoaderFactory,
 			PluginContextFactory contextFactory,
 			PluginBeanRegistry registry,
-			ApplicationEventPublisher eventPublisher
+			ApplicationEventPublisher eventPublisher,
+			Registry<Reloadable> reloadableRegistry
 	) {
 		this.storage = storage;
 		this.pluginsPath = pluginsPath;
@@ -293,6 +296,43 @@ public class YuiPluginManager implements PluginManager {
 	@Override
 	public Collection<InternalPlugin> plugins() {
 		return storage.all();
+	}
+
+	@Override
+	public void reload() {
+		log.info("Starting plugin system reload");
+		
+		lock.lock();
+		try {
+			// Step 1: Get all plugin IDs before unloading
+			List<String> pluginIds = storage.all().stream()
+					.map(p -> p.getPlugin().getId())
+					.toList();
+			
+			log.debug("Unloading {} plugins", pluginIds.size());
+			
+			// Step 2: Unload all plugins (this will disable them first if needed)
+			// The unload method already handles disabling, cleanup, and storage removal
+			pluginIds.forEach(id -> {
+				try {
+					unload(id);
+					log.debug("Unloaded plugin: {}", id);
+				} catch (Exception e) {
+					log.error("Failed to unload plugin: {}", id, e);
+				}
+			});
+			
+			// Step 3: Reinitialize all plugins from disk
+			log.debug("Reinitializing plugins from disk");
+			initialize();
+			
+			log.info("Plugin system reload completed successfully. Loaded {} plugins", storage.all().size());
+			
+		} catch (Exception e) {
+			log.error("Failed to reload plugin system", e);
+		} finally {
+			lock.unlock();
+		}
 	}
 
 	private void close(ClassLoader cl) {

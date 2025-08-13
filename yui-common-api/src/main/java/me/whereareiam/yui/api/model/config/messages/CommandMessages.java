@@ -5,6 +5,7 @@ import lombok.Setter;
 import me.whereareiam.yui.api.model.config.messages.command.ClearCommandMessages;
 import me.whereareiam.yui.api.model.config.messages.command.HelpCommandMessages;
 import me.whereareiam.yui.api.model.config.messages.command.MainCommandMessages;
+import me.whereareiam.yui.api.model.config.messages.command.ReloadCommandMessages;
 
 @Getter
 @Setter
@@ -13,6 +14,7 @@ public class CommandMessages {
 	private MainCommandMessages main;
 	private HelpCommandMessages help;
 	private ClearCommandMessages clear;
+	private ReloadCommandMessages reload;
 
 	@Getter
 	@Setter

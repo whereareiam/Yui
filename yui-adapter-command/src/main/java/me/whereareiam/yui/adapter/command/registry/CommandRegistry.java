@@ -60,4 +60,12 @@ public class CommandRegistry {
 
 		return def != null && def.getBeanInstance() != null;
 	}
+
+	/**
+	 * Clears all command definitions from the registry.
+	 * This is used during reload to ensure a completely fresh start.
+	 */
+	public void clear() {
+		definitions.clear();
+	}
 }

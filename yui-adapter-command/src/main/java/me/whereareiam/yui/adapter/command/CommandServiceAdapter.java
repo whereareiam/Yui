@@ -5,10 +5,13 @@ import me.whereareiam.yui.adapter.command.registrar.CommandRegistrar;
 import me.whereareiam.yui.adapter.command.registry.CommandDefinition;
 import me.whereareiam.yui.adapter.command.registry.CommandRegistry;
 import me.whereareiam.yui.adapter.command.scanner.CommandScanner;
+import me.whereareiam.yui.api.input.Registry;
 import me.whereareiam.yui.api.model.command.Command;
 import me.whereareiam.yui.api.model.config.Commands;
+import me.whereareiam.yui.api.output.Reloadable;
 import me.whereareiam.yui.api.output.config.ConfigurationLoader;
 import me.whereareiam.yui.api.output.service.CommandService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
@@ -25,7 +28,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-public class CommandServiceAdapter implements CommandService {
+public class CommandServiceAdapter implements CommandService, Reloadable {
 	private final ApplicationContext context;
 	private final CommandRegistry commandRegistry;
 	private final CommandScanner commandScanner;
@@ -34,13 +37,15 @@ public class CommandServiceAdapter implements CommandService {
 	private final ConfigurationLoader configLoader;
 	private final Path dataPath;
 
+	@Autowired
 	public CommandServiceAdapter(
 			ApplicationContext context,
 			CommandRegistry commandRegistry,
 			CommandScanner commandScanner,
 			CommandRegistrar commandRegistrar,
 			ConfigurationLoader configLoader,
-			@Qualifier("dataPath") Path dataPath
+			@Qualifier("dataPath") Path dataPath,
+			Registry<Reloadable> reloadableRegistry
 	) {
 		this.context = context;
 		this.commandRegistry = commandRegistry;
@@ -48,6 +53,9 @@ public class CommandServiceAdapter implements CommandService {
 		this.commandRegistrar = commandRegistrar;
 		this.configLoader = configLoader;
 		this.dataPath = dataPath;
+
+		// Register this service as reloadable
+		reloadableRegistry.register(this);
 	}
 
 	@Override
@@ -58,6 +66,23 @@ public class CommandServiceAdapter implements CommandService {
 		register(context, "main", commands.getCommands().get("main"));
 		register(context, "help", commands.getCommands().get("help"));
 		register(context, "clear", commands.getCommands().get("clear"));
+		register(context, "reload", commands.getCommands().get("reload"));
+	}
+
+	@Override
+	public void reload() {
+		log.debug("Reloading command service");
+
+		// Step 1: Clear the command registrar cache and remove Discord commands
+		commandRegistrar.clear();
+
+		// Step 2: Clear the command registry completely
+		commandRegistry.clear();
+
+		// Step 3: Re-initialize everything fresh
+		initialize();
+
+		log.debug("Command service reloaded successfully");
 	}
 
 	@Override

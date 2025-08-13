@@ -69,9 +69,31 @@ public class CommandsTemplate implements DefaultConfig<Commands> {
 				clearRequirements
 		);
 
+		// Create requirements for reload command
+		Requirements reloadRequirements = new Requirements();
+		reloadRequirements.setOperator(RequirementOperator.AND);
+
+		RoleRequirement reloadRoleRequirement = new RoleRequirement();
+		reloadRoleRequirement.setRoles(List.of("EXAMPLE"));
+		reloadRoleRequirement.setRoleMatchBy("NAME");
+		reloadRequirements.getGroups().put("ROLE", reloadRoleRequirement);
+
+		Command reload = new Command(
+				true,
+				List.of("reload"),
+				"translate(commands.reload.description)",
+				"translate(commands.reload.example)",
+				"{command}",
+				Map.of(),
+				CommandCategory.ADMINISTRATION,
+				new CommandCooldown(false, 30, ""),
+				reloadRequirements
+		);
+
 		commands.getCommands().put("main", main);
 		commands.getCommands().put("help", help);
 		commands.getCommands().put("clear", clear);
+		commands.getCommands().put("reload", reload);
 
 		return commands;
 	}
