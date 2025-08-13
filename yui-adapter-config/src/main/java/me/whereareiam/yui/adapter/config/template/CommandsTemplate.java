@@ -25,7 +25,8 @@ public class CommandsTemplate implements DefaultConfig<Commands> {
 				"{alias}",
 				Map.of(),
 				CommandCategory.NONE,
-				new CommandCooldown(false, 5, "")
+				new CommandCooldown(false, 5, ""),
+				null
 		);
 
 		Command help = new Command(
@@ -38,7 +39,8 @@ public class CommandsTemplate implements DefaultConfig<Commands> {
 						"category", "translate(commands.help.variables.category)"
 				),
 				CommandCategory.UTILITY,
-				new CommandCooldown(false, 5, "")
+				new CommandCooldown(false, 5, ""),
+				null
 		);
 
 		commands.getCommands().put("main", main);

@@ -32,6 +32,24 @@ public class MessagesTemplate implements DefaultConfig<Messages> {
 		CommandMessages commandMessages = new CommandMessages();
 		CommandMessages.ErrorMessages errorMessages = new CommandMessages.ErrorMessages();
 		errorMessages.setException("An unexpected error occurred. Please try again later.");
+
+		CommandMessages.ErrorMessages.RequirementErrorMessages requirementErrorMessages = new CommandMessages.ErrorMessages.RequirementErrorMessages();
+		requirementErrorMessages.setTitle("❌ Seems like you don't have the rights");
+		requirementErrorMessages.setUnknown("You do not meet the requirements for this command. We could not determine the exact reason, if you think this is an error, please contact the server administrator.");
+		requirementErrorMessages.setFailed("You do not meet the following requirements:\n\n{0}");
+
+		requirementErrorMessages.setRole("**Required Role(s):**\n {0}");
+		requirementErrorMessages.setRoleUnknown("**Required Role(s):**\n *Unknown*");
+		requirementErrorMessages.setScope("**Required Scope(s):**\n {0}");
+		requirementErrorMessages.setScopeUnknown("**Required Scope(s):**\n *Unknown*");
+		requirementErrorMessages.setChannel("**Required Channel Type(s):**\n {0}");
+		requirementErrorMessages.setChannelUnknown("**Required Channel Type(s):**\n *Unknown*");
+		requirementErrorMessages.setUser("**User Restriction:**\n {0}");
+		requirementErrorMessages.setUserUnknown("**User Restriction:**\n *Unknown*");
+		requirementErrorMessages.setGuild("**Guild Restriction:**\n {0}");
+		requirementErrorMessages.setGuildUnknown("**Guild Restriction:**\n *Unknown*");
+
+		errorMessages.setRequirement(requirementErrorMessages);
 		commandMessages.setError(errorMessages);
 
 		MainCommandMessages mainCommand = new MainCommandMessages();

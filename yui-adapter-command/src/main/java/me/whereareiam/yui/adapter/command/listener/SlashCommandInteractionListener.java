@@ -5,11 +5,19 @@ import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.adapter.command.cooldown.CooldownService;
 import me.whereareiam.yui.adapter.command.registry.CommandDefinition;
 import me.whereareiam.yui.adapter.command.registry.CommandRegistry;
+import me.whereareiam.yui.adapter.command.requirements.CommandRequirementErrorService;
+import me.whereareiam.yui.adapter.command.requirements.CommandRequirementEvaluatorConfig;
+import me.whereareiam.yui.api.model.profile.UserProfile;
+import me.whereareiam.yui.api.output.requirement.RequirementContext;
+import me.whereareiam.yui.api.output.requirement.RequirementEvaluator;
+import me.whereareiam.yui.api.output.service.UserProfileService;
 import me.whereareiam.yui.api.style.StyleKit;
 import me.whereareiam.yui.api.util.Translatable;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 /**
  * Listens for slash command interactions and delegates to the appropriate handler method
@@ -21,6 +29,10 @@ import org.springframework.stereotype.Component;
 public class SlashCommandInteractionListener extends ListenerAdapter {
 	private final CommandRegistry registry;
 	private final CooldownService cooldownService;
+	private final RequirementEvaluator requirementEngine;
+	private final CommandRequirementErrorService requirementErrorService;
+	private final CommandRequirementEvaluatorConfig requirementConfig;
+	private final UserProfileService userProfileService;
 
 	@Override
 	public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
@@ -36,6 +48,34 @@ public class SlashCommandInteractionListener extends ListenerAdapter {
 		// If the command has a cooldown, handle it
 		if (cooldownService.handleCooldown(event, definition.getCommandConfig().getCooldown()))
 			return;
+
+		// Get or create UserProfile for requirement evaluation
+		Optional<UserProfile> userProfileOpt = userProfileService.getProfile(event.getUser().getIdLong());
+		UserProfile userProfile = userProfileOpt.orElseGet(() -> {
+			// Create profile if it doesn't exist
+			Optional<UserProfile> newProfile = userProfileService.createProfile(event.getUser().getIdLong());
+			return newProfile.orElseThrow(() -> new IllegalStateException("Failed to create user profile"));
+		});
+
+		// Create RequirementContext with UserProfile
+		RequirementContext requirementContext = new RequirementContext(event, userProfile);
+
+		// Evaluate requirements if present using command-specific configuration
+		if (!requirementEngine.evaluate(requirementContext, definition.getCommandConfig().getRequirements(), requirementConfig)) {
+			// Send error message to user explaining why the command failed
+			String errorMessage = requirementErrorService.generateErrorMessage(
+				definition.getCommandConfig().getRequirements(), 
+				event.getUser().getIdLong()
+			);
+			
+			event.replyEmbeds(StyleKit.embeds().error()
+					.setTitle(Translatable.of("commands.error.requirement.title", event.getUser().getIdLong()))
+					.setDescription(errorMessage)
+					.build())
+					.setEphemeral(true)
+					.queue();
+			return;
+		}
 
 		try {
 			definition.invoke(event);

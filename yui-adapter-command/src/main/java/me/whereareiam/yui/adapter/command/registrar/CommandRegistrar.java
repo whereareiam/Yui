@@ -71,11 +71,11 @@ public class CommandRegistrar {
 				} else {
 					log.debug("Deferred sub-command '{}' – parent '/main' not registered yet.", name);
 				}
-			} else {
-				String alias = cfg.getAliases().isEmpty() ? name : cfg.getAliases().getFirst();
-				roots.putIfAbsent(alias, builder.buildMainCommand(alias, cfg));
-				subsByRoot.putIfAbsent(alias, new ArrayList<>());
 			}
+
+			String topLevelAlias = cfg.getAliases().isEmpty() ? name : cfg.getAliases().getFirst();
+			roots.putIfAbsent(topLevelAlias, builder.buildStandaloneCommand(topLevelAlias, cfg));
+			subsByRoot.putIfAbsent(topLevelAlias, new ArrayList<>());
 		});
 
 		// 2) add subcommand lists into each root's SlashCommandData

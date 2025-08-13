@@ -16,5 +16,25 @@ public class CommandMessages {
 	@Setter
 	public static class ErrorMessages {
 		private String exception;
+		private RequirementErrorMessages requirement;
+
+		@Getter
+		@Setter
+		public static class RequirementErrorMessages {
+			private String title;
+			private String unknown;
+			private String failed;
+
+			private String role;
+			private String roleUnknown;
+			private String scope;
+			private String scopeUnknown;
+			private String channel;
+			private String channelUnknown;
+			private String user;
+			private String userUnknown;
+			private String guild;
+			private String guildUnknown;
+		}
 	}
 }

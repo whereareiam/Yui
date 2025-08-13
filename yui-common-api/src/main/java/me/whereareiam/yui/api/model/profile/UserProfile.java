@@ -15,11 +15,16 @@ public class UserProfile {
 
 	private long[] roles;
 
-	public UserProfile(long id) {
+	public UserProfile(
+			long id
+	) {
 		this.id = id;
 	}
 
-	public UserProfile(long id, DiscordLocale primaryLanguage) {
+	public UserProfile(
+			long id,
+			DiscordLocale primaryLanguage
+	) {
 		this.id = id;
 		this.primaryLanguage = primaryLanguage;
 	}

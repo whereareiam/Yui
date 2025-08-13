@@ -10,8 +10,10 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.adapter.config.deserializer.ColorDeserializer;
 import me.whereareiam.yui.adapter.config.deserializer.DiscordLocaleDeserializer;
+import me.whereareiam.yui.adapter.config.deserializer.RequirementsDeserializer;
 import me.whereareiam.yui.adapter.config.serializer.ColorSerializer;
 import me.whereareiam.yui.adapter.config.serializer.DiscordLocaleSerializer;
+import me.whereareiam.yui.api.model.requirement.Requirements;
 import me.whereareiam.yui.api.type.ConfigurationType;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.stereotype.Component;
@@ -49,6 +51,8 @@ public class ObjectMapperFactory {
 
 		objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		objectMapper.registerModule(getColorModule());
+		objectMapper.registerModule(getDiscordLocaleModule());
+		objectMapper.registerModule(getRequirementsModule());
 
 		return objectMapper;
 	}
@@ -58,9 +62,22 @@ public class ObjectMapperFactory {
 
 		module.addDeserializer(Color.class, colorDeserializer);
 		module.addSerializer(Color.class, colorSerializer);
+
+		return module;
+	}
+
+	private SimpleModule getDiscordLocaleModule() {
+		SimpleModule module = new SimpleModule();
+
 		module.addDeserializer(DiscordLocale.class, discordLocaleDeserializer);
 		module.addSerializer(DiscordLocale.class, discordLocaleSerializer);
 
+		return module;
+	}
+
+	private SimpleModule getRequirementsModule() {
+		SimpleModule module = new SimpleModule();
+		module.addDeserializer(Requirements.class, new RequirementsDeserializer());
 		return module;
 	}
 }
