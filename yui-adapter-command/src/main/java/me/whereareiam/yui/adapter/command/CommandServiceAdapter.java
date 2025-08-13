@@ -57,6 +57,7 @@ public class CommandServiceAdapter implements CommandService {
 		// Register a couple of known commands from config
 		register(context, "main", commands.getCommands().get("main"));
 		register(context, "help", commands.getCommands().get("help"));
+		register(context, "clear", commands.getCommands().get("clear"));
 	}
 
 	@Override

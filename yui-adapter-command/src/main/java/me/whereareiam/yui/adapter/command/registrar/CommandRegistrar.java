@@ -71,11 +71,12 @@ public class CommandRegistrar {
 				} else {
 					log.debug("Deferred sub-command '{}' – parent '/main' not registered yet.", name);
 				}
+			} else {
+				// Only add non-subcommands as standalone commands
+				String topLevelAlias = cfg.getAliases().isEmpty() ? name : cfg.getAliases().getFirst();
+				roots.putIfAbsent(topLevelAlias, builder.buildStandaloneCommand(topLevelAlias, cfg));
+				subsByRoot.putIfAbsent(topLevelAlias, new ArrayList<>());
 			}
-
-			String topLevelAlias = cfg.getAliases().isEmpty() ? name : cfg.getAliases().getFirst();
-			roots.putIfAbsent(topLevelAlias, builder.buildStandaloneCommand(topLevelAlias, cfg));
-			subsByRoot.putIfAbsent(topLevelAlias, new ArrayList<>());
 		});
 
 		// 2) add subcommand lists into each root's SlashCommandData
@@ -108,9 +109,10 @@ public class CommandRegistrar {
 				)));
 
 		// 6) (Optional) also delete any disabled subcommands standing alone
-		subcommandAliases.forEach(this::removeIfStandalone);
+		// Only remove standalone commands that are not subcommands
 		cache.entrySet().stream()
 				.filter(e -> !e.getValue().isEnabled())
+				.filter(e -> !builder.isSubcommand(e.getValue())) // Don't remove subcommands
 				.forEach(e -> removeIfStandalone(e.getKey()));
 	}
 

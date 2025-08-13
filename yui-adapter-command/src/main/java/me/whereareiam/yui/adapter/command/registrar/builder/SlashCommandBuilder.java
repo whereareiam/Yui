@@ -126,6 +126,7 @@ public class SlashCommandBuilder {
 	 * <p>
 	 * Parameters in parentheses () are required, while parameters in brackets [] are optional.
 	 * Parameter descriptions are resolved from the variables map or use the parameter name if not found.
+	 * Parameter types are automatically detected based on common naming conventions.
 	 *
 	 * @param usage     The usage pattern string to parse
 	 * @param variables Map of parameter names to their descriptions
@@ -145,16 +146,62 @@ public class SlashCommandBuilder {
 		while (required.find()) {
 			String name = required.group(1).trim();
 			String desc = resolveVariableDescription(name, variables);
-			opts.add(new OptionData(OptionType.STRING, name, desc, true));
+			opts.add(createOptionData(name, desc, true));
 		}
 
 		Matcher optional = OPTIONAL_PARAM_PATTERN.matcher(cleanUsage);
 		while (optional.find()) {
 			String name = optional.group(1).trim();
 			String desc = resolveVariableDescription(name, variables);
-			opts.add(new OptionData(OptionType.STRING, name, desc, false));
+			opts.add(createOptionData(name, desc, false));
 		}
 		return opts;
+	}
+
+	/**
+	 * Creates an OptionData object based on the parameter name.
+	 * Automatically detects appropriate types based on common parameter names.
+	 *
+	 * @param name        The parameter name
+	 * @param description The parameter description
+	 * @param required    Whether the parameter is required
+	 * @return An OptionData object with the appropriate type
+	 */
+	private OptionData createOptionData(String name, String description, boolean required) {
+		// Auto-detect parameter types based on common naming conventions
+		String lowerName = name.toLowerCase();
+		
+		// User-related parameters
+		if (lowerName.equals("user") || lowerName.equals("target") || 
+			lowerName.equals("recipient") || lowerName.equals("sender")) {
+			return new OptionData(OptionType.USER, name, description, required);
+		}
+		
+		// Channel-related parameters
+		if (lowerName.equals("channel") || lowerName.equals("textchannel") || 
+			lowerName.equals("voicechannel")) {
+			return new OptionData(OptionType.CHANNEL, name, description, required);
+		}
+		
+		// Role-related parameters
+		if (lowerName.equals("role") || lowerName.equals("guildrole")) {
+			return new OptionData(OptionType.ROLE, name, description, required);
+		}
+		
+		// Numeric parameters
+		if (lowerName.equals("amount") || lowerName.equals("count") || 
+			lowerName.equals("number") || lowerName.equals("limit") ||
+			lowerName.equals("duration") || lowerName.equals("timeout")) {
+			return new OptionData(OptionType.INTEGER, name, description, required);
+	}
+		// Boolean parameters
+		if (lowerName.equals("enabled") || lowerName.equals("disabled") 
+		|| lowerName.equals("boolean")) {
+			return new OptionData(OptionType.BOOLEAN, name, description, required);
+		}
+		
+		// Default to string type for most other parameters
+		return new OptionData(OptionType.STRING, name, description, required);
 	}
 
 	/**

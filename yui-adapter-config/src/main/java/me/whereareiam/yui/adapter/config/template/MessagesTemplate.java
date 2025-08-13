@@ -4,6 +4,7 @@ import me.whereareiam.yui.api.model.config.messages.CommandMessages;
 import me.whereareiam.yui.api.model.config.messages.GeneralMessages;
 import me.whereareiam.yui.api.model.config.messages.Messages;
 import me.whereareiam.yui.api.model.config.messages.VocabularyMessages;
+import me.whereareiam.yui.api.model.config.messages.command.ClearCommandMessages;
 import me.whereareiam.yui.api.model.config.messages.command.HelpCommandMessages;
 import me.whereareiam.yui.api.model.config.messages.command.MainCommandMessages;
 import me.whereareiam.yui.api.output.config.DefaultConfig;
@@ -31,7 +32,7 @@ public class MessagesTemplate implements DefaultConfig<Messages> {
 
 		CommandMessages commandMessages = new CommandMessages();
 		CommandMessages.ErrorMessages errorMessages = new CommandMessages.ErrorMessages();
-		errorMessages.setException("An unexpected error occurred. Please try again later.");
+		errorMessages.setException("❌ An unexpected error occurred. Please try again later.");
 
 		CommandMessages.ErrorMessages.RequirementErrorMessages requirementErrorMessages = new CommandMessages.ErrorMessages.RequirementErrorMessages();
 		requirementErrorMessages.setTitle("❌ Seems like you don't have the rights");
@@ -50,6 +51,13 @@ public class MessagesTemplate implements DefaultConfig<Messages> {
 		requirementErrorMessages.setGuildUnknown("**Guild Restriction:**\n *Unknown*");
 
 		errorMessages.setRequirement(requirementErrorMessages);
+
+		CommandMessages.ErrorMessages.ValidationErrorMessages validationErrorMessages = new CommandMessages.ErrorMessages.ValidationErrorMessages();
+		validationErrorMessages.setSameUser("❌ You cannot use this command on yourself!");
+		validationErrorMessages.setUserRequired("❌ User parameter is required!");
+		validationErrorMessages.setInvalidButton("❌ Invalid button configuration!");
+		errorMessages.setValidation(validationErrorMessages);
+
 		commandMessages.setError(errorMessages);
 
 		MainCommandMessages mainCommand = new MainCommandMessages();
@@ -59,6 +67,9 @@ public class MessagesTemplate implements DefaultConfig<Messages> {
 
 		HelpCommandMessages helpCommand = getHelpCommandMessages();
 		commandMessages.setHelp(helpCommand);
+
+		ClearCommandMessages clearCommand = getClearCommandMessages();
+		commandMessages.setClear(clearCommand);
 
 		messages.setCommands(commandMessages);
 
@@ -100,6 +111,32 @@ public class MessagesTemplate implements DefaultConfig<Messages> {
 		helpCommand.setInformation(information);
 
 		return helpCommand;
+	}
+
+	@NotNull
+	private static ClearCommandMessages getClearCommandMessages() {
+		ClearCommandMessages clearCommand = new ClearCommandMessages();
+		clearCommand.setDescription("Clears a user's profile data and reinitializes it. This action cannot be undone.");
+		clearCommand.setExample("/yui clear @user");
+
+		ClearCommandMessages.Confirmation confirmation = new ClearCommandMessages.Confirmation();
+		confirmation.setTitle("⚠️ Confirm User Profile Clear");
+		confirmation.setDescription("You are about to clear the profile data for the following user. This action will:\n\n• Remove all cached profile data\n• Delete the user's profile from the database\n• Create a fresh, empty profile\n\n**This action cannot be undone!**");
+		confirmation.setUserInfo("**Target User:**");
+		clearCommand.setConfirmation(confirmation);
+
+		ClearCommandMessages.Success success = new ClearCommandMessages.Success();
+		success.setTitle("✅ User Profile Cleared");
+		success.setDescription("The user's profile has been successfully cleared and reinitialized.");
+		success.setUserInfo("**Cleared User:**");
+		clearCommand.setSuccess(success);
+
+		ClearCommandMessages.Cancelled cancelled = new ClearCommandMessages.Cancelled();
+		cancelled.setTitle("❌ Operation Cancelled");
+		cancelled.setDescription("The profile clear operation has been cancelled.");
+		clearCommand.setCancelled(cancelled);
+
+		return clearCommand;
 	}
 
 	private static VocabularyMessages getVocabularyMessages() {
