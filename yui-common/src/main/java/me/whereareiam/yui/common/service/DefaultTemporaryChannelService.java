@@ -1,10 +1,12 @@
 package me.whereareiam.yui.common.service;
 
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.yui.api.input.Registry;
 import me.whereareiam.yui.api.input.TemporaryChannelService;
 import me.whereareiam.yui.api.model.channel.ChannelDecoration;
 import me.whereareiam.yui.api.model.channel.ChannelRequest;
 import me.whereareiam.yui.api.model.config.settings.Settings;
+import me.whereareiam.yui.api.output.Reloadable;
 import me.whereareiam.yui.api.style.StyleKit;
 import me.whereareiam.yui.api.util.Translatable;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -27,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
-public class DefaultTemporaryChannelService implements TemporaryChannelService {
+public class DefaultTemporaryChannelService implements TemporaryChannelService, Reloadable {
 	private static final int DISCORD_CATEGORY_LIMIT = 50;
 
 	private final JDA jda;
@@ -55,7 +57,8 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService {
 	@Autowired
 	public DefaultTemporaryChannelService(
 			JDA jda,
-			Settings settings
+			Settings settings,
+			Registry<Reloadable> reloadableRegistry
 	) {
 		this.jda = jda;
 		this.categoryIds = settings.getDiscord()
@@ -64,6 +67,8 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService {
 				.stream()
 				.map(Long::parseLong)
 				.toList();
+
+		reloadableRegistry.register(this);
 	}
 
 	public CompletableFuture<Void> purgeChannels() {
@@ -254,6 +259,15 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService {
 	public Optional<TextChannel> findByUser(long userId) {
 		Long chId = userChannel.get(userId);
 		return Optional.ofNullable(chId).map(jda::getTextChannelById);
+	}
+
+	@Override
+	public void reload() {
+		try {
+			purgeChannels().join();
+		} catch (Exception ex) {
+			log.warn("TemporaryChannelService – purge during reload failed", ex);
+		}
 	}
 
 	public void handleChannelDeletion(long channelId) {
