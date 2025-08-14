@@ -21,4 +21,5 @@ dependencies {
 
 tasks.named<BootJar>("bootJar") {
     archiveFileName.set("Yui.jar")
+    destinationDirectory.set(rootProject.buildDir.resolve("libs"))
 }
