@@ -83,7 +83,7 @@ public class CommandsTemplate implements DefaultConfig<Commands> {
 				List.of("reload"),
 				"translate(commands.reload.description)",
 				"translate(commands.reload.example)",
-				"{command}",
+				"{command} {alias}",
 				Map.of(),
 				CommandCategory.ADMINISTRATION,
 				new CommandCooldown(false, 30, ""),
@@ -95,7 +95,7 @@ public class CommandsTemplate implements DefaultConfig<Commands> {
 				List.of("plugin", "plugins"),
 				"translate(commands.plugin.description)",
 				"translate(commands.plugin.example)",
-				"{command} [action] [plugin]",
+				"{command} {alias} [action] [plugin]",
 				Map.of(
 						"action", "translate(commands.plugin.variables.action)",
 						"plugin", "translate(commands.plugin.variables.plugin)"
