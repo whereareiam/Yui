@@ -47,15 +47,22 @@ public class CommandRegistrar {
 			return;
 		}
 
-		Map<String, SlashCommandData> roots = new HashMap<>();
+		Map<String, SlashCommandData> roots = new LinkedHashMap<>();
 		Map<String, List<SubcommandData>> subsByRoot = new HashMap<>();
-		Set<String> subcommandAliases = new HashSet<>();
 		List<String> mainAliases = new ArrayList<>();
+
+		// Helper to normalize alias names for Discord
+		java.util.function.Function<String, String> norm = s ->
+				(s == null ? "" : s.trim().toLowerCase());
 
 		// 1-a) main (/yui …)
 		Command mainCfg = cache.get(MAIN_COMMAND_NAME);
 		if (mainCfg != null && mainCfg.isEnabled()) {
-			for (String alias : mainCfg.getAliases()) {
+			List<String> aliases = mainCfg.getAliases() == null ? List.of() : mainCfg.getAliases();
+			for (String aliasRaw : aliases) {
+				String alias = norm.apply(aliasRaw);
+				if (alias.isEmpty()) continue;
+
 				roots.put(alias, builder.buildMainCommand(alias, mainCfg));
 				subsByRoot.put(alias, new ArrayList<>());
 				mainAliases.add(alias);
@@ -67,21 +74,40 @@ public class CommandRegistrar {
 			if (!cfg.isEnabled() || MAIN_COMMAND_NAME.equals(name)) return;
 
 			if (builder.isSubcommand(cfg)) {
-				subcommandAliases.addAll(cfg.getAliases());
 				if (!mainAliases.isEmpty()) {
 					attachSubcommand(cfg, mainAliases, subsByRoot);
 				} else {
-					log.debug("Deferred sub-command '{}' – parent '/main' not registered yet.", name);
+					log.debug("Deferred sub-command '{}' – parent '/{}' not registered yet.", name, MAIN_COMMAND_NAME);
 				}
-			} else {
-				// Only add non-subcommands as standalone commands
-				String topLevelAlias = cfg.getAliases().isEmpty() ? name : cfg.getAliases().getFirst();
-				roots.putIfAbsent(topLevelAlias, builder.buildStandaloneCommand(topLevelAlias, cfg));
-				subsByRoot.putIfAbsent(topLevelAlias, new ArrayList<>());
+				return;
+			}
+
+			// Standalone: register ALL aliases (or fallback to the config key if none)
+			List<String> aliasesRaw = (cfg.getAliases() == null || cfg.getAliases().isEmpty())
+					? List.of(name)
+					: cfg.getAliases();
+
+			// normalize + dedupe
+			LinkedHashSet<String> aliases = new LinkedHashSet<>();
+			for (String a : aliasesRaw) {
+				String n = norm.apply(a);
+				if (!n.isEmpty()) aliases.add(n);
+			}
+			if (aliases.isEmpty()) aliases.add(norm.apply(name));
+
+			for (String alias : aliases) {
+				if (roots.containsKey(alias)) {
+					log.warn("Alias '{}' for command '{}' conflicts with an existing root command. Skipping this alias.", alias, name);
+					continue;
+				}
+				SlashCommandData data = builder.buildStandaloneCommand(alias, cfg);
+				roots.put(alias, data);
+				// keep map in sync even if we won't attach subs to non-main, harmless
+				subsByRoot.putIfAbsent(alias, new ArrayList<>());
 			}
 		});
 
-		// 2) add subcommand lists into each root's SlashCommandData
+		// 2) attach all subcommands to each main alias
 		for (String root : mainAliases) {
 			List<SubcommandData> list = subsByRoot.get(root);
 			if (list != null && !list.isEmpty()) {
@@ -89,8 +115,14 @@ public class CommandRegistrar {
 			}
 		}
 
-		// 3) atomically overwrite the global command set (upserts + deletions)
+		// 3) upsert globally
 		List<SlashCommandData> desiredList = new ArrayList<>(roots.values());
+
+		if (log.isDebugEnabled()) {
+			List<String> names = desiredList.stream().map(SlashCommandData::getName).toList();
+			log.debug("Registering {} slash command(s): {}", names.size(), names);
+		}
+
 		jda.updateCommands()
 				.addCommands(desiredList)
 				.queue(

@@ -7,6 +7,7 @@ import me.whereareiam.yui.api.model.requirement.Requirements;
 import me.whereareiam.yui.api.model.requirement.RoleRequirement;
 import me.whereareiam.yui.api.output.config.DefaultConfig;
 import me.whereareiam.yui.api.type.CommandCategory;
+import me.whereareiam.yui.api.type.RequirementCondition;
 import me.whereareiam.yui.api.type.RequirementOperator;
 import org.springframework.stereotype.Component;
 
@@ -104,7 +105,18 @@ public class CommandsTemplate implements DefaultConfig<Commands> {
 				new CommandCooldown(false, 5, ""),
 				reloadRequirements
 		);
-		
+
+		// Create requirements for language command
+		Requirements languageRequirements = new Requirements();
+		languageRequirements.setOperator(RequirementOperator.AND);
+
+		RoleRequirement languageRoleRequirement = new RoleRequirement();
+		languageRoleRequirement.setCondition(RequirementCondition.HAS);
+		languageRoleRequirement.setExpected(true);
+		languageRoleRequirement.setRoles(List.of("verified"));
+		languageRoleRequirement.setRoleMatchBy("NAME");
+		languageRequirements.getGroups().put("ROLE", languageRoleRequirement);
+
 		Command language = new Command(
 				true,
 				List.of("language", "lang"),
@@ -114,7 +126,7 @@ public class CommandsTemplate implements DefaultConfig<Commands> {
 				Map.of(),
 				CommandCategory.UTILITY,
 				new CommandCooldown(false, 5, ""),
-				null
+				languageRequirements
 		);
 
 		commands.getCommands().put("main", main);
