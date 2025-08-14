@@ -2,6 +2,7 @@ package me.whereareiam.yui.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
 import me.whereareiam.yui.adapter.command.registry.CommandRegistry;
+import me.whereareiam.yui.adapter.command.registry.CommandDefinition;
 import me.whereareiam.yui.api.annotation.Command;
 import me.whereareiam.yui.api.annotation.ComponentListener;
 import me.whereareiam.yui.api.output.CommandBase;
@@ -96,10 +97,18 @@ public class HelpCommand implements CommandBase {
 				Translatable.of(category.getKey(), userId)
 		));
 
-		// Get commands for this category
-		commandRegistry.getDefinitions().values().stream()
-				.filter(def -> def.getCommandConfig().getCategory() == category)
-				.forEach(def -> {
+		// Get commands for this category, showing only primary command names (not aliases)
+		commandRegistry.getDefinitions().entrySet().stream()
+				.filter(entry -> entry.getValue().getCommandConfig().getCategory() == category)
+				.filter(entry -> {
+					// Only show the entry if it's the primary command name, not an alias
+					String key = entry.getKey();
+					CommandDefinition def = entry.getValue();
+					String primaryName = def.getCommandName().toLowerCase();
+					return key.equals(primaryName);
+				})
+				.forEach(entry -> {
+					CommandDefinition def = entry.getValue();
 					String name = def.getCommandName();
 					String example = def.getCommandConfig().getExample();
 					String description = def.getCommandConfig().getDescription();

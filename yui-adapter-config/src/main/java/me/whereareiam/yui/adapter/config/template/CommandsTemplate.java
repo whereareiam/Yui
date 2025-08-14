@@ -92,7 +92,7 @@ public class CommandsTemplate implements DefaultConfig<Commands> {
 
 		Command plugin = new Command(
 				true,
-				List.of("plugins"),
+				List.of("plugin", "plugins"),
 				"translate(commands.plugin.description)",
 				"translate(commands.plugin.example)",
 				"{command} [action] [plugin]",
