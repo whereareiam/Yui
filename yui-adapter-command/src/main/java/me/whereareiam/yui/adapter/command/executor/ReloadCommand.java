@@ -76,6 +76,7 @@ public class ReloadCommand implements CommandBase {
 
 	private void performReload(ButtonInteractionEvent event) {
 		try {
+			log.info("");
 			log.info("Starting reload process initiated by user {}", event.getUser().getIdLong());
 
 			// Reload all reloadable services in registration order
@@ -91,6 +92,7 @@ public class ReloadCommand implements CommandBase {
 			});
 
 			log.info("Summary: Reloaded {} reloadable services", reloadableRegistry.getAll().size());
+			log.info("");
 
 			// Success embed
 			EmbedBuilder successEmbed = StyleKit.embeds().success();

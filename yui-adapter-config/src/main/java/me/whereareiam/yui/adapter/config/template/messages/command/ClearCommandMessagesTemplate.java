@@ -13,19 +13,19 @@ public class ClearCommandMessagesTemplate implements DefaultConfig<ClearCommandM
 		clearCommand.setExample("/yui clear @user");
 
 		ClearCommandMessages.Confirmation confirmation = new ClearCommandMessages.Confirmation();
-		confirmation.setTitle("⚠️ Confirm User Profile Clear");
+		confirmation.setTitle("Confirm User Profile Clear");
 		confirmation.setDescription("You are about to clear the profile data for the following user. This action will:\n\n• Remove all cached profile data\n• Delete the user's profile from the database\n• Create a fresh, empty profile\n\n**This action cannot be undone!**");
 		confirmation.setUserInfo("**Target User:**");
 		clearCommand.setConfirmation(confirmation);
 
 		ClearCommandMessages.Success success = new ClearCommandMessages.Success();
-		success.setTitle("✅ User Profile Cleared");
+		success.setTitle("User Profile Cleared");
 		success.setDescription("The user's profile has been successfully cleared and reinitialized.");
 		success.setUserInfo("**Cleared User:**");
 		clearCommand.setSuccess(success);
 
 		ClearCommandMessages.Cancelled cancelled = new ClearCommandMessages.Cancelled();
-		cancelled.setTitle("❌ Operation Cancelled");
+		cancelled.setTitle("Operation Cancelled");
 		cancelled.setDescription("The profile clear operation has been cancelled.");
 		clearCommand.setCancelled(cancelled);
 

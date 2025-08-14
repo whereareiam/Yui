@@ -90,10 +90,26 @@ public class CommandsTemplate implements DefaultConfig<Commands> {
 				reloadRequirements
 		);
 
+		Command plugin = new Command(
+				true,
+				List.of("plugins"),
+				"translate(commands.plugin.description)",
+				"translate(commands.plugin.example)",
+				"{command} [action] [plugin]",
+				Map.of(
+						"action", "translate(commands.plugin.variables.action)",
+						"plugin", "translate(commands.plugin.variables.plugin)"
+				),
+				CommandCategory.ADMINISTRATION,
+				new CommandCooldown(false, 5, ""),
+				reloadRequirements
+		);
+
 		commands.getCommands().put("main", main);
 		commands.getCommands().put("help", help);
 		commands.getCommands().put("clear", clear);
 		commands.getCommands().put("reload", reload);
+		commands.getCommands().put("plugin", plugin);
 
 		return commands;
 	}

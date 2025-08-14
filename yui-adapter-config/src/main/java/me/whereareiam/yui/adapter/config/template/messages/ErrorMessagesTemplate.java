@@ -11,10 +11,10 @@ public class ErrorMessagesTemplate implements DefaultConfig<ErrorMessages> {
 	@Override
 	public ErrorMessages getDefault() {
 		ErrorMessages error = new ErrorMessages();
-		error.setException("❌ An unexpected error occurred. Please try again later.");
+		error.setException("An unexpected error occurred. Please try again later.");
 
 		RequirementErrorMessages requirement = new RequirementErrorMessages();
-		requirement.setTitle("❌ Seems like you don't have the rights");
+		requirement.setTitle("Seems like you don't have the rights");
 		requirement.setUnknown("You do not meet the requirements for this command. We could not determine the exact reason, if you think this is an error, please contact the server administrator.");
 		requirement.setFailed("You do not meet the following requirements:\n\n{0}");
 		requirement.setRole("**Required Role(s):**\n {0}");
@@ -30,9 +30,9 @@ public class ErrorMessagesTemplate implements DefaultConfig<ErrorMessages> {
 		error.setRequirement(requirement);
 
 		ValidationErrorMessages validation = new ValidationErrorMessages();
-		validation.setSameUser("❌ You cannot use this command on yourself!");
-		validation.setUserRequired("❌ User parameter is required!");
-		validation.setInvalidButton("❌ Invalid button configuration!");
+		validation.setSameUser("You cannot use this command on yourself!");
+		validation.setUserRequired("User parameter is required!");
+		validation.setInvalidButton("Invalid button configuration!");
 		error.setValidation(validation);
 
 		return error;

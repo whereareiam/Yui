@@ -22,6 +22,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -60,30 +61,24 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 		this.contextFactory = contextFactory;
 		this.registry = registry;
 		this.eventPublisher = eventPublisher;
+
+		reloadableRegistry.register(this);
 	}
 
 	@Override
 	public void initialize() {
 		lock.lock();
 		try {
-			Map<String, Path> jarById = new HashMap<>();
+			Map<String, Plugin> loadable = loadable();
 			Map<String, Plugin> descriptorById = new HashMap<>();
-
-			try (Stream<Path> jars = Files.list(pluginsPath)) {
-				jars.filter(p -> p.toString().endsWith(".jar")).forEach(jar -> {
-					try {
-						Plugin plugin = descriptorReader.read(jar);
-						jarById.put(plugin.getId(), jar);
-						descriptorById.put(plugin.getId(), plugin);
-					} catch (Exception e) {
-						log.error("Failed reading descriptor for {}", jar, e);
-					}
-				});
-			}
+			loadable.values().forEach(p -> descriptorById.put(p.getId(), p));
 
 			List<String> orderedIds = topologicalSort(descriptorById);
 
-			orderedIds.forEach(id -> load(jarById.get(id)));
+			orderedIds.forEach(id -> loadable.entrySet().stream()
+					.filter(e -> id.equals(e.getValue().getId()))
+					.map(Map.Entry::getKey)
+					.findFirst().ifPresent(this::load));
 		} catch (Exception e) {
 			log.error("Failed to initialise plugins", e);
 		} finally {
@@ -181,6 +176,14 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 		} finally {
 			lock.unlock();
 		}
+	}
+
+	@Override
+	public void load(String jarName) {
+		if (jarName == null || jarName.isBlank()) return;
+		String fileName = jarName.endsWith(".jar") ? jarName : jarName + ".jar";
+		Path path = pluginsPath.resolve(fileName);
+		load(path);
 	}
 
 	@Override
@@ -299,18 +302,48 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 	}
 
 	@Override
+	public Map<String, Plugin> loadable() {
+		lock.lock();
+		try {
+			Map<String, Plugin> result = new LinkedHashMap<>();
+			if (Files.notExists(pluginsPath)) return result;
+			try {
+				try (Stream<Path> files = Files.list(pluginsPath)) {
+					files.filter(p -> p.toString().endsWith(".jar"))
+							.forEach(jar -> {
+								try {
+									Plugin plugin = descriptorReader.read(jar);
+									if (storage.byId(plugin.getId()).isPresent()) return; // already loaded
+									String base = jar.getFileName().toString();
+									base = base.endsWith(".jar") ? base.substring(0, base.length() - 4) : base;
+									result.put(base, plugin);
+								} catch (Exception e) {
+									log.debug("Skipping non-plugin jar {}: {}", jar, e.getMessage());
+								}
+							});
+				}
+			} catch (IOException e) {
+				log.debug("Failed to scan plugins directory {}: {}", pluginsPath, e.getMessage());
+			}
+			return result;
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	@Override
 	public void reload() {
 		log.info("Starting plugin system reload");
-		
+
 		lock.lock();
 		try {
 			// Step 1: Get all plugin IDs before unloading
 			List<String> pluginIds = storage.all().stream()
 					.map(p -> p.getPlugin().getId())
 					.toList();
-			
+
 			log.debug("Unloading {} plugins", pluginIds.size());
-			
+
 			// Step 2: Unload all plugins (this will disable them first if needed)
 			// The unload method already handles disabling, cleanup, and storage removal
 			pluginIds.forEach(id -> {
@@ -321,13 +354,13 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 					log.error("Failed to unload plugin: {}", id, e);
 				}
 			});
-			
+
 			// Step 3: Reinitialize all plugins from disk
 			log.debug("Reinitializing plugins from disk");
 			initialize();
-			
+
 			log.info("Plugin system reload completed successfully. Loaded {} plugins", storage.all().size());
-			
+
 		} catch (Exception e) {
 			log.error("Failed to reload plugin system", e);
 		} finally {

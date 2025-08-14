@@ -1,16 +1,21 @@
 package me.whereareiam.yui.api.output.plugin;
 
 import me.whereareiam.yui.api.model.plugin.InternalPlugin;
+import me.whereareiam.yui.api.model.plugin.Plugin;
 
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+@SuppressWarnings("unused")
 public interface PluginManager {
 	void initialize();
 
 	void load(Path jar);
+
+	void load(String jarName);
 
 	<T> void injectBean(String beanName, Class<T> beanClass, Supplier<T> supplier);
 
@@ -25,4 +30,10 @@ public interface PluginManager {
 	Optional<InternalPlugin> whichPlugin(Class<?> type);
 
 	Collection<InternalPlugin> plugins();
+
+	/**
+	 * Discover loadable plugins from the plugins directory.
+	 * Returns a map: jar base name (without .jar) -> parsed plugin descriptor.
+	 */
+	Map<String, Plugin> loadable();
 }

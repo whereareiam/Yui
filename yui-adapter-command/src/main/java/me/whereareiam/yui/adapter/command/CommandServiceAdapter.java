@@ -62,24 +62,18 @@ public class CommandServiceAdapter implements CommandService, Reloadable {
 	public void initialize() {
 		Commands commands = configLoader.load(dataPath.resolve("commands"), Commands.class);
 
-		// Register a couple of known commands from config
-		register(context, "main", commands.getCommands().get("main"));
-		register(context, "help", commands.getCommands().get("help"));
-		register(context, "clear", commands.getCommands().get("clear"));
-		register(context, "reload", commands.getCommands().get("reload"));
+		// Register all commands in one batch to avoid intermediate partial syncs
+		register(context, commands);
 	}
 
 	@Override
 	public void reload() {
 		log.debug("Reloading command service");
 
-		// Step 1: Clear the command registrar cache and remove Discord commands
-		commandRegistrar.clear();
-
-		// Step 2: Clear the command registry completely
+		// Step 1: Clear the command registry completely
 		commandRegistry.clear();
 
-		// Step 3: Re-initialize everything fresh
+		// Step 2: Re-initialize everything fresh (batch registration performs atomic sync)
 		initialize();
 
 		log.debug("Command service reloaded successfully");
