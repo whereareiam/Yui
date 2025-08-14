@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,10 +31,13 @@ public class CommandRegistrar {
 	}
 
 	public void registerDiscordCommands(Map<String, Command> cmds) {
-		if (cmds != null) cmds.forEach((n, c) -> {
-			if (c == null || !c.isEnabled()) cache.remove(n);
-			else cache.put(n, c);
-		});
+		// Reset cache to exactly the provided enabled commands
+		cache.clear();
+		if (cmds != null) {
+			cmds.forEach((n, c) -> {
+				if (c != null && c.isEnabled()) cache.put(n, c);
+			});
+		}
 		syncWithDiscord();
 	}
 
@@ -87,33 +89,14 @@ public class CommandRegistrar {
 			}
 		}
 
-		// 3) upsert each current command
-		roots.forEach((alias, data) ->
-				jda.upsertCommand(data).queue(
-						cmd -> log.debug("Up-serted /{} (id={})", cmd.getName(), cmd.getId()),
-						err -> log.error("Failed to up-sert /{}", alias, err))
-		);
-
-		// 4) collect the set of “wanted” names
-		Set<String> wanted = roots.keySet().stream()
-				.map(String::toLowerCase)
-				.collect(Collectors.toSet());
-
-		// 5) retrieve all registered slash commands and delete the orphans
-		jda.retrieveCommands().queue(all -> all.stream()
-				.filter(cmd -> cmd.getType() == net.dv8tion.jda.api.interactions.commands.Command.Type.SLASH)
-				.filter(cmd -> !wanted.contains(cmd.getName().toLowerCase()))
-				.forEach(orphan -> orphan.delete().queue(
-						_ -> log.debug("Deleted stale /{}", orphan.getName()),
-						err -> log.warn("Could not delete stale /{}: {}", orphan.getName(), err.getMessage())
-				)));
-
-		// 6) (Optional) also delete any disabled subcommands standing alone
-		// Only remove standalone commands that are not subcommands
-		cache.entrySet().stream()
-				.filter(e -> !e.getValue().isEnabled())
-				.filter(e -> !builder.isSubcommand(e.getValue())) // Don't remove subcommands
-				.forEach(e -> removeIfStandalone(e.getKey()));
+		// 3) atomically overwrite the global command set (upserts + deletions)
+		List<SlashCommandData> desiredList = new ArrayList<>(roots.values());
+		jda.updateCommands()
+				.addCommands(desiredList)
+				.queue(
+						updated -> log.debug("Synchronized {} slash command(s) with Discord", updated.size()),
+						err -> log.error("Failed to synchronize slash commands", err)
+				);
 	}
 
 	private void attachSubcommand(
@@ -126,18 +109,7 @@ public class CommandRegistrar {
 		}
 	}
 
-	private void removeIfStandalone(String slashName) {
-		jda.retrieveCommands().queue(list ->
-				list.stream()
-						.filter(cmd ->
-								cmd.getType() == net.dv8tion.jda.api.interactions.commands.Command.Type.SLASH &&
-										cmd.getName().equalsIgnoreCase(slashName))
-						.findFirst()
-						.ifPresent(cmd -> cmd.delete().queue(
-								__ -> log.debug("Deleted obsolete stand‑alone /{}", slashName),
-								err -> log.warn("Could not delete /{} – {}", slashName, err.getMessage())))
-		);
-	}
+	// Standalone deletions are no longer needed; bulk update handles removals.
 
 	/**
 	 * Clears all cached commands and syncs with Discord to remove them.
