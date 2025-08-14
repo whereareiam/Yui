@@ -1,18 +1,13 @@
 package me.whereareiam.yui.adapter.config.template;
 
+import me.whereareiam.yui.adapter.config.template.messages.ErrorMessagesTemplate;
+import me.whereareiam.yui.adapter.config.template.messages.GeneralMessagesTemplate;
+import me.whereareiam.yui.adapter.config.template.messages.VocabularyMessagesTemplate;
+import me.whereareiam.yui.adapter.config.template.messages.command.*;
 import me.whereareiam.yui.api.model.config.messages.CommandMessages;
-import me.whereareiam.yui.api.model.config.messages.GeneralMessages;
 import me.whereareiam.yui.api.model.config.messages.Messages;
-import me.whereareiam.yui.api.model.config.messages.VocabularyMessages;
-import me.whereareiam.yui.api.model.config.messages.command.ClearCommandMessages;
-import me.whereareiam.yui.api.model.config.messages.command.HelpCommandMessages;
-import me.whereareiam.yui.api.model.config.messages.command.MainCommandMessages;
-import me.whereareiam.yui.api.model.config.messages.command.ReloadCommandMessages;
 import me.whereareiam.yui.api.output.config.DefaultConfig;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 @Component
 public class MessagesTemplate implements DefaultConfig<Messages> {
@@ -20,176 +15,20 @@ public class MessagesTemplate implements DefaultConfig<Messages> {
 	public Messages getDefault() {
 		Messages messages = new Messages();
 
-		// Default values
-		GeneralMessages generalMessages = new GeneralMessages();
-		GeneralMessages.TemporaryChannels temporaryChannels = new GeneralMessages.TemporaryChannels();
-		GeneralMessages.TemporaryChannels.Close close = new GeneralMessages.TemporaryChannels.Close();
-		close.setTitle("Temporary Channel Closing");
-		close.setDescription("This temporary channel will be closed in *{0}* seconds.");
-		temporaryChannels.setClose(close);
+		messages.setGeneral(new GeneralMessagesTemplate().getDefault());
 
-		generalMessages.setTemporaryChannels(temporaryChannels);
-		messages.setGeneral(generalMessages);
-
+		// commands
 		CommandMessages commandMessages = new CommandMessages();
-		CommandMessages.ErrorMessages errorMessages = new CommandMessages.ErrorMessages();
-		errorMessages.setException("❌ An unexpected error occurred. Please try again later.");
-
-		CommandMessages.ErrorMessages.RequirementErrorMessages requirementErrorMessages = new CommandMessages.ErrorMessages.RequirementErrorMessages();
-		requirementErrorMessages.setTitle("❌ Seems like you don't have the rights");
-		requirementErrorMessages.setUnknown("You do not meet the requirements for this command. We could not determine the exact reason, if you think this is an error, please contact the server administrator.");
-		requirementErrorMessages.setFailed("You do not meet the following requirements:\n\n{0}");
-
-		requirementErrorMessages.setRole("**Required Role(s):**\n {0}");
-		requirementErrorMessages.setRoleUnknown("**Required Role(s):**\n *Unknown*");
-		requirementErrorMessages.setScope("**Required Scope(s):**\n {0}");
-		requirementErrorMessages.setScopeUnknown("**Required Scope(s):**\n *Unknown*");
-		requirementErrorMessages.setChannel("**Required Channel Type(s):**\n {0}");
-		requirementErrorMessages.setChannelUnknown("**Required Channel Type(s):**\n *Unknown*");
-		requirementErrorMessages.setUser("**User Restriction:**\n {0}");
-		requirementErrorMessages.setUserUnknown("**User Restriction:**\n *Unknown*");
-		requirementErrorMessages.setGuild("**Guild Restriction:**\n {0}");
-		requirementErrorMessages.setGuildUnknown("**Guild Restriction:**\n *Unknown*");
-
-		errorMessages.setRequirement(requirementErrorMessages);
-
-		CommandMessages.ErrorMessages.ValidationErrorMessages validationErrorMessages = new CommandMessages.ErrorMessages.ValidationErrorMessages();
-		validationErrorMessages.setSameUser("❌ You cannot use this command on yourself!");
-		validationErrorMessages.setUserRequired("❌ User parameter is required!");
-		validationErrorMessages.setInvalidButton("❌ Invalid button configuration!");
-		errorMessages.setValidation(validationErrorMessages);
-
-		commandMessages.setError(errorMessages);
-
-		MainCommandMessages mainCommand = new MainCommandMessages();
-		mainCommand.setDescription("The main command for the bot. In most cases, it is used as a prefix for other commands.");
-		mainCommand.setExample("/yui");
-		commandMessages.setMain(mainCommand);
-
-		HelpCommandMessages helpCommand = getHelpCommandMessages();
-		commandMessages.setHelp(helpCommand);
-
-		ClearCommandMessages clearCommand = getClearCommandMessages();
-		commandMessages.setClear(clearCommand);
-
-		ReloadCommandMessages reloadCommand = getReloadCommandMessages();
-		commandMessages.setReload(reloadCommand);
-
+		commandMessages.setError(new ErrorMessagesTemplate().getDefault());
+		commandMessages.setMain(new MainCommandMessagesTemplate().getDefault());
+		commandMessages.setHelp(new HelpCommandMessagesTemplate().getDefault());
+		commandMessages.setClear(new ClearCommandMessagesTemplate().getDefault());
+		commandMessages.setReload(new ReloadCommandMessagesTemplate().getDefault());
+		commandMessages.setPlugins(new PluginsCommandMessagesTemplate().getDefault());
 		messages.setCommands(commandMessages);
 
-		VocabularyMessages vocabulary = getVocabularyMessages();
-		messages.setVocabulary(vocabulary);
+		messages.setVocabulary(new VocabularyMessagesTemplate().getDefault());
 
 		return messages;
-	}
-
-	@NotNull
-	private static HelpCommandMessages getHelpCommandMessages() {
-		HelpCommandMessages helpCommand = new HelpCommandMessages();
-		helpCommand.setDescription("Shows all commands organized by categories with their descriptions and usage examples.");
-		helpCommand.setExample("/yui help UTILITY");
-		helpCommand.setVariables(Map.of(
-				"category", "Displays the list of commands in the specified category."
-		));
-
-		HelpCommandMessages.Information information = new HelpCommandMessages.Information();
-		HelpCommandMessages.Information.Global global = new HelpCommandMessages.Information.Global();
-		global.setTitle("Help Information");
-		global.setDescription("Select a category to see the commands in it.");
-		information.setGlobal(global);
-
-		HelpCommandMessages.Information.Specific specific = new HelpCommandMessages.Information.Specific();
-		specific.setTitle("Help Information");
-		specific.setDescription("List of commands in the \"{0}\" category.");
-		specific.setHeadFormat("Command: {0}");
-		specific.setFootFormat("Example: `{0}`\n*Description: {1}*");
-		information.setSpecific(specific);
-
-		HelpCommandMessages.Category category = new HelpCommandMessages.Category();
-		category.setUtility("Tools and commands for general use and information");
-		category.setFun("Entertainment commands to have a good time");
-		category.setModeration("Commands to maintain order and manage users");
-		category.setAdministration("Advanced settings and server management commands");
-		helpCommand.setCategory(category);
-
-		helpCommand.setInformation(information);
-
-		return helpCommand;
-	}
-
-	@NotNull
-	private static ClearCommandMessages getClearCommandMessages() {
-		ClearCommandMessages clearCommand = new ClearCommandMessages();
-		clearCommand.setDescription("Clears a user's profile data and reinitializes it. This action cannot be undone.");
-		clearCommand.setExample("/yui clear @user");
-
-		ClearCommandMessages.Confirmation confirmation = new ClearCommandMessages.Confirmation();
-		confirmation.setTitle("⚠️ Confirm User Profile Clear");
-		confirmation.setDescription("You are about to clear the profile data for the following user. This action will:\n\n• Remove all cached profile data\n• Delete the user's profile from the database\n• Create a fresh, empty profile\n\n**This action cannot be undone!**");
-		confirmation.setUserInfo("**Target User:**");
-		clearCommand.setConfirmation(confirmation);
-
-		ClearCommandMessages.Success success = new ClearCommandMessages.Success();
-		success.setTitle("✅ User Profile Cleared");
-		success.setDescription("The user's profile has been successfully cleared and reinitialized.");
-		success.setUserInfo("**Cleared User:**");
-		clearCommand.setSuccess(success);
-
-		ClearCommandMessages.Cancelled cancelled = new ClearCommandMessages.Cancelled();
-		cancelled.setTitle("❌ Operation Cancelled");
-		cancelled.setDescription("The profile clear operation has been cancelled.");
-		clearCommand.setCancelled(cancelled);
-
-		return clearCommand;
-	}
-
-	@NotNull
-	private static ReloadCommandMessages getReloadCommandMessages() {
-		ReloadCommandMessages reloadCommand = new ReloadCommandMessages();
-		reloadCommand.setDescription("Reloads all bot components.");
-		reloadCommand.setExample("/yui reload");
-
-		ReloadCommandMessages.Confirmation confirmation = new ReloadCommandMessages.Confirmation();
-		confirmation.setTitle("⚠️ Confirm System Reload");
-		confirmation.setDescription("You are about to reload the entire system. This action will:\n\n• Reload all configuration files\n• Re-register all Discord commands\n• Reload all translation files\n• Restart all plugins\n• Restart all services\n\n**This action will temporarily interrupt some bot functionality!**");
-		reloadCommand.setConfirmation(confirmation);
-
-		ReloadCommandMessages.Success success = new ReloadCommandMessages.Success();
-		success.setTitle("✅ System Reloaded Successfully");
-		success.setDescription("All system components have been successfully reloaded with fresh configurations.");
-		reloadCommand.setSuccess(success);
-
-		ReloadCommandMessages.Cancelled cancelled = new ReloadCommandMessages.Cancelled();
-		cancelled.setTitle("❌ Reload Cancelled");
-		cancelled.setDescription("The system reload operation has been cancelled.");
-		reloadCommand.setCancelled(cancelled);
-
-		ReloadCommandMessages.Error error = new ReloadCommandMessages.Error();
-		error.setTitle("❌ Reload Failed");
-		error.setDescription("An error occurred during the system reload. Some components may not have been reloaded properly.");
-		reloadCommand.setError(error);
-
-		return reloadCommand;
-	}
-
-	private static VocabularyMessages getVocabularyMessages() {
-		VocabularyMessages vocabulary = new VocabularyMessages();
-		vocabulary.setCancel("Cancel");
-		vocabulary.setProceed("Continue");
-		vocabulary.setConfirm("Confirm");
-		vocabulary.setBack("Back");
-		vocabulary.setNext("Next");
-		vocabulary.setYes("Yes");
-		vocabulary.setNo("No");
-
-		VocabularyMessages.Category category = new VocabularyMessages.Category();
-		category.setUtility("🛠️ Utility");
-		category.setFun("🎮 Fun");
-		category.setModeration("🛡️ Moderation");
-		category.setAdministration("⚙️ Administration");
-		category.setNone("📌 None");
-		vocabulary.setCategory(category);
-
-		return vocabulary;
 	}
 }

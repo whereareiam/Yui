@@ -1,6 +1,5 @@
 package me.whereareiam.yui.common.provider;
 
-import lombok.Getter;
 import me.whereareiam.yui.api.input.Registry;
 import me.whereareiam.yui.api.output.Reloadable;
 import org.springframework.stereotype.Component;
