@@ -140,16 +140,4 @@ public class CommandRegistrar {
 			mainAliases.forEach(root -> subsByRoot.get(root).add(sub));
 		}
 	}
-
-	// Standalone deletions are no longer needed; bulk update handles removals.
-
-	/**
-	 * Clears all cached commands and syncs with Discord to remove them.
-	 * This is used during reload to ensure a completely fresh start.
-	 */
-	public void clear() {
-		log.debug("Clearing command registrar cache");
-		cache.clear();
-		syncWithDiscord();
-	}
 }
