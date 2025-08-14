@@ -28,10 +28,11 @@ import java.util.*;
 public class PluginCommand implements CommandBase {
 	private final PluginManager pluginManager;
 
-	private static final String CAT_ACTION = "plugin_category";
-	private static final String SELECT_ACTION = "plugin_select";
-	private static final String BACK_ACTION = "plugin_back";
+	private static final String CATEGORY_LISTENER = "command_plugin_category";
+	private static final String SELECT_LISTENER = "command_plugin_select";
+	private static final String BACK_LISTENER = "command_plugin_back";
 	private static final String LOAD_ACTION = "load";
+
 	private static final int BUTTONS_PER_ROW = 5;
 
 	@Command(name = "plugin")
@@ -64,7 +65,7 @@ public class PluginCommand implements CommandBase {
 		performActionDirect(event, action, pluginArg);
 	}
 
-	@ComponentListener(CAT_ACTION)
+	@ComponentListener(CATEGORY_LISTENER)
 	public void onCategory(ButtonInteractionEvent event) {
 		String payload = Components.payload(event);
 		if (payload == null) {
@@ -81,7 +82,7 @@ public class PluginCommand implements CommandBase {
 		renderCategory(event, payload, true);
 	}
 
-	@ComponentListener(SELECT_ACTION)
+	@ComponentListener(SELECT_LISTENER)
 	public void onSelect(ButtonInteractionEvent event) {
 		String payload = Components.payload(event);
 		if (payload == null || !payload.contains("|")) {
@@ -101,7 +102,7 @@ public class PluginCommand implements CommandBase {
 		performActionAndReport(event, action, value);
 	}
 
-	@ComponentListener(BACK_ACTION)
+	@ComponentListener(BACK_LISTENER)
 	public void onBack(ButtonInteractionEvent event) {
 		event.deferEdit().queue();
 		long userId = event.getUser().getIdLong();
@@ -187,13 +188,13 @@ public class PluginCommand implements CommandBase {
 
 		// Extra controls for the load category
 		if (LOAD_ACTION.equals(action)) {
-			Button reload = Components.button(ButtonStyle.PRIMARY, CAT_ACTION, Translatable.of("commands.plugin.controls.reload", userId), "load").getButton();
+			Button reload = Components.button(ButtonStyle.PRIMARY, CATEGORY_LISTENER, Translatable.of("commands.plugin.controls.reload", userId), "load").getButton();
 			if (showBack) {
-				Button back = Components.button(ButtonStyle.SUCCESS, BACK_ACTION, Translatable.of("vocabulary.back", userId));
+				Button back = Components.button(ButtonStyle.SUCCESS, BACK_LISTENER, Translatable.of("vocabulary.back", userId));
 				rows.add(ActionRow.of(reload, back));
 			} else rows.add(ActionRow.of(reload));
 		} else if (showBack) {
-			rows.add(ActionRow.of(Components.button(ButtonStyle.SUCCESS, BACK_ACTION, Translatable.of("vocabulary.back", userId))));
+			rows.add(ActionRow.of(Components.button(ButtonStyle.SUCCESS, BACK_LISTENER, Translatable.of("vocabulary.back", userId))));
 		}
 
 		return rows;
@@ -237,10 +238,10 @@ public class PluginCommand implements CommandBase {
 	}
 
 	private Button[] mainControls(long userId) {
-		PayloadButton enable = Components.button(ButtonStyle.SECONDARY, CAT_ACTION, Translatable.of("commands.plugin.controls.enable", userId), "enable");
-		PayloadButton disable = Components.button(ButtonStyle.SECONDARY, CAT_ACTION, Translatable.of("commands.plugin.controls.disable", userId), "disable");
-		PayloadButton load = Components.button(ButtonStyle.SECONDARY, CAT_ACTION, Translatable.of("commands.plugin.controls.load", userId), "load");
-		PayloadButton unload = Components.button(ButtonStyle.SECONDARY, CAT_ACTION, Translatable.of("commands.plugin.controls.unload", userId), "unload");
+		PayloadButton enable = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.of("commands.plugin.controls.enable", userId), "enable");
+		PayloadButton disable = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.of("commands.plugin.controls.disable", userId), "disable");
+		PayloadButton load = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.of("commands.plugin.controls.load", userId), "load");
+		PayloadButton unload = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.of("commands.plugin.controls.unload", userId), "unload");
 
 		return new Button[]{enable.getButton(), disable.getButton(), load.getButton(), unload.getButton()};
 	}
@@ -274,7 +275,7 @@ public class PluginCommand implements CommandBase {
 			List<Map.Entry<String, Plugin>> loadable = sortedLoadable();
 			for (int i = 0; i < loadable.size(); i++) {
 				String jarBase = loadable.get(i).getKey();
-				buttons.add(Components.button(ButtonStyle.SECONDARY, SELECT_ACTION, (i + 1) + ".", action + '|' + jarBase).getButton());
+				buttons.add(Components.button(ButtonStyle.SECONDARY, SELECT_LISTENER, (i + 1) + ".", action + '|' + jarBase).getButton());
 			}
 
 			return buttons;
@@ -283,7 +284,7 @@ public class PluginCommand implements CommandBase {
 			if (category != null && category.listsPlugins()) {
 				List<InternalPlugin> list = category.candidates(pluginManager);
 				for (int i = 0; i < list.size(); i++)
-					buttons.add(Components.button(ButtonStyle.SECONDARY, SELECT_ACTION, (i + 1) + ".", action + '|' + list.get(i).getPlugin().getId()).getButton());
+					buttons.add(Components.button(ButtonStyle.SECONDARY, SELECT_LISTENER, (i + 1) + ".", action + '|' + list.get(i).getPlugin().getId()).getButton());
 			}
 		}
 		return buttons;

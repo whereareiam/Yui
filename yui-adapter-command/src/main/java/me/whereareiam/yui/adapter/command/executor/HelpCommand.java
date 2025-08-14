@@ -1,8 +1,8 @@
 package me.whereareiam.yui.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.adapter.command.registry.CommandRegistry;
 import me.whereareiam.yui.adapter.command.registry.CommandDefinition;
+import me.whereareiam.yui.adapter.command.registry.CommandRegistry;
 import me.whereareiam.yui.api.annotation.Command;
 import me.whereareiam.yui.api.annotation.ComponentListener;
 import me.whereareiam.yui.api.output.CommandBase;
@@ -27,6 +27,8 @@ import java.util.List;
 public class HelpCommand implements CommandBase {
 	private final CommandRegistry commandRegistry;
 
+	private static final String CATEGORY_LISTENER = "command_help_category";
+
 	@Command(name = "help")
 	public void onCommand(SlashCommandInteractionEvent event) {
 		OptionMapping optionMapping = event.getOption("category");
@@ -41,7 +43,7 @@ public class HelpCommand implements CommandBase {
 		globalHelp(event);
 	}
 
-	@ComponentListener("help_category")
+	@ComponentListener(CATEGORY_LISTENER)
 	private void onSelectMenu(StringSelectInteractionEvent event) {
 		CommandCategory category = CommandCategory.valueOf(event.getValues().getFirst().toUpperCase());
 
@@ -72,7 +74,7 @@ public class HelpCommand implements CommandBase {
 				))
 				.toList();
 
-		StringSelectMenu selectMenu = Components.menu("help_category")
+		StringSelectMenu selectMenu = Components.menu(CATEGORY_LISTENER)
 				.addOptions(options)
 				.build();
 

@@ -36,6 +36,9 @@ import java.util.concurrent.CompletableFuture;
 public class ReloadCommand implements CommandBase {
 	private final Registry<Reloadable> reloadableRegistry;
 
+	private static final String CONFIRM_LISTENER = "command_reload_confirm";
+	private static final String CANCEL_LISTENER = "command_reload_cancel";
+
 	@Command(name = "reload")
 	public void onCommand(SlashCommandInteractionEvent event) {
 		// Create confirmation embed
@@ -44,8 +47,8 @@ public class ReloadCommand implements CommandBase {
 		embed.setDescription(Translatable.of("commands.reload.confirmation.description", event.getUser().getIdLong()));
 
 		// Create buttons
-		var confirmButton = Components.button(ButtonStyle.DANGER, "reload_confirm", Translatable.of("vocabulary.confirm", event.getUser().getIdLong()));
-		var cancelButton = Components.button(ButtonStyle.SECONDARY, "reload_cancel", Translatable.of("vocabulary.cancel", event.getUser().getIdLong()));
+		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.of("vocabulary.confirm", event.getUser().getIdLong()));
+		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.of("vocabulary.cancel", event.getUser().getIdLong()));
 
 		// Send the confirmation message with buttons
 		event.replyEmbeds(embed.build())
@@ -54,7 +57,7 @@ public class ReloadCommand implements CommandBase {
 				.queue();
 	}
 
-	@ComponentListener("reload_confirm")
+	@ComponentListener(CONFIRM_LISTENER)
 	public void onConfirmButton(ButtonInteractionEvent event) {
 		// Defer the edit to avoid timeout
 		event.deferEdit().queue();
@@ -115,7 +118,7 @@ public class ReloadCommand implements CommandBase {
 		}
 	}
 
-	@ComponentListener("reload_cancel")
+	@ComponentListener(CANCEL_LISTENER)
 	public void onCancelButton(ButtonInteractionEvent event) {
 		// Defer the edit to avoid timeout
 		event.deferEdit().queue();

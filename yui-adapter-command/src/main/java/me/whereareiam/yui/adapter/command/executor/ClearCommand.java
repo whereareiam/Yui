@@ -9,6 +9,7 @@ import me.whereareiam.yui.api.style.StyleKit;
 import me.whereareiam.yui.api.util.Components;
 import me.whereareiam.yui.api.util.Translatable;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -19,6 +20,9 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class ClearCommand implements CommandBase {
 	private final ProfileManagementService profileManagementService;
+
+	private static final String CONFIRM_LISTENER = "command_clear_confirm";
+	private static final String CANCEL_LISTENER = "command_clear_cancel";
 
 	@Command(name = "clear")
 	public void onCommand(SlashCommandInteractionEvent event) {
@@ -32,7 +36,7 @@ public class ClearCommand implements CommandBase {
 			return;
 		}
 
-		net.dv8tion.jda.api.entities.User targetUser = userOption.getAsUser();
+		User targetUser = userOption.getAsUser();
 
 		// Check if user is trying to clear their own profile
 		if (targetUser.getIdLong() == event.getUser().getIdLong()) {
@@ -55,8 +59,8 @@ public class ClearCommand implements CommandBase {
 		);
 
 		// Create buttons using the proper Components utility with embedded payload
-		var confirmButton = Components.button(ButtonStyle.DANGER, "clear_confirm", Translatable.of("vocabulary.confirm", event.getUser().getIdLong()), String.valueOf(targetUser.getIdLong()));
-		var cancelButton = Components.button(ButtonStyle.SECONDARY, "clear_cancel", Translatable.of("vocabulary.cancel", event.getUser().getIdLong()), String.valueOf(targetUser.getIdLong()));
+		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.of("vocabulary.confirm", event.getUser().getIdLong()), String.valueOf(targetUser.getIdLong()));
+		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.of("vocabulary.cancel", event.getUser().getIdLong()), String.valueOf(targetUser.getIdLong()));
 
 		// Send the confirmation message with buttons
 		event.replyEmbeds(embed.build())
@@ -65,7 +69,7 @@ public class ClearCommand implements CommandBase {
 				.queue();
 	}
 
-	@ComponentListener("clear_confirm")
+	@ComponentListener(CONFIRM_LISTENER)
 	public void onConfirmButton(ButtonInteractionEvent event) {
 		// Defer the edit to avoid timeout
 		event.deferEdit().queue();
@@ -108,7 +112,7 @@ public class ClearCommand implements CommandBase {
 		}
 	}
 
-	@ComponentListener("clear_cancel")
+	@ComponentListener(CANCEL_LISTENER)
 	public void onCancelButton(ButtonInteractionEvent event) {
 		// Defer the edit to avoid timeout
 		event.deferEdit().queue();
