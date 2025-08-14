@@ -3,6 +3,8 @@ package me.whereareiam.yui.api.model.config.messages;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class GeneralMessages {
@@ -17,7 +19,7 @@ public class GeneralMessages {
 		@Setter
 		public static class Close {
 			private String title;
-			private String description;
+			private List<String> description;
 		}
 	}
 }

@@ -104,12 +104,25 @@ public class CommandsTemplate implements DefaultConfig<Commands> {
 				new CommandCooldown(false, 5, ""),
 				reloadRequirements
 		);
+		
+		Command language = new Command(
+				true,
+				List.of("language", "lang"),
+				"translate(commands.language.description)",
+				"translate(commands.language.example)",
+				"{alias}",
+				Map.of(),
+				CommandCategory.UTILITY,
+				new CommandCooldown(false, 5, ""),
+				null
+		);
 
 		commands.getCommands().put("main", main);
 		commands.getCommands().put("help", help);
 		commands.getCommands().put("clear", clear);
 		commands.getCommands().put("reload", reload);
 		commands.getCommands().put("plugin", plugin);
+		commands.getCommands().put("language", language);
 
 		return commands;
 	}

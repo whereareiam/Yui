@@ -3,6 +3,7 @@ package me.whereareiam.yui.api.model.config.messages.command;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -24,7 +25,7 @@ public class PluginCommandMessages {
 	@Setter
 	public static class Main {
 		private String title;
-		private String description;
+		private List<String> description;
 		private String format;
 		private Fields fields;
 
@@ -51,7 +52,7 @@ public class PluginCommandMessages {
 	@Setter
 	public static class Category {
 		private String title;
-		private String description;
+		private List<String> description;
 		private String empty;
 		private String format;
 	}

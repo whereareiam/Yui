@@ -4,6 +4,7 @@ import me.whereareiam.yui.api.model.config.messages.command.PluginCommandMessage
 import me.whereareiam.yui.api.output.config.DefaultConfig;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -28,12 +29,13 @@ public class PluginCommandMessagesTemplate implements DefaultConfig<PluginComman
 
 		PluginCommandMessages.Main main = new PluginCommandMessages.Main();
 		main.setTitle("Plugin Information");
-		main.setDescription("""
-				Here you can manage the plugins of the bot.
-				
-				Use the buttons below to enable, disable, load or unload plugins.
-				You can also reload the list of plugins to see any changes made.
-				""");
+		main.setDescription(List.of(
+				"Here you can manage the plugins of the bot.",
+				"",
+				"Use the buttons below to enable, disable, load or unload plugins.",
+				"You can also reload the list of plugins to see any changes made.",
+				""
+		));
 		main.setFormat("{index}. {name} [v{version}]\n {authors}");
 		PluginCommandMessages.Main.Fields fields = new PluginCommandMessages.Main.Fields();
 		fields.setEnabled("Active [{0}]");
@@ -45,28 +47,44 @@ public class PluginCommandMessagesTemplate implements DefaultConfig<PluginComman
 		PluginCommandMessages.Category enable = new PluginCommandMessages.Category();
 		enable.setTitle("Enable Plugins");
 		enable.setEmpty("No plugins available to enable");
-		enable.setDescription("Here you can enable plugins that are currently disabled. \n\n{list}");
+		enable.setDescription(List.of(
+				"Here you can enable plugins that are currently disabled.",
+				"",
+				"{list}"
+		));
 		enable.setFormat("{index}. {name} [v{version}]\n {authors}");
 		plugins.setEnable(enable);
 
 		PluginCommandMessages.Category disable = new PluginCommandMessages.Category();
 		disable.setTitle("Disable Plugins");
 		disable.setEmpty("No plugins available to disable");
-		disable.setDescription("Here you can disable plugins that are currently enabled. \n\n{list}");
+		disable.setDescription(List.of(
+				"Here you can disable plugins that are currently enabled.",
+				"",
+				"{list}"
+		));
 		disable.setFormat("{index}. {name} [v{version}]\n {authors}");
 		plugins.setDisable(disable);
 
 		PluginCommandMessages.Category unload = new PluginCommandMessages.Category();
 		unload.setTitle("Unload Plugins");
 		unload.setEmpty("No plugins available to unload");
-		unload.setDescription("Here you can unload plugins that are currently loaded or enabled. \n\n{list}");
+		unload.setDescription(List.of(
+				"Here you can unload plugins that are currently loaded or enabled.",
+				"",
+				"{list}"
+		));
 		unload.setFormat("{index}. {name} [v{version}]\n {authors}");
 		plugins.setUnload(unload);
 
 		PluginCommandMessages.Category load = new PluginCommandMessages.Category();
 		load.setTitle("Load Plugin");
 		load.setEmpty("No loadable plugins found in plugins directory");
-		load.setDescription("Here you can load plugins that are currently not loaded. \n\n{list}");
+		load.setDescription(List.of(
+				"Here you can load plugins that are currently not loaded.",
+				"",
+				"{list}"
+		));
 		load.setFormat("{index}. {name}");
 		plugins.setLoad(load);
 

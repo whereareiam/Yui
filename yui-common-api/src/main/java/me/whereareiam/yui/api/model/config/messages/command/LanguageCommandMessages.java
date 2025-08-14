@@ -7,17 +7,25 @@ import java.util.List;
 
 @Getter
 @Setter
-public class ReloadCommandMessages {
+public class LanguageCommandMessages {
 	private String description;
 	private String example;
-	private Confirmation confirmation;
+
+	private Primary primary;
+	private Additional additional;
 	private Success success;
 	private Cancelled cancelled;
-	private Error error;
 
 	@Getter
 	@Setter
-	public static class Confirmation {
+	public static class Primary {
+		private String title;
+		private List<String> description;
+	}
+
+	@Getter
+	@Setter
+	public static class Additional {
 		private String title;
 		private List<String> description;
 	}
@@ -26,20 +34,11 @@ public class ReloadCommandMessages {
 	@Setter
 	public static class Success {
 		private String title;
-		private List<String> description;
 	}
 
 	@Getter
 	@Setter
 	public static class Cancelled {
 		private String title;
-		private List<String> description;
-	}
-
-	@Getter
-	@Setter
-	public static class Error {
-		private String title;
-		private List<String> description;
 	}
 }

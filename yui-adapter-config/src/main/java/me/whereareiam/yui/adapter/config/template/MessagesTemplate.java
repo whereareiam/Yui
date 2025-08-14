@@ -25,6 +25,7 @@ public class MessagesTemplate implements DefaultConfig<Messages> {
 		commandMessages.setClear(new ClearCommandMessagesTemplate().getDefault());
 		commandMessages.setReload(new ReloadCommandMessagesTemplate().getDefault());
 		commandMessages.setPlugin(new PluginCommandMessagesTemplate().getDefault());
+		commandMessages.setLanguage(new LanguageCommandMessagesTemplate().getDefault());
 		messages.setCommands(commandMessages);
 
 		messages.setVocabulary(new VocabularyMessagesTemplate().getDefault());

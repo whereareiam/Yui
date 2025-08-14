@@ -3,6 +3,7 @@ package me.whereareiam.yui.api.model.config.messages.command;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -24,14 +25,14 @@ public class HelpCommandMessages {
 		@Setter
 		public static class Global {
 			private String title;
-			private String description;
+			private List<String> description;
 		}
 
 		@Getter
 		@Setter
 		public static class Specific {
 			private String title;
-			private String description;
+			private List<String> description;
 			private String headFormat;
 			private String footFormat;
 		}

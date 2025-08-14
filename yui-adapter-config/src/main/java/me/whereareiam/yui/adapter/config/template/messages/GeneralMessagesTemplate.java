@@ -4,6 +4,8 @@ import me.whereareiam.yui.api.model.config.messages.GeneralMessages;
 import me.whereareiam.yui.api.output.config.DefaultConfig;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class GeneralMessagesTemplate implements DefaultConfig<GeneralMessages> {
 	@Override
@@ -12,7 +14,7 @@ public class GeneralMessagesTemplate implements DefaultConfig<GeneralMessages> {
 		GeneralMessages.TemporaryChannels temporaryChannels = new GeneralMessages.TemporaryChannels();
 		GeneralMessages.TemporaryChannels.Close close = new GeneralMessages.TemporaryChannels.Close();
 		close.setTitle("Temporary Channel Closing");
-		close.setDescription("This temporary channel will be closed in *{0}* seconds.");
+		close.setDescription(List.of("This temporary channel will be closed in *{0}* seconds."));
 		temporaryChannels.setClose(close);
 
 		generalMessages.setTemporaryChannels(temporaryChannels);

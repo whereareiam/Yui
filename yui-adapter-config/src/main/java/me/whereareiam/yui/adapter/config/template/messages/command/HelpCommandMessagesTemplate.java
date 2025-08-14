@@ -5,6 +5,7 @@ import me.whereareiam.yui.api.output.config.DefaultConfig;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -26,12 +27,12 @@ public class HelpCommandMessagesTemplate implements DefaultConfig<HelpCommandMes
 		HelpCommandMessages.Information information = new HelpCommandMessages.Information();
 		HelpCommandMessages.Information.Global global = new HelpCommandMessages.Information.Global();
 		global.setTitle("Help Information");
-		global.setDescription("Select a category to see the commands in it.");
+		global.setDescription(List.of("Select a category to see the commands in it."));
 		information.setGlobal(global);
 
 		HelpCommandMessages.Information.Specific specific = new HelpCommandMessages.Information.Specific();
 		specific.setTitle("Help Information");
-		specific.setDescription("List of commands in the \"{0}\" category.");
+		specific.setDescription(List.of("List of commands in the \"{0}\" category."));
 		specific.setHeadFormat("Command: {0}");
 		specific.setFootFormat("Example: `{0}`\n*Description: {1}*");
 		information.setSpecific(specific);

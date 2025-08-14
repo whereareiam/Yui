@@ -3,6 +3,8 @@ package me.whereareiam.yui.api.model.config.messages.command;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class ClearCommandMessages {
@@ -16,7 +18,7 @@ public class ClearCommandMessages {
 	@Setter
 	public static class Confirmation {
 		private String title;
-		private String description;
+		private List<String> description;
 		private String userInfo;
 	}
 
@@ -24,7 +26,7 @@ public class ClearCommandMessages {
 	@Setter
 	public static class Success {
 		private String title;
-		private String description;
+		private List<String> description;
 		private String userInfo;
 	}
 
@@ -32,6 +34,6 @@ public class ClearCommandMessages {
 	@Setter
 	public static class Cancelled {
 		private String title;
-		private String description;
+		private List<String> description;
 	}
 }
