@@ -22,6 +22,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @Component
 @AllArgsConstructor
@@ -32,6 +33,10 @@ public class PluginCommand implements CommandBase {
 	private static final String SELECT_LISTENER = "command_plugin_select";
 	private static final String BACK_LISTENER = "command_plugin_back";
 	private static final String LOAD_ACTION = "load";
+
+	private static final String RELOAD_ALL_LISTENER = "command_plugin_reload_all";
+	private static final String RELOAD_ALL_CONFIRM_LISTENER = "command_plugin_reload_all_confirm";
+	private static final String RELOAD_ALL_CANCEL_LISTENER = "command_plugin_reload_all_cancel";
 
 	private static final int BUTTONS_PER_ROW = 5;
 
@@ -200,6 +205,66 @@ public class PluginCommand implements CommandBase {
 		return rows;
 	}
 
+	@ComponentListener(RELOAD_ALL_LISTENER)
+	public void onReloadAll(ButtonInteractionEvent event) {
+		event.deferEdit().queue();
+		long userId = event.getUser().getIdLong();
+
+		EmbedBuilder embed = StyleKit.embeds().warning();
+		embed.setTitle(Translatable.of("commands.plugin.action.reload.confirmation.title", userId));
+		embed.setDescription(Translatable.of("commands.plugin.action.reload.confirmation.description", userId));
+
+		Button confirm = Components.button(ButtonStyle.DANGER, RELOAD_ALL_CONFIRM_LISTENER, Translatable.of("vocabulary.confirm", userId));
+		Button cancel = Components.button(ButtonStyle.SECONDARY, RELOAD_ALL_CANCEL_LISTENER, Translatable.of("vocabulary.cancel", userId));
+
+		event.getHook()
+				.editOriginalEmbeds(embed.build())
+				.setActionRow(confirm, cancel)
+				.queue();
+	}
+
+	@ComponentListener(RELOAD_ALL_CONFIRM_LISTENER)
+	public void onReloadAllConfirm(ButtonInteractionEvent event) {
+		event.deferEdit().queue();
+		long userId = event.getUser().getIdLong();
+
+		CompletableFuture.runAsync(() -> {
+			try {
+				pluginManager.reload();
+
+				// After successful reload, show the main embed with category controls
+				event.getHook()
+						.editOriginalEmbeds(buildMainEmbed(userId).build())
+						.setActionRow(mainControls(userId))
+						.queue();
+			} catch (Exception e) {
+				EmbedBuilder error = StyleKit.embeds().error();
+				error.setTitle(Translatable.of("commands.plugin.action.reload.error.title", userId));
+				error.setDescription(Translatable.of("commands.plugin.action.reload.error.description", userId));
+
+				event.getHook()
+						.editOriginalEmbeds(error.build())
+						.setComponents()
+						.queue();
+			}
+		});
+	}
+
+	@ComponentListener(RELOAD_ALL_CANCEL_LISTENER)
+	public void onReloadAllCancel(ButtonInteractionEvent event) {
+		event.deferEdit().queue();
+		long userId = event.getUser().getIdLong();
+
+		EmbedBuilder cancelled = StyleKit.embeds().secondary();
+		cancelled.setTitle(Translatable.of("commands.plugin.action.reload.cancelled.title", userId));
+		cancelled.setDescription(Translatable.of("commands.plugin.action.reload.cancelled.description", userId));
+
+		event.getHook()
+				.editOriginalEmbeds(cancelled.build())
+				.setComponents()
+				.queue();
+	}
+
 	private EmbedBuilder buildMainEmbed(long userId) {
 		EmbedBuilder embed = StyleKit.embeds().primary();
 		embed.setTitle(Translatable.of("commands.plugin.main.title", userId));
@@ -243,7 +308,9 @@ public class PluginCommand implements CommandBase {
 		PayloadButton load = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.of("commands.plugin.controls.load", userId), "load");
 		PayloadButton unload = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.of("commands.plugin.controls.unload", userId), "unload");
 
-		return new Button[]{enable.getButton(), disable.getButton(), load.getButton(), unload.getButton()};
+		Button reloadAll = Components.button(ButtonStyle.PRIMARY, RELOAD_ALL_LISTENER, Translatable.of("commands.plugin.controls.reloadAll", userId));
+
+		return new Button[]{enable.getButton(), disable.getButton(), load.getButton(), unload.getButton(), reloadAll};
 	}
 
 	private EmbedBuilder buildCategoryEmbed(String action, long userId) {

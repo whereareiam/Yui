@@ -25,6 +25,7 @@ public class PluginCommandMessagesTemplate implements DefaultConfig<PluginComman
 		controls.setLoad("Load");
 		controls.setUnload("Unload");
 		controls.setReload("Reload list");
+		controls.setReloadAll("Reload all");
 		plugins.setControls(controls);
 
 		PluginCommandMessages.Main main = new PluginCommandMessages.Main();
@@ -91,6 +92,38 @@ public class PluginCommandMessagesTemplate implements DefaultConfig<PluginComman
 		PluginCommandMessages.Action action = new PluginCommandMessages.Action();
 		action.setErrorTitle("Action failed for {0}");
 		plugins.setAction(action);
+
+		// Reload action under Action
+		PluginCommandMessages.Action.Reload reload = new PluginCommandMessages.Action.Reload();
+
+		PluginCommandMessages.Action.Reload.Confirmation reloadConfirmation = new PluginCommandMessages.Action.Reload.Confirmation();
+		reloadConfirmation.setTitle("Confirm Plugins Reload");
+		reloadConfirmation.setDescription(List.of(
+			"You are about to reload all plugins.",
+			"",
+			"• Unload all currently loaded plugins",
+			"• Reload plugins from disk",
+			"• Re-enable plugins based on configuration",
+			"",
+			"This may briefly interrupt plugin features."
+		));
+		reload.setConfirmation(reloadConfirmation);
+
+		PluginCommandMessages.Action.Reload.Cancelled reloadCancelled = new PluginCommandMessages.Action.Reload.Cancelled();
+		reloadCancelled.setTitle("Plugins Reload Cancelled");
+		reloadCancelled.setDescription(List.of(
+			"No changes were made."
+		));
+		reload.setCancelled(reloadCancelled);
+
+		PluginCommandMessages.Action.Reload.Error reloadError = new PluginCommandMessages.Action.Reload.Error();
+		reloadError.setTitle("Plugins Reload Failed");
+		reloadError.setDescription(List.of(
+			"An error occurred while reloading plugins."
+		));
+		reload.setError(reloadError);
+
+		action.setReload(reload);
 
 		return plugins;
 	}

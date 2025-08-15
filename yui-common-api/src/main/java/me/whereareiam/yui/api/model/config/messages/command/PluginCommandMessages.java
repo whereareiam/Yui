@@ -46,6 +46,7 @@ public class PluginCommandMessages {
 		private String load;
 		private String unload;
 		private String reload;
+		private String reloadAll;
 	}
 
 	@Getter
@@ -61,6 +62,36 @@ public class PluginCommandMessages {
 	@Setter
 	public static class Action {
 		private String errorTitle;
+		private Reload reload;
+
+		@Getter
+		@Setter
+		public static class Reload {
+			private Confirmation confirmation;
+			private Cancelled cancelled;
+			private Error error;
+
+			@Getter
+			@Setter
+			public static class Confirmation {
+				private String title;
+				private List<String> description;
+			}
+
+			@Getter
+			@Setter
+			public static class Cancelled {
+				private String title;
+				private List<String> description;
+			}
+
+			@Getter
+			@Setter
+			public static class Error {
+				private String title;
+				private List<String> description;
+			}
+		}
 	}
 }
 
