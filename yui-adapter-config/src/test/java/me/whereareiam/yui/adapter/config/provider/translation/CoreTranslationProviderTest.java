@@ -49,13 +49,13 @@ class CoreTranslationProviderTest {
 		when(objectMapper.readValue(any(File.class), any(TypeReference.class)))
 				.thenReturn(enTranslations);
 
-		provider = new CoreTranslationProvider(tempDir, objectMapper);
+		provider = new CoreTranslationProvider(tempDir);
 	}
 
 	@Test
 	void loadAll_shouldLoadCoreTranslations() {
 		// Act
-		Map<String, Map<DiscordLocale, Map<String, String>>> result = provider.loadAll();
+		Map<String, Map<DiscordLocale, Map<String, String>>> result = provider.load();
 
 		// Assert
 		assertNotNull(result);

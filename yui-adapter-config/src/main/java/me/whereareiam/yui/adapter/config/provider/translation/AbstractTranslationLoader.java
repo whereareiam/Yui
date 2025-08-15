@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.api.input.translation.TranslationLoader;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,13 +17,10 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public abstract class AbstractTranslationLoader implements TranslationLoader {
-	protected final ObjectMapper objectMapper;
+	@Autowired
+	protected ObjectMapper objectMapper;
 
-	protected AbstractTranslationLoader(ObjectMapper objectMapper) {
-		this.objectMapper = objectMapper;
-	}
-
-	protected Map<String, Object> loadFile(Path file) {
+	protected Map<String, Object> load(Path file) {
 		try {
 			log.debug("[TranslationService]: Loading translation file: {}", file);
 			return objectMapper.readValue(file.toFile(), new TypeReference<>() {
@@ -69,9 +67,9 @@ public abstract class AbstractTranslationLoader implements TranslationLoader {
 
 							DiscordLocale locale = DiscordLocale.from(languageCode);
 							log.debug("[TranslationService]: Processing language file: {} for locale: {}", file, locale);
-							Map<String, String> current = localeMap.computeIfAbsent(locale, l -> new HashMap<>());
+							Map<String, String> current = localeMap.computeIfAbsent(locale, _ -> new HashMap<>());
 
-							Map<String, Object> raw = loadFile(file);
+							Map<String, Object> raw = load(file);
 							Map<String, String> flattened = new HashMap<>();
 							flattenMap("", raw, flattened);
 

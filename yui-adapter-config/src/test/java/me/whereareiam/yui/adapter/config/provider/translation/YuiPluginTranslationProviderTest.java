@@ -51,13 +51,13 @@ class YuiPluginTranslationProviderTest {
 		when(objectMapper.readValue(any(File.class), any(TypeReference.class)))
 				.thenReturn(pluginTranslations);
 
-		provider = new PluginTranslationProvider(tempDir, objectMapper);
+		provider = new PluginTranslationProvider(tempDir);
 	}
 
 	@Test
-	void loadAll_shouldLoadPluginTranslations() {
+	void loadForPlugin_shouldLoadPluginTranslations() {
 		// Act
-		Map<String, Map<DiscordLocale, Map<String, String>>> result = provider.loadAll();
+		Map<String, Map<DiscordLocale, Map<String, String>>> result = provider.load("music");
 
 		// Assert
 		assertNotNull(result);

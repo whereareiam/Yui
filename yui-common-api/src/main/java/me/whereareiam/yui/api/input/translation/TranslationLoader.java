@@ -28,5 +28,17 @@ public interface TranslationLoader {
 	 * - The key is the namespace prefix (e.g., "", "plugin.music.")
 	 * - The value is a map of locales to their translation key-value pairs
 	 */
-	Map<String, Map<DiscordLocale, Map<String, String>>> loadAll();
+	Map<String, Map<DiscordLocale, Map<String, String>>> load();
+
+	/**
+	 * Loads translations only for the specified plugin id.
+	 * <p>
+	 * Implementations that do not handle plugin-based resources may return an empty map.
+	 *
+	 * @param pluginId The plugin identifier
+	 * @return Map keyed by the plugin namespace prefix (single entry) -> locale -> translations
+	 */
+	default Map<String, Map<DiscordLocale, Map<String, String>>> load(String pluginId) {
+		return Map.of();
+	}
 }

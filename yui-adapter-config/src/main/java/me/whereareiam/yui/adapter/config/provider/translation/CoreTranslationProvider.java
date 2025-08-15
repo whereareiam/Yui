@@ -1,6 +1,5 @@
 package me.whereareiam.yui.adapter.config.provider.translation;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.shared.Constants;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -17,13 +16,14 @@ import java.util.Map;
 public class CoreTranslationProvider extends AbstractTranslationLoader {
 	private final Path dataPath;
 
-	public CoreTranslationProvider(@Qualifier("dataPath") Path dataPath, ObjectMapper objectMapper) {
-		super(objectMapper);
+	public CoreTranslationProvider(
+			@Qualifier("dataPath") Path dataPath
+	) {
 		this.dataPath = dataPath;
 	}
 
 	@Override
-	public Map<String, Map<DiscordLocale, Map<String, String>>> loadAll() {
+	public Map<String, Map<DiscordLocale, Map<String, String>>> load() {
 		Map<String, Map<DiscordLocale, Map<String, String>>> result = new HashMap<>();
 
 		Path languagesDir = dataPath.resolve(Constants.Structure.languagesDir);

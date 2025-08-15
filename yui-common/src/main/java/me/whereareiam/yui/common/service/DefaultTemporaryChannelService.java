@@ -92,25 +92,24 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService, 
 		AtomicInteger remaining = new AtomicInteger(channelsToDelete.size());
 		for (int i = 0; i < channelsToDelete.size(); i++) {
 			final int index = i;
-			scheduler.schedule(() -> {
-				channelsToDelete.get(index).delete()
-						.reason("Yui restart – removing stale temp channel")
-						.queue(
-								__ -> {
-									if (remaining.decrementAndGet() == 0) {
-										log.info("TemporaryChannelService – startup purge completed");
-										result.complete(null);
-									}
-								},
-								ex -> {
-									log.warn("Failed to delete channel {}: {}",
-											channelsToDelete.get(index).getName(), ex.getMessage());
-									if (remaining.decrementAndGet() == 0) {
-										result.complete(null);
-									}
+			scheduler.schedule(() -> channelsToDelete.get(index)
+					.delete()
+					.reason("Yui restart – removing stale temp channel")
+					.queue(
+							_ -> {
+								if (remaining.decrementAndGet() == 0) {
+									log.info("[TemporaryChannelService]: Startup channel purge completed");
+									result.complete(null);
 								}
-						);
-			}, i * 1000L, TimeUnit.MILLISECONDS);
+							},
+							ex -> {
+								log.warn("Failed to delete channel {}: {}",
+										channelsToDelete.get(index).getName(), ex.getMessage());
+								if (remaining.decrementAndGet() == 0) {
+									result.complete(null);
+								}
+							}
+					), i * 1000L, TimeUnit.MILLISECONDS);
 		}
 
 		return result;
@@ -213,7 +212,7 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService, 
 		CompletableFuture<Void> future = new CompletableFuture<>();
 		channel.delete()
 				.reason("Closed via TemporaryChannelService")
-				.queue(__ -> future.complete(null), future::completeExceptionally);
+				.queue(_ -> future.complete(null), future::completeExceptionally);
 		return future;
 	}
 

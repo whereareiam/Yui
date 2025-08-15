@@ -1,6 +1,5 @@
 package me.whereareiam.yui.adapter.config.provider.translation;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.shared.Constants;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -9,7 +8,6 @@ import org.springframework.stereotype.Component;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
@@ -17,38 +15,30 @@ import java.util.Map;
 public class PluginTranslationProvider extends AbstractTranslationLoader {
 	private final Path pluginsPath;
 
-	public PluginTranslationProvider(@Qualifier("pluginsPath") Path pluginsPath,
-	                                 ObjectMapper objectMapper) {
-		super(objectMapper);
+	public PluginTranslationProvider(
+			@Qualifier("pluginsPath") Path pluginsPath
+	) {
 		this.pluginsPath = pluginsPath;
 	}
 
 	@Override
-	public Map<String, Map<DiscordLocale, Map<String, String>>> loadAll() {
-		Map<String, Map<DiscordLocale, Map<String, String>>> result = new HashMap<>();
+	public Map<String, Map<DiscordLocale, Map<String, String>>> load() {
+		// Defer plugin translations to event-driven loading via loadForPlugin(id)
+		return Map.of();
+	}
 
-		try (var pluginsDirStream = Files.list(pluginsPath)) {
-			pluginsDirStream
-					.filter(Files::isDirectory)
-					.forEach(pluginDir -> {
-						String pluginName = pluginDir.getFileName().toString().toLowerCase();
-						String prefix = "plugin." + pluginName + ".";
-						log.debug("[TranslationService]: Processing plugin: {} with prefix: {}", pluginName, prefix);
+	@Override
+	public Map<String, Map<DiscordLocale, Map<String, String>>> load(String pluginId) {
+		if (pluginId == null || pluginId.isBlank()) return Map.of();
 
-						Path languageFolder = pluginDir.resolve(Constants.Structure.languagesDir);
-						if (!Files.isDirectory(languageFolder)) {
-							log.debug("[TranslationService]: No languages directory found for plugin: {}", pluginName);
-							return;
-						}
+		String prefix = "plugin." + pluginId.toLowerCase() + ".";
+		Path pluginDir = pluginsPath.resolve(pluginId);
+		Path languageFolder = pluginDir.resolve(Constants.Structure.languagesDir);
 
-						Map<DiscordLocale, Map<String, String>> localeMap = processLanguageFolder(languageFolder);
-						log.debug("[TranslationService]: Loaded translations for plugin {} with {} locales", pluginName, localeMap.size());
-						result.put(prefix, localeMap);
-					});
-		} catch (Exception e) {
-			log.error("[TranslationService]: Error loading plugin translations", e);
-		}
+		if (!Files.isDirectory(languageFolder))
+			return Map.of();
 
-		return result;
+		Map<DiscordLocale, Map<String, String>> localeMap = processLanguageFolder(languageFolder);
+		return Map.of(prefix, localeMap);
 	}
 }

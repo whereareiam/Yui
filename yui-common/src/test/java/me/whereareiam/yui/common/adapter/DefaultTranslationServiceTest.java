@@ -1,8 +1,10 @@
 package me.whereareiam.yui.common.adapter;
 
+import me.whereareiam.yui.api.input.Registry;
 import me.whereareiam.yui.api.input.translation.TranslationLoader;
 import me.whereareiam.yui.api.model.config.settings.Settings;
 import me.whereareiam.yui.api.model.profile.UserProfile;
+import me.whereareiam.yui.api.output.Reloadable;
 import me.whereareiam.yui.api.output.provider.Provider;
 import me.whereareiam.yui.api.output.provider.UserProfileCacheProvider;
 import me.whereareiam.yui.common.service.DefaultTranslationService;
@@ -32,6 +34,9 @@ class DefaultTranslationServiceTest {
 
 	@Mock
 	private UserProfileCacheProvider userProfileCache;
+
+	@Mock
+	private Registry<Reloadable> reloadableRegistry;
 
 	@Mock
 	private Provider<Settings> settings;
@@ -74,13 +79,14 @@ class DefaultTranslationServiceTest {
 		pluginLocaleMap.put(DiscordLocale.GERMAN, dePlugin);
 		pluginTranslations.put("plugin.music.", pluginLocaleMap);
 
-		when(coreLoader.loadAll()).thenReturn(coreTranslations);
-		when(pluginLoader.loadAll()).thenReturn(pluginTranslations);
+		when(coreLoader.load()).thenReturn(coreTranslations);
+		when(pluginLoader.load()).thenReturn(pluginTranslations);
 
 		translationService = new DefaultTranslationService(
 				settings,
 				List.of(coreLoader, pluginLoader),
-				userProfileCache
+				userProfileCache,
+				reloadableRegistry
 		);
 
 		translationService.initialize();

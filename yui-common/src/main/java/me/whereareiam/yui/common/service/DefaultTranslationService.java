@@ -8,7 +8,6 @@ import me.whereareiam.yui.api.model.config.settings.Settings;
 import me.whereareiam.yui.api.output.Reloadable;
 import me.whereareiam.yui.api.output.provider.Provider;
 import me.whereareiam.yui.api.output.provider.UserProfileCacheProvider;
-import me.whereareiam.yui.api.util.TranslationTags;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -55,7 +54,7 @@ public class DefaultTranslationService implements TranslationService, Reloadable
 		log.debug("[TranslationService]: Initializing translation service");
 		for (TranslationLoader loader : loaders) {
 			log.debug("[TranslationService]: Loading translations from: {}", loader.getClass().getSimpleName());
-			Map<String, Map<DiscordLocale, Map<String, String>>> loaderResult = loader.loadAll();
+			Map<String, Map<DiscordLocale, Map<String, String>>> loaderResult = loader.load();
 			mergeLoaderResult(loaderResult);
 		}
 
@@ -65,6 +64,43 @@ public class DefaultTranslationService implements TranslationService, Reloadable
 				translations.size() == 1 ? "locale" : "locales",
 				translations.values().stream().mapToInt(Map::size).sum()
 		);
+	}
+
+	public void addTranslations(String pluginName) {
+		if (pluginName == null || pluginName.isBlank()) return;
+		log.debug("[TranslationService]: Adding translations for {}", pluginName);
+
+		for (TranslationLoader loader : loaders) {
+			Map<String, Map<DiscordLocale, Map<String, String>>> part = loader.load(pluginName);
+			if (part == null || part.isEmpty()) continue;
+			int totalKeys = part.values().stream()
+					.mapToInt(localeMap -> localeMap.values().stream()
+							.mapToInt(Map::size)
+							.sum())
+					.sum();
+			mergeLoaderResult(part);
+
+			if (totalKeys > 0)
+				log.info("[TranslationService]: Added {} translations for {}", totalKeys, pluginName);
+		}
+	}
+
+	public void removeTranslations(String pluginName) {
+		if (pluginName == null || pluginName.isBlank()) return;
+		log.debug("[TranslationService]: Removing translations for {}", pluginName);
+
+		String prefix = "plugin." + pluginName.toLowerCase() + ".";
+		int removedCount = 0;
+		for (Map.Entry<DiscordLocale, Map<String, String>> e : translations.entrySet()) {
+			Map<String, String> targetMap = e.getValue();
+			if (targetMap == null || targetMap.isEmpty()) continue;
+			int beforeSize = targetMap.size();
+			targetMap.keySet().removeIf(k -> k.startsWith(prefix));
+			removedCount += beforeSize - targetMap.size();
+		}
+
+		if (removedCount > 0)
+			log.info("[TranslationService]: Removed {} translations for {}", removedCount, pluginName);
 	}
 
 	@Override
@@ -94,6 +130,8 @@ public class DefaultTranslationService implements TranslationService, Reloadable
 							? kv.getKey()
 							: prefix + kv.getKey();
 					targetMap.put(finalKey, kv.getValue());
+
+
 				}
 			}
 		}
@@ -166,19 +204,19 @@ public class DefaultTranslationService implements TranslationService, Reloadable
 			return pattern;
 
 		if (args == null || args.length == 0)
-			return TranslationTags.resolve(pattern, locale);
+			return me.whereareiam.yui.api.util.TranslationTags.resolve(pattern, locale);
 
 		try {
 			MessageFormat messageFormat = new MessageFormat(pattern);
 			String formatted = messageFormat.format(args);
 
-			return TranslationTags.resolve(formatted, locale);
+			return me.whereareiam.yui.api.util.TranslationTags.resolve(formatted, locale);
 		} catch (IllegalArgumentException ex) {
 			log.warn(
 					"[TranslationService]: Failed to format translation '{}' with args {} for locale {} – returning unformatted",
 					pattern, Arrays.toString(args), locale, ex
 			);
-			return TranslationTags.resolve(pattern, locale);
+			return me.whereareiam.yui.api.util.TranslationTags.resolve(pattern, locale);
 		}
 	}
 
