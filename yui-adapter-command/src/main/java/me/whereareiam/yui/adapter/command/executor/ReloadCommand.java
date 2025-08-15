@@ -80,7 +80,7 @@ public class ReloadCommand implements CommandBase {
 	private void performReload(ButtonInteractionEvent event) {
 		try {
 			log.info("");
-			log.info("Starting reload process initiated by user {}", event.getUser().getIdLong());
+			log.info("Reloading components...");
 
 			// Reload all reloadable services in registration order
 			log.debug("Reloading all reloadable services...");
@@ -94,7 +94,7 @@ public class ReloadCommand implements CommandBase {
 				}
 			});
 
-			log.info("Summary: Reloaded {} reloadable services", reloadableRegistry.getAll().size());
+			log.info("Reload completed successfully.");
 			log.info("");
 
 			// Success embed

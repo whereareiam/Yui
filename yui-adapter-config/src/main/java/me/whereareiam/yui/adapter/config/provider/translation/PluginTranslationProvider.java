@@ -33,20 +33,20 @@ public class PluginTranslationProvider extends AbstractTranslationLoader {
 					.forEach(pluginDir -> {
 						String pluginName = pluginDir.getFileName().toString().toLowerCase();
 						String prefix = "plugin." + pluginName + ".";
-						log.debug("Processing plugin: {} with prefix: {}", pluginName, prefix);
+						log.debug("[TranslationService]: Processing plugin: {} with prefix: {}", pluginName, prefix);
 
 						Path languageFolder = pluginDir.resolve(Constants.Structure.languagesDir);
 						if (!Files.isDirectory(languageFolder)) {
-							log.debug("No languages directory found for plugin: {}", pluginName);
+							log.debug("[TranslationService]: No languages directory found for plugin: {}", pluginName);
 							return;
 						}
 
 						Map<DiscordLocale, Map<String, String>> localeMap = processLanguageFolder(languageFolder);
-						log.debug("Loaded translations for plugin {} with {} locales", pluginName, localeMap.size());
+						log.debug("[TranslationService]: Loaded translations for plugin {} with {} locales", pluginName, localeMap.size());
 						result.put(prefix, localeMap);
 					});
 		} catch (Exception e) {
-			log.error("Error loading plugin translations", e);
+			log.error("[TranslationService]: Error loading plugin translations", e);
 		}
 
 		return result;

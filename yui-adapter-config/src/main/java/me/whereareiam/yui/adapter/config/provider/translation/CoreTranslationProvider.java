@@ -28,12 +28,12 @@ public class CoreTranslationProvider extends AbstractTranslationLoader {
 
 		Path languagesDir = dataPath.resolve(Constants.Structure.languagesDir);
 		if (!Files.isDirectory(languagesDir)) {
-			log.warn("Core languages directory not found: {}", languagesDir);
+			log.warn("[TranslationService]: Core languages directory not found: {}", languagesDir);
 			return result;
 		}
 
 		Map<DiscordLocale, Map<String, String>> localeMap = processLanguageFolder(languagesDir);
-		log.info("Loaded core translations for {} {}", localeMap.size(), localeMap.size() == 1 ? "locale" : "locales");
+		log.info("[TranslationService]: Loaded core translations for {} {}", localeMap.size(), localeMap.size() == 1 ? "locale" : "locales");
 		result.put("", localeMap);
 
 		return result;

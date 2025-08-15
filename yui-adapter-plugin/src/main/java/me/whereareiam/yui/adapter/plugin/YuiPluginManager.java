@@ -80,7 +80,7 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 					.map(Map.Entry::getKey)
 					.findFirst().ifPresent(this::load));
 		} catch (Exception e) {
-			log.error("Failed to initialise plugins", e);
+			log.error("[PluginManager]: Failed to initialise plugins", e);
 		} finally {
 			lock.unlock();
 		}
@@ -98,7 +98,7 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 				plugin.getDependencies().forEach(d -> {
 					if (!plugins.containsKey(d.getId())) {
 						if (d.isRequired()) {
-							log.error("Plugin {} is missing required dependency {}", id, d.getId());
+							log.error("[PluginManager]: Plugin {} is missing required dependency {}", id, d.getId());
 							skipped.add(id);
 						}
 						return;
@@ -115,7 +115,7 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 		for (String id : adj.keySet()) {
 			if (skipped.contains(id) || visited.contains(id)) continue;
 			if (dfs(id, adj, visiting, visited, sorted)) {
-				log.error("Circular dependency detected while loading plugins");
+				log.error("[PluginManager]: Circular dependency detected while loading plugins");
 				return Collections.emptyList();
 			}
 		}
@@ -168,12 +168,14 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 			YuiPlugin bean = pluginCtx.getBean(YuiPlugin.class);
 			InternalPlugin internal = new InternalPlugin(plugin, loader, pluginCtx, bean);
 
+			log.info("[PluginManager]: Loading plugin {} [v{}]", plugin.getName(), plugin.getVersion());
+
 			eventPublisher.publishEvent(new PluginLoadedEvent(internal));
+
 			bean.onLoad();
 			storage.add(internal);
-
 		} catch (Exception e) {
-			log.error("Failed loading plugin {}", path, e);
+			log.error("[PluginManager]: Failed loading plugin {}", path, e);
 		} finally {
 			lock.unlock();
 		}
@@ -230,6 +232,8 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 			return storage.byId(id).flatMap(p -> {
 				if (p.isEnabled()) return Optional.of(p.getInstance());
 
+				log.info("[PluginManager]: Enabling plugin {} [v{}]", p.getPlugin().getName(), p.getPlugin().getVersion());
+
 				PluginEnabledEvent event = new PluginEnabledEvent(p);
 				eventPublisher.publishEvent(event);
 				if (event.isCancelled()) return Optional.empty();
@@ -251,6 +255,8 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 		try {
 			return storage.byId(id).flatMap(p -> {
 				if (!p.isEnabled()) return Optional.of(p.getInstance());
+
+				log.info("[PluginManager]: Disabling plugin {} [v{}]", p.getPlugin().getName(), p.getPlugin().getVersion());
 
 				PluginDisabledEvent event = new PluginDisabledEvent(p);
 				eventPublisher.publishEvent(event);
@@ -274,6 +280,8 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 			return storage.byId(id).flatMap(p -> {
 				if (p.isEnabled())
 					disable(id);
+
+				log.info("[PluginManager]: Unloading plugin {} [v{}]", p.getPlugin().getName(), p.getPlugin().getVersion());
 
 				PluginUnloadedEvent event = new PluginUnloadedEvent(p);
 				eventPublisher.publishEvent(event);
@@ -320,12 +328,12 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 									base = base.endsWith(".jar") ? base.substring(0, base.length() - 4) : base;
 									result.put(base, plugin);
 								} catch (Exception e) {
-									log.debug("Skipping non-plugin jar {}: {}", jar, e.getMessage());
+									log.debug("[PluginManager]: Skipping non-plugin jar {}: {}", jar, e.getMessage());
 								}
 							});
 				}
 			} catch (IOException e) {
-				log.debug("Failed to scan plugins directory {}: {}", pluginsPath, e.getMessage());
+				log.debug("[PluginManager]: Failed to scan plugins directory {}: {}", pluginsPath, e.getMessage());
 			}
 			return result;
 		} finally {
@@ -335,8 +343,6 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 
 	@Override
 	public void reload() {
-		log.info("Starting plugin system reload");
-
 		lock.lock();
 		try {
 			// Step 1: Get all plugin IDs before unloading
@@ -344,27 +350,24 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 					.map(p -> p.getPlugin().getId())
 					.toList();
 
-			log.debug("Unloading {} plugins", pluginIds.size());
+			log.debug("[PluginManager]: Unloading {} plugins", pluginIds.size());
 
 			// Step 2: Unload all plugins (this will disable them first if needed)
 			// The unload method already handles disabling, cleanup, and storage removal
 			pluginIds.forEach(id -> {
 				try {
 					unload(id);
-					log.debug("Unloaded plugin: {}", id);
+					log.debug("[PluginManager]: Unloaded plugin: {}", id);
 				} catch (Exception e) {
-					log.error("Failed to unload plugin: {}", id, e);
+					log.error("[PluginManager]: Failed to unload plugin: {}", id, e);
 				}
 			});
 
 			// Step 3: Reinitialize all plugins from disk
-			log.debug("Reinitializing plugins from disk");
+			log.debug("[PluginManager]: Reinitializing plugins from disk");
 			initialize();
-
-			log.info("Plugin system reload completed successfully. Loaded {} plugins", storage.all().size());
-
 		} catch (Exception e) {
-			log.error("Failed to reload plugin system", e);
+			log.error("[PluginManager]: Failed to reload plugin system", e);
 		} finally {
 			lock.unlock();
 		}

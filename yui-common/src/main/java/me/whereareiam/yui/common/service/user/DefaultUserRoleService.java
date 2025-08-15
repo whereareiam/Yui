@@ -31,35 +31,35 @@ public class DefaultUserRoleService implements UserRoleService {
 	@Override
 	public void addRoleToUser(long userId, long roleId) {
 		if (!roleService.roleExists(roleId)) {
-			log.warn("Role id={} is not registered in DB – refusing.", roleId);
+			log.warn("[UserRoleService]: Role id={} is not registered in DB – refusing.", roleId);
 			return;
 		}
-		
+
 		// Ensure user profile exists
 		Optional<UserProfile> profile = userProfileService.getProfile(userId);
 		if (profile.isEmpty()) {
 			profile = userProfileService.createProfile(userId);
 			if (profile.isEmpty()) {
-				log.warn("Failed to create user profile for user {} - cannot add role", userId);
+				log.warn("[UserRoleService]: Failed to create user profile for user {} - cannot add role", userId);
 				return;
 			}
 		}
-		
+
 		// Check if user already has this role
 		UserProfile userProfile = profile.get();
 		long[] currentRoles = userProfile.getRoles();
 		if (currentRoles != null) {
 			for (long role : currentRoles) {
 				if (role == roleId) {
-					log.debug("User {} already has role {} - skipping", userId, roleId);
+					log.debug("[UserRoleService]: User {} already has role {} - skipping", userId, roleId);
 					return;
 				}
 			}
 		}
-		
+
 		// Add role to database
 		userProfileService.addRole(userId, roleId);
-		
+
 		// Sync to Discord
 		enqueueSync(userId);
 	}
@@ -77,7 +77,7 @@ public class DefaultUserRoleService implements UserRoleService {
 			enqueueSync(userId);
 			return;
 		}
-		
+
 		try {
 			syncUserRoles(userId);
 		} finally {
@@ -89,11 +89,11 @@ public class DefaultUserRoleService implements UserRoleService {
 	public void syncAll() {
 		Guild guild = getGuild();
 		if (guild == null) return;
-		
-		log.info("Starting role sync for all members...");
+
+		log.info("[UserRoleService]: Starting role sync for all members...");
 		guild.loadMembers().onSuccess(members -> {
 			members.forEach(member -> syncPool.execute(() -> syncUser(member.getIdLong())));
-		}).onError(err -> log.error("Global role sync failed!", err));
+		}).onError(err -> log.error("[UserRoleService]: Global role sync failed!", err));
 	}
 
 	/**
@@ -102,64 +102,64 @@ public class DefaultUserRoleService implements UserRoleService {
 	private void syncUserRoles(long userId) {
 		Guild guild = getGuild();
 		if (guild == null) return;
-		
+
 		Member member = getMember(guild, userId);
 		if (member == null) return;
-		
+
 		// Get allowed roles from configuration
 		Set<Long> allowedRoles = Arrays.stream(roleService.getAvailableRoles())
 				.boxed().collect(Collectors.toSet());
-		
+
 		// Get current Discord roles (filtered to only allowed ones)
 		Set<Long> currentRoles = member.getRoles().stream()
 				.map(Role::getIdLong)
 				.filter(allowedRoles::contains)
 				.collect(Collectors.toSet());
-		
+
 		// Get desired roles from database
 		Optional<UserProfile> profileOpt = userProfileService.getProfile(userId);
 		if (profileOpt.isEmpty()) {
 			// No profile found - this might be a new user or DB is slow
 			// Don't remove existing roles, just log and wait
-			log.debug("No user profile found for user {} - skipping sync to prevent role loss", userId);
+			log.debug("[UserRoleService]: No user profile found for user {} - skipping sync to prevent role loss", userId);
 			return;
 		}
-		
+
 		UserProfile profile = profileOpt.get();
 		Set<Long> desiredRoles = Arrays.stream(
 				Optional.ofNullable(profile.getRoles()).orElse(new long[0])
 		).boxed().collect(Collectors.toSet());
-		
+
 		// Calculate what needs to change
 		Set<Long> toAdd = new HashSet<>(desiredRoles);
 		toAdd.removeAll(currentRoles);
-		
+
 		Set<Long> toRemove = new HashSet<>(currentRoles);
 		toRemove.removeAll(desiredRoles);
-		
+
 		// If nothing to change, we're done
 		if (toAdd.isEmpty() && toRemove.isEmpty()) {
-			log.debug("User {} roles are already in sync", userId);
+			log.debug("[UserRoleService]: User {} roles are already in sync", userId);
 			return;
 		}
-		
+
 		// Apply changes to Discord
 		List<Role> addRoles = toAdd.stream()
 				.map(guild::getRoleById)
 				.filter(Objects::nonNull)
 				.toList();
-		
+
 		List<Role> removeRoles = toRemove.stream()
 				.map(guild::getRoleById)
 				.filter(Objects::nonNull)
 				.toList();
-		
+
 		guild.modifyMemberRoles(member, addRoles, removeRoles)
 				.reason("Yui automatic role sync")
 				.queue(
-						_ -> log.debug("Successfully synced roles for user {}: +{} -{}", 
+						_ -> log.debug("[UserRoleService]: Successfully synced roles for user {}: +{} -{}",
 								userId, toAdd.size(), toRemove.size()),
-						err -> log.error("Role sync failed for user {}", userId, err)
+						err -> log.error("[UserRoleService]: Role sync failed for user {}", userId, err)
 				);
 	}
 
@@ -176,7 +176,7 @@ public class DefaultUserRoleService implements UserRoleService {
 			Member cached = guild.getMemberById(userId);
 			return cached != null ? cached : guild.retrieveMemberById(userId).complete();
 		} catch (Exception e) {
-			log.debug("Failed to fetch member {}: {}", userId, e.getMessage());
+			log.debug("[UserRoleService]: Failed to fetch member {}: {}", userId, e.getMessage());
 			return null;
 		}
 	}

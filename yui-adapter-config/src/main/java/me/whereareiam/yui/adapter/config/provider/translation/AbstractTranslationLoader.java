@@ -24,10 +24,11 @@ public abstract class AbstractTranslationLoader implements TranslationLoader {
 
 	protected Map<String, Object> loadFile(Path file) {
 		try {
-			log.debug("Loading translation file: {}", file);
-			return objectMapper.readValue(file.toFile(), new TypeReference<>() {});
+			log.debug("[TranslationService]: Loading translation file: {}", file);
+			return objectMapper.readValue(file.toFile(), new TypeReference<>() {
+			});
 		} catch (Exception e) {
-			log.error("Failed to load translation file: {}", file, e);
+			log.error("[TranslationService]: Failed to load translation file: {}", file, e);
 			return Collections.emptyMap();
 		}
 	}
@@ -54,7 +55,7 @@ public abstract class AbstractTranslationLoader implements TranslationLoader {
 	}
 
 	protected Map<DiscordLocale, Map<String, String>> processLanguageFolder(Path languageFolder) {
-		log.debug("Processing language folder: {}", languageFolder);
+		log.debug("[TranslationService]: Processing language folder: {}", languageFolder);
 		Map<DiscordLocale, Map<String, String>> localeMap = new HashMap<>();
 
 		try (var langFiles = Files.list(languageFolder)) {
@@ -67,7 +68,7 @@ public abstract class AbstractTranslationLoader implements TranslationLoader {
 							String languageCode = parts[0];
 
 							DiscordLocale locale = DiscordLocale.from(languageCode);
-							log.debug("Processing language file: {} for locale: {}", file, locale);
+							log.debug("[TranslationService]: Processing language file: {} for locale: {}", file, locale);
 							Map<String, String> current = localeMap.computeIfAbsent(locale, l -> new HashMap<>());
 
 							Map<String, Object> raw = loadFile(file);
@@ -75,11 +76,11 @@ public abstract class AbstractTranslationLoader implements TranslationLoader {
 							flattenMap("", raw, flattened);
 
 							current.putAll(flattened);
-							log.debug("Added {} translations for locale {}", flattened.size(), locale);
+							log.debug("[TranslationService]: Added {} translations for locale {}", flattened.size(), locale);
 						}
 					});
 		} catch (Exception e) {
-			log.error("Error processing language folder: {}", languageFolder, e);
+			log.error("[TranslationService]: Error processing language folder: {}", languageFolder, e);
 		}
 
 		return localeMap;

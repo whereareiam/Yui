@@ -83,12 +83,10 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService, 
 		}
 
 		// No channels to delete
-		if (channelsToDelete.isEmpty()) {
-			log.info("TemporaryChannelService – no channels to purge");
+		if (channelsToDelete.isEmpty())
 			return CompletableFuture.completedFuture(null);
-		}
 
-		log.info("TemporaryChannelService – queuing {} channels for purge", channelsToDelete.size());
+		log.info("[TemporaryChannelService]: Queuing {} channels for purge", channelsToDelete.size());
 
 		// Rate-limited deletion with 1 second delay between requests
 		AtomicInteger remaining = new AtomicInteger(channelsToDelete.size());
@@ -151,7 +149,7 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService, 
 	private void tryCreateRecursive(Guild guild, Collection<Long> userIds, ChannelDecoration decoration, int index, CompletableFuture<TextChannel> result) {
 		if (index >= categoryIds.size()) {
 			pendingRequests.add(new ChannelRequest(userIds, decoration, result));
-			log.info("All temporary-channel categories are full – queued a request for {} user(s)",
+			log.info("[TemporaryChannelService]: All temporary-channel categories are full – queued a request for {} user(s)",
 					userIds.size());
 			return;
 		}
@@ -266,7 +264,7 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService, 
 		try {
 			purgeChannels().join();
 		} catch (Exception ex) {
-			log.warn("TemporaryChannelService – purge during reload failed", ex);
+			log.warn("[TemporaryChannelService]: Purge during reload failed", ex);
 		}
 	}
 
