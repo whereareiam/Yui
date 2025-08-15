@@ -2,13 +2,13 @@
 
 # general
 lombok = "1.18.38"
-jda = "5.3.2"
-postgres = "42.7.5"
-jackson = "2.18.2"
+jda = "5.6.1"
+postgres = "42.7.7"
+jackson = "2.19.2"
 h2 = "2.3.232"
 
 # spring
-spring = "3.4.4"
+spring = "3.5.4"
 spring-dependency-management = "1.1.7"
 
 [libraries]
@@ -23,6 +23,7 @@ h2 = { group = "com.h2database", name = "h2", version.ref = "h2" }
 spring-boot = { group = "org.springframework.boot", name = "spring-boot-starter", version.ref = "spring" }
 spring-boot-test = { group = "org.springframework.boot", name = "spring-boot-starter-test", version.ref = "spring" }
 spring-boot-data-jpa = { group = "org.springframework.boot", name = "spring-boot-starter-data-jpa", version.ref = "spring" }
+spring-boot-webflux = { group = "org.springframework.boot", name = "spring-boot-starter-webflux", version.ref = "spring" }
 
 # jackson
 jackson = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
@@ -36,7 +37,8 @@ spring-dependency-management = { id = "io.spring.dependency-management", version
 
 spring = [
     "spring-boot",
-    "spring-boot-data-jpa"
+    "spring-boot-data-jpa",
+    "spring-boot-webflux"
 ]
 
 configuration = [

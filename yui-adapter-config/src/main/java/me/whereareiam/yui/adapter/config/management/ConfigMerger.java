@@ -7,7 +7,6 @@ import me.whereareiam.yui.api.output.config.ConfigurationMerger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Iterator;
 import java.util.Map;
 
 @Component
@@ -33,8 +32,7 @@ public class ConfigMerger implements ConfigurationMerger {
 	}
 
 	private void mergeNodes(ObjectNode configNode, JsonNode defaultConfigNode) {
-		for (Iterator<Map.Entry<String, JsonNode>> it = defaultConfigNode.fields(); it.hasNext(); ) {
-			Map.Entry<String, JsonNode> entry = it.next();
+		for (Map.Entry<String, JsonNode> entry : defaultConfigNode.properties()) {
 			String key = entry.getKey();
 			JsonNode value = entry.getValue();
 
