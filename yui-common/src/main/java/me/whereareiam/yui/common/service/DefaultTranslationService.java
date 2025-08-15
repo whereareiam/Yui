@@ -51,7 +51,6 @@ public class DefaultTranslationService implements TranslationService, Reloadable
 		reloadableRegistry.register(this);
 	}
 
-	@Override
 	public void initialize() {
 		log.debug("[TranslationService]: Initializing translation service");
 		for (TranslationLoader loader : loaders) {

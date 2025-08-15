@@ -7,7 +7,6 @@ import org.springframework.context.ApplicationContext;
 import java.util.Map;
 
 public interface CommandService {
-	void initialize();
 
 	/**
 	 * Register a single command (by name) into the service’s in-memory storage.

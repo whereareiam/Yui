@@ -65,7 +65,6 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 		reloadableRegistry.register(this);
 	}
 
-	@Override
 	public void initialize() {
 		lock.lock();
 		try {

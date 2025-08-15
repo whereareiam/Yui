@@ -11,11 +11,17 @@ import java.util.function.Supplier;
 
 @SuppressWarnings("unused")
 public interface PluginManager {
-	void initialize();
-
 	void load(Path jar);
 
 	void load(String jarName);
+
+	/**
+	 * Reloads the entire plugin system.
+	 * <p>
+	 * Implementations should unload all currently loaded plugins, then re-initialize
+	 * by scanning the plugins directory and loading plugins again in correct order.
+	 */
+	void reload();
 
 	<T> void injectBean(String beanName, Class<T> beanClass, Supplier<T> supplier);
 

@@ -90,7 +90,7 @@ public class DefaultUserRoleService implements UserRoleService {
 		Guild guild = getGuild();
 		if (guild == null) return;
 
-		log.info("[UserRoleService]: Starting role sync for all members...");
+		log.debug("[UserRoleService]: Starting role sync for all members...");
 		guild.loadMembers().onSuccess(members -> {
 			members.forEach(member -> syncPool.execute(() -> syncUser(member.getIdLong())));
 		}).onError(err -> log.error("[UserRoleService]: Global role sync failed!", err));

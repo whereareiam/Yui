@@ -33,7 +33,7 @@ public class CoreTranslationProvider extends AbstractTranslationLoader {
 		}
 
 		Map<DiscordLocale, Map<String, String>> localeMap = processLanguageFolder(languagesDir);
-		log.info("[TranslationService]: Loaded core translations for {} {}", localeMap.size(), localeMap.size() == 1 ? "locale" : "locales");
+		log.debug("[TranslationService]: Loaded core translations for {} {}", localeMap.size(), localeMap.size() == 1 ? "locale" : "locales");
 		result.put("", localeMap);
 
 		return result;

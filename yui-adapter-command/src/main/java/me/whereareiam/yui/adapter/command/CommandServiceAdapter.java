@@ -58,11 +58,8 @@ public class CommandServiceAdapter implements CommandService, Reloadable {
 		reloadableRegistry.register(this);
 	}
 
-	@Override
-	public void initialize() {
+	private void initialize() {
 		Commands commands = configLoader.load(dataPath.resolve("commands"), Commands.class);
-
-		// Register all commands in one batch to avoid intermediate partial syncs
 		register(context, commands);
 	}
 
