@@ -26,4 +26,6 @@ public interface InteractionService {
 	String getPayload(GenericComponentInteractionCreateEvent event);
 
 	<E extends GenericComponentInteractionCreateEvent> void registerHandler(String path, Class<E> type, Consumer<E> handler);
+
+	void unregister(String pluginId);
 }

@@ -97,9 +97,10 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 			if (plugin.getDependencies() != null)
 				plugin.getDependencies().forEach(d -> {
 					if (!plugins.containsKey(d.getId())) {
-						if (d.isRequired()) return;
-						log.error("Plugin {} is missing required dependency {}", id, d.getId());
-						skipped.add(id);
+						if (d.isRequired()) {
+							log.error("Plugin {} is missing required dependency {}", id, d.getId());
+							skipped.add(id);
+						}
 						return;
 					}
 					deps.add(d.getId());
@@ -281,6 +282,7 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 				p.getInstance().onUnload();
 				p.setState(PluginState.UNLOADED);
 				p.getContext().close();
+				contextFactory.cleanupParentSingletons(p.getClassLoader());
 				close(p.getClassLoader());
 				storage.remove(id);
 

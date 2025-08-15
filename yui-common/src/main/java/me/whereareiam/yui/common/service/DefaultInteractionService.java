@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +26,8 @@ import java.util.function.Consumer;
 public class DefaultInteractionService implements InteractionService, InitializingBean {
 	private static final String INTERNAL = "system";
 
-	private record Registered<E extends GenericComponentInteractionCreateEvent>(Class<E> type, Consumer<E> consumer) {}
+	private record Registered<E extends GenericComponentInteractionCreateEvent>(Class<E> type, Consumer<E> consumer) {
+	}
 
 	private final JDA jda;
 	private final PluginManager pluginManager;
@@ -37,7 +39,7 @@ public class DefaultInteractionService implements InteractionService, Initializi
 	public void afterPropertiesSet() {
 		jda.addEventListener(new ListenerAdapter() {
 			@Override
-			public void onGenericComponentInteractionCreate(GenericComponentInteractionCreateEvent event) {
+			public void onGenericComponentInteractionCreate(@NotNull GenericComponentInteractionCreateEvent event) {
 				String cid = event.getComponentId();
 				String base = cid.contains("|") ? cid.substring(0, cid.indexOf('|')) : cid;
 
@@ -104,6 +106,16 @@ public class DefaultInteractionService implements InteractionService, Initializi
 	@Override
 	public <E extends GenericComponentInteractionCreateEvent> void registerHandler(String path, Class<E> type, Consumer<E> h) {
 		handlers.put(full(path), new Registered<>(type, h));
+	}
+
+	@Override
+	public void unregister(String pluginId) {
+		if (pluginId == null || pluginId.isBlank()) return;
+
+		String prefix = pluginId + ":";
+
+		handlers.keySet().removeIf(k -> k.startsWith(prefix));
+		payloadStore.keySet().removeIf(k -> k.startsWith(prefix));
 	}
 
 	private Button applyStyle(String path, String label, ButtonStyle style) {
