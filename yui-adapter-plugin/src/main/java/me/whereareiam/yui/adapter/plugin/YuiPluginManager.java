@@ -2,9 +2,11 @@ package me.whereareiam.yui.adapter.plugin;
 
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.adapter.plugin.bean.PluginBeanRegistry;
+import me.whereareiam.yui.adapter.plugin.dependency.PluginDependencyResolver;
 import me.whereareiam.yui.adapter.plugin.descriptor.PluginDescriptorReader;
 import me.whereareiam.yui.adapter.plugin.factory.PluginClassLoaderFactory;
 import me.whereareiam.yui.adapter.plugin.factory.PluginContextFactory;
+import me.whereareiam.yui.adapter.plugin.scanner.PluginJarScanner;
 import me.whereareiam.yui.api.event.plugin.PluginDisabledEvent;
 import me.whereareiam.yui.api.event.plugin.PluginEnabledEvent;
 import me.whereareiam.yui.api.event.plugin.PluginLoadedEvent;
@@ -22,14 +24,12 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -41,6 +41,7 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 	private final PluginContextFactory contextFactory;
 	private final PluginBeanRegistry registry;
 	private final ApplicationEventPublisher eventPublisher;
+	private final PluginJarScanner jarScanner;
 
 	private final ReentrantLock lock = new ReentrantLock(true);
 
@@ -50,6 +51,7 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 			PluginDescriptorReader descriptorReader,
 			PluginClassLoaderFactory classLoaderFactory,
 			PluginContextFactory contextFactory,
+			PluginJarScanner jarScanner,
 			PluginBeanRegistry registry,
 			ApplicationEventPublisher eventPublisher,
 			Registry<Reloadable> reloadableRegistry
@@ -59,6 +61,7 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 		this.descriptorReader = descriptorReader;
 		this.classLoaderFactory = classLoaderFactory;
 		this.contextFactory = contextFactory;
+		this.jarScanner = jarScanner;
 		this.registry = registry;
 		this.eventPublisher = eventPublisher;
 
@@ -72,7 +75,7 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 			Map<String, Plugin> descriptorById = new HashMap<>();
 			loadable.values().forEach(p -> descriptorById.put(p.getId(), p));
 
-			List<String> orderedIds = topologicalSort(descriptorById);
+			List<String> orderedIds = PluginDependencyResolver.resolveLoadOrder(descriptorById);
 
 			orderedIds.forEach(id -> loadable.entrySet().stream()
 					.filter(e -> id.equals(e.getValue().getId()))
@@ -85,58 +88,6 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 		}
 
 		storage.all().forEach(p -> enable(p.getPlugin().getId()));
-	}
-
-	private List<String> topologicalSort(Map<String, Plugin> plugins) {
-		Map<String, List<String>> adj = new HashMap<>();
-		Set<String> skipped = new HashSet<>();
-
-		plugins.forEach((id, plugin) -> {
-			List<String> deps = new ArrayList<>();
-			if (plugin.getDependencies() != null)
-				plugin.getDependencies().forEach(d -> {
-					if (!plugins.containsKey(d.getId())) {
-						if (d.isRequired()) {
-							log.error("[PluginManager]: Plugin {} is missing required dependency {}", id, d.getId());
-							skipped.add(id);
-						}
-						return;
-					}
-					deps.add(d.getId());
-				});
-			adj.put(id, deps);
-		});
-
-		List<String> sorted = new ArrayList<>();
-		Set<String> visiting = new HashSet<>();
-		Set<String> visited = new HashSet<>();
-
-		for (String id : adj.keySet()) {
-			if (skipped.contains(id) || visited.contains(id)) continue;
-			if (dfs(id, adj, visiting, visited, sorted)) {
-				log.error("[PluginManager]: Circular dependency detected while loading plugins");
-				return Collections.emptyList();
-			}
-		}
-
-		return sorted.stream()
-				.filter(id -> !skipped.contains(id))
-				.toList();
-	}
-
-	private boolean dfs(String id, Map<String, List<String>> adj, Set<String> visiting, Set<String> visited, List<String> out) {
-		if (visiting.contains(id)) return true;
-		if (visited.contains(id)) return false;
-
-		visiting.add(id);
-		for (String dep : adj.getOrDefault(id, List.of()))
-			if (dfs(dep, adj, visiting, visited, out)) return true;
-
-		visiting.remove(id);
-		visited.add(id);
-		out.add(id);
-
-		return false;
 	}
 
 	@Override
@@ -317,21 +268,11 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 			Map<String, Plugin> result = new LinkedHashMap<>();
 			if (Files.notExists(pluginsPath)) return result;
 			try {
-				try (Stream<Path> files = Files.list(pluginsPath)) {
-					files.filter(p -> p.toString().endsWith(".jar"))
-							.forEach(jar -> {
-								try {
-									Plugin plugin = descriptorReader.read(jar);
-									if (storage.byId(plugin.getId()).isPresent()) return; // already loaded
-									String base = jar.getFileName().toString();
-									base = base.endsWith(".jar") ? base.substring(0, base.length() - 4) : base;
-									result.put(base, plugin);
-								} catch (Exception e) {
-									log.debug("[PluginManager]: Skipping non-plugin jar {}: {}", jar, e.getMessage());
-								}
-							});
-				}
-			} catch (IOException e) {
+				jarScanner.scan(pluginsPath).forEach((base, plugin) -> {
+					if (storage.byId(plugin.getId()).isPresent()) return;
+					result.put(base, plugin);
+				});
+			} catch (Exception e) {
 				log.debug("[PluginManager]: Failed to scan plugins directory {}: {}", pluginsPath, e.getMessage());
 			}
 			return result;

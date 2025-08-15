@@ -3,12 +3,16 @@ package me.whereareiam.yui.adapter.plugin;
 import me.whereareiam.yui.api.model.plugin.InternalPlugin;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class PluginStorage {
-	private final Map<String, InternalPlugin> byId = new HashMap<>();
-	private final Map<ClassLoader, InternalPlugin> byLoader = new HashMap<>();
+	private final Map<String, InternalPlugin> byId = new ConcurrentHashMap<>();
+	private final Map<ClassLoader, InternalPlugin> byLoader = new ConcurrentHashMap<>();
 
 	public void add(InternalPlugin p) {
 		byId.put(p.getPlugin().getId(), p);
@@ -25,7 +29,10 @@ public class PluginStorage {
 	}
 
 	public Optional<InternalPlugin> byType(Class<?> c) {
-		return Optional.ofNullable(byLoader.get(c.getClassLoader()));
+		ClassLoader loader = c.getClassLoader();
+		if (loader == null) return Optional.empty();
+		
+		return Optional.ofNullable(byLoader.get(loader));
 	}
 
 	public Collection<InternalPlugin> all() {

@@ -1,6 +1,7 @@
 package me.whereareiam.yui.adapter.plugin.factory;
 
 import me.whereareiam.yui.adapter.plugin.PluginInteractionService;
+import me.whereareiam.yui.adapter.plugin.bean.DependencyBeanBridge;
 import me.whereareiam.yui.adapter.plugin.bean.PluginBeanRegistry;
 import me.whereareiam.yui.api.input.InteractionService;
 import me.whereareiam.yui.api.model.plugin.Plugin;
@@ -22,16 +23,19 @@ import java.nio.file.Path;
 public class PluginContextFactory {
 	private final ApplicationContext parent;
 	private final PluginBeanRegistry registry;
+	private final DependencyBeanBridge beanBridge;
 
 	private final Path pluginsPath;
 
 	public PluginContextFactory(
 			ApplicationContext parent,
 			PluginBeanRegistry registry,
+			DependencyBeanBridge beanBridge,
 			@Qualifier("pluginsPath") Path pluginsPath
 	) {
 		this.parent = parent;
 		this.registry = registry;
+		this.beanBridge = beanBridge;
 		this.pluginsPath = pluginsPath;
 	}
 
@@ -55,6 +59,9 @@ public class PluginContextFactory {
 
 		// Apply registry beans before refresh
 		registry.apply(childContext);
+
+		// Bridge beans from dependency plugin contexts when injectClassLoader=true
+		beanBridge.bridge(childContext, plugin);
 
 		try {
 			childContext.refresh();
@@ -102,8 +109,11 @@ public class PluginContextFactory {
 			} catch (Exception ignored) {
 				continue;
 			}
+
 			if (singleton == null) continue;
 			ClassLoader cl = singleton.getClass().getClassLoader();
+			if (cl == null) continue; // Skip system classes with null class loader
+
 			if (isFromPluginClassLoader(cl, pluginClassLoader)) {
 				try {
 					dlbf.destroySingleton(name);
@@ -120,6 +130,7 @@ public class PluginContextFactory {
 			if (cl == pluginClassLoader) return true;
 			cl = cl.getParent();
 		}
+
 		return false;
 	}
 }

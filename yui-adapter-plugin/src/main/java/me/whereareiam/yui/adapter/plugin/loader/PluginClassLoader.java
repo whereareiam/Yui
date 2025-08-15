@@ -11,7 +11,6 @@ import java.util.Objects;
  * in the normal parent hierarchy.
  */
 public final class PluginClassLoader extends URLClassLoader {
-
 	private final List<ClassLoader> dependencyLoaders;
 
 	public PluginClassLoader(
@@ -27,15 +26,33 @@ public final class PluginClassLoader extends URLClassLoader {
 	protected Class<?> loadClass(String name, boolean resolve)
 			throws ClassNotFoundException {
 
+		// Prefer dependency loaders for classes under a ".api." package to ensure
+		// a single shared API type across plugins and avoid ClassCastException.
+		boolean isApi = name != null && name.contains(".api.");
+
+		Class<?> existing = findLoadedClass(name);
+		if (existing != null) return existing;
+
+		if (isApi) {
+			for (ClassLoader dep : dependencyLoaders) {
+				try {
+					return dep.loadClass(name);
+				} catch (ClassNotFoundException ignored) {
+				}
+			}
+		}
+
 		try {
 			return super.loadClass(name, resolve);
 		} catch (ClassNotFoundException ignored) {
 		}
 
-		for (ClassLoader dep : dependencyLoaders) {
-			try {
-				return dep.loadClass(name);
-			} catch (ClassNotFoundException ignored) {
+		if (!isApi) {
+			for (ClassLoader dep : dependencyLoaders) {
+				try {
+					return dep.loadClass(name);
+				} catch (ClassNotFoundException ignored) {
+				}
 			}
 		}
 
@@ -44,12 +61,23 @@ public final class PluginClassLoader extends URLClassLoader {
 
 	@Override
 	public URL getResource(String name) {
+		boolean isApi = name != null && name.contains("/api/");
+
+		if (isApi) {
+			for (ClassLoader dep : dependencyLoaders) {
+				URL url = dep.getResource(name);
+				if (url != null) return url;
+			}
+		}
+
 		URL url = super.getResource(name);
 		if (url != null) return url;
 
-		for (ClassLoader dep : dependencyLoaders) {
-			url = dep.getResource(name);
-			if (url != null) return url;
+		if (!isApi) {
+			for (ClassLoader dep : dependencyLoaders) {
+				url = dep.getResource(name);
+				if (url != null) return url;
+			}
 		}
 		return null;
 	}
