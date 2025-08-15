@@ -1,9 +1,11 @@
 package me.whereareiam.yui.common.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.api.input.InteractionService;
 import me.whereareiam.yui.api.model.PayloadButton;
 import me.whereareiam.yui.api.output.plugin.PluginManager;
+import me.whereareiam.yui.shared.Constants;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.GenericComponentInteractionCreateEvent;
@@ -16,16 +18,14 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DefaultInteractionService implements InteractionService, InitializingBean {
-	private static final String INTERNAL = "system";
-
 	private record Registered<E extends GenericComponentInteractionCreateEvent>(Class<E> type, Consumer<E> consumer) {
 	}
 
@@ -44,13 +44,20 @@ public class DefaultInteractionService implements InteractionService, Initializi
 				String base = cid.contains("|") ? cid.substring(0, cid.indexOf('|')) : cid;
 
 				var r = handlers.get(base);
-				if (r != null && r.type().isInstance(event))
+				if (r != null && r.type().isInstance(event)) {
 					((Consumer) r.consumer()).accept(event);
+				} else if (log.isDebugEnabled()) {
+					log.debug("No interaction handler found for path: {} (event: {})", base, event.getClass().getSimpleName());
+				}
 			}
 		});
+		log.info("InteractionService initialized and JDA listener attached");
 	}
 
 	private String full(String path) {
+		if (path != null && path.indexOf(':') >= 0)
+			return path;
+
 		return pluginId() + ":" + path;
 	}
 
@@ -105,7 +112,14 @@ public class DefaultInteractionService implements InteractionService, Initializi
 
 	@Override
 	public <E extends GenericComponentInteractionCreateEvent> void registerHandler(String path, Class<E> type, Consumer<E> h) {
-		handlers.put(full(path), new Registered<>(type, h));
+		String key = full(path);
+		Registered<?> previous = handlers.put(key, new Registered<>(type, h));
+		if (previous != null) {
+			log.warn("Overwriting existing interaction handler for path: {} (previous type: {}, new type: {})",
+					key, previous.type().getSimpleName(), type.getSimpleName());
+		}
+
+		log.debug("Registered interaction handler for path: {} with type: {}", key, type.getSimpleName());
 	}
 
 	@Override
@@ -114,8 +128,17 @@ public class DefaultInteractionService implements InteractionService, Initializi
 
 		String prefix = pluginId + ":";
 
+		long handlersBefore = handlers.size();
 		handlers.keySet().removeIf(k -> k.startsWith(prefix));
+		long handlersAfter = handlers.size();
+		long removedHandlers = handlersBefore - handlersAfter;
+
+		long payloadsBefore = payloadStore.size();
 		payloadStore.keySet().removeIf(k -> k.startsWith(prefix));
+		long payloadsAfter = payloadStore.size();
+		long removedPayloads = payloadsBefore - payloadsAfter;
+
+		log.debug("Unregistered {} interaction handler(s) and {} payload(s) for plugin: {}", removedHandlers, removedPayloads, pluginId);
 	}
 
 	private Button applyStyle(String path, String label, ButtonStyle style) {
@@ -127,12 +150,26 @@ public class DefaultInteractionService implements InteractionService, Initializi
 	}
 
 	private String pluginId() {
-		Class<?> c = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
-				.walk(s -> s.skip(2).findFirst().map(StackWalker.StackFrame::getDeclaringClass).orElse(null));
-		if (c == null) return INTERNAL;
+		List<Class<?>> stackClasses = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
+				.walk(stream -> {
+					List<Class<?>> result = new ArrayList<>();
+					stream.skip(2)
+							.map(StackWalker.StackFrame::getDeclaringClass)
+							.filter(Objects::nonNull)
+							.limit(20)
+							.forEach(result::add);
 
-		return pluginManager.whichPlugin(c)
-				.map(plugin -> plugin.getPlugin().getId())
-				.orElse(INTERNAL);
+					return result;
+				});
+
+		for (Class<?> cls : stackClasses) {
+			String id = pluginManager.whichPlugin(cls)
+					.map(p -> p.getPlugin().getId())
+					.orElse(null);
+
+			if (id != null) return id;
+		}
+
+		return Constants.PREFIX;
 	}
 }

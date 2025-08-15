@@ -1,6 +1,8 @@
 package me.whereareiam.yui.adapter.plugin.factory;
 
+import me.whereareiam.yui.adapter.plugin.PluginInteractionService;
 import me.whereareiam.yui.adapter.plugin.bean.PluginBeanRegistry;
+import me.whereareiam.yui.api.input.InteractionService;
 import me.whereareiam.yui.api.model.plugin.Plugin;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -47,6 +49,9 @@ public class PluginContextFactory {
 		childContext.scan(basePackage);
 
 		childContext.registerBean("pluginPath", Path.class, () -> pluginsPath.resolve(plugin.getName()));
+		childContext.registerBean("pluginId", String.class, plugin::getId);
+
+		childContext.registerBean(InteractionService.class, () -> new PluginInteractionService(plugin.getId(), parent.getBean(InteractionService.class)));
 
 		// Apply registry beans before refresh
 		registry.apply(childContext);

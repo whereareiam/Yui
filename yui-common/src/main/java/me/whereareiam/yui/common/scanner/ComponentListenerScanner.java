@@ -23,6 +23,13 @@ public class ComponentListenerScanner extends BaseContextScanner {
 
 	@Override
 	public void scan(ApplicationContext ctx) {
+		InteractionService localInteractions;
+		try {
+			localInteractions = ctx.getBean(InteractionService.class);
+		} catch (Exception ignored) {
+			localInteractions = this.interactions;
+		}
+
 		for (String n : ctx.getBeanDefinitionNames()) {
 			Object bean;
 			try {
@@ -50,7 +57,7 @@ public class ComponentListenerScanner extends BaseContextScanner {
 					}
 				};
 
-				interactions.registerHandler(path, (Class) type, (Consumer) c);
+				localInteractions.registerHandler(path, (Class) type, (Consumer) c);
 			}
 		}
 	}

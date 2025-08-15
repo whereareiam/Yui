@@ -1,6 +1,7 @@
 package me.whereareiam.yui.shared;
 
 public final class Constants {
+	public static final String PREFIX = "system";
 	public static final String VERSION = "@version@";
 
 	public static final class Structure {
