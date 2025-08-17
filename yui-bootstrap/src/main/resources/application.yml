@@ -3,7 +3,5 @@ spring:
     banner-mode: off
 
 logging:
-  level:
-    root: INFO
   pattern:
     console: "%d{HH:mm:ss} %clr(%-5level){FATAL=red,ERROR=red,WARN=yellow,INFO=blue,DEBUG=green,TRACE=magenta} %msg%n"

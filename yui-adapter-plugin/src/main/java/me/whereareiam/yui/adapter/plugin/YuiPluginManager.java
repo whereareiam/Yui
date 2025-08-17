@@ -110,15 +110,14 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 					.map(InternalPlugin::getClassLoader)
 					.toList();
 
-			URLClassLoader loader = classLoaderFactory.create(path, deps);
 
-			AnnotationConfigApplicationContext pluginCtx =
-					contextFactory.build(loader, plugin);
+			log.info("[PluginManager]: Loading plugin {} [v{}]", plugin.getName(), plugin.getVersion());
+
+			URLClassLoader loader = classLoaderFactory.create(path, deps);
+			AnnotationConfigApplicationContext pluginCtx = contextFactory.build(loader, plugin);
 
 			YuiPlugin bean = pluginCtx.getBean(YuiPlugin.class);
 			InternalPlugin internal = new InternalPlugin(plugin, loader, pluginCtx, bean);
-
-			log.info("[PluginManager]: Loading plugin {} [v{}]", plugin.getName(), plugin.getVersion());
 
 			eventPublisher.publishEvent(new PluginLoadedEvent(internal));
 
