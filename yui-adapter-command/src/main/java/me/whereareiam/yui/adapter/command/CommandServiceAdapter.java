@@ -1,6 +1,7 @@
 package me.whereareiam.yui.adapter.command;
 
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.configura.Config;
 import me.whereareiam.yui.adapter.command.registrar.CommandRegistrar;
 import me.whereareiam.yui.adapter.command.registry.CommandDefinition;
 import me.whereareiam.yui.adapter.command.registry.CommandRegistry;
@@ -9,7 +10,6 @@ import me.whereareiam.yui.registry.Registry;
 import me.whereareiam.yui.model.command.Command;
 import me.whereareiam.yui.model.config.Commands;
 import me.whereareiam.yui.Reloadable;
-import me.whereareiam.yui.config.ConfigurationLoader;
 import me.whereareiam.yui.service.CommandService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Adapts command configuration from a file (via ConfigurationLoader)
+ * Adapts command configuration from a file (via Configura)
  * into an in-memory map and also delegates the registration to JDA
  * (through CommandRegistrar).
  */
@@ -34,7 +34,6 @@ public class CommandServiceAdapter implements CommandService, Reloadable {
 	private final CommandScanner commandScanner;
 	private final CommandRegistrar commandRegistrar;
 
-	private final ConfigurationLoader configLoader;
 	private final Path dataPath;
 
 	@Autowired
@@ -43,7 +42,6 @@ public class CommandServiceAdapter implements CommandService, Reloadable {
 			CommandRegistry commandRegistry,
 			CommandScanner commandScanner,
 			CommandRegistrar commandRegistrar,
-			ConfigurationLoader configLoader,
 			@Qualifier("dataPath") Path dataPath,
 			Registry<Reloadable> reloadableRegistry
 	) {
@@ -51,7 +49,6 @@ public class CommandServiceAdapter implements CommandService, Reloadable {
 		this.commandRegistry = commandRegistry;
 		this.commandScanner = commandScanner;
 		this.commandRegistrar = commandRegistrar;
-		this.configLoader = configLoader;
 		this.dataPath = dataPath;
 
 		// Register this service as reloadable
@@ -59,7 +56,7 @@ public class CommandServiceAdapter implements CommandService, Reloadable {
 	}
 
 	private void initialize() {
-		Commands commands = configLoader.load(dataPath.resolve("commands"), Commands.class);
+		Commands commands = Config.update(dataPath.resolve("commands"), Commands.class);
 		register(context, commands);
 	}
 

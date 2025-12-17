@@ -1,10 +1,19 @@
-plugins {
-    id("maven-publish")
-}
-
 java {
     withSourcesJar()
     withJavadocJar()
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+            artifactId = "Yui"
+            pom {
+                name.set("Yui")
+                description.set("Public API for Yui - Modular Discord Bot Framework")
+            }
+        }
+    }
 }
 
 tasks.withType<Javadoc> {
@@ -12,17 +21,5 @@ tasks.withType<Javadoc> {
         addStringOption("Xdoclint:none", "-quiet")
         title = "Yui API"
         windowTitle = "Yui API"
-    }
-}
-
-publishing {
-    publications {
-        create<MavenPublication>("mavenJava") {
-            groupId = "me.whereareiam"
-            artifactId = rootProject.name
-            version = rootProject.version.toString()
-
-            from(components["java"])
-        }
     }
 }

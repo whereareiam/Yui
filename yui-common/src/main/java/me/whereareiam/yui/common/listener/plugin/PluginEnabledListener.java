@@ -5,7 +5,7 @@ import me.whereareiam.yui.event.plugin.PluginEnabledEvent;
 import me.whereareiam.yui.model.plugin.InternalPlugin;
 import me.whereareiam.yui.common.scanner.ComponentListenerScanner;
 import me.whereareiam.yui.common.scanner.ListenerScanner;
-import me.whereareiam.yui.common.service.DefaultTranslationService;
+import me.whereareiam.yui.common.translation.DefaultTranslationService;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 

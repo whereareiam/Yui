@@ -2,12 +2,14 @@ defaultTasks("build")
 
 allprojects {
     version = (System.getenv("VERSION") ?: "dev")
+    group = "me.whereareiam"
 
     apply(plugin = "java")
+    apply(plugin = "maven-publish")
 
     tasks.withType<JavaCompile> {
-        sourceCompatibility = JavaVersion.VERSION_23.toString()
-        targetCompatibility = JavaVersion.VERSION_23.toString()
+        sourceCompatibility = JavaVersion.VERSION_25.toString()
+        targetCompatibility = JavaVersion.VERSION_25.toString()
         options.compilerArgs.add("--enable-preview")
     }
 }
@@ -15,9 +17,9 @@ allprojects {
 subprojects {
     repositories {
         mavenCentral()
+        maven("https://maven.whereareiam.me/release")
+        maven("https://maven.whereareiam.me/development")
     }
-
-    apply(plugin = "java")
 
     tasks.withType<Test> {
         useJUnitPlatform()
@@ -27,20 +29,40 @@ subprojects {
         dependencies {
             "compileOnly"(project(":yui-api"))
             "compileOnly"(project(":yui-shared"))
-
-            "testImplementation"(project(":yui-api"))
-            "testImplementation"(rootProject.libs.spring.boot.test)
-            "testImplementation"(rootProject.libs.jda)
         }
     }
 
     if (project.name != "yui-bootstrap") {
         dependencies {
-            "compileOnly"(rootProject.libs.spring.boot)
-            "compileOnly"(rootProject.libs.jda)
-
+            // lombok
             "compileOnly"(rootProject.libs.lombok)
             "annotationProcessor"(rootProject.libs.lombok)
+
+            // general
+            "compileOnly"(rootProject.libs.spring.boot)
+            "compileOnly"(rootProject.libs.jda)
+            "compileOnly"(rootProject.libs.configura)
+
+            // testing
+            "testImplementation"(project(":yui-api"))
+            "testImplementation"(rootProject.libs.spring.boot.test)
+            "testImplementation"(rootProject.libs.jda)
+            "testImplementation"(rootProject.libs.configura)
+        }
+    }
+
+    extensions.configure<PublishingExtension> {
+        repositories {
+            maven {
+                val realm = (System.getenv("PUBLISH_REALM")
+                    ?: if ((System.getenv("VERSION") ?: "dev").contains("dev", true)) "development" else "release")
+                    .lowercase()
+                url = uri("https://maven.whereareiam.me/$realm")
+                credentials {
+                    username = System.getenv("PUBLISH_USER") ?: ""
+                    password = System.getenv("PUBLISH_TOKEN") ?: ""
+                }
+            }
         }
     }
 }

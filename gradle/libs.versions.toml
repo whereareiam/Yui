@@ -4,7 +4,7 @@
 lombok = "1.18.38"
 jda = "5.6.1"
 postgres = "42.7.7"
-jackson = "2.19.2"
+configura = "dev-12738f5"
 h2 = "2.3.232"
 
 # spring
@@ -17,6 +17,7 @@ spring-dependency-management = "1.1.7"
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 jda = { group = "net.dv8tion", name = "JDA", version.ref = "jda" }
 postgres = { group = "org.postgresql", name = "postgresql", version.ref = "postgres" }
+configura = { group = "me.whereareiam", name = "configura", version.ref = "configura" }
 h2 = { group = "com.h2database", name = "h2", version.ref = "h2" }
 
 # spring
@@ -24,10 +25,6 @@ spring-boot = { group = "org.springframework.boot", name = "spring-boot-starter"
 spring-boot-test = { group = "org.springframework.boot", name = "spring-boot-starter-test", version.ref = "spring" }
 spring-boot-data-jpa = { group = "org.springframework.boot", name = "spring-boot-starter-data-jpa", version.ref = "spring" }
 spring-boot-webflux = { group = "org.springframework.boot", name = "spring-boot-starter-webflux", version.ref = "spring" }
-
-# jackson
-jackson = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
-jackson-dataformat-yaml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version.ref = "jackson" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring" }
@@ -39,9 +36,4 @@ spring = [
     "spring-boot",
     "spring-boot-data-jpa",
     "spring-boot-webflux"
-]
-
-configuration = [
-    "jackson",
-    "jackson-dataformat-yaml"
 ]

@@ -7,7 +7,7 @@ import me.whereareiam.yui.model.profile.UserProfile;
 import me.whereareiam.yui.Reloadable;
 import me.whereareiam.yui.Provider;
 import me.whereareiam.yui.registry.UserProfileCacheRegistry;
-import me.whereareiam.yui.common.service.DefaultTranslationService;
+import me.whereareiam.yui.common.translation.DefaultTranslationService;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

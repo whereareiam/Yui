@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.event.plugin.PluginUnloadedEvent;
 import me.whereareiam.yui.service.InteractionService;
 import me.whereareiam.yui.model.plugin.InternalPlugin;
-import me.whereareiam.yui.common.service.DefaultTranslationService;
+import me.whereareiam.yui.common.translation.DefaultTranslationService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.context.event.EventListener;
