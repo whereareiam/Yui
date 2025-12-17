@@ -1,11 +1,11 @@
 package me.whereareiam.yui.common.service.requirement;
 
-import me.whereareiam.yui.api.model.profile.UserProfile;
-import me.whereareiam.yui.api.model.requirement.Requirements;
-import me.whereareiam.yui.api.model.requirement.UserRequirement;
-import me.whereareiam.yui.api.output.requirement.RequirementContext;
-import me.whereareiam.yui.api.type.RequirementCondition;
-import me.whereareiam.yui.api.type.RequirementOperator;
+import me.whereareiam.yui.model.profile.UserProfile;
+import me.whereareiam.yui.model.requirement.Requirements;
+import me.whereareiam.yui.model.requirement.type.UserRequirement;
+import me.whereareiam.yui.model.requirement.RequirementContext;
+import me.whereareiam.yui.type.requirement.RequirementCondition;
+import me.whereareiam.yui.type.requirement.RequirementOperator;
 import me.whereareiam.yui.common.service.requirement.evaluators.UserRequirementEvaluator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,15 +16,13 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultRequirementEvaluatorTest {
-
     private DefaultRequirementEvaluator evaluator;
-    private UserProfile userProfile;
-    private RequirementContext context;
+	private RequirementContext context;
 
     @BeforeEach
     void setUp() {
         evaluator = new DefaultRequirementEvaluator(List.of(new UserRequirementEvaluator()));
-        userProfile = new UserProfile(12345L);
+	    UserProfile userProfile = new UserProfile(12345L);
         context = new RequirementContext("test", userProfile);
     }
 

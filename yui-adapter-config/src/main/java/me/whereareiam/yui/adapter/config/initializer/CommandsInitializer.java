@@ -1,8 +1,8 @@
 package me.whereareiam.yui.adapter.config.initializer;
 
 import me.whereareiam.yui.adapter.config.template.CommandsTemplate;
-import me.whereareiam.yui.api.model.config.Commands;
-import me.whereareiam.yui.api.output.config.ConfigurationLoader;
+import me.whereareiam.yui.model.config.Commands;
+import me.whereareiam.yui.config.ConfigurationLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;

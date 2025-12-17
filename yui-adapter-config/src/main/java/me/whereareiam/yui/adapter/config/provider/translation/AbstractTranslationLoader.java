@@ -3,7 +3,7 @@ package me.whereareiam.yui.adapter.config.provider.translation;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.api.input.translation.TranslationLoader;
+import me.whereareiam.yui.translation.TranslationLoader;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.annotation.Autowired;
 

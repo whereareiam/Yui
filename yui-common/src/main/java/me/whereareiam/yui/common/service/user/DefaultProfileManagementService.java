@@ -2,11 +2,11 @@ package me.whereareiam.yui.common.service.user;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.api.event.user.UserProfileClearedEvent;
-import me.whereareiam.yui.api.output.provider.UserProfileCacheProvider;
-import me.whereareiam.yui.api.output.service.UserProfileService;
-import me.whereareiam.yui.api.output.service.ProfileManagementService;
-import me.whereareiam.yui.api.model.profile.UserProfile;
+import me.whereareiam.yui.event.user.UserProfileClearedEvent;
+import me.whereareiam.yui.registry.UserProfileCacheRegistry;
+import me.whereareiam.yui.service.UserProfileService;
+import me.whereareiam.yui.service.ProfileManagementService;
+import me.whereareiam.yui.model.profile.UserProfile;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +15,7 @@ import java.util.Optional;
 /**
  * Service for managing profile-related business operations that involve
  * multiple profile service calls or complex workflows.
- * 
+ * <p>
  * This service orchestrates operations that go beyond simple CRUD operations
  * and handles business logic for profile management.
  */
@@ -24,7 +24,7 @@ import java.util.Optional;
 @AllArgsConstructor
 public class DefaultProfileManagementService implements ProfileManagementService {
 	private final UserProfileService userProfileService;
-	private final UserProfileCacheProvider cacheProvider;
+	private final UserProfileCacheRegistry cacheProvider;
 	private final ApplicationEventPublisher eventPublisher;
 
 	/**

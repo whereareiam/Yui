@@ -2,11 +2,11 @@ package me.whereareiam.yui.adapter.config.management;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.api.exception.ConfigLoadException;
-import me.whereareiam.yui.api.output.config.ConfigurationLoader;
-import me.whereareiam.yui.api.output.config.ConfigurationManager;
-import me.whereareiam.yui.api.output.config.DefaultConfig;
-import me.whereareiam.yui.api.type.ConfigurationType;
+import me.whereareiam.yui.exception.ConfigLoadException;
+import me.whereareiam.yui.config.ConfigurationLoader;
+import me.whereareiam.yui.config.ConfigurationManager;
+import me.whereareiam.yui.config.DefaultConfig;
+import me.whereareiam.yui.type.ConfigurationType;
 import org.springframework.stereotype.Component;
 
 import java.io.FileNotFoundException;

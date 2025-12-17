@@ -1,7 +1,8 @@
 package me.whereareiam.yui.adapter.command.requirements;
 
-import me.whereareiam.yui.api.model.requirement.*;
-import me.whereareiam.yui.api.output.requirement.RequirementEvaluatorConfig;
+import me.whereareiam.yui.model.requirement.*;
+import me.whereareiam.yui.model.requirement.type.*;
+import me.whereareiam.yui.requirement.RequirementEvaluatorConfig;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;

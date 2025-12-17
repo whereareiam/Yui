@@ -1,7 +1,7 @@
 package me.whereareiam.yui.adapter.plugin.dependency;
 
-import me.whereareiam.yui.api.model.plugin.Dependency;
-import me.whereareiam.yui.api.model.plugin.Plugin;
+import me.whereareiam.yui.model.plugin.Dependency;
+import me.whereareiam.yui.model.plugin.Plugin;
 
 import java.util.*;
 

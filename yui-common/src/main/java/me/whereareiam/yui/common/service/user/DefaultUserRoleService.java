@@ -2,10 +2,10 @@ package me.whereareiam.yui.common.service.user;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.api.input.UserRoleService;
-import me.whereareiam.yui.api.model.profile.UserProfile;
-import me.whereareiam.yui.api.output.service.RoleService;
-import me.whereareiam.yui.api.output.service.UserProfileService;
+import me.whereareiam.yui.service.UserRoleService;
+import me.whereareiam.yui.model.profile.UserProfile;
+import me.whereareiam.yui.service.RoleService;
+import me.whereareiam.yui.service.UserProfileService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;

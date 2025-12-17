@@ -1,9 +1,9 @@
 package me.whereareiam.yui.common.service.requirement.evaluators;
 
-import me.whereareiam.yui.api.model.requirement.RequirementEntry;
-import me.whereareiam.yui.api.model.requirement.UserRequirement;
-import me.whereareiam.yui.api.output.requirement.RequirementContext;
-import me.whereareiam.yui.api.type.RequirementCondition;
+import me.whereareiam.yui.model.requirement.RequirementEntry;
+import me.whereareiam.yui.model.requirement.type.UserRequirement;
+import me.whereareiam.yui.model.requirement.RequirementContext;
+import me.whereareiam.yui.type.requirement.RequirementCondition;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

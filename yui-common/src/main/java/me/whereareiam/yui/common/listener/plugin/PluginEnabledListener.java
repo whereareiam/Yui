@@ -1,8 +1,8 @@
 package me.whereareiam.yui.common.listener.plugin;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.api.event.plugin.PluginEnabledEvent;
-import me.whereareiam.yui.api.model.plugin.InternalPlugin;
+import me.whereareiam.yui.event.plugin.PluginEnabledEvent;
+import me.whereareiam.yui.model.plugin.InternalPlugin;
 import me.whereareiam.yui.common.scanner.ComponentListenerScanner;
 import me.whereareiam.yui.common.scanner.ListenerScanner;
 import me.whereareiam.yui.common.service.DefaultTranslationService;

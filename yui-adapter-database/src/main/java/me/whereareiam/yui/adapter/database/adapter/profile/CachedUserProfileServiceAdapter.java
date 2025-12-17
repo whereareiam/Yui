@@ -1,8 +1,8 @@
 package me.whereareiam.yui.adapter.database.adapter.profile;
 
-import me.whereareiam.yui.api.model.profile.UserProfile;
-import me.whereareiam.yui.api.output.provider.UserProfileCacheProvider;
-import me.whereareiam.yui.api.output.service.UserProfileService;
+import me.whereareiam.yui.model.profile.UserProfile;
+import me.whereareiam.yui.registry.UserProfileCacheRegistry;
+import me.whereareiam.yui.service.UserProfileService;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,12 +15,12 @@ import java.util.Optional;
 @Service
 public class CachedUserProfileServiceAdapter implements UserProfileService {
 	private final UserProfileService delegate;
-	private final UserProfileCacheProvider cache;
+	private final UserProfileCacheRegistry cache;
 
 	@Autowired
 	public CachedUserProfileServiceAdapter(
 			@Qualifier("userProfileServiceAdapter") UserProfileService delegate,
-			UserProfileCacheProvider cache
+			UserProfileCacheRegistry cache
 	) {
 		this.delegate = delegate;
 		this.cache = cache;

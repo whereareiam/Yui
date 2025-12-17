@@ -1,6 +1,6 @@
 package me.whereareiam.yui.adapter.config.factory;
 
-import me.whereareiam.yui.api.type.ConfigurationType;
+import me.whereareiam.yui.type.ConfigurationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;

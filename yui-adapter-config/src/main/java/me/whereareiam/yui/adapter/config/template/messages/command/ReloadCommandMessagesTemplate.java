@@ -1,7 +1,7 @@
 package me.whereareiam.yui.adapter.config.template.messages.command;
 
-import me.whereareiam.yui.api.model.config.messages.command.ReloadCommandMessages;
-import me.whereareiam.yui.api.output.config.DefaultConfig;
+import me.whereareiam.yui.model.config.messages.command.ReloadCommandMessages;
+import me.whereareiam.yui.config.DefaultConfig;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

@@ -7,11 +7,11 @@ import me.whereareiam.yui.adapter.config.provider.RolesProvider;
 import me.whereareiam.yui.adapter.config.provider.SettingsProvider;
 import me.whereareiam.yui.adapter.config.provider.style.EmbedsProvider;
 import me.whereareiam.yui.adapter.config.provider.style.PaletteProvider;
-import me.whereareiam.yui.api.model.config.Roles;
-import me.whereareiam.yui.api.model.config.settings.Settings;
-import me.whereareiam.yui.api.model.config.style.Palette;
-import me.whereareiam.yui.api.model.config.style.embed.EmbedStyle;
-import me.whereareiam.yui.api.type.ConfigurationType;
+import me.whereareiam.yui.model.config.Roles;
+import me.whereareiam.yui.model.config.settings.Settings;
+import me.whereareiam.yui.model.config.style.Palette;
+import me.whereareiam.yui.model.config.style.embed.EmbedStyle;
+import me.whereareiam.yui.type.ConfigurationType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

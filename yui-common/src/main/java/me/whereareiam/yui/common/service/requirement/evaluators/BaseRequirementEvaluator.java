@@ -1,8 +1,8 @@
 package me.whereareiam.yui.common.service.requirement.evaluators;
 
-import me.whereareiam.yui.api.model.requirement.RequirementEntry;
-import me.whereareiam.yui.api.output.requirement.RequirementContext;
-import me.whereareiam.yui.api.output.requirement.RequirementEntryEvaluator;
+import me.whereareiam.yui.model.requirement.RequirementEntry;
+import me.whereareiam.yui.model.requirement.RequirementContext;
+import me.whereareiam.yui.requirement.RequirementEntryEvaluator;
 
 /**
  * Base class for requirement evaluators that provides common functionality.

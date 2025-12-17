@@ -1,13 +1,13 @@
 package me.whereareiam.yui.common.service.requirement;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.api.model.requirement.RequirementEntry;
-import me.whereareiam.yui.api.model.requirement.Requirements;
-import me.whereareiam.yui.api.output.requirement.RequirementContext;
-import me.whereareiam.yui.api.output.requirement.RequirementEntryEvaluator;
-import me.whereareiam.yui.api.output.requirement.RequirementEvaluator;
-import me.whereareiam.yui.api.output.requirement.RequirementEvaluatorConfig;
-import me.whereareiam.yui.api.type.RequirementOperator;
+import me.whereareiam.yui.model.requirement.RequirementEntry;
+import me.whereareiam.yui.model.requirement.Requirements;
+import me.whereareiam.yui.model.requirement.RequirementContext;
+import me.whereareiam.yui.requirement.RequirementEntryEvaluator;
+import me.whereareiam.yui.requirement.RequirementEvaluator;
+import me.whereareiam.yui.requirement.RequirementEvaluatorConfig;
+import me.whereareiam.yui.type.requirement.RequirementOperator;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -52,7 +52,7 @@ public class DefaultRequirementEvaluator implements RequirementEvaluator {
 	private boolean evaluateSingle(RequirementContext context, RequirementEntry entry, RequirementEvaluatorConfig config) {
 		RequirementEntryEvaluator evaluator = entryEvaluators.stream()
 				.filter(ev -> ev.supports(entry))
-				.filter(ev -> {
+				.filter(_ -> {
 					// If no config is provided, support all types (default behavior)
 					if (config == null)
 						return true;

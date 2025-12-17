@@ -7,7 +7,7 @@ import me.whereareiam.yui.adapter.database.entity.userprofile.UserProfileEntity;
 import me.whereareiam.yui.adapter.database.repository.LanguageRepository;
 import me.whereareiam.yui.adapter.database.repository.RoleRepository;
 import me.whereareiam.yui.adapter.database.repository.UserProfileRepository;
-import me.whereareiam.yui.api.model.profile.UserProfile;
+import me.whereareiam.yui.model.profile.UserProfile;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

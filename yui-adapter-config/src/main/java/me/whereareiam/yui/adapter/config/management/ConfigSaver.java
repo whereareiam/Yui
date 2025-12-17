@@ -1,7 +1,7 @@
 package me.whereareiam.yui.adapter.config.management;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import me.whereareiam.yui.api.output.config.ConfigurationSaver;
+import me.whereareiam.yui.config.ConfigurationSaver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

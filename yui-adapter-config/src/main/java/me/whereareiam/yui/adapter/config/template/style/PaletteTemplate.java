@@ -1,7 +1,7 @@
 package me.whereareiam.yui.adapter.config.template.style;
 
-import me.whereareiam.yui.api.model.config.style.Palette;
-import me.whereareiam.yui.api.output.config.DefaultConfig;
+import me.whereareiam.yui.model.config.style.Palette;
+import me.whereareiam.yui.config.DefaultConfig;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;

@@ -1,9 +1,9 @@
 package me.whereareiam.yui.common.service.requirement.evaluators;
 
-import me.whereareiam.yui.api.model.profile.UserProfile;
-import me.whereareiam.yui.api.model.requirement.RoleRequirement;
-import me.whereareiam.yui.api.output.requirement.RequirementContext;
-import me.whereareiam.yui.api.type.RequirementCondition;
+import me.whereareiam.yui.model.profile.UserProfile;
+import me.whereareiam.yui.model.requirement.type.RoleRequirement;
+import me.whereareiam.yui.model.requirement.RequirementContext;
+import me.whereareiam.yui.type.requirement.RequirementCondition;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;

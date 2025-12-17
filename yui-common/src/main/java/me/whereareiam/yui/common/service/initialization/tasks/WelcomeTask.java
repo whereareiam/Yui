@@ -3,10 +3,10 @@ package me.whereareiam.yui.common.service.initialization.tasks;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.api.input.Registry;
-import me.whereareiam.yui.api.model.plugin.InternalPlugin;
-import me.whereareiam.yui.api.output.LifecycleTask;
-import me.whereareiam.yui.api.output.plugin.PluginManager;
+import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.model.plugin.InternalPlugin;
+import me.whereareiam.yui.LifecycleTask;
+import me.whereareiam.yui.plugin.PluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

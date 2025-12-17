@@ -3,7 +3,7 @@ package me.whereareiam.yui.adapter.config.management;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import me.whereareiam.yui.api.output.config.ConfigurationMerger;
+import me.whereareiam.yui.config.ConfigurationMerger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

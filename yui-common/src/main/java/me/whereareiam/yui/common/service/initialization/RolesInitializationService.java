@@ -2,9 +2,9 @@ package me.whereareiam.yui.common.service.initialization;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.api.model.config.Roles;
-import me.whereareiam.yui.api.output.provider.Provider;
-import me.whereareiam.yui.api.output.service.RoleService;
+import me.whereareiam.yui.model.config.Roles;
+import me.whereareiam.yui.Provider;
+import me.whereareiam.yui.service.RoleService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;

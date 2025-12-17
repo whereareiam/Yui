@@ -2,8 +2,8 @@ package me.whereareiam.yui.common.listener.role;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.api.event.user.UserProfileClearedEvent;
-import me.whereareiam.yui.api.input.UserRoleService;
+import me.whereareiam.yui.event.user.UserProfileClearedEvent;
+import me.whereareiam.yui.service.UserRoleService;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 

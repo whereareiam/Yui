@@ -13,8 +13,8 @@ import me.whereareiam.yui.adapter.config.deserializer.DiscordLocaleDeserializer;
 import me.whereareiam.yui.adapter.config.deserializer.RequirementsDeserializer;
 import me.whereareiam.yui.adapter.config.serializer.ColorSerializer;
 import me.whereareiam.yui.adapter.config.serializer.DiscordLocaleSerializer;
-import me.whereareiam.yui.api.model.requirement.Requirements;
-import me.whereareiam.yui.api.type.ConfigurationType;
+import me.whereareiam.yui.model.requirement.Requirements;
+import me.whereareiam.yui.type.ConfigurationType;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.stereotype.Component;
 

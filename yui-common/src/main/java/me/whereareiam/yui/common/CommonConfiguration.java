@@ -2,7 +2,7 @@ package me.whereareiam.yui.common;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.api.model.config.settings.Settings;
+import me.whereareiam.yui.model.config.settings.Settings;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.utils.ChunkingFilter;

@@ -5,8 +5,9 @@ import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
-import me.whereareiam.yui.api.model.requirement.*;
-import me.whereareiam.yui.api.type.RequirementOperator;
+import me.whereareiam.yui.model.requirement.*;
+import me.whereareiam.yui.model.requirement.type.*;
+import me.whereareiam.yui.type.requirement.RequirementOperator;
 
 import java.io.IOException;
 import java.util.LinkedHashMap;

@@ -1,8 +1,8 @@
 package me.whereareiam.yui.common.service.user;
 
-import me.whereareiam.yui.api.model.profile.UserProfile;
-import me.whereareiam.yui.api.output.service.RoleService;
-import me.whereareiam.yui.api.output.service.UserProfileService;
+import me.whereareiam.yui.model.profile.UserProfile;
+import me.whereareiam.yui.service.RoleService;
+import me.whereareiam.yui.service.UserProfileService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
+@SuppressWarnings("unused")
 @ExtendWith(MockitoExtension.class)
 class DefaultUserRoleServiceTest {
 

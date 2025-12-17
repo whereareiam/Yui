@@ -1,10 +1,10 @@
 package me.whereareiam.yui.adapter.command.registrar.builder;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.api.model.command.Command;
-import me.whereareiam.yui.api.model.config.settings.Settings;
-import me.whereareiam.yui.api.output.provider.Provider;
-import me.whereareiam.yui.api.util.TranslationTags;
+import me.whereareiam.yui.model.command.Command;
+import me.whereareiam.yui.model.config.settings.Settings;
+import me.whereareiam.yui.Provider;
+import me.whereareiam.yui.translation.TranslationTags;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;

@@ -1,7 +1,7 @@
 package me.whereareiam.yui.adapter.plugin;
 
-import me.whereareiam.yui.api.input.InteractionService;
-import me.whereareiam.yui.api.model.PayloadButton;
+import me.whereareiam.yui.service.InteractionService;
+import me.whereareiam.yui.model.PayloadButton;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.GenericComponentInteractionCreateEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;

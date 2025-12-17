@@ -2,7 +2,7 @@ package me.whereareiam.yui.common.service.initialization;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.api.output.LifecycleTask;
+import me.whereareiam.yui.LifecycleTask;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.EventListener;
@@ -107,7 +107,7 @@ public class LifecycleOrchestrator {
 		CompletableFuture<Void> chain = CompletableFuture.completedFuture(null);
 		for (List<String> wave : byLevel.values()) {
 			final boolean isStartup = startup;
-			chain = chain.thenCompose((Function<Void, CompletableFuture<Void>>) v -> runWave(wave, tasks, isStartup));
+			chain = chain.thenCompose((Function<Void, CompletableFuture<Void>>) _ -> runWave(wave, tasks, isStartup));
 		}
 		return chain;
 	}

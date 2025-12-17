@@ -1,13 +1,13 @@
 package me.whereareiam.yui.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.api.annotation.Command;
-import me.whereareiam.yui.api.annotation.ComponentListener;
-import me.whereareiam.yui.api.output.CommandBase;
-import me.whereareiam.yui.api.output.service.ProfileManagementService;
-import me.whereareiam.yui.api.style.StyleKit;
-import me.whereareiam.yui.api.util.Components;
-import me.whereareiam.yui.api.util.Translatable;
+import me.whereareiam.yui.annotation.Command;
+import me.whereareiam.yui.annotation.ComponentListener;
+import me.whereareiam.yui.CommandBase;
+import me.whereareiam.yui.service.ProfileManagementService;
+import me.whereareiam.yui.style.StyleKit;
+import me.whereareiam.yui.util.Components;
+import me.whereareiam.yui.translation.Translatable;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;

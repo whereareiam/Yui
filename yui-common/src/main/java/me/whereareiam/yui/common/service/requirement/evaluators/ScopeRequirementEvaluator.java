@@ -1,9 +1,9 @@
 package me.whereareiam.yui.common.service.requirement.evaluators;
 
-import me.whereareiam.yui.api.model.requirement.RequirementEntry;
-import me.whereareiam.yui.api.model.requirement.ScopeRequirement;
-import me.whereareiam.yui.api.output.requirement.RequirementContext;
-import me.whereareiam.yui.api.type.RequirementCondition;
+import me.whereareiam.yui.model.requirement.RequirementEntry;
+import me.whereareiam.yui.model.requirement.type.ScopeRequirement;
+import me.whereareiam.yui.model.requirement.RequirementContext;
+import me.whereareiam.yui.type.requirement.RequirementCondition;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;

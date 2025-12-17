@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.listener;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.api.input.UserRoleService;
+import me.whereareiam.yui.service.UserRoleService;
 import me.whereareiam.yui.common.service.initialization.UserProfileInitializationService;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;

@@ -1,7 +1,7 @@
 package me.whereareiam.yui.adapter.command.registry;
 
 import lombok.Getter;
-import me.whereareiam.yui.api.model.command.Command;
+import me.whereareiam.yui.model.command.Command;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;

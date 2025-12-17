@@ -3,7 +3,7 @@ package me.whereareiam.yui.adapter.plugin.scanner;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.adapter.plugin.descriptor.PluginDescriptorReader;
-import me.whereareiam.yui.api.model.plugin.Plugin;
+import me.whereareiam.yui.model.plugin.Plugin;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;

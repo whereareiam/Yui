@@ -1,14 +1,14 @@
 package me.whereareiam.yui.common.service;
 
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.api.input.Registry;
-import me.whereareiam.yui.api.input.TemporaryChannelService;
-import me.whereareiam.yui.api.model.channel.ChannelDecoration;
-import me.whereareiam.yui.api.model.channel.ChannelRequest;
-import me.whereareiam.yui.api.model.config.settings.Settings;
-import me.whereareiam.yui.api.output.Reloadable;
-import me.whereareiam.yui.api.style.StyleKit;
-import me.whereareiam.yui.api.util.Translatable;
+import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.service.TemporaryChannelService;
+import me.whereareiam.yui.model.channel.ChannelDecoration;
+import me.whereareiam.yui.model.channel.ChannelRequest;
+import me.whereareiam.yui.model.config.settings.Settings;
+import me.whereareiam.yui.Reloadable;
+import me.whereareiam.yui.style.StyleKit;
+import me.whereareiam.yui.translation.Translatable;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;

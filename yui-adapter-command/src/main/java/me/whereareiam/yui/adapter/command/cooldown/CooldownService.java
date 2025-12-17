@@ -1,6 +1,6 @@
 package me.whereareiam.yui.adapter.command.cooldown;
 
-import me.whereareiam.yui.api.model.command.CommandCooldown;
+import me.whereareiam.yui.model.command.CommandCooldown;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.stereotype.Service;
 
@@ -28,7 +28,7 @@ public class CooldownService {
 		if (cc == null || !cc.isEnabled())
 			return;
 
-		Map<String, Long> userCooldowns = cooldownMap.computeIfAbsent(userId, k -> new HashMap<>());
+		Map<String, Long> userCooldowns = cooldownMap.computeIfAbsent(userId, _ -> new HashMap<>());
 		long now = Instant.now().getEpochSecond();
 		userCooldowns.put(cc.getGroup(), now + cc.getCooldown());
 	}

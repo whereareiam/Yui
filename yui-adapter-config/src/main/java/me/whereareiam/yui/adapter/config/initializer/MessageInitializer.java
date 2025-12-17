@@ -1,7 +1,7 @@
 package me.whereareiam.yui.adapter.config.initializer;
 
-import me.whereareiam.yui.api.model.config.messages.Messages;
-import me.whereareiam.yui.api.output.config.ConfigurationLoader;
+import me.whereareiam.yui.model.config.messages.Messages;
+import me.whereareiam.yui.config.ConfigurationLoader;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

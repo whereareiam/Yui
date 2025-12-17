@@ -23,12 +23,12 @@ subprojects {
         useJUnitPlatform()
     }
 
-    if (project.name != "yui-common-api" && project.name != "yui-shared") {
+    if (project.name != "yui-api" && project.name != "yui-shared") {
         dependencies {
-            "compileOnly"(project(":yui-common-api"))
+            "compileOnly"(project(":yui-api"))
             "compileOnly"(project(":yui-shared"))
 
-            "testImplementation"(project(":yui-common-api"))
+            "testImplementation"(project(":yui-api"))
             "testImplementation"(rootProject.libs.spring.boot.test)
             "testImplementation"(rootProject.libs.jda)
         }

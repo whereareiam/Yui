@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.provider;
 
-import me.whereareiam.yui.api.input.Registry;
-import me.whereareiam.yui.api.output.Reloadable;
+import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.Reloadable;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashSet;

@@ -3,7 +3,7 @@ package me.whereareiam.yui.adapter.database.adapter;
 import lombok.AllArgsConstructor;
 import me.whereareiam.yui.adapter.database.entity.RoleEntity;
 import me.whereareiam.yui.adapter.database.repository.RoleRepository;
-import me.whereareiam.yui.api.output.service.RoleService;
+import me.whereareiam.yui.service.RoleService;
 import org.springframework.stereotype.Service;
 
 @Service

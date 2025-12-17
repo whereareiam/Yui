@@ -1,10 +1,10 @@
 package me.whereareiam.yui.adapter.config.template;
 
-import me.whereareiam.yui.api.model.config.settings.DiscordSettings;
-import me.whereareiam.yui.api.model.config.settings.Settings;
-import me.whereareiam.yui.api.model.config.settings.database.DatabaseSettings;
-import me.whereareiam.yui.api.model.config.settings.database.HikariSettings;
-import me.whereareiam.yui.api.output.config.DefaultConfig;
+import me.whereareiam.yui.model.config.settings.DiscordSettings;
+import me.whereareiam.yui.model.config.settings.Settings;
+import me.whereareiam.yui.model.config.settings.database.DatabaseSettings;
+import me.whereareiam.yui.model.config.settings.database.HikariSettings;
+import me.whereareiam.yui.config.DefaultConfig;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.springframework.stereotype.Component;

@@ -3,19 +3,12 @@ package me.whereareiam.yui.adapter.database.mapper;
 import me.whereareiam.yui.adapter.database.entity.LanguageEntity;
 import me.whereareiam.yui.adapter.database.entity.RoleEntity;
 import me.whereareiam.yui.adapter.database.entity.userprofile.UserProfileEntity;
-import me.whereareiam.yui.api.model.profile.UserProfile;
+import me.whereareiam.yui.model.profile.UserProfile;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.stereotype.Component;
 
 @Component
 public class ProfileMapper {
-	public static UserProfileEntity toEntity(UserProfile userProfile, LanguageEntity primaryLang) {
-		return UserProfileEntity.builder()
-				.id(userProfile.getId())
-				.primaryLanguage(primaryLang)
-				.build();
-	}
-
 	public static UserProfile toProfile(UserProfileEntity entity) {
 		DiscordLocale primaryLocale = entity.getPrimaryLanguage() != null
 				? entity.getPrimaryLanguage().getLocale()

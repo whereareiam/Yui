@@ -1,14 +1,14 @@
 package me.whereareiam.yui.adapter.config.template;
 
-import me.whereareiam.yui.api.model.command.Command;
-import me.whereareiam.yui.api.model.command.CommandCooldown;
-import me.whereareiam.yui.api.model.config.Commands;
-import me.whereareiam.yui.api.model.requirement.Requirements;
-import me.whereareiam.yui.api.model.requirement.RoleRequirement;
-import me.whereareiam.yui.api.output.config.DefaultConfig;
-import me.whereareiam.yui.api.type.CommandCategory;
-import me.whereareiam.yui.api.type.RequirementCondition;
-import me.whereareiam.yui.api.type.RequirementOperator;
+import me.whereareiam.yui.model.command.Command;
+import me.whereareiam.yui.model.command.CommandCooldown;
+import me.whereareiam.yui.model.config.Commands;
+import me.whereareiam.yui.model.requirement.Requirements;
+import me.whereareiam.yui.model.requirement.type.RoleRequirement;
+import me.whereareiam.yui.config.DefaultConfig;
+import me.whereareiam.yui.type.CommandCategory;
+import me.whereareiam.yui.type.requirement.RequirementCondition;
+import me.whereareiam.yui.type.requirement.RequirementOperator;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

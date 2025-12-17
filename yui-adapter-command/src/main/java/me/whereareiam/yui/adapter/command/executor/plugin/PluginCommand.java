@@ -1,16 +1,16 @@
 package me.whereareiam.yui.adapter.command.executor.plugin;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.api.annotation.Command;
-import me.whereareiam.yui.api.annotation.ComponentListener;
-import me.whereareiam.yui.api.model.PayloadButton;
-import me.whereareiam.yui.api.model.plugin.InternalPlugin;
-import me.whereareiam.yui.api.model.plugin.Plugin;
-import me.whereareiam.yui.api.output.CommandBase;
-import me.whereareiam.yui.api.output.plugin.PluginManager;
-import me.whereareiam.yui.api.style.StyleKit;
-import me.whereareiam.yui.api.util.Components;
-import me.whereareiam.yui.api.util.Translatable;
+import me.whereareiam.yui.annotation.Command;
+import me.whereareiam.yui.annotation.ComponentListener;
+import me.whereareiam.yui.model.PayloadButton;
+import me.whereareiam.yui.model.plugin.InternalPlugin;
+import me.whereareiam.yui.model.plugin.Plugin;
+import me.whereareiam.yui.CommandBase;
+import me.whereareiam.yui.plugin.PluginManager;
+import me.whereareiam.yui.style.StyleKit;
+import me.whereareiam.yui.util.Components;
+import me.whereareiam.yui.translation.Translatable;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;

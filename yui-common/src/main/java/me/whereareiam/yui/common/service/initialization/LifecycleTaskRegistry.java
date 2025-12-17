@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.service.initialization;
 
-import me.whereareiam.yui.api.input.Registry;
-import me.whereareiam.yui.api.output.LifecycleTask;
+import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.LifecycleTask;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;

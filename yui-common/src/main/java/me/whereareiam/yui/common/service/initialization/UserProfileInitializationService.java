@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.service.initialization;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.api.output.service.ProfileManagementService;
+import me.whereareiam.yui.service.ProfileManagementService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import org.springframework.boot.context.event.ApplicationReadyEvent;

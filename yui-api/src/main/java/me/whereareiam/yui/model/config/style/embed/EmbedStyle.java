@@ -1,0 +1,16 @@
+package me.whereareiam.yui.model.config.style.embed;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class EmbedStyle {
+	private Embed primary;
+	private Embed secondary;
+	private Embed success;
+	private Embed warning;
+	private Embed error;
+	private Embed info;
+
+}

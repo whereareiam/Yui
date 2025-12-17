@@ -1,12 +1,12 @@
 package me.whereareiam.yui.common.listener.language;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.api.event.language.AdditionalLanguageAddedEvent;
-import me.whereareiam.yui.api.event.language.AdditionalLanguageRemovedEvent;
-import me.whereareiam.yui.api.event.language.LanguageChangeEvent;
-import me.whereareiam.yui.api.input.UserRoleService;
-import me.whereareiam.yui.api.model.config.Roles;
-import me.whereareiam.yui.api.output.provider.Provider;
+import me.whereareiam.yui.event.language.AdditionalLanguageAddedEvent;
+import me.whereareiam.yui.event.language.AdditionalLanguageRemovedEvent;
+import me.whereareiam.yui.event.language.LanguageChangeEvent;
+import me.whereareiam.yui.service.UserRoleService;
+import me.whereareiam.yui.model.config.Roles;
+import me.whereareiam.yui.Provider;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;

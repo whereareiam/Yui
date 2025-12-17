@@ -2,10 +2,10 @@ package me.whereareiam.yui.adapter.command.initialization;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.api.input.Registry;
-import me.whereareiam.yui.api.output.LifecycleTask;
-import me.whereareiam.yui.api.output.Reloadable;
-import me.whereareiam.yui.api.output.service.CommandService;
+import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.LifecycleTask;
+import me.whereareiam.yui.Reloadable;
+import me.whereareiam.yui.service.CommandService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

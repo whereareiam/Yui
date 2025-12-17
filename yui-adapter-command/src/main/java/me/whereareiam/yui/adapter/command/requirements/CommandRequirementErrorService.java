@@ -1,8 +1,9 @@
 package me.whereareiam.yui.adapter.command.requirements;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.api.input.translation.TranslationService;
-import me.whereareiam.yui.api.model.requirement.*;
+import me.whereareiam.yui.model.requirement.type.*;
+import me.whereareiam.yui.translation.TranslationService;
+import me.whereareiam.yui.model.requirement.*;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

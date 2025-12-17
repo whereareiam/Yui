@@ -1,7 +1,7 @@
 package me.whereareiam.yui.adapter.config.template.messages.command;
 
-import me.whereareiam.yui.api.model.config.messages.command.MainCommandMessages;
-import me.whereareiam.yui.api.output.config.DefaultConfig;
+import me.whereareiam.yui.model.config.messages.command.MainCommandMessages;
+import me.whereareiam.yui.config.DefaultConfig;
 import org.springframework.stereotype.Component;
 
 @Component

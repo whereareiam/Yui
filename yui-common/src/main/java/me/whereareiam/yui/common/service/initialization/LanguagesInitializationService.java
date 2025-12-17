@@ -2,9 +2,9 @@ package me.whereareiam.yui.common.service.initialization;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.api.model.config.Roles;
-import me.whereareiam.yui.api.output.provider.Provider;
-import me.whereareiam.yui.api.output.service.LanguageService;
+import me.whereareiam.yui.model.config.Roles;
+import me.whereareiam.yui.Provider;
+import me.whereareiam.yui.service.LanguageService;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;

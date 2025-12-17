@@ -2,7 +2,7 @@ package me.whereareiam.yui.adapter.plugin.factory;
 
 import me.whereareiam.yui.adapter.plugin.PluginStorage;
 import me.whereareiam.yui.adapter.plugin.loader.PluginClassLoader;
-import me.whereareiam.yui.api.model.plugin.InternalPlugin;
+import me.whereareiam.yui.model.plugin.InternalPlugin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;

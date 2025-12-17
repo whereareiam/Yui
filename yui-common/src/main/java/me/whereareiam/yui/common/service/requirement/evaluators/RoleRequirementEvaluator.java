@@ -1,10 +1,11 @@
 package me.whereareiam.yui.common.service.requirement.evaluators;
 
-import me.whereareiam.yui.api.model.requirement.RequirementEntry;
-import me.whereareiam.yui.api.model.requirement.RoleRequirement;
-import me.whereareiam.yui.api.output.requirement.RequirementContext;
-import me.whereareiam.yui.api.type.RequirementCondition;
+import me.whereareiam.yui.model.requirement.RequirementEntry;
+import me.whereareiam.yui.model.requirement.type.RoleRequirement;
+import me.whereareiam.yui.model.requirement.RequirementContext;
+import me.whereareiam.yui.type.requirement.RequirementCondition;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
@@ -158,7 +159,7 @@ public class RoleRequirementEvaluator extends BaseRequirementEvaluator {
 		// we can cast it safely after checking the type
 		if (member instanceof Member jdaMember) {
 			return jdaMember.getRoles().stream()
-					.map(role -> role.getName())
+					.map(Role::getName)
 					.collect(Collectors.toList());
 		}
 		

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import me.whereareiam.yui.api.output.config.ConfigurationManager;
-import me.whereareiam.yui.api.output.config.DefaultConfig;
+import me.whereareiam.yui.config.ConfigurationManager;
+import me.whereareiam.yui.config.DefaultConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

@@ -2,8 +2,8 @@ package me.whereareiam.yui.adapter.plugin.bean;
 
 import lombok.AllArgsConstructor;
 import me.whereareiam.yui.adapter.plugin.PluginStorage;
-import me.whereareiam.yui.api.model.plugin.Dependency;
-import me.whereareiam.yui.api.model.plugin.Plugin;
+import me.whereareiam.yui.model.plugin.Dependency;
+import me.whereareiam.yui.model.plugin.Plugin;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;

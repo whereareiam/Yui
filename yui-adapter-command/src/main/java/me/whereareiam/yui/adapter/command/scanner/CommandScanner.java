@@ -2,8 +2,8 @@ package me.whereareiam.yui.adapter.command.scanner;
 
 import me.whereareiam.yui.adapter.command.registry.CommandDefinition;
 import me.whereareiam.yui.adapter.command.registry.CommandRegistry;
-import me.whereareiam.yui.api.annotation.Command;
-import me.whereareiam.yui.api.output.CommandBase;
+import me.whereareiam.yui.annotation.Command;
+import me.whereareiam.yui.CommandBase;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,6 +1,6 @@
 package me.whereareiam.yui.adapter.plugin;
 
-import me.whereareiam.yui.api.model.plugin.InternalPlugin;
+import me.whereareiam.yui.model.plugin.InternalPlugin;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;

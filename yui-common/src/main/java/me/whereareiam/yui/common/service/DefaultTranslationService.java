@@ -1,13 +1,14 @@
 package me.whereareiam.yui.common.service;
 
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.api.input.Registry;
-import me.whereareiam.yui.api.input.translation.TranslationLoader;
-import me.whereareiam.yui.api.input.translation.TranslationService;
-import me.whereareiam.yui.api.model.config.settings.Settings;
-import me.whereareiam.yui.api.output.Reloadable;
-import me.whereareiam.yui.api.output.provider.Provider;
-import me.whereareiam.yui.api.output.provider.UserProfileCacheProvider;
+import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.translation.TranslationLoader;
+import me.whereareiam.yui.translation.TranslationService;
+import me.whereareiam.yui.model.config.settings.Settings;
+import me.whereareiam.yui.Reloadable;
+import me.whereareiam.yui.Provider;
+import me.whereareiam.yui.registry.UserProfileCacheRegistry;
+import me.whereareiam.yui.translation.TranslationTags;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DefaultTranslationService implements TranslationService, Reloadable {
 	private final Provider<Settings> settings;
 	private final List<TranslationLoader> loaders;
-	private final UserProfileCacheProvider userProfileCache;
+	private final UserProfileCacheRegistry userProfileCache;
 
 	/**
 	 * Merged translations:
@@ -40,7 +41,7 @@ public class DefaultTranslationService implements TranslationService, Reloadable
 	public DefaultTranslationService(
 			Provider<Settings> settings,
 			List<TranslationLoader> loaders,
-			UserProfileCacheProvider userProfileCache,
+			UserProfileCacheRegistry userProfileCache,
 			Registry<Reloadable> reloadableRegistry
 	) {
 		this.settings = settings;
@@ -204,19 +205,19 @@ public class DefaultTranslationService implements TranslationService, Reloadable
 			return pattern;
 
 		if (args == null || args.length == 0)
-			return me.whereareiam.yui.api.util.TranslationTags.resolve(pattern, locale);
+			return TranslationTags.resolve(pattern, locale);
 
 		try {
 			MessageFormat messageFormat = new MessageFormat(pattern);
 			String formatted = messageFormat.format(args);
 
-			return me.whereareiam.yui.api.util.TranslationTags.resolve(formatted, locale);
+			return TranslationTags.resolve(formatted, locale);
 		} catch (IllegalArgumentException ex) {
 			log.warn(
 					"[TranslationService]: Failed to format translation '{}' with args {} for locale {} – returning unformatted",
 					pattern, Arrays.toString(args), locale, ex
 			);
-			return me.whereareiam.yui.api.util.TranslationTags.resolve(pattern, locale);
+			return TranslationTags.resolve(pattern, locale);
 		}
 	}
 

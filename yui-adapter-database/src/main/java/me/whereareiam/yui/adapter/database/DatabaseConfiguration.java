@@ -1,7 +1,7 @@
 package me.whereareiam.yui.adapter.database;
 
 import com.zaxxer.hikari.HikariDataSource;
-import me.whereareiam.yui.api.model.config.settings.Settings;
+import me.whereareiam.yui.model.config.settings.Settings;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;

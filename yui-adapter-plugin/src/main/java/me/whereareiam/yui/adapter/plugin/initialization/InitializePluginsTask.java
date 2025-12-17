@@ -2,9 +2,9 @@ package me.whereareiam.yui.adapter.plugin.initialization;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.api.input.Registry;
-import me.whereareiam.yui.api.output.LifecycleTask;
-import me.whereareiam.yui.api.output.plugin.PluginManager;
+import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.LifecycleTask;
+import me.whereareiam.yui.plugin.PluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

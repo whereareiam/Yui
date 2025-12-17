@@ -4,9 +4,9 @@ import me.whereareiam.yui.adapter.config.template.messages.ErrorMessagesTemplate
 import me.whereareiam.yui.adapter.config.template.messages.GeneralMessagesTemplate;
 import me.whereareiam.yui.adapter.config.template.messages.VocabularyMessagesTemplate;
 import me.whereareiam.yui.adapter.config.template.messages.command.*;
-import me.whereareiam.yui.api.model.config.messages.CommandMessages;
-import me.whereareiam.yui.api.model.config.messages.Messages;
-import me.whereareiam.yui.api.output.config.DefaultConfig;
+import me.whereareiam.yui.model.config.messages.CommandMessages;
+import me.whereareiam.yui.model.config.messages.Messages;
+import me.whereareiam.yui.config.DefaultConfig;
 import org.springframework.stereotype.Component;
 
 @Component

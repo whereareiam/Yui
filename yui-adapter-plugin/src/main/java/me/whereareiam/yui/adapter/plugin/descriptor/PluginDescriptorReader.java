@@ -1,9 +1,9 @@
 package me.whereareiam.yui.adapter.plugin.descriptor;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.api.exception.PluginLoadException;
-import me.whereareiam.yui.api.model.plugin.Plugin;
-import me.whereareiam.yui.api.output.config.ConfigurationLoader;
+import me.whereareiam.yui.exception.PluginLoadException;
+import me.whereareiam.yui.model.plugin.Plugin;
+import me.whereareiam.yui.config.ConfigurationLoader;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;

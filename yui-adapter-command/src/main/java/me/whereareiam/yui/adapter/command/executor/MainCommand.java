@@ -1,8 +1,8 @@
 package me.whereareiam.yui.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.api.annotation.Command;
-import me.whereareiam.yui.api.output.CommandBase;
+import me.whereareiam.yui.annotation.Command;
+import me.whereareiam.yui.CommandBase;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.springframework.stereotype.Component;
 

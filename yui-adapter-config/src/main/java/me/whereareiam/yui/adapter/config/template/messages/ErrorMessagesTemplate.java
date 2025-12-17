@@ -1,9 +1,9 @@
 package me.whereareiam.yui.adapter.config.template.messages;
 
-import me.whereareiam.yui.api.model.config.messages.CommandMessages.ErrorMessages;
-import me.whereareiam.yui.api.model.config.messages.CommandMessages.ErrorMessages.RequirementErrorMessages;
-import me.whereareiam.yui.api.model.config.messages.CommandMessages.ErrorMessages.ValidationErrorMessages;
-import me.whereareiam.yui.api.output.config.DefaultConfig;
+import me.whereareiam.yui.model.config.messages.CommandMessages.ErrorMessages;
+import me.whereareiam.yui.model.config.messages.CommandMessages.ErrorMessages.RequirementErrorMessages;
+import me.whereareiam.yui.model.config.messages.CommandMessages.ErrorMessages.ValidationErrorMessages;
+import me.whereareiam.yui.config.DefaultConfig;
 import org.springframework.stereotype.Component;
 
 @Component

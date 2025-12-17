@@ -2,10 +2,10 @@ package me.whereareiam.yui.adapter.config.provider.style;
 
 import jakarta.annotation.PostConstruct;
 import me.whereareiam.yui.adapter.config.management.ConfigLoader;
-import me.whereareiam.yui.api.input.Registry;
-import me.whereareiam.yui.api.model.config.style.Palette;
-import me.whereareiam.yui.api.output.Reloadable;
-import me.whereareiam.yui.api.output.provider.Provider;
+import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.model.config.style.Palette;
+import me.whereareiam.yui.Reloadable;
+import me.whereareiam.yui.Provider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;

@@ -2,7 +2,7 @@ package me.whereareiam.yui.adapter.command.registrar;
 
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.adapter.command.registrar.builder.SlashCommandBuilder;
-import me.whereareiam.yui.api.model.command.Command;
+import me.whereareiam.yui.model.command.Command;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;

@@ -1,12 +1,12 @@
 package me.whereareiam.yui.common.adapter;
 
-import me.whereareiam.yui.api.input.Registry;
-import me.whereareiam.yui.api.input.translation.TranslationLoader;
-import me.whereareiam.yui.api.model.config.settings.Settings;
-import me.whereareiam.yui.api.model.profile.UserProfile;
-import me.whereareiam.yui.api.output.Reloadable;
-import me.whereareiam.yui.api.output.provider.Provider;
-import me.whereareiam.yui.api.output.provider.UserProfileCacheProvider;
+import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.translation.TranslationLoader;
+import me.whereareiam.yui.model.config.settings.Settings;
+import me.whereareiam.yui.model.profile.UserProfile;
+import me.whereareiam.yui.Reloadable;
+import me.whereareiam.yui.Provider;
+import me.whereareiam.yui.registry.UserProfileCacheRegistry;
 import me.whereareiam.yui.common.service.DefaultTranslationService;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +33,7 @@ class DefaultTranslationServiceTest {
 	private TranslationLoader pluginLoader;
 
 	@Mock
-	private UserProfileCacheProvider userProfileCache;
+	private UserProfileCacheRegistry userProfileCache;
 
 	@Mock
 	private Registry<Reloadable> reloadableRegistry;
