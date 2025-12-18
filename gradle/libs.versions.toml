@@ -1,5 +1,8 @@
 [versions]
 
+# plugins
+buildconfig = "5.7.1"
+
 # general
 lombok = "1.18.38"
 jda = "5.6.1"
@@ -10,7 +13,6 @@ h2 = "2.3.232"
 # spring
 spring = "3.5.4"
 spring-dependency-management = "1.1.7"
-
 [libraries]
 
 # general
@@ -27,6 +29,9 @@ spring-boot-data-jpa = { group = "org.springframework.boot", name = "spring-boot
 spring-boot-webflux = { group = "org.springframework.boot", name = "spring-boot-starter-webflux", version.ref = "spring" }
 
 [plugins]
+buildconfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildconfig" }
+
+# spring
 spring-boot = { id = "org.springframework.boot", version.ref = "spring" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
 

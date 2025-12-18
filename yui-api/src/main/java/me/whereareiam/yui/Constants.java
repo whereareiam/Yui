@@ -1,8 +1,8 @@
-package me.whereareiam.yui.shared;
+package me.whereareiam.yui;
 
 public final class Constants {
 	public static final String PREFIX = "system";
-	public static final String VERSION = "@version@";
+	public static final String VERSION = BuildConfig.VERSION;
 
 	public static final class Structure {
 		public static final String pluginsDir = "plugins";

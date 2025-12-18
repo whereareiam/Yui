@@ -1,3 +1,14 @@
+plugins {
+    alias(libs.plugins.buildconfig)
+}
+
+buildConfig {
+    packageName("me.whereareiam.yui")
+
+    buildConfigField("String", "NAME", "\"${rootProject.name}\"")
+    buildConfigField("String", "VERSION", "\"${rootProject.version}\"")
+}
+
 java {
     withSourcesJar()
     withJavadocJar()

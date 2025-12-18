@@ -2,4 +2,5 @@
 .idea
 .gradle
 build/
+bin/
 .env

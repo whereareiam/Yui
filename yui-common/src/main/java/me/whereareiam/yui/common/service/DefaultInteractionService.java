@@ -2,10 +2,10 @@ package me.whereareiam.yui.common.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.service.InteractionService;
+import me.whereareiam.yui.Constants;
 import me.whereareiam.yui.model.PayloadButton;
 import me.whereareiam.yui.plugin.PluginManager;
-import me.whereareiam.yui.shared.Constants;
+import me.whereareiam.yui.service.InteractionService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.GenericComponentInteractionCreateEvent;

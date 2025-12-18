@@ -25,10 +25,9 @@ subprojects {
         useJUnitPlatform()
     }
 
-    if (project.name != "yui-api" && project.name != "yui-shared") {
+    if (project.name != "yui-api") {
         dependencies {
             "compileOnly"(project(":yui-api"))
-            "compileOnly"(project(":yui-shared"))
         }
     }
 

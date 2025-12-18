@@ -1,6 +1,6 @@
 package me.whereareiam.yui.adapter.plugin;
 
-import me.whereareiam.yui.shared.Constants;
+import me.whereareiam.yui.Constants;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

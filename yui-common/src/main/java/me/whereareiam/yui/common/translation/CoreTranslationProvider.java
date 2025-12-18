@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.translation;
 
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.shared.Constants;
+import me.whereareiam.yui.Constants;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;

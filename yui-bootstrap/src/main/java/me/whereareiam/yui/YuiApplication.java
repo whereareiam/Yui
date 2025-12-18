@@ -1,6 +1,5 @@
 package me.whereareiam.yui;
 
-import me.whereareiam.yui.shared.Constants;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
