@@ -11,13 +11,17 @@ postgres = "42.7.7"
 configura = "dev-12738f5"
 h2 = "2.3.232"
 
+# testing
+junit-platform = "6.0.1"
+
 # spring
 spring = "3.5.4"
 spring-dependency-management = "1.1.7"
 
 # cloud
-cloud = "2.0"
+cloud = "2.0.0"
 cloud-discord = "1.0.0-beta.4"
+cloud-cooldown = "1.0.0-rc.1"
 
 [libraries]
 
@@ -29,6 +33,9 @@ postgres = { group = "org.postgresql", name = "postgresql", version.ref = "postg
 configura = { group = "me.whereareiam", name = "configura", version.ref = "configura" }
 h2 = { group = "com.h2database", name = "h2", version.ref = "h2" }
 
+# testing
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junit-platform" }
+
 # spring
 spring-boot = { group = "org.springframework.boot", name = "spring-boot-starter", version.ref = "spring" }
 spring-boot-test = { group = "org.springframework.boot", name = "spring-boot-starter-test", version.ref = "spring" }
@@ -37,8 +44,8 @@ spring-boot-webflux = { group = "org.springframework.boot", name = "spring-boot-
 
 # cloud
 cloud-core = { group = "org.incendo", name = "cloud-core", version.ref = "cloud" }
-cloud-cooldown = { group = "org.incendo", name = "cloud-cooldown", version.ref = "cloud" }
 cloud-annotations = { group = "org.incendo", name = "cloud-annotations", version.ref = "cloud" }
+cloud-cooldown = { group = "org.incendo", name = "cloud-processors-cooldown", version.ref = "cloud-cooldown" }
 cloud-discord = { group = "org.incendo", name = "cloud-jda6", version.ref = "cloud-discord" }
 
 [plugins]

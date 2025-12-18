@@ -48,6 +48,7 @@ subprojects {
             "testImplementation"(rootProject.libs.spring.boot.test)
             "testImplementation"(rootProject.libs.jda)
             "testImplementation"(rootProject.libs.configura)
+            "testRuntimeOnly"(rootProject.libs.junit.platform.launcher)
         }
     }
 
