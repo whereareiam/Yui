@@ -1,6 +1,5 @@
 package me.whereareiam.yui.common.config.provider;
 
-import me.whereareiam.yui.Provider;
 import me.whereareiam.yui.Reloadable;
 import me.whereareiam.yui.config.ConfigProvider;
 import me.whereareiam.yui.registry.Registry;
@@ -12,7 +11,7 @@ import java.nio.file.Path;
  * Adapter-layer base that wires {@link ConfigProvider} into our reload registry
  * and exposes the resolved base path for subclasses.
  */
-public abstract class DefaultConfigProvider<T> extends ConfigProvider<T> implements Provider<T> {
+public abstract class DefaultConfigProvider<T> extends ConfigProvider<T> {
 	private final Path basePath;
 
 	@Autowired
@@ -25,4 +24,3 @@ public abstract class DefaultConfigProvider<T> extends ConfigProvider<T> impleme
 		return basePath;
 	}
 }
-

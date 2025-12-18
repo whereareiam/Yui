@@ -1,6 +1,7 @@
 package me.whereareiam.yui.config;
 
 import me.whereareiam.yui.Reloadable;
+import org.springframework.beans.factory.FactoryBean;
 
 /**
  * Reusable base for configuration providers.
@@ -8,7 +9,7 @@ import me.whereareiam.yui.Reloadable;
  * <p>
  * API consumers can extend this and implement {@link #load()}.
  */
-public abstract class ConfigProvider<T> implements Reloadable {
+public abstract class ConfigProvider<T> implements Reloadable, FactoryBean<T> {
 	private T value;
 	private boolean templatesRegistered;
 
@@ -42,6 +43,18 @@ public abstract class ConfigProvider<T> implements Reloadable {
 	 */
 	protected void registerTemplate() {
 	}
+
+	// FactoryBean bridge
+	@Override
+	public T getObject() {
+		return get();
+	}
+
+	@Override
+	public boolean isSingleton() {
+		return true;
+	}
+
+	@Override
+	public abstract Class<T> getObjectType();
 }
-
-

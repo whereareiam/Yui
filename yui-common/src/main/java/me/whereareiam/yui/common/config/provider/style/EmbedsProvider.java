@@ -31,4 +31,9 @@ public class EmbedsProvider extends DefaultConfigProvider<EmbedStyle> {
 	protected void registerTemplate() {
 		Config.registerTemplate(EmbedsTemplate.class);
 	}
+
+	@Override
+	public Class<EmbedStyle> getObjectType() {
+		return EmbedStyle.class;
+	}
 }

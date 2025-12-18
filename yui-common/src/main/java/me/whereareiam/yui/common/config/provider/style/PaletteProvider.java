@@ -31,4 +31,9 @@ public class PaletteProvider extends DefaultConfigProvider<Palette> {
 	protected void registerTemplate() {
 		Config.registerTemplate(PaletteTemplate.class);
 	}
+
+	@Override
+	public Class<Palette> getObjectType() {
+		return Palette.class;
+	}
 }

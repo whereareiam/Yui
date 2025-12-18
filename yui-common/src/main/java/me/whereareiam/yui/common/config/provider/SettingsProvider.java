@@ -30,4 +30,9 @@ public class SettingsProvider extends DefaultConfigProvider<Settings> {
 	protected void registerTemplate() {
 		Config.registerTemplate(SettingsTemplate.class);
 	}
+
+	@Override
+	public Class<Settings> getObjectType() {
+		return Settings.class;
+	}
 }

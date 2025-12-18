@@ -5,7 +5,6 @@ import me.whereareiam.yui.translation.TranslationLoader;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.profile.UserProfile;
 import me.whereareiam.yui.Reloadable;
-import me.whereareiam.yui.Provider;
 import me.whereareiam.yui.registry.UserProfileCacheRegistry;
 import me.whereareiam.yui.common.translation.DefaultTranslationService;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -14,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
 
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +39,7 @@ class DefaultTranslationServiceTest {
 	private Registry<Reloadable> reloadableRegistry;
 
 	@Mock
-	private Provider<Settings> settings;
+	private ObjectProvider<Settings> settings;
 
 	private DefaultTranslationService translationService;
 
@@ -47,7 +47,7 @@ class DefaultTranslationServiceTest {
 	void setUp() {
 		Settings botSettings = mock(Settings.class);
 		when(botSettings.getLocale()).thenReturn(DiscordLocale.ENGLISH_US);
-		when(settings.get()).thenReturn(botSettings);
+		when(settings.getObject()).thenReturn(botSettings);
 
 		// Core translations
 		Map<String, Map<DiscordLocale, Map<String, String>>> coreTranslations = new HashMap<>();

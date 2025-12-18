@@ -30,4 +30,9 @@ public class RolesProvider extends DefaultConfigProvider<Roles> {
 	protected void registerTemplate() {
 		Config.registerTemplate(RolesTemplate.class);
 	}
+
+	@Override
+	public Class<Roles> getObjectType() {
+		return Roles.class;
+	}
 }
