@@ -1,13 +1,13 @@
 package me.whereareiam.yui.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.adapter.command.registry.CommandDefinition;
-import me.whereareiam.yui.adapter.command.registry.CommandRegistry;
 import me.whereareiam.yui.annotation.ComponentListener;
 import me.whereareiam.yui.annotation.command.Argument;
 import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.annotation.command.Optional;
+import me.whereareiam.yui.model.command.CommandDefinition;
+import me.whereareiam.yui.service.CommandService;
 import me.whereareiam.yui.style.StyleKit;
 import me.whereareiam.yui.translation.Translatable;
 import me.whereareiam.yui.type.CommandCategory;
@@ -21,12 +21,14 @@ import org.incendo.cloud.discord.jda6.JDAInteraction;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @AllArgsConstructor
 public class HelpCommand {
-	private final CommandRegistry commandRegistry;
+	private final CommandService commandService;
 
 	private static final String CATEGORY_LISTENER = "command_help_category";
 
@@ -103,37 +105,39 @@ public class HelpCommand {
 				Translatable.of(category.getKey(), userId)
 		));
 
-		// Get commands for this category, showing only primary command names (not aliases)
-		commandRegistry.getDefinitions().entrySet().stream()
-				.filter(entry -> entry.getValue().getCommandConfig().getCategory() == category)
-				.filter(entry -> {
-					// Only show the entry if it's the primary command name, not an alias
-					String key = entry.getKey();
-					CommandDefinition def = entry.getValue();
-					String primaryName = def.getCommandName().toLowerCase();
-					return key.equals(primaryName);
-				})
-				.forEach(entry -> {
-					CommandDefinition def = entry.getValue();
-					String name = def.getCommandName();
-					String example = def.getCommandConfig().getExample();
-					String description = def.getCommandConfig().getDescription();
+		// Get commands for this category, showing only primary command names (first alias)
+		for (Map.Entry<String, CommandDefinition> entry : commandService.getDefinitions().entrySet().stream()
+				.filter(e -> e.getValue().getCategory() == category)
+				.sorted(Comparator.comparing(e -> {
+					List<String> aliases = e.getValue().getAliases();
+					return (aliases == null || aliases.isEmpty()) ? "" : aliases.getFirst();
+				}))
+				.toList()) {
 
-					embed.addField(
-							Translatable.forUser(
-									"commands.help.information.specific.headFormat",
-									userId,
-									Translatable.of(name, userId)
-							),
-							Translatable.forUser(
-									"commands.help.information.specific.footFormat",
-									userId,
-									Translatable.of(example, userId),
-									Translatable.of(description, userId)
-							),
-							false
-					);
-				});
+			CommandDefinition def = entry.getValue();
+			List<String> aliases = def.getAliases();
+			if (aliases == null || aliases.isEmpty())
+				continue;
+
+			String primaryName = aliases.getFirst();
+			String example = def.getExample();
+			String description = def.getDescription();
+
+			embed.addField(
+					Translatable.forUser(
+							"commands.help.information.specific.headFormat",
+							userId,
+							Translatable.of(primaryName, userId)
+					),
+					Translatable.forUser(
+							"commands.help.information.specific.footFormat",
+							userId,
+							Translatable.of(example, userId),
+							Translatable.of(description, userId)
+					),
+					false
+			);
+		}
 
 		if (event instanceof StringSelectInteractionEvent selectEvent) {
 			selectEvent.editMessageEmbeds(embed.build()).queue();
