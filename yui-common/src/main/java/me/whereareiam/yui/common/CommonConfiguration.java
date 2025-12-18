@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Primary;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 @Slf4j
 @Configuration
@@ -59,10 +60,10 @@ public class CommonConfiguration {
 	}
 
 	@Bean(destroyMethod = "shutdown")
-	public ExecutorService syncPool() {
-		return Executors.newFixedThreadPool(
+	public ScheduledExecutorService scheduledPool() {
+		return Executors.newScheduledThreadPool(
 				Math.max(2, Runtime.getRuntime().availableProcessors()),
-				r -> new Thread(r, "yui-role-sync")
+				Thread.ofVirtual().name("yui-scheduled", 0).factory()
 		);
 	}
 }

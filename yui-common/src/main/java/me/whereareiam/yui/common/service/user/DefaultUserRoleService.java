@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 public class DefaultUserRoleService implements UserRoleService {
 	private final RoleService roleService;
 	private final UserProfileService userProfileService;
-	private final ExecutorService syncPool;
+	private final ExecutorService scheduledPool;
 	private final JDA jda;
 
 	// Simple flag to prevent concurrent syncs for the same user
@@ -92,7 +92,7 @@ public class DefaultUserRoleService implements UserRoleService {
 
 		log.debug("[UserRoleService]: Starting role sync for all members...");
 		guild.loadMembers().onSuccess(members -> {
-			members.forEach(member -> syncPool.execute(() -> syncUser(member.getIdLong())));
+			members.forEach(member -> scheduledPool.execute(() -> syncUser(member.getIdLong())));
 		}).onError(err -> log.error("[UserRoleService]: Global role sync failed!", err));
 	}
 
@@ -164,7 +164,7 @@ public class DefaultUserRoleService implements UserRoleService {
 	}
 
 	private void enqueueSync(long userId) {
-		syncPool.execute(() -> syncUser(userId));
+		scheduledPool.execute(() -> syncUser(userId));
 	}
 
 	private Guild getGuild() {
