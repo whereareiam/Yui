@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.beans.factory.BeanFactoryUtils;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -15,8 +16,11 @@ import java.util.Map;
 /**
  * Utility for locating Yui command containers in a Spring context.
  * <p>
- * A command container is any bean whose concrete class is annotated with
- * {@link me.whereareiam.yui.annotation.command.Command} at the type level.
+ * A command container is any bean that:
+ * <ul>
+ *   <li>Has a class-level {@link Command} annotation, OR</li>
+ *   <li>Has at least one method annotated with {@link Command}</li>
+ * </ul>
  * Method-level {@link Command} annotations are discovered later by the
  * Cloud/Yui annotation parser.
  */
@@ -38,9 +42,19 @@ public class CommandScanner {
 		for (Object bean : beans.values()) {
 			Class<?> targetClass = AopUtils.getTargetClass(bean);
 
-			// Type-level @Command marks this bean as a command container
-			if (AnnotationUtils.findAnnotation(targetClass, Command.class) != null)
+			// Check for type-level @Command annotation
+			if (AnnotationUtils.findAnnotation(targetClass, Command.class) != null) {
 				containers.add(bean);
+				continue;
+			}
+
+			// Check for methods annotated with @Command
+			for (Method method : targetClass.getDeclaredMethods()) {
+				if (AnnotationUtils.findAnnotation(method, Command.class) != null) {
+					containers.add(bean);
+					break;
+				}
+			}
 		}
 
 		return containers;
