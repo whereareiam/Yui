@@ -2,6 +2,7 @@ package me.whereareiam.yui.adapter.command.manager;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.yui.adapter.command.requirements.CommandRequirementsPreprocessor;
 import net.dv8tion.jda.api.JDA;
 import org.incendo.cloud.discord.jda6.JDA6CommandManager;
 import org.incendo.cloud.discord.jda6.JDAInteraction;
@@ -13,7 +14,7 @@ import org.springframework.stereotype.Component;
 /**
  * FactoryBean for creating and configuring the JDA6CommandManager.
  * <p>
- * This ensures proper initialization order: JDA must be ready before
+ * This ensures proper lifecycle order: JDA must be ready before
  * the command manager is created, and the listener is wired into JDA
  * during bean creation.
  */
@@ -21,8 +22,9 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class CommandManagerFactory implements FactoryBean<JDA6CommandManager<JDAInteraction>> {
+	private final CommandRequirementsPreprocessor requirementsPreprocessor;
 	private final JDA jda;
-	private final me.whereareiam.yui.adapter.command.requirements.CommandRequirementsPreprocessor requirementsPreprocessor;
+
 	private JDA6CommandManager<JDAInteraction> commandManager;
 
 	@Override
@@ -47,16 +49,12 @@ public class CommandManagerFactory implements FactoryBean<JDA6CommandManager<JDA
 			log.debug("Registering command listener with JDA");
 			jda.addEventListener(commandManager.createListener());
 		}
+
 		return commandManager;
 	}
 
 	@Override
 	public Class<?> getObjectType() {
 		return JDA6CommandManager.class;
-	}
-
-	@Override
-	public boolean isSingleton() {
-		return true;
 	}
 }

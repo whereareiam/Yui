@@ -1,4 +1,4 @@
-package me.whereareiam.yui.common.service.initialization.tasks;
+package me.whereareiam.yui.common.initialization.tasks;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;

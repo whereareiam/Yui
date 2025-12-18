@@ -1,4 +1,4 @@
-package me.whereareiam.yui.common.service.initialization;
+package me.whereareiam.yui.common.service.lifecycle;
 
 import me.whereareiam.yui.registry.Registry;
 import me.whereareiam.yui.LifecycleTask;

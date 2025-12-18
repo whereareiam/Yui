@@ -1,20 +1,23 @@
-package me.whereareiam.yui.common.service.initialization.tasks;
+package me.whereareiam.yui.common.initialization.tasks;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.registry.Registry;
-import me.whereareiam.yui.service.UserRoleService;
+import me.whereareiam.yui.model.plugin.InternalPlugin;
 import me.whereareiam.yui.LifecycleTask;
+import me.whereareiam.yui.plugin.PluginManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class SyncRolesTask implements LifecycleTask {
-	private final UserRoleService roles;
+public class WelcomeTask implements LifecycleTask {
+	private final PluginManager pluginManager;
 	private final Registry<LifecycleTask> lifecycleRegistry;
 
 	@PostConstruct
@@ -24,17 +27,23 @@ public class SyncRolesTask implements LifecycleTask {
 
 	@Override
 	public String getName() {
-		return "SYNC_ROLES";
+		return "WELCOME";
 	}
 
 	@Override
 	public List<String> getDependencies() {
-		return List.of("INIT_COMMANDS");
+		return List.of("SCAN_COMPONENT_LISTENERS", "SCAN_JDA_LISTENERS");
 	}
 
 	@Override
 	public CompletableFuture<Void> start() {
-		roles.syncAll();
+		log.info("");
+		log.info("Yui has successfully linked with the Cardinal System.");
+		log.info("『Greetings, Master. I am Yui. All systems are operational. Awaiting your command.』");
+		log.info("");
+		long enabled = pluginManager.plugins().stream().filter(InternalPlugin::isEnabled).count();
+		log.info("Loaded {} plugin{}", enabled, enabled == 1 ? "" : "s");
+		log.info("");
 		return CompletableFuture.completedFuture(null);
 	}
 }

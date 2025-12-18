@@ -1,4 +1,4 @@
-package me.whereareiam.yui.common.service.initialization;
+package me.whereareiam.yui.common.initialization;
 
 import lombok.AllArgsConstructor;
 import me.whereareiam.yui.service.ProfileManagementService;

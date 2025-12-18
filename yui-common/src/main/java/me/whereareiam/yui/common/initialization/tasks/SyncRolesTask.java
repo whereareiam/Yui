@@ -1,12 +1,11 @@
-package me.whereareiam.yui.common.service.initialization.tasks;
+package me.whereareiam.yui.common.initialization.tasks;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.service.UserRoleService;
 import me.whereareiam.yui.LifecycleTask;
-import me.whereareiam.yui.common.scanner.ListenerScanner;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -14,9 +13,8 @@ import java.util.concurrent.CompletableFuture;
 
 @Component
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-public class ScanListenersTask implements LifecycleTask {
-	private final ListenerScanner scanner;
-	private final ApplicationContext ctx;
+public class SyncRolesTask implements LifecycleTask {
+	private final UserRoleService roles;
 	private final Registry<LifecycleTask> lifecycleRegistry;
 
 	@PostConstruct
@@ -26,17 +24,17 @@ public class ScanListenersTask implements LifecycleTask {
 
 	@Override
 	public String getName() {
-		return "SCAN_JDA_LISTENERS";
+		return "SYNC_ROLES";
 	}
 
 	@Override
 	public List<String> getDependencies() {
-		return List.of("INIT_PLUGINS");
+		return List.of("INIT_COMMANDS");
 	}
 
 	@Override
 	public CompletableFuture<Void> start() {
-		scanner.scan(ctx);
+		roles.syncAll();
 		return CompletableFuture.completedFuture(null);
 	}
 }

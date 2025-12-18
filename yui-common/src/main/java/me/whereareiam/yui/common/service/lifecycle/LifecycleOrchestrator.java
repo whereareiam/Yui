@@ -1,4 +1,4 @@
-package me.whereareiam.yui.common.service.initialization;
+package me.whereareiam.yui.common.service.lifecycle;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
