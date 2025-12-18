@@ -25,7 +25,7 @@ public class ClearCommand {
 	private static final String CANCEL_LISTENER = "command_clear_cancel";
 
 	@Definition("clear")
-	@Command("clear (user)")
+	@Command("clear <user>")
 	public void onCommand(JDAInteraction interaction, @Argument("user") User targetUser) {
 		long userId = interaction.user().getIdLong();
 
