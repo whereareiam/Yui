@@ -21,12 +21,12 @@ import java.util.concurrent.Executors;
 @RequiredArgsConstructor
 public class CommonConfiguration {
 	private final ObjectProvider<Settings> settingsProvider;
+	private JDA jda;
 
 	@Bean
 	@Primary
 	public JDA jda() {
 		Settings settings = settingsProvider.getObject();
-		JDA jda;
 
 		try {
 			if (settings.getDiscord().getGuildId().equals("SET_YOUR_GUILD_ID"))
@@ -51,7 +51,7 @@ public class CommonConfiguration {
 	}
 
 	@PreDestroy
-	public void shutdownJda(JDA jda) {
+	public void shutdownJda() {
 		if (jda == null) return;
 
 		log.info("Shutting down YUI");
