@@ -1,14 +1,13 @@
 package me.whereareiam.yui.adapter.command.registration;
 
 import io.leangen.geantyref.TypeToken;
-import me.whereareiam.yui.adapter.command.YuiCommandMetaKeys;
+import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
 import me.whereareiam.yui.adapter.command.registration.annotation.YuiAnnotationParser;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.component.CommandComponent;
 import org.incendo.cloud.description.Description;
-import org.incendo.cloud.key.CloudKey;
 import org.incendo.cloud.parser.ArgumentParser;
 import org.incendo.cloud.parser.ParserDescriptor;
 import org.jetbrains.annotations.NotNull;
@@ -25,11 +24,6 @@ import java.util.*;
  * @param <S> sender type
  */
 public final class CommandDefinitionParser<S> {
-    /**
-     * Meta key used to store the resolved definition id on the final command.
-     */
-    public static final CloudKey<String> DEFINITION_ID_KEY = YuiCommandMetaKeys.DEFINITION;
-
     private final CommandManager<S> commandManager;
     private @Nullable String rootCommand;
 
@@ -158,16 +152,15 @@ public final class CommandDefinitionParser<S> {
         return builder;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private Command.Builder<S> addComponent(
             Command.Builder<S> builder,
             CommandComponent<S> component,
             boolean required
     ) {
-        @SuppressWarnings({"rawtypes", "unchecked"})
         CommandComponent.Builder<?, ?> componentBuilder = createComponentBuilder(component);
-        if (required) {
-            return builder.required((CommandComponent.Builder) componentBuilder);
-        }
+        if (required) return builder.required((CommandComponent.Builder) componentBuilder);
+
         return builder.optional((CommandComponent.Builder) componentBuilder);
     }
 
@@ -193,7 +186,7 @@ public final class CommandDefinitionParser<S> {
             String definitionId,
             CommandDefinition definition
     ) {
-        builder = builder.meta(DEFINITION_ID_KEY, definitionId);
+        builder = builder.meta(YuiCommandMetaKeys.DEFINITION, definitionId);
 
         String description = definition.getDescription();
         if (description != null && !description.isBlank())
@@ -276,7 +269,7 @@ public final class CommandDefinitionParser<S> {
             String suffix = parts.getLast();
             if (suffix.isBlank()) continue;
 
-            grouped.computeIfAbsent(prefix, k -> new ArrayList<>()).add(suffix);
+            grouped.computeIfAbsent(prefix, _ -> new ArrayList<>()).add(suffix);
         }
 
         return grouped;

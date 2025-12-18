@@ -2,11 +2,12 @@ package me.whereareiam.yui.adapter.command;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.registry.Registry;
 import me.whereareiam.yui.LifecycleTask;
-import me.whereareiam.yui.Reloadable;
+import me.whereareiam.yui.model.config.Commands;
+import me.whereareiam.yui.registry.Registry;
 import me.whereareiam.yui.service.CommandService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -15,8 +16,10 @@ import java.util.concurrent.CompletableFuture;
 @Component
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class InitializeCommandsTask implements LifecycleTask {
-	private final CommandService commands;
 	private final Registry<LifecycleTask> lifecycleRegistry;
+	private final CommandService commandService;
+	private final ApplicationContext applicationContext;
+	private final Commands commands;
 
 	@PostConstruct
 	public void registerSelf() {
@@ -35,10 +38,8 @@ public class InitializeCommandsTask implements LifecycleTask {
 
 	@Override
 	public CompletableFuture<Void> start() {
-		if (commands instanceof Reloadable r) r.reload();
-
+		commandService.register(applicationContext, commands.getCommands());
 		return CompletableFuture.completedFuture(null);
 	}
 }
-
 

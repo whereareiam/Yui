@@ -1,5 +1,6 @@
-package me.whereareiam.yui.adapter.command.annotation;
+package me.whereareiam.yui.adapter.command.annotation.registration.annotation;
 
+import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
 import me.whereareiam.yui.adapter.command.registration.annotation.AnnotationCommandRegistrar;
 import me.whereareiam.yui.adapter.command.registration.CommandDefinitionParser;
 import me.whereareiam.yui.annotation.command.Argument;
@@ -111,7 +112,7 @@ class AnnotationCommandRegistrarTest {
 		);
 
 		// definition meta should be set from @Definition via CommandDefinitionParser
-		CloudKey<String> key = CommandDefinitionParser.DEFINITION_ID_KEY;
+		CloudKey<String> key = YuiCommandMetaKeys.DEFINITION;
 		String definitionId = command.commandMeta().optional(key).orElse(null);
 		assertEquals("test-main", definitionId, "Definition meta should match @Definition value");
 
@@ -139,7 +140,7 @@ class AnnotationCommandRegistrarTest {
 				null
 		);
 
-		Function<String, CommandDefinition> lookup = id -> disabled;
+		Function<String, CommandDefinition> lookup = _ -> disabled;
 
 		AnnotationCommandRegistrar<Object> registrar = new AnnotationCommandRegistrar<>(
 				definitionParser,

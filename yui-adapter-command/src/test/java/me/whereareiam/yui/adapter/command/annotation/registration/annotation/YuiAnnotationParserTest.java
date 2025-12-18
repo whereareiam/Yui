@@ -1,6 +1,6 @@
-package me.whereareiam.yui.adapter.command.annotation;
+package me.whereareiam.yui.adapter.command.annotation.registration.annotation;
 
-import me.whereareiam.yui.adapter.command.YuiCommandMetaKeys;
+import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
 import me.whereareiam.yui.adapter.command.registration.annotation.YuiAnnotationParser;
 import me.whereareiam.yui.annotation.command.Argument;
 import me.whereareiam.yui.annotation.command.Command;
@@ -11,6 +11,7 @@ import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.execution.ExecutionCoordinator;
 import org.incendo.cloud.internal.CommandRegistrationHandler;
 import org.incendo.cloud.key.CloudKey;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
@@ -24,7 +25,7 @@ class YuiAnnotationParserTest {
 		}
 
 		@Override
-		public boolean hasPermission(Object sender, String permission) {
+		public boolean hasPermission(@NotNull Object sender, @NotNull String permission) {
 			return true;
 		}
 	}
@@ -33,7 +34,7 @@ class YuiAnnotationParserTest {
 
 		@Definition("test-main")
 		@Command("main <name>")
-		public void main(CommandContext<Object> ctx, @Argument("name") String name) {
+		public void root(CommandContext<Object> ctx, @Argument("name") String name) {
 			// no-op
 		}
 	}

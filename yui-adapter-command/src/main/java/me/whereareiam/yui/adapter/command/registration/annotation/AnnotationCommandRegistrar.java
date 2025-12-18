@@ -1,7 +1,7 @@
 package me.whereareiam.yui.adapter.command.registration.annotation;
 
 import me.whereareiam.yui.adapter.command.registration.CommandDefinitionParser;
-import me.whereareiam.yui.adapter.command.YuiCommandMetaKeys;
+import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.CommandManager;
@@ -75,7 +75,7 @@ public final class AnnotationCommandRegistrar<S> {
      */
     public @NotNull Optional<CommandDefinition> resolveDefinition(@NotNull Command<S> command) {
         return command.commandMeta()
-                .optional(CommandDefinitionParser.DEFINITION_ID_KEY)
+                .optional(YuiCommandMetaKeys.DEFINITION)
                 .map(definitionLookup);
     }
 

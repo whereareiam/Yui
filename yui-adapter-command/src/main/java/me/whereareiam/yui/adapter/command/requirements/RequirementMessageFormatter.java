@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
-public class CommandRequirementErrorService {
+public class RequirementMessageFormatter {
 	private final TranslationService translationService;
 
 	/**

@@ -1,4 +1,4 @@
-package me.whereareiam.yui.adapter.command;
+package me.whereareiam.yui.adapter.command.manager;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,21 +22,26 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class CommandManagerFactory implements FactoryBean<JDA6CommandManager<JDAInteraction>> {
 	private final JDA jda;
+	private final me.whereareiam.yui.adapter.command.requirements.CommandRequirementsPreprocessor requirementsPreprocessor;
 	private JDA6CommandManager<JDAInteraction> commandManager;
 
 	@Override
 	public JDA6CommandManager<JDAInteraction> getObject() {
 		if (commandManager == null) {
-			log.debug("Creating JDA6CommandManager with async execution coordinator");
-			
-			commandManager = new JDA6CommandManager<>(
+			log.debug("Creating YuiCommandManager with async execution coordinator");
+
+			commandManager = new YuiCommandManager(
 					ExecutionCoordinator.asyncCoordinator(),
-					JDAInteraction.InteractionMapper.identity()
+					JDAInteraction.InteractionMapper.identity(),
+					jda
 			);
 
 			// Configure Discord settings
 			commandManager.discordSettings().set(DiscordSetting.AUTO_REGISTER_SLASH_COMMANDS, true);
 			commandManager.discordSettings().set(DiscordSetting.EPHEMERAL_ERROR_MESSAGES, true);
+
+			// Register global command preprocessors
+			commandManager.registerCommandPreProcessor(requirementsPreprocessor);
 
 			// Wire the command listener into JDA
 			log.debug("Registering command listener with JDA");

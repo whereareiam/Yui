@@ -1,13 +1,11 @@
 package me.whereareiam.yui.adapter.command.registration.annotation;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.adapter.command.YuiCommandMetaKeys;
+import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
 import me.whereareiam.yui.annotation.command.Definition;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.annotations.AnnotationParser;
-import org.incendo.cloud.annotations.extractor.ArgumentExtractor;
-import org.incendo.cloud.annotations.extractor.CommandExtractor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -23,8 +21,6 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class YuiAnnotationParser<C> {
 	private final AnnotationParser<C> cloudParser;
-	private final CommandExtractor yuiCommandExtractor;
-	private final ArgumentExtractor yuiArgumentExtractor;
 
 	/**
 	 * Creates a new Yui annotation parser wrapping Cloud's parser.
@@ -49,9 +45,7 @@ public class YuiAnnotationParser<C> {
 		cloudParser.argumentExtractor(yuiArgumentExtractor);
 		
 		YuiAnnotationParser<C> parser = new YuiAnnotationParser<>(
-				cloudParser,
-				yuiCommandExtractor,
-				yuiArgumentExtractor
+				cloudParser
 		);
 		
 		// Register builder modifier for @Definition annotation
@@ -64,33 +58,12 @@ public class YuiAnnotationParser<C> {
 	}
 
 	/**
-	 * Returns the underlying Cloud annotation parser.
-	 * <p>
-	 * This allows access to Cloud's advanced features if needed.
-	 *
-	 * @return Cloud annotation parser
-	 */
-	public @NotNull AnnotationParser<C> cloudParser() {
-		return cloudParser;
-	}
-
-	/**
 	 * Parses command instances annotated with Yui annotations.
 	 *
 	 * @param instances command instances to parse
 	 * @return collection of parsed commands
 	 */
 	public @NotNull Collection<@NotNull Command<C>> parse(@NotNull Object @NotNull... instances) {
-		return cloudParser.parse(instances);
-	}
-
-	/**
-	 * Parses command instances annotated with Yui annotations.
-	 *
-	 * @param instances command instances to parse
-	 * @return collection of parsed commands
-	 */
-	public @NotNull Collection<@NotNull Command<C>> parse(@NotNull Collection<@NotNull Object> instances) {
 		return cloudParser.parse(instances);
 	}
 }

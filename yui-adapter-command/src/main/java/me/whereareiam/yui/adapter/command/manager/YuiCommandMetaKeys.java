@@ -1,4 +1,4 @@
-package me.whereareiam.yui.adapter.command;
+package me.whereareiam.yui.adapter.command.manager;
 
 import org.incendo.cloud.key.CloudKey;
 
