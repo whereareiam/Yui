@@ -1,24 +1,24 @@
 package me.whereareiam.yui.adapter.command.executor.plugin;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.annotation.Command;
 import me.whereareiam.yui.annotation.ComponentListener;
+import me.whereareiam.yui.annotation.command.Argument;
+import me.whereareiam.yui.annotation.command.Command;
+import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.model.PayloadButton;
 import me.whereareiam.yui.model.plugin.InternalPlugin;
 import me.whereareiam.yui.model.plugin.Plugin;
-import me.whereareiam.yui.CommandBase;
 import me.whereareiam.yui.plugin.PluginManager;
 import me.whereareiam.yui.style.StyleKit;
-import me.whereareiam.yui.util.Components;
 import me.whereareiam.yui.translation.Translatable;
+import me.whereareiam.yui.util.Components;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
+import org.incendo.cloud.discord.jda6.JDAInteraction;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -26,7 +26,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Component
 @AllArgsConstructor
-public class PluginCommand implements CommandBase {
+public class PluginCommand {
 	private final PluginManager pluginManager;
 
 	private static final String CATEGORY_LISTENER = "command_plugin_category";
@@ -40,34 +40,40 @@ public class PluginCommand implements CommandBase {
 
 	private static final int BUTTONS_PER_ROW = 5;
 
-	@Command(name = "plugin")
-	public void onCommand(SlashCommandInteractionEvent event) {
-		String action = optLower(event.getOption("action"));
-		String pluginArg = optRaw(event.getOption("plugin"));
+	@Definition("plugin")
+	@Command("plugin [action] [plugin]")
+	public void onCommand(
+			JDAInteraction interaction,
+			@Argument("action") String action,
+			@Argument("plugin") String pluginArg
+	) {
+		long userId = interaction.user().getIdLong();
 
 		if (action == null) {
-			event.replyEmbeds(buildMainEmbed(event.getUser().getIdLong()).build())
+			interaction.replyCallback()
+					.replyEmbeds(buildMainEmbed(userId).build())
 					.setEphemeral(true)
-					.addActionRow(mainControls(event.getUser().getIdLong()))
+					.addActionRow(mainControls(userId))
 					.queue();
 			return;
 		}
 
 		if (!Category.isSupported(action)) {
-			event.replyEmbeds(StyleKit.embeds().error()
-							.setTitle(Translatable.of("commands.error.validation.invalidButton", event.getUser().getIdLong()))
-							.build())
+			interaction.replyCallback()
+					.replyEmbeds(StyleKit.embeds().error()
+									.setTitle(Translatable.of("commands.error.validation.invalidButton", userId))
+									.build())
 					.setEphemeral(true)
 					.queue();
 			return;
 		}
 
 		if (pluginArg == null) {
-			renderCategory(event, action, false);
+			renderCategory(interaction.replyCallback(), action, false);
 			return;
 		}
 
-		performActionDirect(event, action, pluginArg);
+		performActionDirect(interaction.replyCallback(), userId, action, pluginArg);
 	}
 
 	@ComponentListener(CATEGORY_LISTENER)
@@ -118,16 +124,15 @@ public class PluginCommand implements CommandBase {
 				.queue();
 	}
 
-	private void performActionDirect(SlashCommandInteractionEvent event, String action, String value) {
-		long userId = event.getUser().getIdLong();
+	private void performActionDirect(IReplyCallback reply, long userId, String action, String value) {
 		Optional<String> error = executeAction(action, value);
 		if (error.isPresent()) {
-			event.replyEmbeds(buildError(userId, value).build()).setEphemeral(true).queue();
+			reply.replyEmbeds(buildError(userId, value).build()).setEphemeral(true).queue();
 			return;
 		}
 
 		// Success: show the category view for this action
-		renderCategory(event, action, false);
+		renderCategory(reply, action, false);
 	}
 
 	private void performActionAndReport(ButtonInteractionEvent event, String action, String value) {
@@ -448,17 +453,6 @@ public class PluginCommand implements CommandBase {
 
 	private static String safe(String v) {
 		return v == null ? "" : v;
-	}
-
-	private static String optLower(OptionMapping opt) {
-		if (opt == null) return null;
-		String v = opt.getAsString();
-
-		return v.toLowerCase(Locale.ROOT).trim();
-	}
-
-	private static String optRaw(OptionMapping opt) {
-		return opt == null ? null : opt.getAsString();
 	}
 
 	private Optional<String> tryEnable(String id) {

@@ -12,7 +12,7 @@ import java.util.Map;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Command {
+public class CommandDefinition {
 	private boolean enabled;
 	private List<String> aliases;
 	private String description;

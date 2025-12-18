@@ -1,4 +1,4 @@
-package me.whereareiam.yui.adapter.command.initialization;
+package me.whereareiam.yui.adapter.command;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;

@@ -3,20 +3,21 @@ package me.whereareiam.yui.adapter.command.executor;
 import lombok.AllArgsConstructor;
 import me.whereareiam.yui.adapter.command.registry.CommandDefinition;
 import me.whereareiam.yui.adapter.command.registry.CommandRegistry;
-import me.whereareiam.yui.annotation.Command;
 import me.whereareiam.yui.annotation.ComponentListener;
-import me.whereareiam.yui.CommandBase;
+import me.whereareiam.yui.annotation.command.Argument;
+import me.whereareiam.yui.annotation.command.Command;
+import me.whereareiam.yui.annotation.command.Definition;
+import me.whereareiam.yui.annotation.command.Optional;
 import me.whereareiam.yui.style.StyleKit;
+import me.whereareiam.yui.translation.Translatable;
 import me.whereareiam.yui.type.CommandCategory;
 import me.whereareiam.yui.util.Components;
-import me.whereareiam.yui.translation.Translatable;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
+import org.incendo.cloud.discord.jda6.JDAInteraction;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -24,23 +25,26 @@ import java.util.List;
 
 @Component
 @AllArgsConstructor
-public class HelpCommand implements CommandBase {
+public class HelpCommand {
 	private final CommandRegistry commandRegistry;
 
 	private static final String CATEGORY_LISTENER = "command_help_category";
 
-	@Command(name = "help")
-	public void onCommand(SlashCommandInteractionEvent event) {
-		OptionMapping optionMapping = event.getOption("category");
+	@Definition("help")
+	@Command("help [category]")
+	public void onCommand(
+			JDAInteraction interaction,
+			@Optional @Argument("category") String categoryName
+	) {
+		long userId = interaction.user().getIdLong();
 
-		if (optionMapping != null) {
-			CommandCategory category = CommandCategory.valueOf(optionMapping.getAsString().toUpperCase());
-			categoryHelp(event, category);
-
+		if (categoryName != null && !categoryName.isBlank()) {
+			CommandCategory category = CommandCategory.valueOf(categoryName.toUpperCase());
+			categoryHelp(interaction.replyCallback(), category);
 			return;
 		}
 
-		globalHelp(event);
+		globalHelp(interaction.replyCallback(), userId);
 	}
 
 	@ComponentListener(CATEGORY_LISTENER)
@@ -50,18 +54,18 @@ public class HelpCommand implements CommandBase {
 		categoryHelp(event, category);
 	}
 
-	private void globalHelp(SlashCommandInteractionEvent event) {
+	private void globalHelp(IReplyCallback reply, long userId) {
 		EmbedBuilder embed = StyleKit.embeds().primary();
-		embed.setTitle(Translatable.of("commands.help.information.global.title", event.getUser().getIdLong()));
-		embed.setDescription(Translatable.of("commands.help.information.global.description", event.getUser().getIdLong()));
+		embed.setTitle(Translatable.of("commands.help.information.global.title", userId));
+		embed.setDescription(Translatable.of("commands.help.information.global.description", userId));
 
 		for (CommandCategory category : CommandCategory.values()) {
 			if (category == CommandCategory.NONE)
 				continue;
 
 			embed.addField(
-					Translatable.of(category.getKey(), event.getUser().getIdLong()),
-					Translatable.of("commands.help.category." + category.name().toLowerCase(), event.getUser().getIdLong()),
+					Translatable.of(category.getKey(), userId),
+					Translatable.of("commands.help.category." + category.name().toLowerCase(), userId),
 					false
 			);
 		}
@@ -69,7 +73,7 @@ public class HelpCommand implements CommandBase {
 		List<SelectOption> options = Arrays.stream(CommandCategory.values())
 				.filter(category -> category != CommandCategory.NONE)
 				.map(category -> SelectOption.of(
-						Translatable.of(category.getKey(), event.getUser().getIdLong()),
+						Translatable.of(category.getKey(), userId),
 						category.name().toLowerCase()
 				))
 				.toList();
@@ -78,7 +82,7 @@ public class HelpCommand implements CommandBase {
 				.addOptions(options)
 				.build();
 
-		event.replyEmbeds(embed.build())
+		reply.replyEmbeds(embed.build())
 				.setEphemeral(true)
 				.addActionRow(selectMenu)
 				.queue();

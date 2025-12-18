@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.config.template;
 
 import me.whereareiam.configura.TemplateProvider;
-import me.whereareiam.yui.model.command.Command;
+import me.whereareiam.yui.model.command.CommandDefinition;
 import me.whereareiam.yui.model.command.CommandCooldown;
 import me.whereareiam.yui.model.config.Commands;
 import me.whereareiam.yui.model.requirement.Requirements;
@@ -19,7 +19,7 @@ public class CommandsTemplate implements TemplateProvider<Commands> {
 	@Override
 	public Commands supply(Commands commands) {
 		// Default values
-		Command main = new Command(
+		CommandDefinition main = new CommandDefinition(
 				false,
 				List.of("yui"),
 				"translate(commands.main.description)",
@@ -31,7 +31,7 @@ public class CommandsTemplate implements TemplateProvider<Commands> {
 				null
 		);
 
-		Command help = new Command(
+		CommandDefinition help = new CommandDefinition(
 				true,
 				List.of("help"),
 				"translate(commands.help.description)",
@@ -54,7 +54,7 @@ public class CommandsTemplate implements TemplateProvider<Commands> {
 		roleRequirement.setRoleMatchBy("NAME");
 		clearRequirements.getGroups().put("ROLE", roleRequirement);
 
-		Command clear = new Command(
+		CommandDefinition clear = new CommandDefinition(
 				true,
 				List.of("clear"),
 				"translate(commands.clear.description)",
@@ -77,7 +77,7 @@ public class CommandsTemplate implements TemplateProvider<Commands> {
 		reloadRoleRequirement.setRoleMatchBy("NAME");
 		reloadRequirements.getGroups().put("ROLE", reloadRoleRequirement);
 
-		Command reload = new Command(
+		CommandDefinition reload = new CommandDefinition(
 				true,
 				List.of("reload"),
 				"translate(commands.reload.description)",
@@ -89,7 +89,7 @@ public class CommandsTemplate implements TemplateProvider<Commands> {
 				reloadRequirements
 		);
 
-		Command plugin = new Command(
+		CommandDefinition plugin = new CommandDefinition(
 				true,
 				List.of("plugin", "plugins"),
 				"translate(commands.plugin.description)",
@@ -115,7 +115,7 @@ public class CommandsTemplate implements TemplateProvider<Commands> {
 		languageRoleRequirement.setRoleMatchBy("NAME");
 		languageRequirements.getGroups().put("ROLE", languageRoleRequirement);
 
-		Command language = new Command(
+		CommandDefinition language = new CommandDefinition(
 				true,
 				List.of("language", "lang"),
 				"translate(commands.language.description)",

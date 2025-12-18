@@ -1,17 +1,17 @@
 package me.whereareiam.yui.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.annotation.Command;
 import me.whereareiam.yui.annotation.ComponentListener;
+import me.whereareiam.yui.annotation.command.Command;
+import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.model.PayloadButton;
 import me.whereareiam.yui.model.profile.UserProfile;
-import me.whereareiam.yui.CommandBase;
 import me.whereareiam.yui.service.LanguageService;
 import me.whereareiam.yui.service.UserProfileService;
 import me.whereareiam.yui.style.StyleKit;
+import me.whereareiam.yui.translation.Translatable;
 import me.whereareiam.yui.util.Components;
 import me.whereareiam.yui.util.EmojiUtil;
-import me.whereareiam.yui.translation.Translatable;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -20,13 +20,14 @@ import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
+import org.incendo.cloud.discord.jda6.JDAInteraction;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 
 @Component
 @AllArgsConstructor
-public class LanguageCommand implements CommandBase {
+public class LanguageCommand {
 	private final LanguageService languageService;
 	private final UserProfileService userProfileService;
 
@@ -36,15 +37,16 @@ public class LanguageCommand implements CommandBase {
 	private static final String CONFIRM_LISTENER = "command_language_confirm";
 	private static final String CANCEL_LISTENER = "command_language_cancel";
 
-	@Command(name = "language")
-	public void onCommand(SlashCommandInteractionEvent event) {
-		long userId = event.getUser().getIdLong();
+	@Definition("language")
+	@Command("language")
+	public void onCommand(JDAInteraction interaction) {
+		long userId = interaction.user().getIdLong();
 
 		Optional<UserProfile> profileOpt = userProfileService.getProfile(userId);
 		if (profileOpt.isEmpty())
 			return;
 
-		showPrimaryLanguageSelection(event, false);
+		showPrimaryLanguageSelection(interaction.replyCallback(), false);
 	}
 
 	@ComponentListener(SELECT_PRIMARY_LISTENER)
