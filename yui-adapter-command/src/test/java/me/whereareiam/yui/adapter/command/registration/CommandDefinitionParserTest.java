@@ -133,26 +133,26 @@ class CommandDefinitionParserTest {
 	}
 
 	@Test
-	void parsesArgumentsFromUsageString() {
+	void parsesVariablesFromUsageString() {
 		// given
 		CommandDefinitionParser<Object> parser = new CommandDefinitionParser<>(new TestCommandManager());
 
 		// when
-		List<CommandDefinitionParser.ArgumentToken> tokens = parser.parseUsage("<name> [optional] <required>");
+		List<CommandDefinitionParser.VariableToken> tokens = parser.parseUsage("<name> [optional] <required>");
 
 		// then
-		assertEquals(3, tokens.size(), "Should parse 3 argument tokens");
+		assertEquals(3, tokens.size(), "Should parse 3 variable tokens");
 
-		CommandDefinitionParser.ArgumentToken nameToken = tokens.getFirst();
+		CommandDefinitionParser.VariableToken nameToken = tokens.getFirst();
 		assertEquals("name", nameToken.name());
 		assertTrue(nameToken.required(), "name should be required");
 		assertFalse(nameToken.greedy(), "name should not be greedy");
 
-		CommandDefinitionParser.ArgumentToken optionalToken = tokens.get(1);
+		CommandDefinitionParser.VariableToken optionalToken = tokens.get(1);
 		assertEquals("optional", optionalToken.name());
 		assertFalse(optionalToken.required(), "optional should not be required");
 
-		CommandDefinitionParser.ArgumentToken requiredToken = tokens.get(2);
+		CommandDefinitionParser.VariableToken requiredToken = tokens.get(2);
 		assertEquals("required", requiredToken.name());
 		assertTrue(requiredToken.required(), "required should be required");
 	}
@@ -164,11 +164,11 @@ class CommandDefinitionParserTest {
 
 		// when: parsing usage with {command} placeholder (e.g., "{command} {alias}" means
 		// the root command name will be substituted here, like "yui reload")
-		List<CommandDefinitionParser.ArgumentToken> tokens = parser.parseUsage("{command} <name>");
+		List<CommandDefinitionParser.VariableToken> tokens = parser.parseUsage("{command} <name>");
 
-		// then: should ignore {command} placeholder during argument parsing
-		// (it's used for command path construction, not as an argument)
-		assertEquals(1, tokens.size(), "Should only parse actual arguments, ignoring placeholders");
+		// then: should ignore {command} placeholder during variable parsing
+		// (it's used for command path construction, not as a variable)
+		assertEquals(1, tokens.size(), "Should only parse actual variables, ignoring placeholders");
 		assertEquals("name", tokens.getFirst().name());
 	}
 
@@ -179,24 +179,24 @@ class CommandDefinitionParserTest {
 
 		// when: parsing usage with {alias} placeholder (e.g., "{command} {alias}" means
 		// "yui reload" where "reload" is the command's alias)
-		List<CommandDefinitionParser.ArgumentToken> tokens = parser.parseUsage("{command} {alias} <name>");
+		List<CommandDefinitionParser.VariableToken> tokens = parser.parseUsage("{command} {alias} <name>");
 
-		// then: should ignore both {command} and {alias} placeholders during argument parsing
-		assertEquals(1, tokens.size(), "Should only parse actual arguments, ignoring placeholders");
+		// then: should ignore both {command} and {alias} placeholders during variable parsing
+		assertEquals(1, tokens.size(), "Should only parse actual variables, ignoring placeholders");
 		assertEquals("name", tokens.getFirst().name());
 	}
 
 	@Test
-	void handlesGreedyArguments() {
+	void handlesGreedyVariables() {
 		// given
 		CommandDefinitionParser<Object> parser = new CommandDefinitionParser<>(new TestCommandManager());
 
 		// when
-		List<CommandDefinitionParser.ArgumentToken> tokens = parser.parseUsage("<message...>");
+		List<CommandDefinitionParser.VariableToken> tokens = parser.parseUsage("<message...>");
 
 		// then
 		assertEquals(1, tokens.size());
-		CommandDefinitionParser.ArgumentToken token = tokens.getFirst();
+		CommandDefinitionParser.VariableToken token = tokens.getFirst();
 		assertEquals("message", token.name());
 		assertTrue(token.greedy(), "message should be greedy");
 		assertTrue(token.required(), "message should be required");
@@ -389,8 +389,8 @@ class CommandDefinitionParserTest {
 	}
 
 	@Test
-	void mapsArgumentsFromUsageToComponents() {
-		// given: use a command with only one argument to avoid duplicate chain issues
+	void mapsVariablesFromUsageToComponents() {
+		// given: use a command with only one variable to avoid duplicate chain issues
 		CommandManager<Object> manager = new TestCommandManager();
 		CommandDefinitionParser<Object> parser = new CommandDefinitionParser<>(manager);
 		
@@ -430,7 +430,7 @@ class CommandDefinitionParserTest {
 		boolean hasName = command.components().stream()
 				.anyMatch(c -> c.type() != CommandComponent.ComponentType.LITERAL && c.name().equals("name"));
 
-		assertTrue(hasName, "Command should have 'name' argument");
+		assertTrue(hasName, "Command should have 'name' variable");
 	}
 
 }

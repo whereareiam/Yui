@@ -55,8 +55,8 @@ public final class CommandDefinitionParser<S> {
             throw new IllegalArgumentException("Command must define at least one alias");
 
         // Extract components and usage from parsed command
-        Map<String, CommandComponent<S>> argumentComponents = extractArgumentComponents(parsedCommand);
-        List<ArgumentToken> usageTokens = parseUsage(definition.getUsage());
+        Map<String, CommandComponent<S>> variableComponents = extractVariableComponents(parsedCommand);
+        List<VariableToken> usageTokens = parseUsage(definition.getUsage());
 
         // Group aliases by structure (single-word vs multi-word)
         AliasStructure structure = analyzeAliases(aliases);
@@ -64,11 +64,11 @@ public final class CommandDefinitionParser<S> {
         // Build commands for each alias group
         List<Command.Builder<S>> builders = new ArrayList<>();
         builders.addAll(buildCommandsForAliases(
-                definition, definitionId, parsedCommand, argumentComponents, usageTokens,
+                definition, definitionId, parsedCommand, variableComponents, usageTokens,
                 structure.singleWord(), rootCommand
         ));
         builders.addAll(buildCommandsForAliases(
-                definition, definitionId, parsedCommand, argumentComponents, usageTokens,
+                definition, definitionId, parsedCommand, variableComponents, usageTokens,
                 structure.multiWord(), rootCommand
         ));
 
@@ -84,8 +84,8 @@ public final class CommandDefinitionParser<S> {
             CommandDefinition definition,
             String definitionId,
             Command<S> parsedCommand,
-            Map<String, CommandComponent<S>> argumentComponents,
-            List<ArgumentToken> usageTokens,
+            Map<String, CommandComponent<S>> variableComponents,
+            List<VariableToken> usageTokens,
             List<String> aliases,
             @Nullable String rootCommand
     ) {
@@ -97,7 +97,7 @@ public final class CommandDefinitionParser<S> {
         if (aliases.stream().noneMatch(alias -> alias.contains(" "))) {
             for (String alias : aliases) {
                 Command.Builder<S> builder = createCommandBuilder(alias, definition, rootCommand);
-                builder = applyArguments(builder, usageTokens, argumentComponents);
+                builder = applyVariables(builder, usageTokens, variableComponents, definition);
                 builder = applyOverrides(builder, definition, definitionId);
                 builder = builder.handler(ctx -> parsedCommand.commandExecutionHandler().executeFuture(ctx));
                 builders.add(builder);
@@ -120,7 +120,7 @@ public final class CommandDefinitionParser<S> {
                     suffixes.stream().skip(1).toArray(String[]::new)
             );
 
-            builder = applyArguments(builder, usageTokens, argumentComponents);
+            builder = applyVariables(builder, usageTokens, variableComponents, definition);
             builder = applyOverrides(builder, definition, definitionId);
             builder = builder.handler(ctx -> parsedCommand.commandExecutionHandler().executeFuture(ctx));
             builders.add(builder);
@@ -220,21 +220,26 @@ public final class CommandDefinitionParser<S> {
     }
 
     /**
-     * Applies argument components based on usage tokens.
+     * Applies variable components based on usage tokens.
      */
-    private Command.Builder<S> applyArguments(
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private Command.Builder<S> applyVariables(
             Command.Builder<S> builder,
-            List<ArgumentToken> usageTokens,
-            Map<String, CommandComponent<S>> argumentComponents
+            List<VariableToken> usageTokens,
+            Map<String, CommandComponent<S>> variableComponents,
+            CommandDefinition definition
     ) {
-        for (ArgumentToken token : usageTokens) {
-            CommandComponent<S> component = argumentComponents.get(token.name());
+        for (VariableToken token : usageTokens) {
+            CommandComponent<S> component = variableComponents.get(token.name());
             if (component == null) continue;
 
-            CommandComponent.Builder<?, ?> componentBuilder = createComponentBuilder(component);
-            builder = token.required()
-                    ? builder.required((CommandComponent.Builder) componentBuilder)
-                    : builder.optional((CommandComponent.Builder) componentBuilder);
+            CommandComponent.Builder<?, ?> componentBuilder = createComponentBuilder(component, definition);
+            if (token.required()) {
+                builder = builder.required((CommandComponent.Builder) componentBuilder);
+                continue;
+            }
+
+            builder = builder.optional((CommandComponent.Builder) componentBuilder);
         }
         return builder;
     }
@@ -257,25 +262,46 @@ public final class CommandDefinitionParser<S> {
     }
 
     /**
-     * Creates a component builder from an existing component.
+     * Creates a component builder from an existing component with variable description applied.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
-    private CommandComponent.Builder<?, ?> createComponentBuilder(CommandComponent<S> component) {
+    private CommandComponent.Builder<?, ?> createComponentBuilder(
+            CommandComponent<S> component,
+            CommandDefinition definition
+    ) {
         ArgumentParser rawParser = component.parser();
         TypeToken rawValueType = component.valueType();
         ParserDescriptor parserDescriptor = ParserDescriptor.of(rawParser, rawValueType);
 
+        Description variableDescription = getVariableDescription(component.name(), definition);
+
         return CommandComponent.builder()
                 .name(component.name())
                 .parser(parserDescriptor)
-                .description(component.description())
+                .description(variableDescription)
                 .suggestionProvider(component.suggestionProvider());
     }
 
     /**
-     * Extracts argument components (non-literals) from a parsed command.
+     * Gets the variable description from CommandDefinition.
+     * If not specified in the variables map, uses the variable name as description.
      */
-    private Map<String, CommandComponent<S>> extractArgumentComponents(Command<S> parsedCommand) {
+    private Description getVariableDescription(String variableName, CommandDefinition definition) {
+        Map<String, String> variables = definition.getVariables();
+        if (variables != null && variables.containsKey(variableName)) {
+            String description = variables.get(variableName);
+            if (description != null && !description.isBlank())
+                return Description.of(description);
+        }
+
+        // Fallback to variable name if not specified in map
+        return Description.of(variableName);
+    }
+
+    /**
+     * Extracts variable components (non-literals) from a parsed command.
+     */
+    private Map<String, CommandComponent<S>> extractVariableComponents(Command<S> parsedCommand) {
         Map<String, CommandComponent<S>> map = new HashMap<>();
         for (CommandComponent<S> component : parsedCommand.components())
             if (component.type() != CommandComponent.ComponentType.LITERAL)
@@ -285,14 +311,14 @@ public final class CommandDefinitionParser<S> {
     }
 
     /**
-     * Parses the usage string into argument tokens.
+     * Parses the usage string into variable tokens.
      * <p>
      * This is public for testing purposes.
      */
-    public List<ArgumentToken> parseUsage(@Nullable String usage) {
+    public List<VariableToken> parseUsage(@Nullable String usage) {
         if (usage == null || usage.isBlank()) return Collections.emptyList();
 
-        List<ArgumentToken> tokens = new ArrayList<>();
+        List<VariableToken> tokens = new ArrayList<>();
         for (String token : usage.split("\\s+")) {
             if (token.isBlank() || (token.startsWith("{") && token.endsWith("}"))) continue;
 
@@ -305,7 +331,7 @@ public final class CommandDefinitionParser<S> {
             if (greedy) cleaned = cleaned.substring(0, cleaned.length() - 3);
             if (cleaned.isEmpty()) continue;
 
-            tokens.add(new ArgumentToken(cleaned, required, greedy));
+            tokens.add(new VariableToken(cleaned, required, greedy));
         }
 
         return tokens;
@@ -360,9 +386,9 @@ public final class CommandDefinitionParser<S> {
     }
 
     /**
-     * Represents an argument token parsed from usage string.
+     * Represents a variable token parsed from usage string.
      */
-    public record ArgumentToken(String name, boolean required, boolean greedy) {}
+    public record VariableToken(String name, boolean required, boolean greedy) {}
 
     /**
      * Groups aliases by their structure.
