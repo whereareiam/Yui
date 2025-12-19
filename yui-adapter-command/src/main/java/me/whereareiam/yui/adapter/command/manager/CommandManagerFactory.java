@@ -11,6 +11,8 @@ import org.incendo.cloud.execution.ExecutionCoordinator;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.stereotype.Component;
 
+import java.util.concurrent.ScheduledExecutorService;
+
 /**
  * FactoryBean for creating and configuring the JDA6CommandManager.
  * <p>
@@ -42,8 +44,8 @@ public class CommandManagerFactory implements FactoryBean<JDA6CommandManager<JDA
 			commandManager.discordSettings().set(DiscordSetting.AUTO_REGISTER_SLASH_COMMANDS, true);
 			commandManager.discordSettings().set(DiscordSetting.EPHEMERAL_ERROR_MESSAGES, true);
 
-			// Register global command preprocessors
-			commandManager.registerCommandPreProcessor(requirementsPreprocessor);
+			// Register global command postprocessors (runs after parsing, can access command meta)
+			commandManager.registerCommandPostProcessor(requirementsPreprocessor);
 
 			// Wire the command listener into JDA
 			log.debug("Registering command listener with JDA");

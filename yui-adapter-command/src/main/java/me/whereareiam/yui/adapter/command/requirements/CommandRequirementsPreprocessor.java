@@ -15,8 +15,8 @@ import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.discord.jda6.JDAInteraction;
-import org.incendo.cloud.execution.preprocessor.CommandPreprocessingContext;
-import org.incendo.cloud.execution.preprocessor.CommandPreprocessor;
+import org.incendo.cloud.execution.postprocessor.CommandPostprocessingContext;
+import org.incendo.cloud.execution.postprocessor.CommandPostprocessor;
 import org.incendo.cloud.services.type.ConsumerService;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
@@ -24,17 +24,17 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 /**
- * Cloud command preprocessor that evaluates Yui command {@link Requirements}
+ * Cloud command postprocessor that evaluates Yui command {@link Requirements}
  * before a command is executed.
  * <p>
  * It reuses the global {@link RequirementEvaluator} infrastructure and the
  * {@link CommandDefinitionRegistry} to look up the {@link Requirements} for
- * the invoked command, based on the Discord command name.
+ * the invoked command, using the definition ID stored in the command's metadata.
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CommandRequirementsPreprocessor implements CommandPreprocessor<JDAInteraction> {
+public class CommandRequirementsPreprocessor implements CommandPostprocessor<JDAInteraction> {
 	private final RequirementEvaluator requirementEvaluator;
 	private final CommandRequirementEvaluatorConfig evaluatorConfig;
 	private final RequirementMessageFormatter errorService;
@@ -42,16 +42,16 @@ public class CommandRequirementsPreprocessor implements CommandPreprocessor<JDAI
 	private final UserProfileService userProfileService;
 
 	@Override
-	public void accept(@NotNull CommandPreprocessingContext<JDAInteraction> context) {
+	public void accept(@NotNull CommandPostprocessingContext<JDAInteraction> context) {
 		CommandContext<JDAInteraction> commandContext = context.commandContext();
+		Command<JDAInteraction> command = context.command();
 		JDAInteraction interaction = commandContext.sender();
 
 		GenericCommandInteractionEvent event = interaction.interactionEvent();
 		if (event == null) return;
 
-		// Resolve the CommandDefinition via Cloud command meta instead of Discord alias
-		Command<JDAInteraction> cloudCommand = commandContext.command();
-		String definitionId = cloudCommand.commandMeta()
+		// Get the definition ID from the command's metadata (available after parsing)
+		String definitionId = command.commandMeta()
 				.optional(YuiCommandMetaKeys.DEFINITION)
 				.orElse(null);
 
