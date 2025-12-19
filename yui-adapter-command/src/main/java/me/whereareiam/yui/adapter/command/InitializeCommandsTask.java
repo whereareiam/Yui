@@ -3,7 +3,6 @@ package me.whereareiam.yui.adapter.command;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.LifecycleTask;
-import me.whereareiam.yui.model.config.Commands;
 import me.whereareiam.yui.registry.Registry;
 import me.whereareiam.yui.service.CommandService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +17,7 @@ import java.util.concurrent.CompletableFuture;
 public class InitializeCommandsTask implements LifecycleTask {
 	private final Registry<LifecycleTask> lifecycleRegistry;
 	private final CommandService commandService;
-	private final ApplicationContext applicationContext;
-	private final Commands commands;
+	private final ApplicationContext ctx;
 
 	@PostConstruct
 	public void registerSelf() {
@@ -38,7 +36,7 @@ public class InitializeCommandsTask implements LifecycleTask {
 
 	@Override
 	public CompletableFuture<Void> start() {
-		commandService.register(applicationContext, commands.getCommands());
+		commandService.register(ctx);
 		return CompletableFuture.completedFuture(null);
 	}
 }

@@ -20,7 +20,7 @@ public class CommandsTemplate implements TemplateProvider<Commands> {
 	public Commands supply(Commands commands) {
 		// Default values
 		CommandDefinition main = new CommandDefinition(
-				false,
+				true,
 				List.of("yui"),
 				"translate(commands.main.description)",
 				"translate(commands.main.example)",

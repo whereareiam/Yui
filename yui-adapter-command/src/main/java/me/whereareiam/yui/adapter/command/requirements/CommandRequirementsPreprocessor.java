@@ -3,7 +3,7 @@ package me.whereareiam.yui.adapter.command.requirements;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
-import me.whereareiam.yui.adapter.command.CommandDefinitionRegistry;
+import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import me.whereareiam.yui.model.profile.UserProfile;
 import me.whereareiam.yui.model.requirement.RequirementContext;

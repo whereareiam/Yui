@@ -25,6 +25,7 @@ import java.util.concurrent.ScheduledExecutorService;
 @RequiredArgsConstructor
 public class CommandManagerFactory implements FactoryBean<JDA6CommandManager<JDAInteraction>> {
 	private final CommandRequirementsPreprocessor requirementsPreprocessor;
+	private final ScheduledExecutorService scheduledExecutorService;
 	private final JDA jda;
 
 	private JDA6CommandManager<JDAInteraction> commandManager;
@@ -37,6 +38,7 @@ public class CommandManagerFactory implements FactoryBean<JDA6CommandManager<JDA
 			commandManager = new YuiCommandManager(
 					ExecutionCoordinator.asyncCoordinator(),
 					JDAInteraction.InteractionMapper.identity(),
+					scheduledExecutorService,
 					jda
 			);
 

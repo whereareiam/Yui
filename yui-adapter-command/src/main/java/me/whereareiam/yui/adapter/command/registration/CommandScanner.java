@@ -1,9 +1,11 @@
 package me.whereareiam.yui.adapter.command.registration;
 
+import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.annotation.command.Command;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -12,6 +14,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Utility for locating Yui command containers in a Spring context.
@@ -25,7 +28,22 @@ import java.util.Map;
  * Cloud/Yui annotation parser.
  */
 @Component
+@RequiredArgsConstructor
 public class CommandScanner {
+	private final ApplicationContext ctx;
+
+	public Optional<Object> findCommand(@NotNull Class<?> commandClass) {
+		Collection<Object> containers = findCommand(ctx);
+		for (Object container : containers) {
+			Class<?> targetClass = AopUtils.getTargetClass(container);
+			if (targetClass.equals(commandClass)) {
+				return Optional.of(container);
+			}
+		}
+
+		return Optional.empty();
+	}
+
 	/**
 	 * Finds all command container beans in the given bean factory (including ancestors).
 	 *

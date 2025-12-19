@@ -1,5 +1,6 @@
 package me.whereareiam.yui.service;
 
+import me.whereareiam.yui.DefinitionProvider;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationContext;
@@ -23,50 +24,22 @@ public interface CommandService {
 	 * <p>
 	 * If a definition with the same id already exists, it will be replaced.
 	 */
-	void register(
-			@NotNull ApplicationContext context,
-			@NotNull String definitionId,
-			@NotNull CommandDefinition definition
-	);
-
-	/**
-	 * Register all command containers in the given context, first merging the provided
-	 * {@code definitions} into the definition registry used for annotation-based registration.
-	 * <p>
-	 * Existing entries with the same keys will be replaced.
-	 */
-	void register(
-			@NotNull ApplicationContext context,
-			@NotNull Map<String, CommandDefinition> definitions
-	);
-
-	/**
-	 * Register a single, already-instantiated command container object.
-	 * <p>
-	 * The container's type and methods are inspected for Yui command annotations.
-	 */
 	void register(@NotNull Object commandContainer);
 
 	/**
-	 * Register a single command container and associate it with the given {@code definitionId}
-	 * and {@link CommandDefinition}.
-	 * <p>
-	 * The definition is added to the internal registry before the container is parsed.
+	 * Register a command container by its class, resolved from the Spring context.
 	 */
-	void register(
-			@NotNull Object commandContainer,
-			@NotNull String definitionId,
-			@NotNull CommandDefinition definition
-	);
+	void register(@NotNull Class<?> commandClass);
 
 	/**
-	 * Register a single command container and merge all provided {@code definitions}
-	 * into the internal definition registry before parsing the container.
+	 * Register definitions via an external provider (plugins or API users).
 	 */
-	void register(
-			@NotNull Object commandContainer,
-			@NotNull Map<String, CommandDefinition> definitions
-	);
+	void registerProvider(@NotNull DefinitionProvider provider);
+
+	/**
+	 * Unregister an external provider by its source id.
+	 */
+	void unregisterProvider(@NotNull String sourceId);
 
 	/**
 	 * Remove a {@link CommandDefinition} from the registry by its id.

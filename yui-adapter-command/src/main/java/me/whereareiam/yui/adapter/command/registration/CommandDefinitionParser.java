@@ -25,7 +25,6 @@ import java.util.*;
  */
 public final class CommandDefinitionParser<S> {
     private final CommandManager<S> commandManager;
-    private @Nullable String rootCommand;
 
     public CommandDefinitionParser(@NotNull CommandManager<S> commandManager) {
         this.commandManager = Objects.requireNonNull(commandManager, "commandManager");
@@ -35,45 +34,41 @@ public final class CommandDefinitionParser<S> {
         return commandManager;
     }
 
-    public void setRootCommand(@Nullable String rootCommand) {
-        this.rootCommand = rootCommand;
-    }
-
-    public @Nullable String getRootCommand() {
-        return rootCommand;
-    }
-
     /**
      * Registers commands for the given {@link CommandDefinition}, using the provided parsed command
-     * and its argument components.
+     * and its argument components, returning the built command builders.
      */
-    public void registerFromDefinition(
+    public List<Command.Builder<S>> buildFromDefinition(
             @NotNull CommandDefinition definition,
             @NotNull String definitionId,
             @NotNull List<ArgumentToken> argumentTokens,
             @NotNull Map<String, CommandComponent<S>> componentsByName,
-            @NotNull Command<S> parsedCommand
+            @NotNull Command<S> parsedCommand,
+            @Nullable String rootCommand
     ) {
-        if (!definition.isEnabled()) {
-            return;
-        }
+        if (!definition.isEnabled())
+            return List.of();
 
         List<String> aliases = requireAliases(definition);
         AliasGroups groups = splitAliases(aliases);
 
-        registerSingleWordAliases(definition, definitionId, argumentTokens, componentsByName, parsedCommand, groups.singleWord());
-        registerMultiWordAliases(definition, definitionId, argumentTokens, componentsByName, parsedCommand, groups.multiWord());
+        List<Command.Builder<S>> builders = new ArrayList<>();
+        builders.addAll(buildSingleWordAliases(definition, definitionId, argumentTokens, componentsByName, parsedCommand, groups.singleWord(), rootCommand));
+        builders.addAll(buildMultiWordAliases(definition, definitionId, argumentTokens, componentsByName, parsedCommand, groups.multiWord(), rootCommand));
+
+        return builders;
     }
 
-    private void registerSingleWordAliases(
+    private List<Command.Builder<S>> buildSingleWordAliases(
             CommandDefinition definition,
             String definitionId,
             List<ArgumentToken> argumentTokens,
             Map<String, CommandComponent<S>> componentsByName,
             Command<S> parsedCommand,
-            List<String> singleWordAliases
+            List<String> singleWordAliases,
+            @Nullable String rootCommand
     ) {
-        if (singleWordAliases.isEmpty()) return;
+        if (singleWordAliases.isEmpty()) return List.of();
 
         String primary = singleWordAliases.getFirst();
         String[] secondary = singleWordAliases.stream().skip(1).toArray(String[]::new);
@@ -82,50 +77,54 @@ public final class CommandDefinitionParser<S> {
                 ? commandManager.commandBuilder(rootCommand).literal(primary, secondary)
                 : commandManager.commandBuilder(primary, secondary);
 
-        registerBuilt(definition, definitionId, argumentTokens, componentsByName, parsedCommand, builder);
+        return List.of(build(definition, definitionId, argumentTokens, componentsByName, parsedCommand, builder));
     }
 
-    private void registerMultiWordAliases(
+    private List<Command.Builder<S>> buildMultiWordAliases(
             CommandDefinition definition,
             String definitionId,
             List<ArgumentToken> argumentTokens,
             Map<String, CommandComponent<S>> componentsByName,
             Command<S> parsedCommand,
-            List<String> multiWordAliases
+            List<String> multiWordAliases,
+            @Nullable String rootCommand
     ) {
-        if (multiWordAliases.isEmpty()) return;
+        if (multiWordAliases.isEmpty()) return List.of();
 
         Map<List<String>, List<String>> grouped = groupByPrefix(multiWordAliases);
 
+        List<Command.Builder<S>> builders = new ArrayList<>();
         for (Map.Entry<List<String>, List<String>> entry : grouped.entrySet()) {
             List<String> prefix = entry.getKey();
             List<String> suffixes = distinct(entry.getValue());
             if (prefix.isEmpty() || suffixes.isEmpty()) continue;
 
-            Command.Builder<S> builder = baseBuilder(prefix);
+            Command.Builder<S> builder = baseBuilder(prefix, rootCommand);
             builder = builder.literal(suffixes.getFirst(), suffixes.stream().skip(1).toArray(String[]::new));
 
-            registerBuilt(definition, definitionId, argumentTokens, componentsByName, parsedCommand, builder);
+            builders.add(build(definition, definitionId, argumentTokens, componentsByName, parsedCommand, builder));
         }
+
+        return builders;
     }
 
-    private Command.Builder<S> baseBuilder(List<String> prefixParts) {
+    private Command.Builder<S> baseBuilder(List<String> prefixParts, @Nullable String rootCommand) {
         if (rootCommand != null) {
             Command.Builder<S> b = commandManager.commandBuilder(rootCommand);
-            for (String p : prefixParts) {
+            for (String p : prefixParts)
                 b = b.literal(p);
-            }
+
             return b;
         }
 
         Command.Builder<S> b = commandManager.commandBuilder(prefixParts.getFirst());
-        for (int i = 1; i < prefixParts.size(); i++) {
+        for (int i = 1; i < prefixParts.size(); i++)
             b = b.literal(prefixParts.get(i));
-        }
+
         return b;
     }
 
-    private void registerBuilt(
+    private Command.Builder<S> build(
             CommandDefinition definition,
             String definitionId,
             List<ArgumentToken> argumentTokens,
@@ -136,7 +135,8 @@ public final class CommandDefinitionParser<S> {
         builder = addArguments(builder, argumentTokens, componentsByName);
         builder = applyMetadata(builder, definitionId, definition);
         builder = builder.handler(ctx -> parsedCommand.commandExecutionHandler().executeFuture(ctx));
-        commandManager.command(builder);
+
+        return builder;
     }
 
     private Command.Builder<S> addArguments(
@@ -149,6 +149,7 @@ public final class CommandDefinitionParser<S> {
             if (component == null) continue;
             builder = addComponent(builder, component, token.required());
         }
+
         return builder;
     }
 
@@ -198,6 +199,7 @@ public final class CommandDefinitionParser<S> {
     private List<String> requireAliases(CommandDefinition definition) {
         List<String> aliases = sanitizeAliases(definition.getAliases());
         if (!aliases.isEmpty()) return aliases;
+
         throw new IllegalArgumentException("Command must define at least one alias");
     }
 
