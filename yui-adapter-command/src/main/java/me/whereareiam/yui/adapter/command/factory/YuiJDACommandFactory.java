@@ -1,7 +1,8 @@
-package me.whereareiam.yui.adapter.command.manager;
+package me.whereareiam.yui.adapter.command.factory;
 
 import io.leangen.geantyref.TypeToken;
 import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
+import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import me.whereareiam.yui.translation.TranslationTags;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -30,7 +31,7 @@ import java.util.stream.Collectors;
  * Wraps Cloud's standard implementation and adds localization support from CommandDefinition
  * when descriptions contain translate(...) tags.
  */
-final class YuiJDACommandFactory<C> implements JDACommandFactory<C> {
+public final class YuiJDACommandFactory<C> implements JDACommandFactory<C> {
     private final CommandTree<C> commandTree;
     private final CommandDefinitionRegistry definitionRegistry;
     private final DiscordCommandFactory<C> discordCommandFactory;
@@ -38,7 +39,7 @@ final class YuiJDACommandFactory<C> implements JDACommandFactory<C> {
 
     private CommandScopePredicate<C> commandScopePredicate = CommandScopePredicate.alwaysTrue();
 
-    YuiJDACommandFactory(@NotNull CommandTree<C> commandTree, @NotNull CommandDefinitionRegistry definitionRegistry) {
+    public YuiJDACommandFactory(@NotNull CommandTree<C> commandTree, @NotNull CommandDefinitionRegistry definitionRegistry) {
         this.commandTree = Objects.requireNonNull(commandTree, "commandTree");
         this.definitionRegistry = Objects.requireNonNull(definitionRegistry, "definitionRegistry");
 

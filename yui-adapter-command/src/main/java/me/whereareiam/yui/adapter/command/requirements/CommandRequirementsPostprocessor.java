@@ -34,7 +34,7 @@ import java.util.Optional;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class CommandRequirementsPreprocessor implements CommandPostprocessor<JDAInteraction> {
+public class CommandRequirementsPostprocessor implements CommandPostprocessor<JDAInteraction> {
 	private final RequirementEvaluator requirementEvaluator;
 	private final CommandRequirementEvaluatorConfig evaluatorConfig;
 	private final RequirementMessageFormatter errorService;

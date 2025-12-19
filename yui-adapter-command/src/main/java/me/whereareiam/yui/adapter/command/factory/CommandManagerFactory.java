@@ -1,9 +1,10 @@
-package me.whereareiam.yui.adapter.command.manager;
+package me.whereareiam.yui.adapter.command.factory;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
-import me.whereareiam.yui.adapter.command.requirements.CommandRequirementsPreprocessor;
+import me.whereareiam.yui.adapter.command.YuiCommandManager;
+import me.whereareiam.yui.adapter.command.requirements.CommandRequirementsPostprocessor;
 import net.dv8tion.jda.api.JDA;
 import org.incendo.cloud.discord.jda6.JDA6CommandManager;
 import org.incendo.cloud.discord.jda6.JDAInteraction;
@@ -25,7 +26,7 @@ import java.util.concurrent.ScheduledExecutorService;
 @Component
 @RequiredArgsConstructor
 public class CommandManagerFactory implements FactoryBean<JDA6CommandManager<JDAInteraction>> {
-	private final CommandRequirementsPreprocessor requirementsPreprocessor;
+	private final CommandRequirementsPostprocessor requirementsPreprocessor;
 	private final ScheduledExecutorService scheduledExecutorService;
 	private final CommandDefinitionRegistry definitionRegistry;
 	private final JDA jda;

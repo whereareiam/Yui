@@ -1,4 +1,4 @@
-package me.whereareiam.yui.adapter.command.registration.annotation;
+package me.whereareiam.yui.adapter.command.parsing.annotation;
 
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.annotation.command.Command;

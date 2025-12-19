@@ -1,7 +1,8 @@
-package me.whereareiam.yui.adapter.command.registration.annotation;
+package me.whereareiam.yui.adapter.command.registration;
 
 import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
-import me.whereareiam.yui.adapter.command.registration.CommandDefinitionParser;
+import me.whereareiam.yui.adapter.command.parsing.annotation.YuiAnnotationParser;
+import me.whereareiam.yui.adapter.command.parsing.definition.CommandDefinitionParser;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import org.incendo.cloud.Command;
 import org.jetbrains.annotations.NotNull;

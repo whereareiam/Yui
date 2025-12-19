@@ -1,7 +1,9 @@
-package me.whereareiam.yui.adapter.command.manager;
+package me.whereareiam.yui.adapter.command;
 
 import lombok.Getter;
 import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
+import me.whereareiam.yui.adapter.command.factory.YuiJDACommandFactory;
+import me.whereareiam.yui.adapter.command.registration.JDARegistrationHandler;
 import net.dv8tion.jda.api.JDA;
 import org.incendo.cloud.CloudCapability;
 import org.incendo.cloud.discord.jda6.JDA6CommandManager;

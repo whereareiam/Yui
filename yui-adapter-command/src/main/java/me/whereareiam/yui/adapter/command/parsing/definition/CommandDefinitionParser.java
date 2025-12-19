@@ -1,7 +1,8 @@
-package me.whereareiam.yui.adapter.command.registration;
+package me.whereareiam.yui.adapter.command.parsing.definition;
 
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
+import me.whereareiam.yui.adapter.command.parsing.annotation.YuiAnnotationParser;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.CommandManager;
@@ -18,7 +19,7 @@ import java.util.*;
 /**
  * Applies overrides from {@link CommandDefinition} to Cloud commands.
  * <p>
- * Takes a parsed command from {@link me.whereareiam.yui.adapter.command.registration.annotation.YuiAnnotationParser}
+ * Takes a parsed command from {@link YuiAnnotationParser}
  * and applies CommandDefinition overrides (aliases, descriptions, usage) to create the final command builders.
  *
  * @param <S> sender type

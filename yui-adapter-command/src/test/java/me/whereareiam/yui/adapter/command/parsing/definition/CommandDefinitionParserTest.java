@@ -1,7 +1,7 @@
-package me.whereareiam.yui.adapter.command.registration;
+package me.whereareiam.yui.adapter.command.parsing.definition;
 
 import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
-import me.whereareiam.yui.adapter.command.registration.annotation.YuiAnnotationParser;
+import me.whereareiam.yui.adapter.command.parsing.annotation.YuiAnnotationParser;
 import me.whereareiam.yui.annotation.command.Argument;
 import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;

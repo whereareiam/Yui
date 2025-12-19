@@ -1,7 +1,8 @@
-package me.whereareiam.yui.adapter.command.manager;
+package me.whereareiam.yui.adapter.command.registration;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.yui.adapter.command.YuiCommandManager;
 import net.dv8tion.jda.api.JDA;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.component.CommandComponent;
@@ -28,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @Slf4j
 @RequiredArgsConstructor
-final class JDARegistrationHandler implements CommandRegistrationHandler<JDAInteraction> {
+public final class JDARegistrationHandler implements CommandRegistrationHandler<JDAInteraction> {
 	private final ScheduledExecutorService scheduledPool;
 	private final YuiCommandManager commandManager;
 	private final JDA jda;
