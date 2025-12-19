@@ -1,6 +1,7 @@
 package me.whereareiam.yui.adapter.command.manager;
 
 import lombok.Getter;
+import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
 import net.dv8tion.jda.api.JDA;
 import org.incendo.cloud.CloudCapability;
 import org.incendo.cloud.discord.jda6.JDA6CommandManager;
@@ -15,6 +16,9 @@ import java.util.concurrent.ScheduledExecutorService;
  * deletion support for Yui by installing a custom {@code CommandRegistrationHandler}
  * and registering the {@link CloudCapability.StandardCapabilities#ROOT_COMMAND_DELETION}
  * capability.
+ * <p>
+ * Also installs a custom {@link org.incendo.cloud.discord.jda6.JDACommandFactory} that
+ * adds multilanguage support for Discord commands based on CommandDefinition translations.
  */
 @Getter
 public final class YuiCommandManager extends JDA6CommandManager<JDAInteraction> {
@@ -22,6 +26,7 @@ public final class YuiCommandManager extends JDA6CommandManager<JDAInteraction> 
 			final @NotNull ExecutionCoordinator<JDAInteraction> executionCoordinator,
 			final @NotNull JDAInteraction.InteractionMapper<JDAInteraction> senderMapper,
 			final @NotNull ScheduledExecutorService scheduledExecutorService,
+			final @NotNull CommandDefinitionRegistry definitionRegistry,
 			final @NotNull JDA jda
 	) {
 		super(executionCoordinator, senderMapper);
@@ -30,6 +35,9 @@ public final class YuiCommandManager extends JDA6CommandManager<JDAInteraction> 
 		// that can react when Cloud deletes root commands.
 		this.registerCapability(CloudCapability.StandardCapabilities.ROOT_COMMAND_DELETION);
 		this.commandRegistrationHandler(new JDARegistrationHandler(scheduledExecutorService, this, jda));
+
+		// Install custom command factory with multilanguage support
+		this.commandFactory(new YuiJDACommandFactory<>(this.commandTree(), definitionRegistry));
 	}
 }
 
