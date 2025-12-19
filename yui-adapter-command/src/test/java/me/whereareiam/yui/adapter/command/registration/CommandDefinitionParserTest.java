@@ -67,11 +67,9 @@ class CommandDefinitionParserTest {
 		org.incendo.cloud.Command<Object> parsedCommand = annotationParser.parse(new TestCommands()).iterator().next();
 
 		// when
-		var builders = parser.buildFromDefinition(
+		var builders = parser.applyOverrides(
 				definition,
 				"test-main",
-				parser.parseArguments(definition.getUsage()),
-				indexComponents(parsedCommand),
 				parsedCommand,
 				null
 		);
@@ -115,11 +113,9 @@ class CommandDefinitionParserTest {
 		);
 
 		// when
-		var builders = parser.buildFromDefinition(
+		var builders = parser.applyOverrides(
 				definition,
 				"test-main",
-				parser.parseArguments(definition.getUsage()),
-				indexComponents(parsedCommand),
 				parsedCommand,
 				null
 		);
@@ -142,7 +138,7 @@ class CommandDefinitionParserTest {
 		CommandDefinitionParser<Object> parser = new CommandDefinitionParser<>(new TestCommandManager());
 
 		// when
-		List<CommandDefinitionParser.ArgumentToken> tokens = parser.parseArguments("<name> [optional] <required>");
+		List<CommandDefinitionParser.ArgumentToken> tokens = parser.parseUsage("<name> [optional] <required>");
 
 		// then
 		assertEquals(3, tokens.size(), "Should parse 3 argument tokens");
@@ -168,7 +164,7 @@ class CommandDefinitionParserTest {
 
 		// when: parsing usage with {command} placeholder (e.g., "{command} {alias}" means
 		// the root command name will be substituted here, like "yui reload")
-		List<CommandDefinitionParser.ArgumentToken> tokens = parser.parseArguments("{command} <name>");
+		List<CommandDefinitionParser.ArgumentToken> tokens = parser.parseUsage("{command} <name>");
 
 		// then: should ignore {command} placeholder during argument parsing
 		// (it's used for command path construction, not as an argument)
@@ -183,7 +179,7 @@ class CommandDefinitionParserTest {
 
 		// when: parsing usage with {alias} placeholder (e.g., "{command} {alias}" means
 		// "yui reload" where "reload" is the command's alias)
-		List<CommandDefinitionParser.ArgumentToken> tokens = parser.parseArguments("{command} {alias} <name>");
+		List<CommandDefinitionParser.ArgumentToken> tokens = parser.parseUsage("{command} {alias} <name>");
 
 		// then: should ignore both {command} and {alias} placeholders during argument parsing
 		assertEquals(1, tokens.size(), "Should only parse actual arguments, ignoring placeholders");
@@ -196,7 +192,7 @@ class CommandDefinitionParserTest {
 		CommandDefinitionParser<Object> parser = new CommandDefinitionParser<>(new TestCommandManager());
 
 		// when
-		List<CommandDefinitionParser.ArgumentToken> tokens = parser.parseArguments("<message...>");
+		List<CommandDefinitionParser.ArgumentToken> tokens = parser.parseUsage("<message...>");
 
 		// then
 		assertEquals(1, tokens.size());
@@ -229,11 +225,9 @@ class CommandDefinitionParserTest {
 		org.incendo.cloud.Command<Object> parsedCommand = annotationParser.parse(new TestCommands()).iterator().next();
 
 		// when
-		var builders = parser.buildFromDefinition(
+		var builders = parser.applyOverrides(
 				definition,
 				"test-main",
-				parser.parseArguments(definition.getUsage()),
-				indexComponents(parsedCommand),
 				parsedCommand,
 				null
 		);
@@ -280,11 +274,9 @@ class CommandDefinitionParserTest {
 		org.incendo.cloud.Command<Object> parsedCommand = annotationParser.parse(new TestCommands()).iterator().next();
 
 		// when
-		var builders = parser.buildFromDefinition(
+		var builders = parser.applyOverrides(
 				disabled,
 				"test-disabled",
-				parser.parseArguments(disabled.getUsage()),
-				indexComponents(parsedCommand),
 				parsedCommand,
 				null
 		);
@@ -326,11 +318,9 @@ class CommandDefinitionParserTest {
 				null
 		);
 
-		var builders = parser.buildFromDefinition(
+		var builders = parser.applyOverrides(
 				definition,
 				"test-help",
-				parser.parseArguments(definition.getUsage()),
-				indexComponents(parsedCommand),
 				parsedCommand,
 				root
 		);
@@ -376,11 +366,9 @@ class CommandDefinitionParserTest {
 				null
 		);
 
-		var builders = parser.buildFromDefinition(
+		var builders = parser.applyOverrides(
 				definition,
 				"test-reload",
-				parser.parseArguments(definition.getUsage()),
-				indexComponents(parsedCommand),
 				parsedCommand,
 				root
 		);
@@ -430,11 +418,9 @@ class CommandDefinitionParserTest {
 				null
 		);
 
-		var builders = parser.buildFromDefinition(
+		var builders = parser.applyOverrides(
 				definition,
 				"test-single",
-				parser.parseArguments(definition.getUsage()),
-				indexComponents(parsedCommand),
 				parsedCommand,
 				null
 		);
@@ -447,13 +433,5 @@ class CommandDefinitionParserTest {
 		assertTrue(hasName, "Command should have 'name' argument");
 	}
 
-	private Map<String, CommandComponent<Object>> indexComponents(org.incendo.cloud.Command<Object> command) {
-		Map<String, CommandComponent<Object>> map = new java.util.HashMap<>();
-		for (CommandComponent<Object> component : command.components()) {
-			if (component.type() == CommandComponent.ComponentType.LITERAL) continue;
-			map.put(component.name(), component);
-		}
-		return map;
-	}
 }
 

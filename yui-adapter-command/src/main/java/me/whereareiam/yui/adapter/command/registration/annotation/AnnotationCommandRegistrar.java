@@ -1,14 +1,14 @@
 package me.whereareiam.yui.adapter.command.registration.annotation;
 
-import me.whereareiam.yui.adapter.command.registration.CommandDefinitionParser;
 import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
+import me.whereareiam.yui.adapter.command.registration.CommandDefinitionParser;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import org.incendo.cloud.Command;
-import org.incendo.cloud.component.CommandComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -20,6 +20,7 @@ import java.util.function.Function;
 public final class AnnotationCommandRegistrar<S> {
     private final CommandDefinitionParser<S> definitionParser;
     private final YuiAnnotationParser<S> annotationParser;
+
     private Function<String, CommandDefinition> definitionLookup;
 
     public AnnotationCommandRegistrar(
@@ -64,16 +65,13 @@ public final class AnnotationCommandRegistrar<S> {
                 continue;
             }
 
-            Map<String, CommandComponent<S>> componentsByName = indexArgumentComponents(parsed);
-            List<CommandDefinitionParser.ArgumentToken> tokens = definitionParser.parseArguments(definition.getUsage());
-
             // Decide whether this should be registered as subcommand based on usage
             String effectiveRoot = isSubcommand(rootCommand, definition) ? rootCommand : null;
-            List<Command.Builder<S>> builders = definitionParser.buildFromDefinition(
+            
+            // Apply CommandDefinition overrides to the parsed command
+            List<Command.Builder<S>> builders = definitionParser.applyOverrides(
                     definition,
                     definitionId,
-                    tokens,
-                    componentsByName,
                     parsed,
                     effectiveRoot
             );
@@ -93,16 +91,5 @@ public final class AnnotationCommandRegistrar<S> {
     private boolean isSubcommand(@Nullable String rootCommand, @NotNull CommandDefinition definition) {
         String usage = definition.getUsage();
         return rootCommand != null && usage != null && usage.contains("{command}");
-    }
-
-    private Map<String, CommandComponent<S>> indexArgumentComponents(Command<S> parsedCommand) {
-        Map<String, CommandComponent<S>> map = new HashMap<>();
-
-        for (CommandComponent<S> component : parsedCommand.components()) {
-            if (component.type() == CommandComponent.ComponentType.LITERAL) continue;
-            map.put(component.name(), component);
-        }
-
-        return map;
     }
 }
