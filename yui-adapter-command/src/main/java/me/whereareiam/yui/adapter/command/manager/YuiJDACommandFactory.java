@@ -182,7 +182,7 @@ final class YuiJDACommandFactory<C> implements JDACommandFactory<C> {
      * Mirrors StandardJDACommandFactory.createSubCommand but adds localization.
      */
     private @NotNull SubcommandData createSubCommand(
-            DiscordOption.@NotNull SubCommand<C> option,
+            DiscordOption.SubCommand<C> option,
             @Nullable CommandDefinition definition
     ) {
         SubcommandData subcommandData = new SubcommandData(option.name(), option.description());
@@ -206,7 +206,7 @@ final class YuiJDACommandFactory<C> implements JDACommandFactory<C> {
      * Mirrors StandardJDACommandFactory.createSubCommandGroup but adds localization.
      */
     private @NotNull SubcommandGroupData createSubCommandGroup(
-            DiscordOption.@NotNull SubCommand<C> option,
+            DiscordOption.SubCommand<C> option,
             @Nullable CommandDefinition definition
     ) {
         SubcommandGroupData subcommandGroupData = new SubcommandGroupData(option.name(), option.description());
@@ -230,7 +230,7 @@ final class YuiJDACommandFactory<C> implements JDACommandFactory<C> {
      * Mirrors StandardJDACommandFactory.createOption but adds localization.
      */
     private @NotNull OptionData createOption(
-            DiscordOption.@NotNull Variable<C> option,
+            DiscordOption.Variable<C> option,
             @Nullable CommandDefinition definition
     ) {
         OptionData optionData = new OptionData(
@@ -308,15 +308,16 @@ final class YuiJDACommandFactory<C> implements JDACommandFactory<C> {
     /**
      * Creates choices from Discord option choices.
      */
-    private @NotNull Collection<Command.@NotNull Choice> createChoices(
-            @NotNull Collection<@NotNull DiscordOptionChoice<?>> choices
+    private @NotNull Collection<Command.Choice> createChoices(
+            @NotNull Collection<DiscordOptionChoice<?>> choices
     ) {
         return choices.stream().map(choice -> {
-            if (choice.value() instanceof Integer) {
+            if (choice.value() instanceof Integer)
                 return new Command.Choice(choice.name(), (int) choice.value());
-            } else if (choice.value() instanceof Double) {
+
+            if (choice.value() instanceof Double)
                 return new Command.Choice(choice.name(), (double) choice.value());
-            }
+
             return new Command.Choice(choice.name(), choice.value().toString());
         }).collect(Collectors.toList());
     }
