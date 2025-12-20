@@ -10,7 +10,6 @@ import java.util.Set;
  */
 @SuppressWarnings("unused")
 public interface RequirementEvaluatorConfig {
-    
     /**
      * Gets the set of requirement entry classes that this configuration supports.
      * If empty or null, all available evaluators will be used.

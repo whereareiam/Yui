@@ -26,7 +26,7 @@ public class HelpCommandMessagesTemplate implements TemplateProvider<HelpCommand
 		HelpCommandMessages.Information.Specific specific = new HelpCommandMessages.Information.Specific();
 		specific.setTitle("Help Information");
 		specific.setDescription(List.of("List of commands in the \"{0}\" category."));
-		specific.setHeadFormat("Command: {0}");
+		specific.setHeadFormat("CommandDefinition: {0}");
 		specific.setFootFormat("Example: `{0}`\n*Description: {1}*");
 		information.setSpecific(specific);
 

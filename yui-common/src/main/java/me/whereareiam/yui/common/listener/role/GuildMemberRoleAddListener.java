@@ -12,12 +12,12 @@ import java.util.concurrent.ExecutorService;
 @AllArgsConstructor
 public class GuildMemberRoleAddListener extends ListenerAdapter {
 	private final UserRoleService userRoleService;
-	private final ExecutorService syncPool;
+	private final ExecutorService scheduledPool;
 
 	@Override
 	public void onGuildMemberRoleAdd(GuildMemberRoleAddEvent event) {
 		long userId = event.getUser().getIdLong();
 
-		syncPool.execute(() -> userRoleService.syncUser(userId));
+		scheduledPool.execute(() -> userRoleService.syncUser(userId));
 	}
 }

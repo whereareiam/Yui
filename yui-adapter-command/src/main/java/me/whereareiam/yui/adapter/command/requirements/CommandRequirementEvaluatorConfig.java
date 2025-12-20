@@ -26,6 +26,6 @@ public class CommandRequirementEvaluatorConfig implements RequirementEvaluatorCo
 
 	@Override
 	public String getConfigurationName() {
-		return "Command";
+		return "CommandDefinition";
 	}
 }

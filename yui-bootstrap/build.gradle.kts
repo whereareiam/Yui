@@ -6,6 +6,7 @@ plugins {
 }
 
 dependencies {
+    "implementation"(libs.bundles.cloud)
     "implementation"(libs.bundles.spring)
     "implementation"(libs.jda)
     "implementation"(libs.postgres)

@@ -38,6 +38,7 @@ subprojects {
             "annotationProcessor"(rootProject.libs.lombok)
 
             // general
+            "compileOnly"(rootProject.libs.annotations)
             "compileOnly"(rootProject.libs.spring.boot)
             "compileOnly"(rootProject.libs.jda)
             "compileOnly"(rootProject.libs.configura)
@@ -47,6 +48,7 @@ subprojects {
             "testImplementation"(rootProject.libs.spring.boot.test)
             "testImplementation"(rootProject.libs.jda)
             "testImplementation"(rootProject.libs.configura)
+            "testRuntimeOnly"(rootProject.libs.junit.platform.launcher)
         }
     }
 

@@ -33,7 +33,7 @@ public class Translatable {
 	/**
 	 * Sets the translation service instance.
 	 * <p>
-	 * This method is called automatically by Spring during component initialization.
+	 * This method is called automatically by Spring during component lifecycle.
 	 *
 	 * @param translationService The translation service to use
 	 */

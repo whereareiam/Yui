@@ -33,7 +33,7 @@ class DefaultUserRoleServiceTest {
 	private UserProfileService userProfileService;
 	
 	@Mock
-	private ExecutorService syncPool;
+	private ExecutorService scheduledPool;
 	
 	@Mock
 	private JDA jda;
@@ -58,7 +58,7 @@ class DefaultUserRoleServiceTest {
 	@BeforeEach
 	void setUp() {
 		userRoleService = new DefaultUserRoleService(
-			roleService, userProfileService, syncPool, jda
+			roleService, userProfileService, scheduledPool, jda
 		);
 	}
 	
@@ -79,7 +79,7 @@ class DefaultUserRoleServiceTest {
 		verify(roleService).roleExists(roleId);
 		verify(userProfileService).getProfile(userId);
 		verify(userProfileService).addRole(userId, roleId);
-		verify(syncPool).execute(any());
+		verify(scheduledPool).execute(any());
 	}
 	
 	@Test
@@ -101,7 +101,7 @@ class DefaultUserRoleServiceTest {
 		verify(userProfileService).getProfile(userId);
 		verify(userProfileService).createProfile(userId);
 		verify(userProfileService).addRole(userId, roleId);
-		verify(syncPool).execute(any());
+		verify(scheduledPool).execute(any());
 	}
 	
 	@Test
@@ -118,7 +118,7 @@ class DefaultUserRoleServiceTest {
 		// Assert
 		verify(roleService).roleExists(roleId);
 		verify(userProfileService, never()).getProfile(anyLong());
-		verify(syncPool, never()).execute(any());
+		verify(scheduledPool, never()).execute(any());
 	}
 	
 	@Test
@@ -137,7 +137,7 @@ class DefaultUserRoleServiceTest {
 		// Assert
 		verify(roleService).roleExists(roleId);
 		verify(userProfileService).getProfile(userId);
-		verify(syncPool, never()).execute(any());
+		verify(scheduledPool, never()).execute(any());
 	}
 	
 	@Test
@@ -151,7 +151,7 @@ class DefaultUserRoleServiceTest {
 		
 		// Assert
 		verify(userProfileService).removeRole(userId, roleId);
-		verify(syncPool).execute(any());
+		verify(scheduledPool).execute(any());
 	}
 	
 	@Test

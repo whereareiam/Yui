@@ -1,18 +1,19 @@
 package me.whereareiam.yui.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.annotation.Command;
-import me.whereareiam.yui.CommandBase;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import me.whereareiam.yui.annotation.command.Command;
+import me.whereareiam.yui.annotation.command.Definition;
+import org.incendo.cloud.discord.jda6.JDAInteraction;
 import org.springframework.stereotype.Component;
 
 @Component
 @AllArgsConstructor
-public class MainCommand implements CommandBase {
+public class MainCommand {
 	private final HelpCommand helpCommand;
 
-	@Command(name = "main")
-	public void onCommand(SlashCommandInteractionEvent event) {
-		helpCommand.onCommand(event);
+	@Definition("main")
+	@Command("main")
+	public void onCommand(JDAInteraction interaction) {
+		helpCommand.onCommand(interaction, null);
 	}
 }

@@ -12,12 +12,12 @@ import java.util.concurrent.ExecutorService;
 @AllArgsConstructor
 public class GuildMemberRoleRemoveListener extends ListenerAdapter {
 	private final UserRoleService userRoleService;
-	private final ExecutorService syncPool;
+	private final ExecutorService scheduledPool;
 
 	@Override
 	public void onGuildMemberRoleRemove(GuildMemberRoleRemoveEvent event) {
 		long userId = event.getUser().getIdLong();
 		
-		syncPool.execute(() -> userRoleService.syncUser(userId));
+		scheduledPool.execute(() -> userRoleService.syncUser(userId));
 	}
 }

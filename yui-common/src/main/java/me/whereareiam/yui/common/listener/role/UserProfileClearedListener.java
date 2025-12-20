@@ -18,12 +18,12 @@ import java.util.concurrent.ExecutorService;
 @AllArgsConstructor
 public class UserProfileClearedListener {
 	private final UserRoleService userRoleService;
-	private final ExecutorService syncPool;
+	private final ExecutorService scheduledPool;
 
 	@EventListener
 	public void onUserProfileCleared(UserProfileClearedEvent event) {
 		long userId = event.getUserId();
 
-		syncPool.execute(() -> userRoleService.syncUser(userId));
+		scheduledPool.execute(() -> userRoleService.syncUser(userId));
 	}
 }

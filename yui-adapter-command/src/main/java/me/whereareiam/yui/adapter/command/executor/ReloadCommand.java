@@ -2,18 +2,18 @@ package me.whereareiam.yui.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.annotation.Command;
-import me.whereareiam.yui.annotation.ComponentListener;
-import me.whereareiam.yui.registry.Registry;
-import me.whereareiam.yui.CommandBase;
 import me.whereareiam.yui.Reloadable;
-import me.whereareiam.yui.style.StyleKit;
-import me.whereareiam.yui.util.Components;
+import me.whereareiam.yui.annotation.ComponentListener;
+import me.whereareiam.yui.annotation.command.Command;
+import me.whereareiam.yui.annotation.command.Definition;
+import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.util.style.StyleKit;
 import me.whereareiam.yui.translation.Translatable;
+import me.whereareiam.yui.util.Components;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
+import org.incendo.cloud.discord.jda6.JDAInteraction;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
@@ -33,25 +33,29 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @Component
 @AllArgsConstructor
-public class ReloadCommand implements CommandBase {
+public class ReloadCommand {
 	private final Registry<Reloadable> reloadableRegistry;
 
 	private static final String CONFIRM_LISTENER = "command_reload_confirm";
 	private static final String CANCEL_LISTENER = "command_reload_cancel";
 
-	@Command(name = "reload")
-	public void onCommand(SlashCommandInteractionEvent event) {
+	@Definition("reload")
+	@Command("reload")
+	public void onCommand(JDAInteraction interaction) {
+		long userId = interaction.user().getIdLong();
+
 		// Create confirmation embed
 		EmbedBuilder embed = StyleKit.embeds().warning();
-		embed.setTitle(Translatable.of("commands.reload.confirmation.title", event.getUser().getIdLong()));
-		embed.setDescription(Translatable.of("commands.reload.confirmation.description", event.getUser().getIdLong()));
+		embed.setTitle(Translatable.of("commands.reload.confirmation.title", userId));
+		embed.setDescription(Translatable.of("commands.reload.confirmation.description", userId));
 
 		// Create buttons
-		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.of("vocabulary.confirm", event.getUser().getIdLong()));
-		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.of("vocabulary.cancel", event.getUser().getIdLong()));
+		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.of("vocabulary.confirm", userId));
+		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.of("vocabulary.cancel", userId));
 
 		// Send the confirmation message with buttons
-		event.replyEmbeds(embed.build())
+		interaction.replyCallback()
+				.replyEmbeds(embed.build())
 				.setEphemeral(true)
 				.addActionRow(confirmButton, cancelButton)
 				.queue();

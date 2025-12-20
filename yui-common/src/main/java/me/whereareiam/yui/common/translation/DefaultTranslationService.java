@@ -6,10 +6,10 @@ import me.whereareiam.yui.translation.TranslationLoader;
 import me.whereareiam.yui.translation.TranslationService;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.Reloadable;
-import me.whereareiam.yui.Provider;
 import me.whereareiam.yui.registry.UserProfileCacheRegistry;
 import me.whereareiam.yui.translation.TranslationTags;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Service
 public class DefaultTranslationService implements TranslationService, Reloadable {
-	private final Provider<Settings> settings;
+	private final ObjectProvider<Settings> settings;
 	private final List<TranslationLoader> loaders;
 	private final UserProfileCacheRegistry userProfileCache;
 
@@ -39,7 +39,7 @@ public class DefaultTranslationService implements TranslationService, Reloadable
 
 	@Autowired
 	public DefaultTranslationService(
-			Provider<Settings> settings,
+			ObjectProvider<Settings> settings,
 			List<TranslationLoader> loaders,
 			UserProfileCacheRegistry userProfileCache,
 			Registry<Reloadable> reloadableRegistry
@@ -131,8 +131,6 @@ public class DefaultTranslationService implements TranslationService, Reloadable
 							? kv.getKey()
 							: prefix + kv.getKey();
 					targetMap.put(finalKey, kv.getValue());
-
-
 				}
 			}
 		}
@@ -140,7 +138,7 @@ public class DefaultTranslationService implements TranslationService, Reloadable
 
 	@Override
 	public String translate(String key, long userId) {
-		DiscordLocale defaultBotLocale = settings.get().getLocale();
+		DiscordLocale defaultBotLocale = settings.getObject().getLocale();
 		log.trace("[TranslationService]: Translating key '{}' for user {}", key, userId);
 		DiscordLocale[] userLocales = getUserLocalesOrDefault(userId, defaultBotLocale);
 		log.trace("[TranslationService]: User locales: {}", (Object) userLocales);
@@ -169,7 +167,7 @@ public class DefaultTranslationService implements TranslationService, Reloadable
 		}
 
 		// Fallback to the default bot locale
-		DiscordLocale defaultBotLocale = settings.get().getLocale();
+		DiscordLocale defaultBotLocale = settings.getObject().getLocale();
 		translation = getTranslatedString(defaultBotLocale, key);
 		if (translation != null) {
 			log.trace("[TranslationService]: Found translation for key '{}' in default locale {}: '{}'", key, defaultBotLocale, translation);
@@ -194,7 +192,7 @@ public class DefaultTranslationService implements TranslationService, Reloadable
 	}
 
 	private DiscordLocale getEffectiveLocaleForUser(long userId) {
-		DiscordLocale defaultLocale = settings.get().getLocale();
+		DiscordLocale defaultLocale = settings.getObject().getLocale();
 		return userProfileCache.getProfile(userId)
 				.map(profile -> profile.getPrimaryLanguage() != null ? profile.getPrimaryLanguage() : defaultLocale)
 				.orElse(defaultLocale);

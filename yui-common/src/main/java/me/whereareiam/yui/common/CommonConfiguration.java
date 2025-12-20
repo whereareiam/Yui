@@ -1,5 +1,6 @@
 package me.whereareiam.yui.common;
 
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.model.config.settings.Settings;
@@ -7,21 +8,26 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class CommonConfiguration {
+	private final ObjectProvider<Settings> settingsProvider;
+	private JDA jda;
+
 	@Bean
 	@Primary
-	public JDA jda(Settings settings) {
-		JDA jda;
+	public JDA jda() {
+		Settings settings = settingsProvider.getObject();
 
 		try {
 			if (settings.getDiscord().getGuildId().equals("SET_YOUR_GUILD_ID"))
@@ -38,15 +44,6 @@ public class CommonConfiguration {
 
 			jda = builder.build().awaitReady();
 
-			jda.getGuilds()
-					.stream()
-					.filter(guild -> !guild.getId().equals(settings.getDiscord().getGuildId()))
-					.forEach(guild -> {
-						log.info("Leaving guild '{}' ({})", guild.getName(), guild.getId());
-						guild.leave().queue();
-					});
-
-
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
@@ -54,11 +51,19 @@ public class CommonConfiguration {
 		return jda;
 	}
 
+	@PreDestroy
+	public void shutdownJda() {
+		if (jda == null) return;
+
+		log.info("Shutting down YUI");
+		jda.shutdown();
+	}
+
 	@Bean(destroyMethod = "shutdown")
-	public ExecutorService syncPool() {
-		return Executors.newFixedThreadPool(
+	public ScheduledExecutorService scheduledPool() {
+		return Executors.newScheduledThreadPool(
 				Math.max(2, Runtime.getRuntime().availableProcessors()),
-				r -> new Thread(r, "yui-role-sync")
+				Thread.ofVirtual().name("yui-scheduled", 0).factory()
 		);
 	}
 }

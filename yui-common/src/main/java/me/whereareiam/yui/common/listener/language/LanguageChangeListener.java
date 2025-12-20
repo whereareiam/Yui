@@ -6,7 +6,7 @@ import me.whereareiam.yui.event.language.AdditionalLanguageRemovedEvent;
 import me.whereareiam.yui.event.language.LanguageChangeEvent;
 import me.whereareiam.yui.service.UserRoleService;
 import me.whereareiam.yui.model.config.Roles;
-import me.whereareiam.yui.Provider;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class LanguageChangeListener {
 	private final UserRoleService userRoleService;
-	private final Provider<Roles> roles;
+	private final ObjectProvider<Roles> roles;
 
 	@EventListener
 	@Order(0)
@@ -42,6 +42,6 @@ public class LanguageChangeListener {
 	}
 
 	private long getRoleId(String language) {
-		return roles.get().getLanguageRoles().get(language);
+		return roles.getObject().getLanguageRoles().get(language);
 	}
 }

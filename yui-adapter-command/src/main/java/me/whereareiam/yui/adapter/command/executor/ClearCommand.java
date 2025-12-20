@@ -1,47 +1,39 @@
 package me.whereareiam.yui.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.annotation.Command;
 import me.whereareiam.yui.annotation.ComponentListener;
-import me.whereareiam.yui.CommandBase;
+import me.whereareiam.yui.annotation.command.Argument;
+import me.whereareiam.yui.annotation.command.Command;
+import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.service.ProfileManagementService;
-import me.whereareiam.yui.style.StyleKit;
-import me.whereareiam.yui.util.Components;
+import me.whereareiam.yui.util.style.StyleKit;
 import me.whereareiam.yui.translation.Translatable;
+import me.whereareiam.yui.util.Components;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
+import org.incendo.cloud.discord.jda6.JDAInteraction;
 import org.springframework.stereotype.Component;
 
 @Component
 @AllArgsConstructor
-public class ClearCommand implements CommandBase {
+public class ClearCommand {
 	private final ProfileManagementService profileManagementService;
 
 	private static final String CONFIRM_LISTENER = "command_clear_confirm";
 	private static final String CANCEL_LISTENER = "command_clear_cancel";
 
-	@Command(name = "clear")
-	public void onCommand(SlashCommandInteractionEvent event) {
-		OptionMapping userOption = event.getOption("user");
-		if (userOption == null) {
-			event.replyEmbeds(StyleKit.embeds().error()
-							.setTitle(Translatable.of("commands.error.validation.userRequired", event.getUser().getIdLong()))
-							.build())
-					.setEphemeral(true)
-					.queue();
-			return;
-		}
-
-		User targetUser = userOption.getAsUser();
+	@Definition("clear")
+	@Command("clear <user>")
+	public void onCommand(JDAInteraction interaction, @Argument("user") User targetUser) {
+		long userId = interaction.user().getIdLong();
 
 		// Check if user is trying to clear their own profile
-		if (targetUser.getIdLong() == event.getUser().getIdLong()) {
-			event.replyEmbeds(StyleKit.embeds().error()
-							.setTitle(Translatable.of("commands.error.validation.sameUser", event.getUser().getIdLong()))
+		if (targetUser.getIdLong() == userId) {
+			interaction.replyCallback()
+					.replyEmbeds(StyleKit.embeds().error()
+							.setTitle(Translatable.of("commands.error.validation.sameUser", userId))
 							.build())
 					.setEphemeral(true)
 					.queue();
@@ -50,20 +42,21 @@ public class ClearCommand implements CommandBase {
 
 		// Create confirmation embed
 		EmbedBuilder embed = StyleKit.embeds().warning();
-		embed.setTitle(Translatable.of("commands.clear.confirmation.title", event.getUser().getIdLong()));
-		embed.setDescription(Translatable.of("commands.clear.confirmation.description", event.getUser().getIdLong()));
+		embed.setTitle(Translatable.of("commands.clear.confirmation.title", userId));
+		embed.setDescription(Translatable.of("commands.clear.confirmation.description", userId));
 		embed.addField(
-				Translatable.of("commands.clear.confirmation.userInfo", event.getUser().getIdLong()),
+				Translatable.of("commands.clear.confirmation.userInfo", userId),
 				String.format("**%s** (`%s`)", targetUser.getAsMention(), targetUser.getId()),
 				false
 		);
 
 		// Create buttons using the proper Components utility with embedded payload
-		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.of("vocabulary.confirm", event.getUser().getIdLong()), String.valueOf(targetUser.getIdLong()));
-		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.of("vocabulary.cancel", event.getUser().getIdLong()), String.valueOf(targetUser.getIdLong()));
+		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.of("vocabulary.confirm", userId), String.valueOf(targetUser.getIdLong()));
+		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.of("vocabulary.cancel", userId), String.valueOf(targetUser.getIdLong()));
 
 		// Send the confirmation message with buttons
-		event.replyEmbeds(embed.build())
+		interaction.replyCallback()
+				.replyEmbeds(embed.build())
 				.setEphemeral(true)
 				.addActionRow(confirmButton.getButton(), cancelButton.getButton())
 				.queue();

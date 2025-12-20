@@ -3,7 +3,7 @@ package me.whereareiam.yui.adapter.database.adapter;
 import jakarta.transaction.Transactional;
 import me.whereareiam.yui.adapter.database.entity.LanguageEntity;
 import me.whereareiam.yui.adapter.database.repository.LanguageRepository;
-import me.whereareiam.yui.service.LanguageService;
+import me.whereareiam.yui.translation.LanguageService;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
