@@ -1,4 +1,4 @@
-package me.whereareiam.yui.service;
+package me.whereareiam.yui.translation;
 
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 

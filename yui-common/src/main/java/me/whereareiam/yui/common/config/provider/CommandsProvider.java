@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.config.provider;
 
 import me.whereareiam.configura.Config;
-import me.whereareiam.yui.DefinitionProvider;
+import me.whereareiam.yui.command.DefinitionProvider;
 import me.whereareiam.yui.common.config.template.CommandsTemplate;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import me.whereareiam.yui.model.config.Commands;

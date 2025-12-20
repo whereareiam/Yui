@@ -4,7 +4,7 @@ import me.whereareiam.yui.model.config.style.Palette;
 import me.whereareiam.yui.model.config.style.embed.EmbedStyle;
 import me.whereareiam.yui.registry.Registry;
 import me.whereareiam.yui.Reloadable;
-import me.whereareiam.yui.style.StyleKit;
+import me.whereareiam.yui.util.style.StyleKit;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -41,9 +41,7 @@ class YuiCommandExtractor implements CommandExtractor {
 			final Command yuiCommand = method.getAnnotation(Command.class);
 			if (yuiCommand == null) continue;
 
-			if (!method.isAccessible())
-				method.setAccessible(true);
-
+			method.trySetAccessible();
 			if (Modifier.isStatic(method.getModifiers())) {
 				throw new IllegalArgumentException(String.format(
 						"@Command annotated method '%s' is static! @Command annotated methods should not be static.",

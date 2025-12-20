@@ -1,11 +1,14 @@
-package me.whereareiam.yui.service;
+package me.whereareiam.yui.command;
 
-import me.whereareiam.yui.DefinitionProvider;
+import me.whereareiam.yui.command.exception.ExceptionContext;
+import me.whereareiam.yui.command.exception.ExceptionResponse;
+import me.whereareiam.yui.exception.command.base.CommandException;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationContext;
 
 import java.util.Map;
+import java.util.function.Function;
 
 @SuppressWarnings("unused")
 public interface CommandService {
@@ -37,9 +40,33 @@ public interface CommandService {
 	void registerProvider(@NotNull DefinitionProvider provider);
 
 	/**
-	 * Unregister an external provider by its source id.
+	 * Registers an exception handler for a custom {@link CommandException}.
+	 * <p>
+	 * The handler function receives the exception and should return an {@link ExceptionResponse}
+	 * that defines what message or embed to send to the user.
+	 * <p>
+	 * If no handler is registered, the exception's {@link CommandException#createResponse(ExceptionContext)}
+	 * method will be used instead.
+	 * <p>
+	 * Example:
+	 * <pre>{@code
+	 * commandService.registerExceptionHandler(
+	 *     RequirementFailedException.class,
+	 *     exception -> {
+	 *         // Custom logic to create response
+	 *         return ExceptionResponse.message("Requirements not met!");
+	 *     }
+	 * );
+	 * }</pre>
+	 *
+	 * @param exceptionType The exception type to handle
+	 * @param handler       The handler function that creates a response from the exception
+	 * @param <T>           The exception type
 	 */
-	void unregisterProvider(@NotNull String sourceId);
+	<T extends CommandException> void registerExceptionHandler(
+			@NotNull Class<T> exceptionType,
+			@NotNull Function<T, ExceptionResponse> handler
+	);
 
 	/**
 	 * Remove a {@link CommandDefinition} from the registry by its id.
@@ -55,6 +82,11 @@ public interface CommandService {
 	 * This is a best-effort helper for unregistration by user-facing command name.
 	 */
 	void unregisterByAlias(@NotNull String alias);
+
+	/**
+	 * Unregister an external provider by its source id.
+	 */
+	void unregisterProvider(@NotNull String sourceId);
 
 	/**
 	 * Returns the number of commands currently registered with the underlying command manager.

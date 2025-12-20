@@ -7,9 +7,12 @@ import me.whereareiam.yui.adapter.command.definition.DefinitionProviderRegistry;
 import me.whereareiam.yui.adapter.command.parsing.definition.CommandDefinitionParser;
 import me.whereareiam.yui.adapter.command.registration.CommandScanner;
 import me.whereareiam.yui.adapter.command.registration.AnnotationCommandRegistrar;
+import me.whereareiam.yui.exception.command.base.CommandException;
+import me.whereareiam.yui.adapter.command.exception.DefaultExceptionHandlerRegistry;
+import me.whereareiam.yui.command.exception.ExceptionResponse;
 import me.whereareiam.yui.model.command.CommandDefinition;
-import me.whereareiam.yui.service.CommandService;
-import me.whereareiam.yui.DefinitionProvider;
+import me.whereareiam.yui.command.CommandService;
+import me.whereareiam.yui.command.DefinitionProvider;
 import me.whereareiam.yui.type.Source;
 import org.incendo.cloud.discord.jda6.JDA6CommandManager;
 import org.incendo.cloud.discord.jda6.JDAInteraction;
@@ -21,6 +24,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 @Slf4j
 @Service
@@ -30,6 +34,7 @@ public class DefaultCommandService implements CommandService {
 	private final CommandDefinitionRegistry definitionRegistry;
 	private final DefinitionProviderRegistry definitionProviderRegistry;
 	private final CommandScanner commandScanner;
+	private final DefaultExceptionHandlerRegistry exceptionHandlerRegistry;
 
 	private AnnotationCommandRegistrar<JDAInteraction> registrar;
 
@@ -60,14 +65,16 @@ public class DefaultCommandService implements CommandService {
 	}
 
 	@Override
-	public void unregisterProvider(@NotNull String id) {
-		definitionProviderRegistry.removeExternalProvider(id);
-		definitionRegistry.removeBySource(id, Source.EXTERNAL);
+	public void register(@NotNull Class<?> commandClass) {
+		register(commandScanner.findCommand(commandClass));
 	}
 
 	@Override
-	public void register(@NotNull Class<?> commandClass) {
-		register(commandScanner.findCommand(commandClass));
+	public <T extends CommandException> void registerExceptionHandler(
+			@NotNull Class<T> exceptionType,
+			@NotNull Function<T, ExceptionResponse> handler
+	) {
+		exceptionHandlerRegistry.register(exceptionType, handler);
 	}
 
 	@Override
@@ -97,6 +104,12 @@ public class DefaultCommandService implements CommandService {
 
 		definitionRegistry.removeByAlias(alias);
 		log.debug("Requested unregistration by alias '{}'", alias);
+	}
+
+	@Override
+	public void unregisterProvider(@NotNull String id) {
+		definitionProviderRegistry.removeExternalProvider(id);
+		definitionRegistry.removeBySource(id, Source.EXTERNAL);
 	}
 
 	@Override

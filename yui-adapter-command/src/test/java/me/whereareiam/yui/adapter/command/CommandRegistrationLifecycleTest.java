@@ -1,12 +1,12 @@
 package me.whereareiam.yui.adapter.command;
 
-import me.whereareiam.yui.DefinitionProvider;
 import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
 import me.whereareiam.yui.adapter.command.definition.DefinitionProviderRegistry;
 import me.whereareiam.yui.adapter.command.parsing.definition.CommandDefinitionParser;
 import me.whereareiam.yui.adapter.command.registration.AnnotationCommandRegistrar;
 import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;
+import me.whereareiam.yui.command.DefinitionProvider;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import me.whereareiam.yui.type.CommandCategory;
 import me.whereareiam.yui.type.Source;
@@ -18,9 +18,11 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -189,13 +191,13 @@ class CommandRegistrationLifecycleTest {
 
 			@NotNull
 			@Override
-			public java.util.stream.Stream<DefinitionProvider> stream() {
-				return java.util.Arrays.stream(providers);
+			public Stream<DefinitionProvider> stream() {
+				return Arrays.stream(providers);
 			}
 
 			@NotNull
 			@Override
-			public java.util.stream.Stream<DefinitionProvider> orderedStream() {
+			public Stream<DefinitionProvider> orderedStream() {
 				return stream();
 			}
 		});

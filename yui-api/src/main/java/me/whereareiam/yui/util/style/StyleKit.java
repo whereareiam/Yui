@@ -1,4 +1,4 @@
-package me.whereareiam.yui.style;
+package me.whereareiam.yui.util.style;
 
 import me.whereareiam.yui.model.config.style.Palette;
 import me.whereareiam.yui.model.config.style.embed.EmbedStyle;

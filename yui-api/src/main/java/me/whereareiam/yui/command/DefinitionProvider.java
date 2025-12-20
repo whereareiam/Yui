@@ -1,4 +1,4 @@
-package me.whereareiam.yui;
+package me.whereareiam.yui.command;
 
 import me.whereareiam.yui.model.command.CommandDefinition;
 import me.whereareiam.yui.type.Source;

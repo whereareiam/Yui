@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
 import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
+import me.whereareiam.yui.exception.command.RequirementFailedException;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import me.whereareiam.yui.model.profile.UserProfile;
 import me.whereareiam.yui.model.requirement.RequirementContext;
@@ -11,13 +12,11 @@ import me.whereareiam.yui.model.requirement.Requirements;
 import me.whereareiam.yui.requirement.RequirementEvaluator;
 import me.whereareiam.yui.service.UserProfileService;
 import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.discord.jda6.JDAInteraction;
 import org.incendo.cloud.execution.postprocessor.CommandPostprocessingContext;
 import org.incendo.cloud.execution.postprocessor.CommandPostprocessor;
-import org.incendo.cloud.services.type.ConsumerService;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
@@ -37,7 +36,6 @@ import java.util.Optional;
 public class CommandRequirementsPostprocessor implements CommandPostprocessor<JDAInteraction> {
 	private final RequirementEvaluator requirementEvaluator;
 	private final CommandRequirementEvaluatorConfig evaluatorConfig;
-	private final RequirementMessageFormatter errorService;
 	private final CommandDefinitionRegistry definitionRegistry;
 	private final UserProfileService userProfileService;
 
@@ -75,30 +73,9 @@ public class CommandRequirementsPostprocessor implements CommandPostprocessor<JD
 
 		if (allowed) return;
 
-		// Requirements failed: build a localized error message and respond
-		String errorMessage = errorService.generateErrorMessage(requirements, userId);
-		sendErrorReply(interaction, errorMessage);
-
-		// Interrupt the Cloud service pipeline so that the command is not executed
-		ConsumerService.interrupt();
-	}
-
-	private void sendErrorReply(@NotNull JDAInteraction interaction, @NotNull String message) {
-		try {
-			IReplyCallback replyCallback = interaction.replyCallback();
-			if (replyCallback != null) {
-				replyCallback.reply(message).setEphemeral(true).queue();
-				return;
-			}
-
-			GenericCommandInteractionEvent event = interaction.interactionEvent();
-			if (event != null) event
-					.reply(message)
-					.setEphemeral(true)
-					.queue();
-		} catch (Exception e) {
-			log.warn("Failed to send requirement error reply", e);
-		}
+		// Requirements failed: throw RequirementFailedException
+		// The exception handler system will catch it and send the appropriate response
+		throw new RequirementFailedException(requirements);
 	}
 }
 

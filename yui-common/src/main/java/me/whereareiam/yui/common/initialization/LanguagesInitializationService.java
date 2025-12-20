@@ -3,7 +3,7 @@ package me.whereareiam.yui.common.initialization;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.model.config.Roles;
-import me.whereareiam.yui.service.LanguageService;
+import me.whereareiam.yui.translation.LanguageService;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
