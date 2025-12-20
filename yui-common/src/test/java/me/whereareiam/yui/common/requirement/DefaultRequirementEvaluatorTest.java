@@ -1,6 +1,5 @@
-package me.whereareiam.yui.common.service.requirement;
+package me.whereareiam.yui.common.requirement;
 
-import me.whereareiam.yui.common.requirement.DefaultRequirementEvaluator;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.requirement.Requirements;
 import me.whereareiam.yui.model.requirement.type.UserRequirement;

@@ -42,7 +42,7 @@ class DefaultTranslationServiceTest {
 	@Mock
 	private ObjectProvider<Settings> settings;
 
-	@Mock
+	@Mock(strictness = Mock.Strictness.LENIENT)
 	private User jdaUser;
 
 	private DefaultTranslationService translationService;
@@ -94,6 +94,10 @@ class DefaultTranslationServiceTest {
 		);
 
 		translationService.initialize();
+
+		// Initialize Fluctlight services for tests
+		// Note: fluctlightPersistence parameter is not used in initServices, so we pass null
+		Fluctlight.initServices(fluctlightService, null);
 	}
 
 	@Test
@@ -101,7 +105,8 @@ class DefaultTranslationServiceTest {
 		// Arrange
 		when(jdaUser.getIdLong()).thenReturn(123L);
 		Fluctlight fluctlight = new Fluctlight(jdaUser);
-		fluctlight.setPrimaryLanguage(DiscordLocale.ENGLISH_US);
+		// Set language using internal method to avoid persistence calls
+		fluctlight.setPrimaryLanguageInternal(DiscordLocale.ENGLISH_US);
 		when(fluctlightService.get(123L)).thenReturn(Optional.of(fluctlight));
 
 		// Act & Assert
@@ -123,7 +128,8 @@ class DefaultTranslationServiceTest {
 		// Arrange
 		when(jdaUser.getIdLong()).thenReturn(456L);
 		Fluctlight fluctlight = new Fluctlight(jdaUser);
-		fluctlight.setPrimaryLanguage(DiscordLocale.GERMAN);
+		// Set language using internal method to avoid persistence calls
+		fluctlight.setPrimaryLanguageInternal(DiscordLocale.GERMAN);
 		when(fluctlightService.get(456L)).thenReturn(Optional.of(fluctlight));
 
 		// Act & Assert

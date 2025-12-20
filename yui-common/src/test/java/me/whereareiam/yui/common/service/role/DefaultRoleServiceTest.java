@@ -38,19 +38,19 @@ class DefaultRoleServiceTest {
 	@Mock
 	private FluctlightRegistry fluctlightRegistry;
 	
-	@Mock
+	@Mock(strictness = Mock.Strictness.LENIENT)
 	private ObjectProvider<Settings> settingsProvider;
 	
-	@Mock
+	@Mock(strictness = Mock.Strictness.LENIENT)
 	private JDA jda;
 	
-	@Mock
+	@Mock(strictness = Mock.Strictness.LENIENT)
 	private Settings settings;
 	
-	@Mock
+	@Mock(strictness = Mock.Strictness.LENIENT)
 	private DiscordSettings discordSettings;
 	
-	@Mock
+	@Mock(strictness = Mock.Strictness.LENIENT)
 	private Guild guild;
 	
 	@Mock

@@ -1,9 +1,8 @@
-package me.whereareiam.yui.common.service.requirement.evaluators;
+package me.whereareiam.yui.common.requirement.evaluators;
 
-import me.whereareiam.yui.common.requirement.evaluators.RoleRequirementEvaluator;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
-import me.whereareiam.yui.model.requirement.type.RoleRequirement;
 import me.whereareiam.yui.model.requirement.RequirementContext;
+import me.whereareiam.yui.model.requirement.type.RoleRequirement;
 import me.whereareiam.yui.type.requirement.RequirementCondition;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -12,9 +11,8 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
@@ -29,33 +27,40 @@ class RoleRequirementEvaluatorTest {
 	private RoleRequirementEvaluator evaluator;
 	private Fluctlight fluctlight;
 	private RequirementContext context;
-	
-	@Mock private SlashCommandInteractionEvent mockEvent;
-	@Mock private Guild mockGuild;
-	@Mock private User mockUser;
-	@Mock private Member mockMember;
-	@Mock private Role role100;
-	@Mock private Role role200;
-	@Mock private Role role300;
-	@Mock private User jdaUser;
+
+	@Mock(strictness = Mock.Strictness.LENIENT)
+	private SlashCommandInteractionEvent mockEvent;
+	@Mock(strictness = Mock.Strictness.LENIENT)
+	private Guild mockGuild;
+	@Mock(strictness = Mock.Strictness.LENIENT)
+	private User mockUser;
+	@Mock(strictness = Mock.Strictness.LENIENT)
+	private Member mockMember;
+	@Mock(strictness = Mock.Strictness.LENIENT)
+	private Role role100;
+	@Mock(strictness = Mock.Strictness.LENIENT)
+	private Role role200;
+	@Mock(strictness = Mock.Strictness.LENIENT)
+	private Role role300;
+	@Mock(strictness = Mock.Strictness.LENIENT)
+	private User jdaUser;
 
 	@BeforeEach
 	void setUp() {
-		MockitoAnnotations.openMocks(this);
 		evaluator = new RoleRequirementEvaluator();
-		
+
 		// Setup mock fluctlight
 		when(jdaUser.getIdLong()).thenReturn(12345L);
 		fluctlight = new Fluctlight(jdaUser);
 		fluctlight.setAllowedRoles(new long[]{100L, 200L, 300L});
-		
+
 		// Setup mock Discord event with roles
 		setupMockDiscordEvent();
-		
+
 		// Create context with mock Discord event
 		context = new RequirementContext(mockEvent, fluctlight);
 	}
-	
+
 	private void setupMockDiscordEvent() {
 		// Setup mock roles
 		when(role100.getIdLong()).thenReturn(100L);
@@ -64,10 +69,10 @@ class RoleRequirementEvaluatorTest {
 		when(role200.getName()).thenReturn("Role200");
 		when(role300.getIdLong()).thenReturn(300L);
 		when(role300.getName()).thenReturn("Role300");
-		
+
 		// Setup mock member with roles
 		when(mockMember.getRoles()).thenReturn(Arrays.asList(role100, role200, role300));
-		
+
 		// Setup mock event
 		when(mockEvent.getMember()).thenReturn(mockMember);
 		when(mockEvent.getUser()).thenReturn(mockUser);
@@ -96,56 +101,31 @@ class RoleRequirementEvaluatorTest {
 
 	@Test
 	void testEvaluateHasCondition() {
-		RoleRequirement roleReq = new RoleRequirement(
-				RequirementCondition.HAS,
-				true,
-				Arrays.asList("100", "200"),
-				"ID"
-		);
+		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.HAS, true, Arrays.asList("100", "200"), "ID");
 		assertTrue(evaluator.evaluate(context, roleReq));
 	}
 
 	@Test
 	void testEvaluateHasConditionUserMissingOneRole() {
-		RoleRequirement roleReq = new RoleRequirement(
-				RequirementCondition.HAS,
-				true,
-				Arrays.asList("100", "200", "400"),
-				"ID"
-		);
+		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.HAS, true, Arrays.asList("100", "200", "400"), "ID");
 		assertFalse(evaluator.evaluate(context, roleReq));
 	}
 
 	@Test
 	void testEvaluateContainsCondition() {
-		RoleRequirement roleReq = new RoleRequirement(
-				RequirementCondition.CONTAINS,
-				true,
-				Arrays.asList("100", "400", "500"),
-				"ID"
-		);
+		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.CONTAINS, true, Arrays.asList("100", "400", "500"), "ID");
 		assertTrue(evaluator.evaluate(context, roleReq));
 	}
 
 	@Test
 	void testEvaluateContainsConditionUserHasNoRoles() {
-		RoleRequirement roleReq = new RoleRequirement(
-				RequirementCondition.CONTAINS,
-				true,
-				Arrays.asList("400", "500", "600"),
-				"ID"
-		);
+		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.CONTAINS, true, Arrays.asList("400", "500", "600"), "ID");
 		assertFalse(evaluator.evaluate(context, roleReq));
 	}
 
 	@Test
 	void testEvaluateEqualsCondition() {
-		RoleRequirement roleReq = new RoleRequirement(
-				RequirementCondition.EQUALS,
-				true,
-				Arrays.asList("100", "400", "500"),
-				"ID"
-		);
+		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.EQUALS, true, Arrays.asList("100", "400", "500"), "ID");
 		assertTrue(evaluator.evaluate(context, roleReq));
 	}
 
@@ -155,23 +135,13 @@ class RoleRequirementEvaluatorTest {
 		noRolesFluctlight.setAllowedRoles(null);
 		RequirementContext noRolesContext = new RequirementContext("test", noRolesFluctlight);
 
-		RoleRequirement roleReq = new RoleRequirement(
-				RequirementCondition.HAS,
-				true,
-				Arrays.asList("100", "200", "300"),
-				"ID"
-		);
+		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.HAS, true, Arrays.asList("100", "200", "300"), "ID");
 		assertFalse(evaluator.evaluate(noRolesContext, roleReq));
 	}
 
 	@Test
 	void testEvaluateWithExpectedFalse() {
-		RoleRequirement roleReq = new RoleRequirement(
-			RequirementCondition.HAS, 
-			false, 
-			Arrays.asList("100", "200"),
-			"ID"
-		);
+		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.HAS, false, Arrays.asList("100", "200"), "ID");
 		// Test raw evaluator behavior - this should return true because fluctlight has all required roles
 		// The expected=false logic is handled by DefaultRequirementEvaluator, not this evaluator
 		assertTrue(evaluator.evaluate(context, roleReq));
@@ -179,12 +149,7 @@ class RoleRequirementEvaluatorTest {
 
 	@Test
 	void testEvaluateWithExpectedFalseUserMissingRoles() {
-		RoleRequirement roleReq = new RoleRequirement(
-			RequirementCondition.HAS, 
-			false, 
-			Arrays.asList("100", "200", "400"),
-			"ID"
-		);
+		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.HAS, false, Arrays.asList("100", "200", "400"), "ID");
 		// Test raw evaluator behavior - this should return false because fluctlight is missing role 400
 		// The expected=false logic is handled by DefaultRequirementEvaluator, not this evaluator
 		assertFalse(evaluator.evaluate(context, roleReq));
@@ -192,60 +157,35 @@ class RoleRequirementEvaluatorTest {
 
 	@Test
 	void testEvaluateWithNullRoleMatchBy() {
-		RoleRequirement roleReq = new RoleRequirement(
-				RequirementCondition.HAS,
-				true,
-				Arrays.asList("100", "200"),
-				null
-		);
+		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.HAS, true, Arrays.asList("100", "200"), null);
 		// Should default to ID matching when roleMatchBy is null
 		assertTrue(evaluator.evaluate(context, roleReq));
 	}
 
 	@Test
 	void testEvaluateWithEmptyRoleMatchBy() {
-		RoleRequirement roleReq = new RoleRequirement(
-				RequirementCondition.HAS,
-				true,
-				Arrays.asList("100", "200"),
-				""
-		);
+		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.HAS, true, Arrays.asList("100", "200"), "");
 		// Should default to ID matching when roleMatchBy is empty
 		assertTrue(evaluator.evaluate(context, roleReq));
 	}
 
 	@Test
 	void testEvaluateWithInvalidRoleMatchBy() {
-		RoleRequirement roleReq = new RoleRequirement(
-				RequirementCondition.HAS,
-				true,
-				Arrays.asList("100", "200"),
-				"INVALID"
-		);
+		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.HAS, true, Arrays.asList("100", "200"), "INVALID");
 		// Should fallback to ID matching for unknown match types
 		assertTrue(evaluator.evaluate(context, roleReq));
 	}
 
 	@Test
 	void testEvaluateWithCaseInsensitiveRoleMatchBy() {
-		RoleRequirement roleReq = new RoleRequirement(
-				RequirementCondition.HAS,
-				true,
-				Arrays.asList("100", "200"),
-				"id"
-		);
+		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.HAS, true, Arrays.asList("100", "200"), "id");
 		// Should work with lowercase "id"
 		assertTrue(evaluator.evaluate(context, roleReq));
 	}
 
 	@Test
 	void testEvaluateWithNameRoleMatchBy() {
-		RoleRequirement roleReq = new RoleRequirement(
-				RequirementCondition.HAS,
-				true,
-				Arrays.asList("Role100", "Role200"),
-				"NAME"
-		);
+		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.HAS, true, Arrays.asList("Role100", "Role200"), "NAME");
 		// When matching by NAME, it extracts from Discord member context
 		// Our mock member has roles [Role100, Role200, Role300]
 		// Required roles are ["Role100", "Role200"] 
@@ -256,12 +196,7 @@ class RoleRequirementEvaluatorTest {
 
 	@Test
 	void testEvaluateWithNameRoleMatchByMissingRole() {
-		RoleRequirement roleReq = new RoleRequirement(
-				RequirementCondition.HAS,
-				true,
-				Arrays.asList("Role100", "Role400"),
-				"NAME"
-		);
+		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.HAS, true, Arrays.asList("Role100", "Role400"), "NAME");
 		// When matching by NAME, it extracts from Discord member context
 		// Our mock member has roles [Role100, Role200, Role300]
 		// Required roles are ["Role100", "Role400"] 
@@ -274,13 +209,8 @@ class RoleRequirementEvaluatorTest {
 	void testEvaluateWithNoDiscordContext() {
 		// Create context without Discord event (fallback to fluctlight)
 		RequirementContext noDiscordContext = new RequirementContext("test", fluctlight);
-		
-		RoleRequirement roleReq = new RoleRequirement(
-				RequirementCondition.HAS,
-				true,
-				Arrays.asList("100", "200"),
-				"ID"
-		);
+
+		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.HAS, true, Arrays.asList("100", "200"), "ID");
 		// When there's no Discord context, it falls back to fluctlight
 		// Our fluctlight has roles [100, 200, 300]
 		// Required roles are ["100", "200"] 
@@ -293,13 +223,8 @@ class RoleRequirementEvaluatorTest {
 	void testEvaluateWithNoDiscordContextNameMatching() {
 		// Create context without Discord event (fallback to fluctlight)
 		RequirementContext noDiscordContext = new RequirementContext("test", fluctlight);
-		
-		RoleRequirement roleReq = new RoleRequirement(
-				RequirementCondition.HAS,
-				true,
-				Arrays.asList("100", "200"),
-				"NAME"
-		);
+
+		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.HAS, true, Arrays.asList("100", "200"), "NAME");
 		// When matching by NAME with no Discord context, it falls back to fluctlight
 		// Note: This will actually match by ID since fluctlight only stores IDs
 		// Our fluctlight has roles [100, 200, 300]

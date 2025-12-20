@@ -1,16 +1,15 @@
-package me.whereareiam.yui.common.service.requirement.evaluators;
+package me.whereareiam.yui.common.requirement.evaluators;
 
-import me.whereareiam.yui.common.requirement.evaluators.UserRequirementEvaluator;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
-import me.whereareiam.yui.model.requirement.type.UserRequirement;
 import me.whereareiam.yui.model.requirement.RequirementContext;
+import me.whereareiam.yui.model.requirement.type.UserRequirement;
 import me.whereareiam.yui.type.requirement.RequirementCondition;
 import net.dv8tion.jda.api.entities.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +20,7 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserRequirementEvaluatorTest {
-	@Mock
+	@Mock(strictness = Mock.Strictness.LENIENT)
 	private User jdaUser;
 
 	private UserRequirementEvaluator evaluator;

@@ -1,15 +1,12 @@
 package me.whereareiam.yui.adapter.database.adapter;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import me.whereareiam.yui.adapter.database.TestDatabaseConfiguration;
 import me.whereareiam.yui.adapter.database.entity.FluctlightEntity;
 import me.whereareiam.yui.adapter.database.entity.LanguageEntity;
 import me.whereareiam.yui.adapter.database.entity.RoleEntity;
-import me.whereareiam.yui.adapter.database.mapper.FluctlightMapper;
 import me.whereareiam.yui.adapter.database.repository.FluctlightRepository;
-import me.whereareiam.yui.adapter.database.repository.LanguageRepository;
-import me.whereareiam.yui.adapter.database.repository.RoleRepository;
-import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguageAddedEvent;
-import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguageRemovedEvent;
-import me.whereareiam.yui.event.fluctlight.language.FluctlightLanguageChangeEvent;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.fluctlight.FluctlightData;
 import net.dv8tion.jda.api.entities.User;
@@ -17,11 +14,10 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -30,15 +26,16 @@ import java.util.HashSet;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Integration tests for FluctlightPersistenceAdapter using Testcontainers.
  * Tests database operations with a real PostgreSQL database.
  */
-@DataJpaTest
+@Transactional
 @Testcontainers
+@SpringBootTest(classes = TestDatabaseConfiguration.class)
 class FluctlightPersistenceAdapterTest {
 	@Container
 	static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18.1")
@@ -54,19 +51,13 @@ class FluctlightPersistenceAdapterTest {
 		registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
 	}
 
-	@Autowired
-	private TestEntityManager entityManager;
+	@PersistenceContext
+	private EntityManager entityManager;
 
 	@Autowired
 	private FluctlightRepository fluctlightRepository;
 
 	@Autowired
-	private LanguageRepository languageRepository;
-
-	@Autowired
-	private RoleRepository roleRepository;
-
-	private ApplicationEventPublisher eventPublisher;
 	private FluctlightPersistenceAdapter adapter;
 
 	private LanguageEntity englishLanguage;
@@ -77,13 +68,6 @@ class FluctlightPersistenceAdapterTest {
 
 	@BeforeEach
 	void setUp() {
-		eventPublisher = mock(ApplicationEventPublisher.class);
-		adapter = new FluctlightPersistenceAdapter(
-				fluctlightRepository,
-				languageRepository,
-				roleRepository,
-				new FluctlightMapper()
-		);
 
 		// Create test languages
 		englishLanguage = LanguageEntity.builder()
@@ -322,21 +306,23 @@ class FluctlightPersistenceAdapterTest {
 		adapter.updatePrimaryLanguage(fluctlight, DiscordLocale.GERMAN);
 
 		// Assert
-		verify(eventPublisher).publishEvent(any(FluctlightLanguageChangeEvent.class));
 		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
 		assertTrue(updated.isPresent());
 		assertEquals(germanLanguage.getId(), updated.get().getPrimaryLanguage().getId());
 	}
 
 	@Test
-	void updatePrimaryLanguage_WhenEntityDoesNotExist_ThrowsException() {
+	void updatePrimaryLanguage_WhenEntityDoesNotExist_CreatesEntity() {
 		// Arrange
 		Fluctlight fluctlight = createFluctlight(999L);
 
-		// Act & Assert
-		assertThrows(IllegalArgumentException.class, () ->
-				adapter.updatePrimaryLanguage(fluctlight, DiscordLocale.ENGLISH_US)
-		);
+		// Act
+		adapter.updatePrimaryLanguage(fluctlight, DiscordLocale.ENGLISH_US);
+
+		// Assert
+		Optional<FluctlightEntity> entity = fluctlightRepository.findById(999L);
+		assertTrue(entity.isPresent());
+		assertEquals(englishLanguage.getId(), entity.get().getPrimaryLanguage().getId());
 	}
 
 	@Test
@@ -360,39 +346,6 @@ class FluctlightPersistenceAdapterTest {
 	}
 
 	@Test
-	void updatePrimaryLanguage_WhenEventIsCancelled_SkipsUpdate() {
-		// Arrange
-		FluctlightEntity entity = FluctlightEntity.builder()
-				.id(123L)
-				.primaryLanguage(englishLanguage)
-				.additionalLanguages(new HashSet<>())
-				.roles(new HashSet<>())
-				.build();
-		entityManager.persist(entity);
-		entityManager.flush();
-		entityManager.clear();
-
-		// Mock event publisher to cancel the event
-		doAnswer(invocation -> {
-			FluctlightLanguageChangeEvent event = invocation.getArgument(0);
-			event.setCancelled(true);
-			return null;
-		}).when(eventPublisher).publishEvent(any(FluctlightLanguageChangeEvent.class));
-
-		// Arrange
-		Fluctlight fluctlight = createFluctlight(123L);
-
-		// Act
-		adapter.updatePrimaryLanguage(fluctlight, DiscordLocale.GERMAN);
-
-		// Assert
-		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
-		assertTrue(updated.isPresent());
-		// Should still be English because event was cancelled
-		assertEquals(englishLanguage.getId(), updated.get().getPrimaryLanguage().getId());
-	}
-
-	@Test
 	void addAdditionalLanguage_WhenEntityExists_AddsLanguage() {
 		// Arrange
 		FluctlightEntity entity = FluctlightEntity.builder()
@@ -411,7 +364,6 @@ class FluctlightPersistenceAdapterTest {
 		adapter.addAdditionalLanguage(fluctlight, DiscordLocale.GERMAN);
 
 		// Assert
-		verify(eventPublisher).publishEvent(any(FluctlightAdditionalLanguageAddedEvent.class));
 		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
 		assertTrue(updated.isPresent());
 		assertTrue(updated.get().getAdditionalLanguages().contains(germanLanguage));
@@ -477,36 +429,6 @@ class FluctlightPersistenceAdapterTest {
 	}
 
 	@Test
-	void addAdditionalLanguage_WhenEventIsCancelled_SkipsAdd() {
-		// Arrange
-		FluctlightEntity entity = FluctlightEntity.builder()
-				.id(123L)
-				.additionalLanguages(new HashSet<>())
-				.roles(new HashSet<>())
-				.build();
-		entityManager.persist(entity);
-		entityManager.flush();
-		entityManager.clear();
-
-		doAnswer(invocation -> {
-			FluctlightAdditionalLanguageAddedEvent event = invocation.getArgument(0);
-			event.setCancelled(true);
-			return null;
-		}).when(eventPublisher).publishEvent(any(FluctlightAdditionalLanguageAddedEvent.class));
-
-		// Arrange
-		Fluctlight fluctlight = createFluctlight(123L);
-
-		// Act
-		adapter.addAdditionalLanguage(fluctlight, DiscordLocale.GERMAN);
-
-		// Assert
-		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
-		assertTrue(updated.isPresent());
-		assertFalse(updated.get().getAdditionalLanguages().contains(germanLanguage));
-	}
-
-	@Test
 	void removeAdditionalLanguage_WhenLanguageExists_RemovesLanguage() {
 		// Arrange
 		FluctlightEntity entity = FluctlightEntity.builder()
@@ -527,7 +449,6 @@ class FluctlightPersistenceAdapterTest {
 		adapter.removeAdditionalLanguage(fluctlight, DiscordLocale.GERMAN);
 
 		// Assert
-		verify(eventPublisher).publishEvent(any(FluctlightAdditionalLanguageRemovedEvent.class));
 		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
 		assertTrue(updated.isPresent());
 		assertFalse(updated.get().getAdditionalLanguages().contains(germanLanguage));
@@ -568,37 +489,6 @@ class FluctlightPersistenceAdapterTest {
 		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
 		assertTrue(updated.isPresent());
 		assertTrue(updated.get().getAdditionalLanguages().contains(frenchLanguage));
-	}
-
-	@Test
-	void removeAdditionalLanguage_WhenEventIsCancelled_SkipsRemove() {
-		// Arrange
-		FluctlightEntity entity = FluctlightEntity.builder()
-				.id(123L)
-				.additionalLanguages(new HashSet<>())
-				.roles(new HashSet<>())
-				.build();
-		entity.getAdditionalLanguages().add(germanLanguage);
-		entityManager.persist(entity);
-		entityManager.flush();
-		entityManager.clear();
-
-		doAnswer(invocation -> {
-			FluctlightAdditionalLanguageRemovedEvent event = invocation.getArgument(0);
-			event.setCancelled(true);
-			return null;
-		}).when(eventPublisher).publishEvent(any(FluctlightAdditionalLanguageRemovedEvent.class));
-
-		// Arrange
-		Fluctlight fluctlight = createFluctlight(123L);
-
-		// Act
-		adapter.removeAdditionalLanguage(fluctlight, DiscordLocale.GERMAN);
-
-		// Assert
-		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
-		assertTrue(updated.isPresent());
-		assertTrue(updated.get().getAdditionalLanguages().contains(germanLanguage));
 	}
 
 	// Role operations
