@@ -1,6 +1,5 @@
 package me.whereareiam.yui.command;
 
-import me.whereareiam.yui.command.exception.ExceptionContext;
 import me.whereareiam.yui.command.exception.ExceptionResponse;
 import me.whereareiam.yui.exception.command.base.CommandException;
 import me.whereareiam.yui.model.command.CommandDefinition;
@@ -45,7 +44,7 @@ public interface CommandService {
 	 * The handler function receives the exception and should return an {@link ExceptionResponse}
 	 * that defines what message or embed to send to the fluctlight.
 	 * <p>
-	 * If no handler is registered, the exception's {@link CommandException#createResponse(ExceptionContext)}
+	 * If no handler is registered, the exception's {@link CommandException#createResponse(Interaction)}
 	 * method will be used instead.
 	 * <p>
 	 * Example:

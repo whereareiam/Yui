@@ -3,7 +3,7 @@ package me.whereareiam.yui.adapter.command.executor;
 import lombok.AllArgsConstructor;
 import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;
-import org.incendo.cloud.discord.jda6.JDAInteraction;
+import me.whereareiam.yui.command.Interaction;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -13,7 +13,7 @@ public class MainCommand {
 
 	@Definition("main")
 	@Command("main")
-	public void onCommand(JDAInteraction interaction) {
+	public void onCommand(Interaction interaction) {
 		helpCommand.onCommand(interaction, null);
 	}
 }

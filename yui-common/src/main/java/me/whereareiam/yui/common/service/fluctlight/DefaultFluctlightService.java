@@ -5,14 +5,20 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.event.fluctlight.FluctlightClearedEvent;
 import me.whereareiam.yui.event.fluctlight.FluctlightCreatedEvent;
+import me.whereareiam.yui.event.fluctlight.FluctlightUpdatedEvent;
+import me.whereareiam.yui.event.language.AdditionalLanguageAddedEvent;
+import me.whereareiam.yui.event.language.AdditionalLanguageRemovedEvent;
+import me.whereareiam.yui.event.language.LanguageChangeEvent;
 import me.whereareiam.yui.fluctlight.FluctlightRegistry;
 import me.whereareiam.yui.fluctlight.FluctlightService;
+import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.fluctlight.FluctlightData;
 import me.whereareiam.yui.persistence.FluctlightPersistence;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +39,7 @@ public class DefaultFluctlightService implements FluctlightService {
 	private final FluctlightRegistry fluctlightRegistry;
 	private final FluctlightPersistence fluctlightPersistence;
 	private final ApplicationEventPublisher eventPublisher;
+	private final ObjectProvider<Settings> settings;
 
 	@PostConstruct
 	private void initializeFluctlightServices() {
@@ -55,21 +62,22 @@ public class DefaultFluctlightService implements FluctlightService {
 
 		// Eager loading: load custom data from database
 		Fluctlight fluctlight = new Fluctlight(jdaUser);
-		Optional<FluctlightData> customDataOpt = fluctlightPersistence.loadData(userId);
+		Optional<FluctlightData> customDataOpt = fluctlightPersistence.loadData(fluctlight);
 
 		if (customDataOpt.isPresent()) {
 			// Apply custom data from database
 			FluctlightData customData = customDataOpt.get();
-			fluctlight.setPrimaryLanguage(customData.getPrimaryLanguage());
-			fluctlight.setAdditionalLanguages(customData.getAdditionalLanguages());
-			fluctlight.setAllowedRoles(customData.getAllowedRoles());
+			fluctlight.setPrimaryLanguageInternal(customData.getPrimaryLanguage());
+			fluctlight.setAdditionalLanguagesInternal(customData.getAdditionalLanguages());
+			fluctlight.setAllowedRolesInternal(customData.getAllowedRoles());
 		} else {
-			// Create new entry in database with empty custom data
-			FluctlightData emptyData = new FluctlightData(null, new DiscordLocale[0], null);
-			fluctlightPersistence.saveData(userId, emptyData);
-			log.debug("Created new Fluctlight entry for fluctlight {}", userId);
+			// Create new entry in database with bot's default language
+			DiscordLocale defaultLocale = settings.getObject().getLocale();
+			FluctlightData initialData = new FluctlightData(defaultLocale, new DiscordLocale[0], null);
+			fluctlightPersistence.saveData(fluctlight, initialData);
+			log.debug("Created new Fluctlight entry for fluctlight {} with default language {}", userId, defaultLocale);
 			
-			// Publish creation event
+			// Publish creation event - listener will load data and update in-memory state
 			eventPublisher.publishEvent(new FluctlightCreatedEvent(fluctlight));
 		}
 
@@ -97,18 +105,22 @@ public class DefaultFluctlightService implements FluctlightService {
 				fluctlight.getAdditionalLanguages(),
 				fluctlight.getAllowedRoles()
 		);
-		fluctlightPersistence.saveData(userId, customData);
+		fluctlightPersistence.saveData(fluctlight, customData);
+		
+		// Publish event to synchronize in-memory state (already persisted above)
+		eventPublisher.publishEvent(new FluctlightUpdatedEvent(fluctlight, customData));
 		log.debug("Saved Fluctlight for fluctlight {}", userId);
 	}
 
 	@Override
 	public boolean exists(long userId) {
 		// Check registry first
-		if (fluctlightRegistry.getFluctlight(userId).isPresent())
+		Optional<Fluctlight> cached = fluctlightRegistry.getFluctlight(userId);
+		if (cached.isPresent())
 			return true;
 
-		// Check database
-		return fluctlightPersistence.loadData(userId).isPresent();
+		// Check database - need to get Fluctlight first to check
+		return get(userId).filter(fluctlightPersistence::existsById).isPresent();
 	}
 
 	@Override
@@ -132,9 +144,17 @@ public class DefaultFluctlightService implements FluctlightService {
 			fluctlightRegistry.evictFluctlight(userId);
 			log.debug("Evicted fluctlight {} from registry", userId);
 
-			// Delete from database - create empty custom data to reset
-			FluctlightData emptyData = new FluctlightData(null, new DiscordLocale[0], null);
-			fluctlightPersistence.saveData(userId, emptyData);
+			// Delete from database - create data with bot's default language to reset
+			// We need a temporary Fluctlight for this
+			User jdaUser = jda.getUserById(userId);
+			if (jdaUser != null) {
+				Fluctlight tempFluctlight = new Fluctlight(jdaUser);
+				DiscordLocale defaultLocale = settings.getObject().getLocale();
+				FluctlightData resetData = new FluctlightData(defaultLocale, new DiscordLocale[0], null);
+				fluctlightPersistence.saveData(tempFluctlight, resetData);
+				// Publish event to synchronize in-memory state
+				eventPublisher.publishEvent(new FluctlightUpdatedEvent(tempFluctlight, resetData));
+			}
 			log.debug("Deleted fluctlight {} Fluctlight from database", userId);
 
 			// Create fresh Fluctlight
@@ -156,6 +176,162 @@ public class DefaultFluctlightService implements FluctlightService {
 			log.error("Error during Fluctlight clear and reinitialization for fluctlight: {}", userId, e);
 			return Optional.empty();
 		}
+	}
+
+	@Override
+	public void updatePrimaryLanguage(Fluctlight fluctlight, DiscordLocale locale) {
+		DiscordLocale oldLanguage = fluctlight.getPrimaryLanguage();
+		
+		// Update persistence
+		fluctlightPersistence.updatePrimaryLanguage(fluctlight, locale);
+		
+		// Publish event
+		LanguageChangeEvent event = new LanguageChangeEvent(fluctlight, oldLanguage);
+		eventPublisher.publishEvent(event);
+		
+		if (event.isCancelled()) {
+			// Rollback: restore old language
+			if (oldLanguage != null) {
+				fluctlightPersistence.updatePrimaryLanguage(fluctlight, oldLanguage);
+			}
+			return;
+		}
+		
+		// Publish event to synchronize in-memory state (already persisted above)
+		FluctlightData updatedData = new FluctlightData(
+				locale,
+				fluctlight.getAdditionalLanguages(),
+				fluctlight.getAllowedRoles()
+		);
+		eventPublisher.publishEvent(new FluctlightUpdatedEvent(fluctlight, updatedData));
+		
+		// Update registry
+		fluctlightRegistry.putFluctlight(fluctlight.getId(), fluctlight);
+	}
+
+	@Override
+	public void addAdditionalLanguage(Fluctlight fluctlight, DiscordLocale locale) {
+		// Update persistence
+		fluctlightPersistence.addAdditionalLanguage(fluctlight, locale);
+		
+		// Publish event
+		AdditionalLanguageAddedEvent event = new AdditionalLanguageAddedEvent(fluctlight);
+		event.setLanguage(locale);
+		eventPublisher.publishEvent(event);
+		
+		if (event.isCancelled()) {
+			// Rollback: remove the language
+			fluctlightPersistence.removeAdditionalLanguage(fluctlight, locale);
+			return;
+		}
+		
+		// Publish event to synchronize in-memory state (already persisted above)
+		DiscordLocale[] current = fluctlight.getAdditionalLanguages();
+		DiscordLocale[] updated = new DiscordLocale[current.length + 1];
+		System.arraycopy(current, 0, updated, 0, current.length);
+		updated[current.length] = locale;
+		FluctlightData updatedData = new FluctlightData(
+				fluctlight.getPrimaryLanguage(),
+				updated,
+				fluctlight.getAllowedRoles()
+		);
+		eventPublisher.publishEvent(new FluctlightUpdatedEvent(fluctlight, updatedData));
+		
+		// Update registry
+		fluctlightRegistry.putFluctlight(fluctlight.getId(), fluctlight);
+	}
+
+	@Override
+	public void removeAdditionalLanguage(Fluctlight fluctlight, DiscordLocale locale) {
+		// Update persistence
+		fluctlightPersistence.removeAdditionalLanguage(fluctlight, locale);
+		
+		// Publish event
+		AdditionalLanguageRemovedEvent event = new AdditionalLanguageRemovedEvent(fluctlight);
+		event.setLanguage(locale);
+		eventPublisher.publishEvent(event);
+		
+		if (event.isCancelled()) {
+			// Rollback: add the language back
+			fluctlightPersistence.addAdditionalLanguage(fluctlight, locale);
+			return;
+		}
+		
+		// Publish event to synchronize in-memory state (already persisted above)
+		DiscordLocale[] current = fluctlight.getAdditionalLanguages();
+		DiscordLocale[] updated = new DiscordLocale[Math.max(0, current.length - 1)];
+		int index = 0;
+		for (DiscordLocale lang : current)
+			if (lang != locale)
+				updated[index++] = lang;
+
+		FluctlightData updatedData = new FluctlightData(
+				fluctlight.getPrimaryLanguage(),
+				updated,
+				fluctlight.getAllowedRoles()
+		);
+		eventPublisher.publishEvent(new FluctlightUpdatedEvent(fluctlight, updatedData));
+		
+		// Update registry
+		fluctlightRegistry.putFluctlight(fluctlight.getId(), fluctlight);
+	}
+
+	@Override
+	public void addAllowedRole(Fluctlight fluctlight, long roleId) {
+		// Update persistence
+		fluctlightPersistence.addAllowedRole(fluctlight, roleId);
+		
+		// Publish event to synchronize in-memory state (already persisted above)
+		long[] current = fluctlight.getAllowedRoles();
+		long[] updated;
+		if (current == null) {
+			updated = new long[]{roleId};
+		} else {
+			// Check if already present
+			for (long role : current)
+				if (role == roleId)
+					return; // Already present
+
+			updated = new long[current.length + 1];
+			System.arraycopy(current, 0, updated, 0, current.length);
+			updated[current.length] = roleId;
+		}
+		
+		FluctlightData updatedData = new FluctlightData(
+				fluctlight.getPrimaryLanguage(),
+				fluctlight.getAdditionalLanguages(),
+				updated
+		);
+		eventPublisher.publishEvent(new FluctlightUpdatedEvent(fluctlight, updatedData));
+		
+		// Update registry
+		fluctlightRegistry.putFluctlight(fluctlight.getId(), fluctlight);
+	}
+
+	@Override
+	public void removeAllowedRole(Fluctlight fluctlight, long roleId) {
+		// Update persistence
+		fluctlightPersistence.removeAllowedRole(fluctlight, roleId);
+		
+		// Publish event to synchronize in-memory state (already persisted above)
+		long[] current = fluctlight.getAllowedRoles();
+		if (current == null || current.length == 0)
+			return; // Nothing to remove
+		
+		long[] updated = new long[current.length - 1];
+		int index = 0;
+		for (long role : current)
+			if (role != roleId) updated[index++] = role;
+
+		FluctlightData updatedData = new FluctlightData(
+				fluctlight.getPrimaryLanguage(),
+				fluctlight.getAdditionalLanguages(),
+				updated.length > 0 ? updated : null
+		);
+		eventPublisher.publishEvent(new FluctlightUpdatedEvent(fluctlight, updatedData));
+		
+		// Update registry
+		fluctlightRegistry.putFluctlight(fluctlight.getId(), fluctlight);
 	}
 
 }

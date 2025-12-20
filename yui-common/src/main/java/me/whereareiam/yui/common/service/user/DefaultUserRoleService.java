@@ -56,7 +56,7 @@ public class DefaultUserRoleService implements UserRoleService {
 		}
 
 		// Add allowed role to database
-		fluctlightPersistence.addAllowedRole(userId, roleId);
+		fluctlightPersistence.addAllowedRole(fluctlight, roleId);
 		// Reload to update cache
 		fluctlightService.get(userId);
 
@@ -66,7 +66,14 @@ public class DefaultUserRoleService implements UserRoleService {
 
 	@Override
 	public void removeRoleFromUser(long userId, long roleId) {
-		fluctlightPersistence.removeAllowedRole(userId, roleId);
+		// Ensure Fluctlight exists
+		Optional<Fluctlight> fluctlightOpt = fluctlightService.get(userId);
+		if (fluctlightOpt.isEmpty()) {
+			fluctlightOpt = Optional.of(fluctlightService.getOrCreate(userId));
+		}
+		
+		Fluctlight fluctlight = fluctlightOpt.get();
+		fluctlightPersistence.removeAllowedRole(fluctlight, roleId);
 		// Reload to update cache
 		fluctlightService.get(userId);
 		enqueueSync(userId);

@@ -1,13 +1,12 @@
 package me.whereareiam.yui.adapter.command.exception;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.command.exception.ExceptionContext;
 import me.whereareiam.yui.command.exception.ExceptionResponse;
 import me.whereareiam.yui.exception.command.base.CommandException;
+import me.whereareiam.yui.command.Interaction;
 import net.dv8tion.jda.api.EmbedBuilder;
 import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.discord.jda6.JDA6CommandManager;
-import org.incendo.cloud.discord.jda6.JDAInteraction;
 import org.incendo.cloud.discord.jda6.ReplySetting;
 import org.incendo.cloud.discord.slash.DiscordSetting;
 import org.incendo.cloud.exception.handling.ExceptionHandler;
@@ -28,7 +27,7 @@ import java.util.function.Function;
 @Component
 @RequiredArgsConstructor
 public final class DefaultExceptionHandlerRegistry {
-	private final org.incendo.cloud.discord.jda6.JDA6CommandManager<JDAInteraction> commandManager;
+	private final JDA6CommandManager<Interaction> commandManager;
 
 	private final Map<Class<? extends CommandException>, Function<CommandException, ExceptionResponse>> handlers = new HashMap<>();
 
@@ -57,11 +56,11 @@ public final class DefaultExceptionHandlerRegistry {
 	 * @return The cloud exception handler
 	 */
 	@NotNull
-	public ExceptionHandler<JDAInteraction, CommandException> createCloudHandler() {
+	public ExceptionHandler<Interaction, CommandException> createCloudHandler() {
 		return context -> {
 			CommandException exception = context.exception();
-			CommandContext<JDAInteraction> commandContext = context.context();
-			JDAInteraction interaction = commandContext.sender();
+			CommandContext<Interaction> commandContext = context.context();
+			Interaction interaction = commandContext.sender();
 			
 			// Defer immediately to avoid timeout, then do the work in the callback
 			boolean ephemeralErrors = commandManager.discordSettings().get(DiscordSetting.EPHEMERAL_ERROR_MESSAGES);
@@ -69,9 +68,6 @@ public final class DefaultExceptionHandlerRegistry {
 			var interactionEvent = interaction.interactionEvent();
 			if (replyCallback != null && interactionEvent != null) {
 				replyCallback.deferReply(ephemeralErrors).queue(_ -> {
-					// Create the API-level exception context
-					ExceptionContext exceptionContext = new CloudExceptionContext(commandContext);
-					
 					// Try to find a handler for this exact exception type
 					Class<? extends CommandException> exceptionClass = exception.getClass();
 					Function<CommandException, ExceptionResponse> handler = getHandler(exceptionClass);
@@ -95,7 +91,7 @@ public final class DefaultExceptionHandlerRegistry {
 					if (handler != null) {
 						response = handler.apply(exception);
 					} else {
-						response = exception.createResponse(exceptionContext);
+						response = exception.createResponse(interaction);
 					}
 					
 					// Send the response via hook
@@ -105,8 +101,6 @@ public final class DefaultExceptionHandlerRegistry {
 			}
 			
 			// Fallback if defer failed - do work synchronously
-			ExceptionContext exceptionContext = new CloudExceptionContext(commandContext);
-			
 			// Try to find a handler for this exact exception type
 			Class<? extends CommandException> exceptionClass = exception.getClass();
 			Function<CommandException, ExceptionResponse> handler = getHandler(exceptionClass);
@@ -130,7 +124,7 @@ public final class DefaultExceptionHandlerRegistry {
 			if (handler != null) {
 				response = handler.apply(exception);
 			} else {
-				response = exception.createResponse(exceptionContext);
+				response = exception.createResponse(interaction);
 			}
 			
 			// Send the response
@@ -157,11 +151,11 @@ public final class DefaultExceptionHandlerRegistry {
 	 * This is package-private so DefaultExceptionFormatter can use it for PipelineException unwrapping.
 	 */
 	void sendResponseDeferred(
-			@NotNull CommandContext<JDAInteraction> context,
+			@NotNull CommandContext<Interaction> context,
 			@NotNull ExceptionResponse response,
 			boolean ephemeralErrors
 	) {
-		JDAInteraction interaction = context.sender();
+		Interaction interaction = context.sender();
 		var interactionEvent = interaction.interactionEvent();
 		
 		if (interactionEvent == null) {
@@ -190,15 +184,15 @@ public final class DefaultExceptionHandlerRegistry {
 	 * <p>
 	 * This is package-private so DefaultExceptionFormatter can use it for PipelineException unwrapping.
 	 */
-	void sendResponse(@NotNull CommandContext<JDAInteraction> context, @NotNull ExceptionResponse response) {
+	void sendResponse(@NotNull CommandContext<Interaction> context, @NotNull ExceptionResponse response) {
 		sendResponseInternal(context, response);
 	}
 
 	/**
 	 * Internal method to send the response to the fluctlight.
 	 */
-	private void sendResponseInternal(@NotNull CommandContext<JDAInteraction> context, @NotNull ExceptionResponse response) {
-		JDAInteraction interaction = context.sender();
+	private void sendResponseInternal(@NotNull CommandContext<Interaction> context, @NotNull ExceptionResponse response) {
+		Interaction interaction = context.sender();
 		
 		// Check if we need to defer first (similar to cloud-jda6's default handlers)
 		ReplySetting<?> replySetting =
@@ -223,7 +217,7 @@ public final class DefaultExceptionHandlerRegistry {
 	 * then send via the hook.
 	 */
 	private void sendMessage(
-			@NotNull JDAInteraction interaction, 
+			@NotNull Interaction interaction, 
 			@NotNull String message,
 			@Nullable ReplySetting<?> replySetting,
 			boolean ephemeralErrors
@@ -274,7 +268,7 @@ public final class DefaultExceptionHandlerRegistry {
 	 * then send it via the hook.
 	 */
 	private void sendEmbed(
-			@NotNull JDAInteraction interaction, 
+			@NotNull Interaction interaction, 
 			@NotNull EmbedBuilder embedBuilder,
 			@Nullable ReplySetting<?> replySetting,
 			boolean ephemeralErrors
@@ -318,4 +312,5 @@ public final class DefaultExceptionHandlerRegistry {
 		}
 	}
 }
+
 

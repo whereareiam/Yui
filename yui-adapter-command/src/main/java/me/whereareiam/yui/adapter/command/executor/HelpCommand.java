@@ -8,6 +8,7 @@ import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.annotation.command.Optional;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import me.whereareiam.yui.command.CommandService;
+import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.util.style.StyleKit;
 import me.whereareiam.yui.translation.Translatable;
 import me.whereareiam.yui.type.CommandCategory;
@@ -17,7 +18,7 @@ import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionE
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
-import org.incendo.cloud.discord.jda6.JDAInteraction;
+import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -35,39 +36,36 @@ public class HelpCommand {
 	@Definition("help")
 	@Command("help [category]")
 	public void onCommand(
-			JDAInteraction interaction,
+			Interaction interaction,
 			@Optional @Argument("category") String categoryName
 	) {
-		long userId = interaction.user().getIdLong();
-
 		if (categoryName != null && !categoryName.isBlank()) {
 			CommandCategory category = CommandCategory.valueOf(categoryName.toUpperCase());
-			categoryHelp(interaction.replyCallback(), category);
+			categoryHelp(interaction.replyCallback(), interaction.fluctlight(), category);
 			return;
 		}
 
-		globalHelp(interaction.replyCallback(), userId);
+		globalHelp(interaction.replyCallback(), interaction.fluctlight());
 	}
 
 	@ComponentListener(CATEGORY_LISTENER)
-	private void onSelectMenu(StringSelectInteractionEvent event) {
+	private void onSelectMenu(Fluctlight fluctlight, StringSelectInteractionEvent event) {
 		CommandCategory category = CommandCategory.valueOf(event.getValues().getFirst().toUpperCase());
-
-		categoryHelp(event, category);
+		categoryHelp(event, fluctlight, category);
 	}
 
-	private void globalHelp(IReplyCallback reply, long userId) {
+	private void globalHelp(IReplyCallback reply, Fluctlight fluctlight) {
 		EmbedBuilder embed = StyleKit.embeds().primary();
-		embed.setTitle(Translatable.of("commands.help.information.global.title", userId));
-		embed.setDescription(Translatable.of("commands.help.information.global.description", userId));
+		embed.setTitle(Translatable.of("commands.help.information.global.title", fluctlight));
+		embed.setDescription(Translatable.of("commands.help.information.global.description", fluctlight));
 
 		for (CommandCategory category : CommandCategory.values()) {
 			if (category == CommandCategory.NONE)
 				continue;
 
 			embed.addField(
-					Translatable.of(category.getKey(), userId),
-					Translatable.of("commands.help.category." + category.name().toLowerCase(), userId),
+					Translatable.of(category.getKey(), fluctlight),
+					Translatable.of("commands.help.category." + category.name().toLowerCase(), fluctlight),
 					false
 			);
 		}
@@ -75,7 +73,7 @@ public class HelpCommand {
 		List<SelectOption> options = Arrays.stream(CommandCategory.values())
 				.filter(category -> category != CommandCategory.NONE)
 				.map(category -> SelectOption.of(
-						Translatable.of(category.getKey(), userId),
+						Translatable.of(category.getKey(), fluctlight),
 						category.name().toLowerCase()
 				))
 				.toList();
@@ -90,19 +88,17 @@ public class HelpCommand {
 				.queue();
 	}
 
-	private void categoryHelp(IReplyCallback event, CommandCategory category) {
-		long userId = event.getUser().getIdLong();
-
+	private void categoryHelp(IReplyCallback event, Fluctlight fluctlight, CommandCategory category) {
 		EmbedBuilder embed = StyleKit.embeds().primary();
 		embed.setTitle(Translatable.forUser(
 				"commands.help.information.specific.title",
-				userId,
-				Translatable.of(category.getKey(), userId)
+				fluctlight,
+				Translatable.of(category.getKey(), fluctlight)
 		));
 		embed.setDescription(Translatable.forUser(
 				"commands.help.information.specific.description",
-				userId,
-				Translatable.of(category.getKey(), userId)
+				fluctlight,
+				Translatable.of(category.getKey(), fluctlight)
 		));
 
 		// Get commands for this category, showing only primary command names (first alias)
@@ -126,14 +122,14 @@ public class HelpCommand {
 			embed.addField(
 					Translatable.forUser(
 							"commands.help.information.specific.headFormat",
-							userId,
-							Translatable.of(primaryName, userId)
+							fluctlight,
+							Translatable.of(primaryName, fluctlight)
 					),
 					Translatable.forUser(
 							"commands.help.information.specific.footFormat",
-							userId,
-							Translatable.of(example, userId),
-							Translatable.of(description, userId)
+							fluctlight,
+							Translatable.of(example, fluctlight),
+							Translatable.of(description, fluctlight)
 					),
 					false
 			);

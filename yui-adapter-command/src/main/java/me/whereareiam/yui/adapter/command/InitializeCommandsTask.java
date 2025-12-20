@@ -7,10 +7,10 @@ import me.whereareiam.yui.LifecycleTask;
 import me.whereareiam.yui.adapter.command.exception.DefaultExceptionFormatter;
 import me.whereareiam.yui.adapter.command.exception.DefaultExceptionHandlerRegistry;
 import me.whereareiam.yui.exception.command.base.CommandException;
+import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.command.CommandService;
 import org.incendo.cloud.discord.jda6.JDA6CommandManager;
-import org.incendo.cloud.discord.jda6.JDAInteraction;
 import org.incendo.cloud.exception.ArgumentParseException;
 import org.incendo.cloud.exception.InvalidCommandSenderException;
 import org.incendo.cloud.exception.InvalidSyntaxException;
@@ -31,7 +31,7 @@ public class InitializeCommandsTask implements LifecycleTask {
 	private final Registry<LifecycleTask> lifecycleRegistry;
 	private final CommandService commandService;
 	private final ApplicationContext ctx;
-	private final JDA6CommandManager<JDAInteraction> commandManager;
+	private final JDA6CommandManager<Interaction> commandManager;
 	private final DefaultExceptionHandlerRegistry exceptionHandlerRegistry;
 
 	@PostConstruct

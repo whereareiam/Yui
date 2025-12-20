@@ -27,7 +27,6 @@ import static org.mockito.Mockito.*;
 @SuppressWarnings("unused")
 @ExtendWith(MockitoExtension.class)
 class DefaultUserRolePersistenceTest {
-
 	@Mock
 	private RolePersistence rolePersistence;
 	

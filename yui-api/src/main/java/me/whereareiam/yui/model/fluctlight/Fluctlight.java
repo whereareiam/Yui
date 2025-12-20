@@ -31,7 +31,6 @@ public class Fluctlight {
 	private long[] allowedRoles;
 
 	private static FluctlightService managementService;
-	private static FluctlightPersistence fluctlightPersistence;
 
 	/**
 	 * Creates a new Fluctlight instance wrapping a JDA User.
@@ -136,28 +135,6 @@ public class Fluctlight {
 	}
 
 	/**
-	 * Initializes the static service references.
-	 * This is called automatically by Spring via DefaultFluctlightService.
-	 *
-	 * @param managementService The FluctlightService instance
-	 * @param fluctlightPersistence The FluctlightPersistence instance
-	 */
-	public static void initServices(FluctlightService managementService, FluctlightPersistence fluctlightPersistence) {
-		Fluctlight.managementService = managementService;
-		Fluctlight.fluctlightPersistence = fluctlightPersistence;
-	}
-
-	/**
-	 * Ensures the services are initialized.
-	 *
-	 * @throws IllegalStateException if the services are not initialized
-	 */
-	private void ensureServicesInitialized() {
-		if (managementService == null || fluctlightPersistence == null)
-			throw new IllegalStateException("Fluctlight services not initialized. Ensure Spring context is loaded.");
-	}
-
-	/**
 	 * Saves this Fluctlight to the database and updates the cache.
 	 * This method persists all current state (languages, roles) to the database.
 	 */
@@ -173,8 +150,40 @@ public class Fluctlight {
 	 */
 	public void setPrimaryLanguage(DiscordLocale locale) {
 		ensureServicesInitialized();
-		fluctlightPersistence.updatePrimaryLanguage(getId(), locale);
-		syncFromService();
+		managementService.updatePrimaryLanguage(this, locale);
+	}
+
+	/**
+	 * Sets the primary language on the in-memory object without persisting.
+	 * This method is intended for internal use by event listeners to synchronize
+	 * in-memory state with persisted data. External code should use {@link #setPrimaryLanguage(DiscordLocale)} instead.
+	 *
+	 * @param locale The new primary language locale
+	 */
+	public void setPrimaryLanguageInternal(DiscordLocale locale) {
+		this.primaryLanguage = locale;
+	}
+
+	/**
+	 * Sets the additional languages on the in-memory object without persisting.
+	 * This method is intended for internal use by event listeners to synchronize
+	 * in-memory state with persisted data.
+	 *
+	 * @param locales The additional language locales
+	 */
+	public void setAdditionalLanguagesInternal(DiscordLocale[] locales) {
+		this.additionalLanguages = locales != null ? locales : new DiscordLocale[0];
+	}
+
+	/**
+	 * Sets the allowed roles on the in-memory object without persisting.
+	 * This method is intended for internal use by event listeners to synchronize
+	 * in-memory state with persisted data.
+	 *
+	 * @param roleIds The allowed role IDs
+	 */
+	public void setAllowedRolesInternal(long[] roleIds) {
+		this.allowedRoles = roleIds;
 	}
 
 	/**
@@ -184,8 +193,7 @@ public class Fluctlight {
 	 */
 	public void addAdditionalLanguage(DiscordLocale locale) {
 		ensureServicesInitialized();
-		fluctlightPersistence.addAdditionalLanguage(getId(), locale);
-		syncFromService();
+		managementService.addAdditionalLanguage(this, locale);
 	}
 
 	/**
@@ -195,8 +203,7 @@ public class Fluctlight {
 	 */
 	public void removeAdditionalLanguage(DiscordLocale locale) {
 		ensureServicesInitialized();
-		fluctlightPersistence.removeAdditionalLanguage(getId(), locale);
-		syncFromService();
+		managementService.removeAdditionalLanguage(this, locale);
 	}
 
 	/**
@@ -208,8 +215,7 @@ public class Fluctlight {
 	 */
 	public void addAllowedRole(long roleId) {
 		ensureServicesInitialized();
-		fluctlightPersistence.addAllowedRole(getId(), roleId);
-		syncFromService();
+		managementService.addAllowedRole(this, roleId);
 	}
 
 	/**
@@ -221,21 +227,28 @@ public class Fluctlight {
 	 */
 	public void removeAllowedRole(long roleId) {
 		ensureServicesInitialized();
-		fluctlightPersistence.removeAllowedRole(getId(), roleId);
-		syncFromService();
+		managementService.removeAllowedRole(this, roleId);
 	}
 
 	/**
-	 * Syncs this Fluctlight instance with the latest state from the service.
-	 * This is called automatically after convenience methods to ensure
-	 * the instance reflects the persisted state.
+	 * Initializes the static service references.
+	 * This is called automatically by Spring via DefaultFluctlightService.
+	 *
+	 * @param managementService The FluctlightService instance
+	 * @param fluctlightPersistence The FluctlightPersistence instance
 	 */
-	private void syncFromService() {
-		managementService.get(getId()).ifPresent(updated -> {
-			this.primaryLanguage = updated.primaryLanguage;
-			this.additionalLanguages = updated.additionalLanguages;
-			this.allowedRoles = updated.allowedRoles;
-		});
+	public static void initServices(FluctlightService managementService, FluctlightPersistence fluctlightPersistence) {
+		Fluctlight.managementService = managementService;
+	}
+
+	/**
+	 * Ensures the services are initialized.
+	 *
+	 * @throws IllegalStateException if the services are not initialized
+	 */
+	private void ensureServicesInitialized() {
+		if (managementService == null)
+			throw new IllegalStateException("Fluctlight services not initialized. Ensure Spring context is loaded.");
 	}
 }
 

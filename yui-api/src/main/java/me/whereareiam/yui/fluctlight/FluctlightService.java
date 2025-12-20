@@ -1,6 +1,7 @@
 package me.whereareiam.yui.fluctlight;
 
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 import java.util.Optional;
 
@@ -66,4 +67,54 @@ public interface FluctlightService {
 	 * @return The newly created Fluctlight, or empty if the operation failed
 	 */
 	Optional<Fluctlight> clear(long userId);
+
+	/**
+	 * Updates the primary language for a Fluctlight.
+	 * <p>
+	 * This method handles persistence and event publishing.
+	 *
+	 * @param fluctlight The Fluctlight instance
+	 * @param locale The new primary language locale
+	 */
+	void updatePrimaryLanguage(Fluctlight fluctlight, DiscordLocale locale);
+
+	/**
+	 * Adds an additional language for a Fluctlight.
+	 * <p>
+	 * This method handles persistence and event publishing.
+	 *
+	 * @param fluctlight The Fluctlight instance
+	 * @param locale The additional language locale to add
+	 */
+	void addAdditionalLanguage(Fluctlight fluctlight, DiscordLocale locale);
+
+	/**
+	 * Removes an additional language for a Fluctlight.
+	 * <p>
+	 * This method handles persistence and event publishing.
+	 *
+	 * @param fluctlight The Fluctlight instance
+	 * @param locale The additional language locale to remove
+	 */
+	void removeAdditionalLanguage(Fluctlight fluctlight, DiscordLocale locale);
+
+	/**
+	 * Adds an allowed role for a Fluctlight.
+	 * <p>
+	 * This method handles persistence.
+	 *
+	 * @param fluctlight The Fluctlight instance
+	 * @param roleId The allowed role ID to add
+	 */
+	void addAllowedRole(Fluctlight fluctlight, long roleId);
+
+	/**
+	 * Removes an allowed role for a Fluctlight.
+	 * <p>
+	 * This method handles persistence.
+	 *
+	 * @param fluctlight The Fluctlight instance
+	 * @param roleId The allowed role ID to remove
+	 */
+	void removeAllowedRole(Fluctlight fluctlight, long roleId);
 }

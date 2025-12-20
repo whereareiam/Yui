@@ -2,28 +2,20 @@ package me.whereareiam.yui.adapter.database.adapter;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import me.whereareiam.yui.adapter.database.entity.FluctlightEntity;
 import me.whereareiam.yui.adapter.database.entity.LanguageEntity;
 import me.whereareiam.yui.adapter.database.entity.RoleEntity;
-import me.whereareiam.yui.adapter.database.entity.FluctlightEntity;
 import me.whereareiam.yui.adapter.database.mapper.FluctlightMapper;
 import me.whereareiam.yui.adapter.database.repository.FluctlightRepository;
 import me.whereareiam.yui.adapter.database.repository.LanguageRepository;
 import me.whereareiam.yui.adapter.database.repository.RoleRepository;
-import me.whereareiam.yui.event.language.AdditionalLanguageAddedEvent;
-import me.whereareiam.yui.event.language.AdditionalLanguageRemovedEvent;
-import me.whereareiam.yui.event.language.LanguageChangeEvent;
+import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.fluctlight.FluctlightData;
 import me.whereareiam.yui.persistence.FluctlightPersistence;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -40,10 +32,10 @@ public class FluctlightPersistenceAdapter implements FluctlightPersistence {
 	private final LanguageRepository languageRepository;
 	private final RoleRepository roleRepository;
 	private final FluctlightMapper fluctlightMapper;
-	private final ApplicationEventPublisher eventPublisher;
 
 	@Override
-	public Optional<FluctlightData> loadData(long userId) {
+	public Optional<FluctlightData> loadData(Fluctlight fluctlight) {
+		long userId = fluctlight.getId();
 		return fluctlightRepository.findById(userId)
 				.map(entity -> new FluctlightData(
 						fluctlightMapper.extractPrimaryLanguage(entity),
@@ -53,7 +45,8 @@ public class FluctlightPersistenceAdapter implements FluctlightPersistence {
 	}
 
 	@Override
-	public void saveData(long userId, FluctlightData data) {
+	public void saveData(Fluctlight fluctlight, FluctlightData data) {
+		long userId = fluctlight.getId();
 		FluctlightEntity entity = fluctlightRepository.findById(userId)
 				.orElseGet(() -> FluctlightEntity.builder().id(userId).build());
 
@@ -94,57 +87,36 @@ public class FluctlightPersistenceAdapter implements FluctlightPersistence {
 	}
 
 	@Override
-	public void deleteById(long userId) {
-		fluctlightRepository.deleteById(userId);
+	public void deleteById(Fluctlight fluctlight) {
+		fluctlightRepository.deleteById(fluctlight.getId());
 	}
 
 	@Override
-	public boolean existsById(long userId) {
-		return fluctlightRepository.existsById(userId);
+	public boolean existsById(Fluctlight fluctlight) {
+		return fluctlightRepository.existsById(fluctlight.getId());
 	}
 
 	@Override
-	public void updatePrimaryLanguage(long userId, DiscordLocale locale) {
+	public void updatePrimaryLanguage(Fluctlight fluctlight, DiscordLocale locale) {
+		long userId = fluctlight.getId();
 		FluctlightEntity entity = fluctlightRepository.findById(userId)
-				.orElseThrow(() -> new IllegalArgumentException("Fluctlight not found with id: " + userId));
+				.orElseGet(() -> FluctlightEntity.builder().id(userId).build());
 
-		DiscordLocale current = entity.getPrimaryLanguage() == null
-				? null
-				: entity.getPrimaryLanguage().getLocale();
-
-		LanguageChangeEvent event = new LanguageChangeEvent(userId, current);
-		event.setLanguage(locale);
-
-		eventPublisher.publishEvent(event);
-
-		if (event.isCancelled())
-			return;
-
-		DiscordLocale newLocale = event.getLanguage();
-		LanguageEntity primaryLanguageEntity = languageRepository.findByLocale(newLocale)
-				.orElseThrow(() -> new IllegalArgumentException("Primary language not found: " + newLocale));
+		LanguageEntity primaryLanguageEntity = languageRepository.findByLocale(locale)
+				.orElseThrow(() -> new IllegalArgumentException("Primary language not found: " + locale));
 
 		entity.setPrimaryLanguage(primaryLanguageEntity);
 		fluctlightRepository.save(entity);
 	}
 
 	@Override
-	public void addAdditionalLanguage(long userId, DiscordLocale locale) {
-		AdditionalLanguageAddedEvent event = new AdditionalLanguageAddedEvent(userId);
-		event.setLanguage(locale);
-
-		eventPublisher.publishEvent(event);
-		if (event.isCancelled())
-			return;
-
-		locale = event.getLanguage();
-
-		DiscordLocale finalLocale = locale;
+	public void addAdditionalLanguage(Fluctlight fluctlight, DiscordLocale locale) {
+		long userId = fluctlight.getId();
 		FluctlightEntity entity = fluctlightRepository.findById(userId)
 				.orElseThrow(() -> new IllegalArgumentException("Fluctlight not found with id: " + userId));
 
 		LanguageEntity languageEntity = languageRepository.findByLocale(locale)
-				.orElseThrow(() -> new IllegalArgumentException("Language not found: " + finalLocale));
+				.orElseThrow(() -> new IllegalArgumentException("Language not found: " + locale));
 
 		if (entity.getAdditionalLanguages() == null)
 			entity.setAdditionalLanguages(new HashSet<>());
@@ -160,28 +132,20 @@ public class FluctlightPersistenceAdapter implements FluctlightPersistence {
 	}
 
 	@Override
-	public void removeAdditionalLanguage(long userId, DiscordLocale locale) {
-		AdditionalLanguageRemovedEvent event = new AdditionalLanguageRemovedEvent(userId);
-		event.setLanguage(locale);
-
-		eventPublisher.publishEvent(event);
-		if (event.isCancelled())
-			return;
-
-		locale = event.getLanguage();
-
-		DiscordLocale finalLocale = locale;
+	public void removeAdditionalLanguage(Fluctlight fluctlight, DiscordLocale locale) {
+		long userId = fluctlight.getId();
 		FluctlightEntity entity = fluctlightRepository.findById(userId)
 				.orElseThrow(() -> new IllegalArgumentException("Fluctlight not found with id: " + userId));
 
 		if (entity.getAdditionalLanguages() != null &&
-				entity.getAdditionalLanguages().removeIf(language -> language.getLocale() == finalLocale)) {
+				entity.getAdditionalLanguages().removeIf(language -> language.getLocale() == locale)) {
 			fluctlightRepository.save(entity);
 		}
 	}
 
 	@Override
-	public void addAllowedRole(long userId, long roleId) {
+	public void addAllowedRole(Fluctlight fluctlight, long roleId) {
+		long userId = fluctlight.getId();
 		FluctlightEntity entity = fluctlightRepository.findById(userId)
 				.orElseThrow(() -> new IllegalArgumentException("Fluctlight not found with id: " + userId));
 
@@ -198,7 +162,8 @@ public class FluctlightPersistenceAdapter implements FluctlightPersistence {
 	}
 
 	@Override
-	public void removeAllowedRole(long userId, long roleId) {
+	public void removeAllowedRole(Fluctlight fluctlight, long roleId) {
+		long userId = fluctlight.getId();
 		FluctlightEntity entity = fluctlightRepository.findById(userId)
 				.orElseThrow(() -> new IllegalArgumentException("Fluctlight not found with id: " + userId));
 

@@ -3,10 +3,10 @@ package me.whereareiam.yui.adapter.command.registration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.adapter.command.YuiCommandManager;
+import me.whereareiam.yui.command.Interaction;
 import net.dv8tion.jda.api.JDA;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.component.CommandComponent;
-import org.incendo.cloud.discord.jda6.JDAInteraction;
 import org.incendo.cloud.discord.slash.DiscordSetting;
 import org.incendo.cloud.internal.CommandRegistrationHandler;
 import org.jetbrains.annotations.NotNull;
@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @Slf4j
 @RequiredArgsConstructor
-public final class JDARegistrationHandler implements CommandRegistrationHandler<JDAInteraction> {
+public final class JDARegistrationHandler implements CommandRegistrationHandler<Interaction> {
 	private final ScheduledExecutorService scheduledPool;
 	private final YuiCommandManager commandManager;
 	private final JDA jda;
@@ -37,7 +37,7 @@ public final class JDARegistrationHandler implements CommandRegistrationHandler<
 	private final AtomicBoolean syncScheduled = new AtomicBoolean(false);
 
 	@Override
-	public boolean registerCommand(@NotNull Command<JDAInteraction> command) {
+	public boolean registerCommand(@NotNull Command<Interaction> command) {
 		if (!commandManager.discordSettings().get(DiscordSetting.AUTO_REGISTER_SLASH_COMMANDS) || jda.getStatus() != JDA.Status.CONNECTED)
 			return true;
 		
@@ -65,7 +65,7 @@ public final class JDARegistrationHandler implements CommandRegistrationHandler<
 	}
 
 	@Override
-	public void unregisterRootCommand(@NotNull CommandComponent<JDAInteraction> rootCommand) {
+	public void unregisterRootCommand(@NotNull CommandComponent<Interaction> rootCommand) {
 		log.debug("Re-synchronizing Discord slash commands after root command '{}' deletion", rootCommand.name());
 
 		try {

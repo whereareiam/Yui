@@ -7,13 +7,14 @@ import me.whereareiam.yui.annotation.ComponentListener;
 import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.Registry;
+import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.util.style.StyleKit;
 import me.whereareiam.yui.translation.Translatable;
 import me.whereareiam.yui.util.Components;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
-import org.incendo.cloud.discord.jda6.JDAInteraction;
+import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
@@ -41,17 +42,17 @@ public class ReloadCommand {
 
 	@Definition("reload")
 	@Command("reload")
-	public void onCommand(JDAInteraction interaction) {
-		long userId = interaction.user().getIdLong();
+	public void onCommand(Interaction interaction) {
+		Fluctlight fluctlight = interaction.fluctlight();
 
 		// Create confirmation embed
 		EmbedBuilder embed = StyleKit.embeds().warning();
-		embed.setTitle(Translatable.of("commands.reload.confirmation.title", userId));
-		embed.setDescription(Translatable.of("commands.reload.confirmation.description", userId));
+		embed.setTitle(Translatable.of("commands.reload.confirmation.title", fluctlight));
+		embed.setDescription(Translatable.of("commands.reload.confirmation.description", fluctlight));
 
 		// Create buttons
-		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.of("vocabulary.confirm", userId));
-		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.of("vocabulary.cancel", userId));
+		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.of("vocabulary.confirm", fluctlight));
+		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.of("vocabulary.cancel", fluctlight));
 
 		// Send the confirmation message with buttons
 		interaction.replyCallback()
@@ -62,18 +63,18 @@ public class ReloadCommand {
 	}
 
 	@ComponentListener(CONFIRM_LISTENER)
-	public void onConfirmButton(ButtonInteractionEvent event) {
+	public void onConfirmButton(Fluctlight fluctlight, ButtonInteractionEvent event) {
 		// Defer the edit to avoid timeout
 		event.deferEdit().queue();
 
 		// Start reload process
-		CompletableFuture.runAsync(() -> performReload(event))
+		CompletableFuture.runAsync(() -> performReload(event, fluctlight))
 				.exceptionally(throwable -> {
 					log.error("Error during reload process", throwable);
 
 					event.getHook().editOriginalEmbeds(StyleKit.embeds().error()
-									.setTitle(Translatable.of("commands.reload.error.title", event.getUser().getIdLong()))
-									.setDescription(Translatable.of("commands.reload.error.description", event.getUser().getIdLong()))
+									.setTitle(Translatable.of("commands.reload.error.title", fluctlight))
+									.setDescription(Translatable.of("commands.reload.error.description", fluctlight))
 									.build())
 							.setComponents()
 							.queue();
@@ -81,7 +82,7 @@ public class ReloadCommand {
 				});
 	}
 
-	private void performReload(ButtonInteractionEvent event) {
+	private void performReload(ButtonInteractionEvent event, Fluctlight fluctlight) {
 		try {
 			log.info("");
 			log.info("Reloading components...");
@@ -103,8 +104,8 @@ public class ReloadCommand {
 
 			// Success embed
 			EmbedBuilder successEmbed = StyleKit.embeds().success();
-			successEmbed.setTitle(Translatable.of("commands.reload.success.title", event.getUser().getIdLong()));
-			successEmbed.setDescription(Translatable.of("commands.reload.success.description", event.getUser().getIdLong()));
+			successEmbed.setTitle(Translatable.of("commands.reload.success.title", fluctlight));
+			successEmbed.setDescription(Translatable.of("commands.reload.success.description", fluctlight));
 
 			// Remove buttons and show success message
 			event.getHook()
@@ -115,7 +116,7 @@ public class ReloadCommand {
 		} catch (Exception e) {
 			log.error("Error during reload process", e);
 			event.getHook().editOriginalEmbeds(StyleKit.embeds().error()
-							.setTitle(Translatable.of("commands.reload.error.title", event.getUser().getIdLong()))
+							.setTitle(Translatable.of("commands.reload.error.title", fluctlight))
 							.build())
 					.setComponents()
 					.queue();
@@ -123,14 +124,14 @@ public class ReloadCommand {
 	}
 
 	@ComponentListener(CANCEL_LISTENER)
-	public void onCancelButton(ButtonInteractionEvent event) {
+	public void onCancelButton(Fluctlight fluctlight, ButtonInteractionEvent event) {
 		// Defer the edit to avoid timeout
 		event.deferEdit().queue();
 
 		// Show cancellation message and remove buttons
 		event.getHook().editOriginalEmbeds(StyleKit.embeds().info()
-						.setTitle(Translatable.of("commands.reload.cancelled.title", event.getUser().getIdLong()))
-						.setDescription(Translatable.of("commands.reload.cancelled.description", event.getUser().getIdLong()))
+						.setTitle(Translatable.of("commands.reload.cancelled.title", fluctlight))
+						.setDescription(Translatable.of("commands.reload.cancelled.description", fluctlight))
 						.build())
 				.setComponents()
 				.queue();

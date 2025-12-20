@@ -1,5 +1,6 @@
 package me.whereareiam.yui.persistence;
 
+import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.fluctlight.FluctlightData;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
@@ -15,76 +16,76 @@ public interface FluctlightPersistence {
 	/**
 	 * Loads data for a fluctlight from the database.
 	 *
-	 * @param userId The fluctlight ID to load data for
+	 * @param fluctlight The Fluctlight instance
 	 * @return Optional containing the data if found, empty otherwise
 	 */
-	Optional<FluctlightData> loadData(long userId);
+	Optional<FluctlightData> loadData(Fluctlight fluctlight);
 
 	/**
 	 * Saves data for a fluctlight to the database.
 	 * Creates a new entry if it doesn't exist, or updates an existing one.
 	 *
-	 * @param userId The fluctlight ID
+	 * @param fluctlight The Fluctlight instance
 	 * @param data The data to save
 	 */
-	void saveData(long userId, FluctlightData data);
+	void saveData(Fluctlight fluctlight, FluctlightData data);
 
 	/**
-	 * Deletes a FluctlightEntity by fluctlight ID.
+	 * Deletes a FluctlightEntity by fluctlight.
 	 *
-	 * @param userId The fluctlight ID to delete
+	 * @param fluctlight The Fluctlight instance to delete
 	 */
-	void deleteById(long userId);
+	void deleteById(Fluctlight fluctlight);
 
 	/**
-	 * Checks if a FluctlightEntity exists for the given fluctlight ID.
+	 * Checks if a FluctlightEntity exists for the given fluctlight.
 	 *
-	 * @param userId The fluctlight ID to check
+	 * @param fluctlight The Fluctlight instance to check
 	 * @return true if the entity exists, false otherwise
 	 */
-	boolean existsById(long userId);
+	boolean existsById(Fluctlight fluctlight);
 
 	/**
 	 * Updates the primary language for a fluctlight.
 	 *
-	 * @param userId The fluctlight ID
+	 * @param fluctlight The Fluctlight instance
 	 * @param locale The new primary language locale
 	 */
-	void updatePrimaryLanguage(long userId, DiscordLocale locale);
+	void updatePrimaryLanguage(Fluctlight fluctlight, DiscordLocale locale);
 
 	/**
 	 * Adds an additional language for a fluctlight.
 	 *
-	 * @param userId The fluctlight ID
+	 * @param fluctlight The Fluctlight instance
 	 * @param locale The additional language locale to add
 	 */
-	void addAdditionalLanguage(long userId, DiscordLocale locale);
+	void addAdditionalLanguage(Fluctlight fluctlight, DiscordLocale locale);
 
 	/**
 	 * Removes an additional language for a fluctlight.
 	 *
-	 * @param userId The fluctlight ID
+	 * @param fluctlight The Fluctlight instance
 	 * @param locale The additional language locale to remove
 	 */
-	void removeAdditionalLanguage(long userId, DiscordLocale locale);
+	void removeAdditionalLanguage(Fluctlight fluctlight, DiscordLocale locale);
 
 	/**
 	 * Adds an allowed role for a fluctlight.
 	 * These are framework roles that the bot is allowed to work with,
 	 * not the fluctlight's guild roles.
 	 *
-	 * @param userId The fluctlight ID
+	 * @param fluctlight The Fluctlight instance
 	 * @param roleId The allowed role ID to add
 	 */
-	void addAllowedRole(long userId, long roleId);
+	void addAllowedRole(Fluctlight fluctlight, long roleId);
 
 	/**
 	 * Removes an allowed role for a fluctlight.
 	 * These are framework roles that the bot is allowed to work with,
 	 * not the fluctlight's guild roles.
 	 *
-	 * @param userId The fluctlight ID
+	 * @param fluctlight The Fluctlight instance
 	 * @param roleId The allowed role ID to remove
 	 */
-	void removeAllowedRole(long userId, long roleId);
+	void removeAllowedRole(Fluctlight fluctlight, long roleId);
 }

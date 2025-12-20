@@ -4,8 +4,10 @@ import lombok.AllArgsConstructor;
 import me.whereareiam.yui.event.language.AdditionalLanguageAddedEvent;
 import me.whereareiam.yui.event.language.AdditionalLanguageRemovedEvent;
 import me.whereareiam.yui.event.language.LanguageChangeEvent;
-import me.whereareiam.yui.service.UserRoleService;
 import me.whereareiam.yui.model.config.Roles;
+import me.whereareiam.yui.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.service.UserRoleService;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
@@ -17,28 +19,38 @@ public class LanguageChangeListener {
 	private final UserRoleService userRoleService;
 	private final ObjectProvider<Roles> roles;
 
-	@EventListener
 	@Order(0)
+	@EventListener
 	public void onLanguageChangeEvent(LanguageChangeEvent event) {
-		if (event.getLanguage().equals(event.getOldLanguage()))
+		Fluctlight fluctlight = event.getFluctlight();
+		DiscordLocale language = event.getFluctlight().getPrimaryLanguage();
+		DiscordLocale oldLanguage = event.getOldLanguage();
+
+		if (language == null || (language.equals(oldLanguage)))
 			return;
 
-		if (event.getOldLanguage() != null)
-			userRoleService.removeRoleFromUser(event.getUser(), getRoleId(event.getOldLanguage().getLocale()));
+		if (oldLanguage != null)
+			userRoleService.removeRoleFromUser(fluctlight.getId(), getRoleId(oldLanguage.getLocale()));
 
-		userRoleService.addRoleToUser(event.getUser(), getRoleId(event.getLanguage().getLocale()));
+		userRoleService.addRoleToUser(fluctlight.getId(), getRoleId(language.getLocale()));
 	}
 
 	@EventListener
 	public void onAdditionalLanguageAddedEvent(AdditionalLanguageAddedEvent event) {
-		if (event.getLanguage() != null)
-			userRoleService.addRoleToUser(event.getUser(), getRoleId(event.getLanguage().getLocale()));
+		Fluctlight fluctlight = event.getFluctlight();
+		DiscordLocale language = event.getLanguage();
+		
+		if (language != null)
+			userRoleService.addRoleToUser(fluctlight.getId(), getRoleId(language.getLocale()));
 	}
 
 	@EventListener
 	public void onAdditionalLanguageRemovedEvent(AdditionalLanguageRemovedEvent event) {
-		if (event.getLanguage() != null)
-			userRoleService.removeRoleFromUser(event.getUser(), getRoleId(event.getLanguage().getLocale()));
+		Fluctlight fluctlight = event.getFluctlight();
+		DiscordLocale language = event.getLanguage();
+		
+		if (language != null)
+			userRoleService.removeRoleFromUser(fluctlight.getId(), getRoleId(language.getLocale()));
 	}
 
 	private long getRoleId(String language) {

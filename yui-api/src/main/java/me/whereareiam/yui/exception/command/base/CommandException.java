@@ -1,13 +1,13 @@
 package me.whereareiam.yui.exception.command.base;
 
 import me.whereareiam.yui.command.exception.ExceptionResponse;
-import me.whereareiam.yui.command.exception.ExceptionContext;
+import me.whereareiam.yui.command.Interaction;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Base exception class for custom command exceptions in Yui.
  * <p>
- * Custom exceptions should extend this class and implement {@link #createResponse(ExceptionContext)}
+ * Custom exceptions should extend this class and implement {@link #createResponse(Interaction)}
  * to define what message or embed should be sent when the exception occurs.
  * <p>
  * Example usage:
@@ -18,8 +18,8 @@ import org.jetbrains.annotations.NotNull;
  *     }
  *     
  *     @Override
- *     public ExceptionResponse createResponse(ExceptionContext context) {
- *         long userId = context.getUserId();
+ *     public ExceptionResponse createResponse(Interaction interaction) {
+ *         long userId = interaction.fluctlight().getId();
  *         String message = Translatable.forUser("error.requirement.failed", userId);
  *         return ExceptionResponse.message(message);
  *     }
@@ -69,9 +69,9 @@ public abstract class CommandException extends RuntimeException {
 	 * This method is called by the exception handler system to determine
 	 * what message or embed to send to the fluctlight.
 	 *
-	 * @param context The exception context providing fluctlight and command information
+	 * @param interaction The interaction providing fluctlight and command information
 	 * @return The response to send (message or embed)
 	 */
 	@NotNull
-	public abstract ExceptionResponse createResponse(@NotNull ExceptionContext context);
+	public abstract ExceptionResponse createResponse(@NotNull Interaction interaction);
 }

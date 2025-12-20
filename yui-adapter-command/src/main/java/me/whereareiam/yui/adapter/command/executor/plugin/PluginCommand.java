@@ -5,7 +5,10 @@ import me.whereareiam.yui.annotation.ComponentListener;
 import me.whereareiam.yui.annotation.command.Argument;
 import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;
+import me.whereareiam.yui.fluctlight.FluctlightService;
+import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.model.PayloadButton;
+import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.plugin.InternalPlugin;
 import me.whereareiam.yui.model.plugin.Plugin;
 import me.whereareiam.yui.plugin.PluginManager;
@@ -18,16 +21,17 @@ import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
-import org.incendo.cloud.discord.jda6.JDAInteraction;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Component
 @AllArgsConstructor
 public class PluginCommand {
 	private final PluginManager pluginManager;
+	private final FluctlightService fluctlightService;
 
 	private static final String CATEGORY_LISTENER = "command_plugin_category";
 	private static final String SELECT_LISTENER = "command_plugin_select";
@@ -43,17 +47,17 @@ public class PluginCommand {
 	@Definition("plugin")
 	@Command("plugin [action] [plugin]")
 	public void onCommand(
-			JDAInteraction interaction,
+			Interaction interaction,
 			@Argument("action") String action,
 			@Argument("plugin") String pluginArg
 	) {
-		long userId = interaction.user().getIdLong();
+		Fluctlight fluctlight = interaction.fluctlight();
 
 		if (action == null) {
 			interaction.replyCallback()
-					.replyEmbeds(buildMainEmbed(userId).build())
+					.replyEmbeds(buildMainEmbed(fluctlight).build())
 					.setEphemeral(true)
-					.addActionRow(mainControls(userId))
+					.addActionRow(mainControls(fluctlight))
 					.queue();
 			return;
 		}
@@ -61,7 +65,7 @@ public class PluginCommand {
 		if (!Category.isSupported(action)) {
 			interaction.replyCallback()
 					.replyEmbeds(StyleKit.embeds().error()
-									.setTitle(Translatable.of("commands.error.validation.invalidButton", userId))
+									.setTitle(Translatable.of("commands.error.validation.invalidButton", fluctlight))
 									.build())
 					.setEphemeral(true)
 					.queue();
@@ -69,20 +73,21 @@ public class PluginCommand {
 		}
 
 		if (pluginArg == null) {
-			renderCategory(interaction.replyCallback(), action, false);
+			renderCategory(interaction.replyCallback(), fluctlight, action, false);
 			return;
 		}
 
-		performActionDirect(interaction.replyCallback(), userId, action, pluginArg);
+		performActionDirect(interaction.replyCallback(), fluctlight, action, pluginArg);
 	}
 
 	@ComponentListener(CATEGORY_LISTENER)
-	public void onCategory(ButtonInteractionEvent event) {
+	public void onCategory(Fluctlight fluctlight, ButtonInteractionEvent event) {
 		String payload = Components.payload(event);
+		
 		if (payload == null) {
 			event.deferEdit().queue();
 			event.getHook().editOriginalEmbeds(StyleKit.embeds().error()
-							.setTitle(Translatable.of("commands.error.validation.invalidButton", event.getUser().getIdLong()))
+							.setTitle(Translatable.of("commands.error.validation.invalidButton", fluctlight))
 							.build())
 					.setComponents()
 					.queue();
@@ -90,16 +95,17 @@ public class PluginCommand {
 		}
 
 		event.deferEdit().queue();
-		renderCategory(event, payload, true);
+		renderCategory(event, fluctlight, payload, true);
 	}
 
 	@ComponentListener(SELECT_LISTENER)
-	public void onSelect(ButtonInteractionEvent event) {
+	public void onSelect(Fluctlight fluctlight, ButtonInteractionEvent event) {
 		String payload = Components.payload(event);
+		
 		if (payload == null || !payload.contains("|")) {
 			event.deferEdit().queue();
 			event.getHook().editOriginalEmbeds(StyleKit.embeds().error()
-							.setTitle(Translatable.of("commands.error.validation.invalidButton", event.getUser().getIdLong()))
+							.setTitle(Translatable.of("commands.error.validation.invalidButton", fluctlight))
 							.build())
 					.setComponents()
 					.queue();
@@ -110,42 +116,46 @@ public class PluginCommand {
 		String value = payload.substring(payload.indexOf('|') + 1);
 
 		event.deferEdit().queue();
-		performActionAndReport(event, action, value);
+		performActionAndReport(event, fluctlight, action, value);
 	}
 
 	@ComponentListener(BACK_LISTENER)
 	public void onBack(ButtonInteractionEvent event) {
 		event.deferEdit().queue();
 		long userId = event.getUser().getIdLong();
+		Optional<Fluctlight> fluctlightOpt = fluctlightService.get(userId);
+		if (fluctlightOpt.isEmpty()) {
+			return;
+		}
+		Fluctlight fluctlight = fluctlightOpt.get();
 
 		event.getHook()
-				.editOriginalEmbeds(buildMainEmbed(userId).build())
-				.setActionRow(mainControls(userId))
+				.editOriginalEmbeds(buildMainEmbed(fluctlight).build())
+				.setActionRow(mainControls(fluctlight))
 				.queue();
 	}
 
-	private void performActionDirect(IReplyCallback reply, long userId, String action, String value) {
+	private void performActionDirect(IReplyCallback reply, Fluctlight fluctlight, String action, String value) {
 		Optional<String> error = executeAction(action, value);
 		if (error.isPresent()) {
-			reply.replyEmbeds(buildError(userId, value).build()).setEphemeral(true).queue();
+			reply.replyEmbeds(buildError(fluctlight, value).build()).setEphemeral(true).queue();
 			return;
 		}
 
 		// Success: show the category view for this action
-		renderCategory(reply, action, false);
+		renderCategory(reply, fluctlight, action, false);
 	}
 
-	private void performActionAndReport(ButtonInteractionEvent event, String action, String value) {
-		long userId = event.getUser().getIdLong();
+	private void performActionAndReport(ButtonInteractionEvent event, Fluctlight fluctlight, String action, String value) {
 		Optional<String> error = executeAction(action, value);
 		if (error.isPresent()) {
-			event.getHook().editOriginalEmbeds(buildError(userId, value).build()).setComponents().queue();
+			event.getHook().editOriginalEmbeds(buildError(fluctlight, value).build()).setComponents().queue();
 			return;
 		}
 
-		EmbedBuilder embed = buildCategoryEmbed(action, userId);
+		EmbedBuilder embed = buildCategoryEmbed(action, fluctlight);
 		List<Button> buttons = buildCategoryButtons(action);
-		List<ActionRow> rows = toRows(buttons, true, userId, action);
+		List<ActionRow> rows = toRows(buttons, true, fluctlight, action);
 		event.getHook().editOriginalEmbeds(embed.build()).setComponents(rows).queue();
 	}
 
@@ -159,16 +169,15 @@ public class PluginCommand {
 		};
 	}
 
-	private EmbedBuilder buildError(long userId, String value) {
-		return StyleKit.embeds().error().setTitle(Translatable.forUser("commands.plugin.action.errorTitle", userId, value));
+	private EmbedBuilder buildError(Fluctlight fluctlight, String value) {
+		return StyleKit.embeds().error().setTitle(Translatable.forUser("commands.plugin.action.errorTitle", fluctlight, value));
 	}
 
-	private void renderCategory(IReplyCallback event, String action, boolean showBack) {
-		long userId = event.getUser().getIdLong();
-		EmbedBuilder embed = buildCategoryEmbed(action, userId);
+	private void renderCategory(IReplyCallback event, Fluctlight fluctlight, String action, boolean showBack) {
+		EmbedBuilder embed = buildCategoryEmbed(action, fluctlight);
 		List<Button> buttons = buildCategoryButtons(action);
 
-		List<ActionRow> rows = toRows(buttons, showBack, userId, action);
+		List<ActionRow> rows = toRows(buttons, showBack, fluctlight, action);
 		if (event instanceof ButtonInteractionEvent btn) {
 			btn.getHook().editOriginalEmbeds(embed.build())
 					.setComponents(rows)
@@ -189,7 +198,7 @@ public class PluginCommand {
 				.queue();
 	}
 
-	private List<ActionRow> toRows(List<Button> buttons, boolean showBack, long userId, String action) {
+	private List<ActionRow> toRows(List<Button> buttons, boolean showBack, Fluctlight fluctlight, String action) {
 		List<ActionRow> rows = new ArrayList<>();
 		for (int i = 0; i < buttons.size(); i += BUTTONS_PER_ROW) {
 			int end = Math.min(i + BUTTONS_PER_ROW, buttons.size());
@@ -198,13 +207,13 @@ public class PluginCommand {
 
 		// Extra controls for the load category
 		if (LOAD_ACTION.equals(action)) {
-			Button reload = Components.button(ButtonStyle.PRIMARY, CATEGORY_LISTENER, Translatable.of("commands.plugin.controls.reload", userId), "load").getButton();
+			Button reload = Components.button(ButtonStyle.PRIMARY, CATEGORY_LISTENER, Translatable.of("commands.plugin.controls.reload", fluctlight), "load").getButton();
 			if (showBack) {
-				Button back = Components.button(ButtonStyle.SUCCESS, BACK_LISTENER, Translatable.of("vocabulary.back", userId));
+				Button back = Components.button(ButtonStyle.SUCCESS, BACK_LISTENER, Translatable.of("vocabulary.back", fluctlight));
 				rows.add(ActionRow.of(reload, back));
 			} else rows.add(ActionRow.of(reload));
 		} else if (showBack) {
-			rows.add(ActionRow.of(Components.button(ButtonStyle.SUCCESS, BACK_LISTENER, Translatable.of("vocabulary.back", userId))));
+			rows.add(ActionRow.of(Components.button(ButtonStyle.SUCCESS, BACK_LISTENER, Translatable.of("vocabulary.back", fluctlight))));
 		}
 
 		return rows;
@@ -214,13 +223,19 @@ public class PluginCommand {
 	public void onReloadAll(ButtonInteractionEvent event) {
 		event.deferEdit().queue();
 		long userId = event.getUser().getIdLong();
+		Optional<Fluctlight> fluctlightOpt = fluctlightService.get(userId);
+		if (fluctlightOpt.isEmpty()) {
+			return;
+		}
+		Fluctlight fluctlight = fluctlightOpt.get();
+		long fluctlightId = fluctlight.getId();
 
 		EmbedBuilder embed = StyleKit.embeds().warning();
-		embed.setTitle(Translatable.of("commands.plugin.action.reload.confirmation.title", userId));
-		embed.setDescription(Translatable.of("commands.plugin.action.reload.confirmation.description", userId));
+		embed.setTitle(Translatable.of("commands.plugin.action.reload.confirmation.title", fluctlightId));
+		embed.setDescription(Translatable.of("commands.plugin.action.reload.confirmation.description", fluctlightId));
 
-		Button confirm = Components.button(ButtonStyle.DANGER, RELOAD_ALL_CONFIRM_LISTENER, Translatable.of("vocabulary.confirm", userId));
-		Button cancel = Components.button(ButtonStyle.SECONDARY, RELOAD_ALL_CANCEL_LISTENER, Translatable.of("vocabulary.cancel", userId));
+		Button confirm = Components.button(ButtonStyle.DANGER, RELOAD_ALL_CONFIRM_LISTENER, Translatable.of("vocabulary.confirm", fluctlightId));
+		Button cancel = Components.button(ButtonStyle.SECONDARY, RELOAD_ALL_CANCEL_LISTENER, Translatable.of("vocabulary.cancel", fluctlightId));
 
 		event.getHook()
 				.editOriginalEmbeds(embed.build())
@@ -232,6 +247,12 @@ public class PluginCommand {
 	public void onReloadAllConfirm(ButtonInteractionEvent event) {
 		event.deferEdit().queue();
 		long userId = event.getUser().getIdLong();
+		Optional<Fluctlight> fluctlightOpt = fluctlightService.get(userId);
+		if (fluctlightOpt.isEmpty()) {
+			return;
+		}
+		Fluctlight fluctlight = fluctlightOpt.get();
+		long fluctlightId = fluctlight.getId();
 
 		CompletableFuture.runAsync(() -> {
 			try {
@@ -239,13 +260,13 @@ public class PluginCommand {
 
 				// After successful reload, show the main embed with category controls
 				event.getHook()
-						.editOriginalEmbeds(buildMainEmbed(userId).build())
-						.setActionRow(mainControls(userId))
+						.editOriginalEmbeds(buildMainEmbed(fluctlight).build())
+						.setActionRow(mainControls(fluctlight))
 						.queue();
 			} catch (Exception e) {
 				EmbedBuilder error = StyleKit.embeds().error();
-				error.setTitle(Translatable.of("commands.plugin.action.reload.error.title", userId));
-				error.setDescription(Translatable.of("commands.plugin.action.reload.error.description", userId));
+				error.setTitle(Translatable.of("commands.plugin.action.reload.error.title", fluctlightId));
+				error.setDescription(Translatable.of("commands.plugin.action.reload.error.description", fluctlightId));
 
 				event.getHook()
 						.editOriginalEmbeds(error.build())
@@ -259,10 +280,12 @@ public class PluginCommand {
 	public void onReloadAllCancel(ButtonInteractionEvent event) {
 		event.deferEdit().queue();
 		long userId = event.getUser().getIdLong();
+		Optional<Fluctlight> fluctlightOpt = fluctlightService.get(userId);
+		long fluctlightId = fluctlightOpt.map(Fluctlight::getId).orElse(userId);
 
 		EmbedBuilder cancelled = StyleKit.embeds().secondary();
-		cancelled.setTitle(Translatable.of("commands.plugin.action.reload.cancelled.title", userId));
-		cancelled.setDescription(Translatable.of("commands.plugin.action.reload.cancelled.description", userId));
+		cancelled.setTitle(Translatable.of("commands.plugin.action.reload.cancelled.title", fluctlightId));
+		cancelled.setDescription(Translatable.of("commands.plugin.action.reload.cancelled.description", fluctlightId));
 
 		event.getHook()
 				.editOriginalEmbeds(cancelled.build())
@@ -270,10 +293,10 @@ public class PluginCommand {
 				.queue();
 	}
 
-	private EmbedBuilder buildMainEmbed(long userId) {
+	private EmbedBuilder buildMainEmbed(Fluctlight fluctlight) {
 		EmbedBuilder embed = StyleKit.embeds().primary();
-		embed.setTitle(Translatable.of("commands.plugin.main.title", userId));
-		embed.setDescription(Translatable.of("commands.plugin.main.description", userId));
+		embed.setTitle(Translatable.of("commands.plugin.main.title", fluctlight));
+		embed.setDescription(Translatable.of("commands.plugin.main.description", fluctlight));
 
 		List<InternalPlugin> all = pluginManager.plugins().stream()
 				.sorted(Comparator.comparing(p -> p.getPlugin().getName().toLowerCase(Locale.ROOT)))
@@ -284,57 +307,57 @@ public class PluginCommand {
 		Map<String, Plugin> loadable = pluginManager.loadable();
 
 		if (!enabled.isEmpty()) {
-			String listing = enumeratePluginsMain(enabled, userId);
+			String listing = enumeratePluginsMain(enabled, fluctlight);
 			listing = shorten(listing);
-			String heading = Translatable.forUser("commands.plugin.main.fields.enabled", userId, enabled.size());
+			String heading = Translatable.forUser("commands.plugin.main.fields.enabled", fluctlight, enabled.size());
 			embed.addField(heading, listing, true);
 		}
 
 		if (!disabled.isEmpty()) {
-			String listing = enumeratePluginsMain(disabled, userId);
+			String listing = enumeratePluginsMain(disabled, fluctlight);
 			listing = shorten(listing);
-			String heading = Translatable.forUser("commands.plugin.main.fields.disabled", userId, disabled.size());
+			String heading = Translatable.forUser("commands.plugin.main.fields.disabled", fluctlight, disabled.size());
 			embed.addField(heading, listing, true);
 		}
 
 		if (!loadable.isEmpty()) {
-			String listing = enumerateLoadable(loadable, userId);
+			String listing = enumerateLoadable(loadable, fluctlight);
 			listing = shorten(listing);
-			String heading = Translatable.forUser("commands.plugin.main.fields.loadable", userId, loadable.size());
+			String heading = Translatable.forUser("commands.plugin.main.fields.loadable", fluctlight, loadable.size());
 			embed.addField(heading, listing, true);
 		}
 
 		return embed;
 	}
 
-	private Button[] mainControls(long userId) {
-		PayloadButton enable = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.of("commands.plugin.controls.enable", userId), "enable");
-		PayloadButton disable = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.of("commands.plugin.controls.disable", userId), "disable");
-		PayloadButton load = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.of("commands.plugin.controls.load", userId), "load");
-		PayloadButton unload = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.of("commands.plugin.controls.unload", userId), "unload");
+	private Button[] mainControls(Fluctlight fluctlight) {
+		PayloadButton enable = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.of("commands.plugin.controls.enable", fluctlight), "enable");
+		PayloadButton disable = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.of("commands.plugin.controls.disable", fluctlight), "disable");
+		PayloadButton load = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.of("commands.plugin.controls.load", fluctlight), "load");
+		PayloadButton unload = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.of("commands.plugin.controls.unload", fluctlight), "unload");
 
-		Button reloadAll = Components.button(ButtonStyle.PRIMARY, RELOAD_ALL_LISTENER, Translatable.of("commands.plugin.controls.reloadAll", userId));
+		Button reloadAll = Components.button(ButtonStyle.PRIMARY, RELOAD_ALL_LISTENER, Translatable.of("commands.plugin.controls.reloadAll", fluctlight));
 
 		return new Button[]{enable.getButton(), disable.getButton(), load.getButton(), unload.getButton(), reloadAll};
 	}
 
-	private EmbedBuilder buildCategoryEmbed(String action, long userId) {
+	private EmbedBuilder buildCategoryEmbed(String action, Fluctlight fluctlight) {
 		if (LOAD_ACTION.equals(action)) {
 			String titleKey = "commands.plugin.load.title";
-			String content = buildLoadContent(userId);
-			return buildCategoryEmbed(userId, titleKey, content);
+			String content = buildLoadContent(fluctlight);
+			return buildCategoryEmbed(fluctlight, titleKey, content);
 		}
 
 		Category category = Category.of(action);
 		String titleKey = category.getTitleKey();
-		String content = category.content(pluginManager, userId);
+		String content = category.content(pluginManager, fluctlight.getId());
 
-		return buildCategoryEmbed(userId, titleKey, content);
+		return buildCategoryEmbed(fluctlight, titleKey, content);
 	}
 
-	private EmbedBuilder buildCategoryEmbed(long userId, String titleKey, String content) {
+	private EmbedBuilder buildCategoryEmbed(Fluctlight fluctlight, String titleKey, String content) {
 		EmbedBuilder embed = StyleKit.embeds().secondary();
-		embed.setTitle(Translatable.of(titleKey, userId));
+		embed.setTitle(Translatable.of(titleKey, fluctlight));
 
 		if (!content.isBlank()) embed.setDescription(content);
 
@@ -374,10 +397,10 @@ public class PluginCommand {
 		return entries;
 	}
 
-	private String buildLoadContent(long userId) {
+	private String buildLoadContent(Fluctlight fluctlight) {
 		List<Map.Entry<String, Plugin>> loadable = sortedLoadable();
-		if (loadable.isEmpty()) return Translatable.of("commands.plugin.load.empty", userId);
-		String format = Translatable.of("commands.plugin.load.format", userId);
+		if (loadable.isEmpty()) return Translatable.of("commands.plugin.load.empty", fluctlight);
+		String format = Translatable.of("commands.plugin.load.format", fluctlight);
 		List<String> lines = new ArrayList<>();
 
 		for (int i = 0; i < loadable.size(); i++) {
@@ -390,18 +413,18 @@ public class PluginCommand {
 		}
 
 		String list = String.join("\n", lines);
-		String template = Translatable.of("commands.plugin.load.description", userId);
+		String template = Translatable.of("commands.plugin.load.description", fluctlight);
 
 		return template.replace("{list}", list);
 	}
 
-	private String enumerateLoadable(Map<String, Plugin> loadable, long userId) {
+	private String enumerateLoadable(Map<String, Plugin> loadable, Fluctlight fluctlight) {
 		List<Map.Entry<String, Plugin>> entries = new ArrayList<>(loadable.entrySet());
 		entries.sort(Comparator.comparing(e -> {
 			String name = e.getValue().getName();
 			return name == null ? e.getKey().toLowerCase(Locale.ROOT) : name.toLowerCase(Locale.ROOT);
 		}));
-		String format = Translatable.of("commands.plugin.load.format", userId);
+		String format = Translatable.of("commands.plugin.load.format", fluctlight);
 		List<String> lines = new ArrayList<>();
 		for (int i = 0; i < entries.size(); i++) {
 			Plugin p = entries.get(i).getValue();
@@ -415,8 +438,8 @@ public class PluginCommand {
 		return String.join("\n", lines);
 	}
 
-	private String enumeratePluginsMain(List<InternalPlugin> list, long userId) {
-		String format = Translatable.of("commands.plugin.main.format", userId);
+	private String enumeratePluginsMain(List<InternalPlugin> list, Fluctlight fluctlight) {
+		String format = Translatable.of("commands.plugin.main.format", fluctlight);
 		List<String> lines = new ArrayList<>();
 
 		for (int i = 0; i < list.size(); i++) {

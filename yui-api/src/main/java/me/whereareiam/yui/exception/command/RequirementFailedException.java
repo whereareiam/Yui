@@ -1,11 +1,11 @@
 package me.whereareiam.yui.exception.command;
 
-import me.whereareiam.yui.command.exception.ExceptionContext;
 import me.whereareiam.yui.command.exception.ExceptionResponse;
 import me.whereareiam.yui.exception.command.base.CommandException;
+import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.model.requirement.Requirements;
-import me.whereareiam.yui.util.style.StyleKit;
 import me.whereareiam.yui.translation.Translatable;
+import me.whereareiam.yui.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,8 +34,8 @@ public class RequirementFailedException extends CommandException {
 	
 	@Override
 	@NotNull
-	public ExceptionResponse createResponse(@NotNull ExceptionContext context) {
-		long userId = context.getUserId();
+	public ExceptionResponse createResponse(@NotNull Interaction interaction) {
+		long userId = interaction.fluctlight().getId();
 		
 		String title = Translatable.forUser("error.requirement.failed.title", userId);
 		String description = Translatable.forUser("error.requirement.failed.description", userId);

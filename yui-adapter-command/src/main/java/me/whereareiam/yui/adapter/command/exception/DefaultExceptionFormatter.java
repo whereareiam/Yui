@@ -2,15 +2,14 @@ package me.whereareiam.yui.adapter.command.exception;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.command.exception.ExceptionContext;
 import me.whereareiam.yui.command.exception.ExceptionResponse;
 import me.whereareiam.yui.exception.command.base.CommandException;
+import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.translation.Translatable;
 import me.whereareiam.yui.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
 import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.discord.jda6.JDA6CommandManager;
-import org.incendo.cloud.discord.jda6.JDAInteraction;
 import org.incendo.cloud.discord.jda6.ReplySetting;
 import org.incendo.cloud.discord.slash.DiscordSetting;
 import org.incendo.cloud.exception.*;
@@ -30,18 +29,18 @@ import java.util.function.Supplier;
 @Slf4j
 @RequiredArgsConstructor
 public final class DefaultExceptionFormatter {
-	private final JDA6CommandManager<JDAInteraction> commandManager;
+	private final JDA6CommandManager<Interaction> commandManager;
 
 	/**
 	 * Creates an exception handler for {@link NoSuchCommandException}.
 	 */
 	@NotNull
-	public ExceptionHandler<JDAInteraction, NoSuchCommandException> noSuchCommandHandler() {
+	public ExceptionHandler<Interaction, NoSuchCommandException> noSuchCommandHandler() {
 		return context -> {
-			CommandContext<JDAInteraction> commandContext = context.context();
+			CommandContext<Interaction> commandContext = context.context();
 			handleWithDefer(commandContext, () -> {
-				JDAInteraction interaction = commandContext.sender();
-				long userId = interaction.user().getIdLong();
+				Interaction interaction = commandContext.sender();
+				long userId = interaction.fluctlight().getId();
 				String title = Translatable.forUser("error.command.notFound.title", userId);
 				String description = Translatable.forUser("error.command.notFound.description", userId);
 				
@@ -56,13 +55,13 @@ public final class DefaultExceptionFormatter {
 	 * Creates an exception handler for {@link InvalidSyntaxException}.
 	 */
 	@NotNull
-	public ExceptionHandler<JDAInteraction, InvalidSyntaxException> invalidSyntaxHandler() {
+	public ExceptionHandler<Interaction, InvalidSyntaxException> invalidSyntaxHandler() {
 		return context -> {
-			CommandContext<JDAInteraction> commandContext = context.context();
+			CommandContext<Interaction> commandContext = context.context();
 			String correctSyntax = context.exception().correctSyntax();
 			handleWithDefer(commandContext, () -> {
-				JDAInteraction interaction = commandContext.sender();
-				long userId = interaction.user().getIdLong();
+				Interaction interaction = commandContext.sender();
+				long userId = interaction.fluctlight().getId();
 				String title = Translatable.forUser("error.syntax.invalid.title", userId);
 				String description = Translatable.forUser("error.syntax.invalid.description", userId, correctSyntax);
 				
@@ -77,14 +76,14 @@ public final class DefaultExceptionFormatter {
 	 * Creates an exception handler for {@link ArgumentParseException}.
 	 */
 	@NotNull
-	public ExceptionHandler<JDAInteraction, ArgumentParseException> argumentParseHandler() {
+	public ExceptionHandler<Interaction, ArgumentParseException> argumentParseHandler() {
 		return context -> {
-			CommandContext<JDAInteraction> commandContext = context.context();
+			CommandContext<Interaction> commandContext = context.context();
 			Throwable cause = context.exception().getCause();
 			String errorMessage = cause.getMessage();
 			handleWithDefer(commandContext, () -> {
-				JDAInteraction interaction = commandContext.sender();
-				long userId = interaction.user().getIdLong();
+				Interaction interaction = commandContext.sender();
+				long userId = interaction.fluctlight().getId();
 				String title = Translatable.forUser("error.argument.parse.title", userId);
 				String description = Translatable.forUser(
 						"error.argument.parse.description",
@@ -103,13 +102,13 @@ public final class DefaultExceptionFormatter {
 	 * Creates an exception handler for {@link NoPermissionException}.
 	 */
 	@NotNull
-	public ExceptionHandler<JDAInteraction, NoPermissionException> noPermissionHandler() {
+	public ExceptionHandler<Interaction, NoPermissionException> noPermissionHandler() {
 		return context -> {
-			CommandContext<JDAInteraction> commandContext = context.context();
+			CommandContext<Interaction> commandContext = context.context();
 			String permission = context.exception().permissionResult().permission().permissionString();
 			handleWithDefer(commandContext, () -> {
-				JDAInteraction interaction = commandContext.sender();
-				long userId = interaction.user().getIdLong();
+				Interaction interaction = commandContext.sender();
+				long userId = interaction.fluctlight().getId();
 				String title = Translatable.forUser("error.permission.denied.title", userId);
 				String description = Translatable.forUser("error.permission.denied.description", userId, permission);
 				
@@ -124,12 +123,12 @@ public final class DefaultExceptionFormatter {
 	 * Creates an exception handler for {@link InvalidCommandSenderException}.
 	 */
 	@NotNull
-	public ExceptionHandler<JDAInteraction, InvalidCommandSenderException> invalidSenderHandler() {
+	public ExceptionHandler<Interaction, InvalidCommandSenderException> invalidSenderHandler() {
 		return context -> {
-			CommandContext<JDAInteraction> commandContext = context.context();
+			CommandContext<Interaction> commandContext = context.context();
 			handleWithDefer(commandContext, () -> {
-				JDAInteraction interaction = commandContext.sender();
-				long userId = interaction.user().getIdLong();
+				Interaction interaction = commandContext.sender();
+				long userId = interaction.fluctlight().getId();
 				String title = Translatable.forUser("error.sender.invalid.title", userId);
 				String description = Translatable.forUser("error.sender.invalid.description", userId);
 				
@@ -148,11 +147,11 @@ public final class DefaultExceptionFormatter {
 	 * Otherwise, it is treated as an unexpected exception and logged.
 	 */
 	@NotNull
-	public ExceptionHandler<JDAInteraction, PipelineException> pipelineExceptionHandler(
+	public ExceptionHandler<Interaction, PipelineException> pipelineExceptionHandler(
 			@NotNull DefaultExceptionHandlerRegistry exceptionHandlerRegistry
 	) {
 		return context -> {
-			CommandContext<JDAInteraction> commandContext = context.context();
+			CommandContext<Interaction> commandContext = context.context();
 			PipelineException pipelineException = context.exception();
 			Throwable cause = pipelineException.getCause();
 			
@@ -160,16 +159,13 @@ public final class DefaultExceptionFormatter {
 			if (cause instanceof CommandException commandException) {
 				// Use the registry's handler logic to handle the unwrapped CommandException
 				// We need to defer first, then handle in the callback
-				JDAInteraction interaction = commandContext.sender();
+				Interaction interaction = commandContext.sender();
 				boolean ephemeralErrors = commandManager.discordSettings().get(DiscordSetting.EPHEMERAL_ERROR_MESSAGES);
 				
 				var replyCallback = interaction.replyCallback();
 				var interactionEvent = interaction.interactionEvent();
 				if (replyCallback != null && interactionEvent != null) {
 					replyCallback.deferReply(ephemeralErrors).queue(_ -> {
-						ExceptionContext exceptionContext =
-								new CloudExceptionContext(commandContext);
-						
 						// Try to find a handler for this exact exception type
 						Class<? extends CommandException> exceptionClass = commandException.getClass();
 						Function<CommandException, ExceptionResponse> handler =
@@ -193,7 +189,7 @@ public final class DefaultExceptionFormatter {
 						if (handler != null) {
 							response = handler.apply(commandException);
 						} else {
-							response = commandException.createResponse(exceptionContext);
+							response = commandException.createResponse(interaction);
 						}
 						
 						// Send the response via hook
@@ -203,8 +199,7 @@ public final class DefaultExceptionFormatter {
 				}
 				
 				// Fallback if defer failed
-				ExceptionContext exceptionContext = new CloudExceptionContext(commandContext);
-				ExceptionResponse response = commandException.createResponse(exceptionContext);
+				ExceptionResponse response = commandException.createResponse(interaction);
 				exceptionHandlerRegistry.sendResponse(commandContext, response);
 				return;
 			}
@@ -220,8 +215,8 @@ public final class DefaultExceptionFormatter {
 			
 			String finalErrorMessage = errorMessage;
 			handleWithDefer(commandContext, () -> {
-				JDAInteraction interaction = commandContext.sender();
-				long userId = interaction.user().getIdLong();
+				Interaction interaction = commandContext.sender();
+				long userId = interaction.fluctlight().getId();
 				String title = Translatable.forUser("error.unexpected.title", userId);
 				String description = Translatable.forUser("error.unexpected.description", userId, finalErrorMessage);
 				
@@ -241,9 +236,9 @@ public final class DefaultExceptionFormatter {
 	 * Unexpected exceptions are logged to the console for debugging purposes.
 	 */
 	@NotNull
-	public ExceptionHandler<JDAInteraction, Throwable> catchAllHandler() {
+	public ExceptionHandler<Interaction, Throwable> catchAllHandler() {
 		return context -> {
-			CommandContext<JDAInteraction> commandContext = context.context();
+			CommandContext<Interaction> commandContext = context.context();
 			Throwable exception = context.exception();
 			
 			// Log unexpected exception to console for debugging
@@ -256,8 +251,8 @@ public final class DefaultExceptionFormatter {
 			
 			String finalErrorMessage = errorMessage;
 			handleWithDefer(commandContext, () -> {
-				JDAInteraction interaction = commandContext.sender();
-				long userId = interaction.user().getIdLong();
+				Interaction interaction = commandContext.sender();
+				long userId = interaction.fluctlight().getId();
 				String title = Translatable.forUser("error.unexpected.title", userId);
 				String description = Translatable.forUser("error.unexpected.description", userId, finalErrorMessage);
 				
@@ -277,10 +272,10 @@ public final class DefaultExceptionFormatter {
 	 * @param embedSupplier function that creates the embed (called after defer if possible)
 	 */
 	private void handleWithDefer(
-			@NotNull CommandContext<JDAInteraction> context,
+			@NotNull CommandContext<Interaction> context,
 			@NotNull Supplier<EmbedBuilder> embedSupplier
 	) {
-		JDAInteraction interaction = context.sender();
+		Interaction interaction = context.sender();
 		boolean ephemeralErrors = commandManager.discordSettings().get(DiscordSetting.EPHEMERAL_ERROR_MESSAGES);
 		
 		// Try to defer immediately to avoid timeout
@@ -309,8 +304,8 @@ public final class DefaultExceptionFormatter {
 	 * For exceptions, we always defer immediately to avoid Discord's "application did not respond" error,
 	 * then send via the hook.
 	 */
-	private void sendEmbed(@NotNull CommandContext<JDAInteraction> context, @NotNull EmbedBuilder embed) {
-		JDAInteraction interaction = context.sender();
+	private void sendEmbed(@NotNull CommandContext<Interaction> context, @NotNull EmbedBuilder embed) {
+		Interaction interaction = context.sender();
 		
 		// Check ReplySetting to determine if we should use hook or direct reply
 		ReplySetting<?> replySetting = context.getOrDefault(JDA6CommandManager.META_REPLY_SETTING, null);
@@ -358,4 +353,5 @@ public final class DefaultExceptionFormatter {
 		}
 	}
 }
+
 

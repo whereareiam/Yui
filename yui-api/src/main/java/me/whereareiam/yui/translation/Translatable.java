@@ -1,5 +1,6 @@
 package me.whereareiam.yui.translation;
 
+import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Component;
  * Usage examples:
  * <pre>{@code
  * // Translate for a specific fluctlight
- * String cancelText = Translatable.of("vocabulary.cancel", userId);
+ * String cancelText = Translatable.of("vocabulary.cancel", fluctlight);
  *
  * // Translate using default locale
  * String helpText = Translatable.of("vocabulary.help");
@@ -72,6 +73,20 @@ public class Translatable {
 	}
 
 	/**
+	 * Translates a key for a specific fluctlight.
+	 *
+	 * @param key       The translation key to look up
+	 * @param fluctlight The fluctlight for whom to translate
+	 * @return The translated string or the original key if translation is unavailable
+	 */
+	public static String of(String key, Fluctlight fluctlight) {
+		if (translationService == null)
+			return key;
+
+		return translationService.translate(key, fluctlight.getId());
+	}
+
+	/**
 	 * Translates a key using the specified locale.
 	 * <p>
 	 * This is useful for translating messages that are not fluctlight-specific.
@@ -119,6 +134,24 @@ public class Translatable {
 			return key;
 
 		return translationService.translate(key, userId, args);
+	}
+
+	/**
+	 * Translates a key for a specific fluctlight and formats it with the provided arguments.
+	 * <p>
+	 * This method first translates the key based on the fluctlight's locale preference,
+	 * then formats the result using the arguments.
+	 *
+	 * @param key       The translation key to look up
+	 * @param fluctlight The fluctlight for whom to translate
+	 * @param args      The arguments to use for formatting the translated string
+	 * @return The translated and formatted string, or the original key if translation is unavailable
+	 */
+	public static String forUser(String key, Fluctlight fluctlight, Object... args) {
+		if (translationService == null)
+			return key;
+
+		return translationService.translate(key, fluctlight.getId(), args);
 	}
 
 	/**
