@@ -7,7 +7,7 @@ import me.whereareiam.yui.LifecycleTask;
 import me.whereareiam.yui.adapter.command.exception.DefaultExceptionFormatter;
 import me.whereareiam.yui.adapter.command.exception.DefaultExceptionHandlerRegistry;
 import me.whereareiam.yui.exception.command.base.CommandException;
-import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.command.CommandService;
 import org.incendo.cloud.discord.jda6.JDA6CommandManager;
 import org.incendo.cloud.discord.jda6.JDAInteraction;

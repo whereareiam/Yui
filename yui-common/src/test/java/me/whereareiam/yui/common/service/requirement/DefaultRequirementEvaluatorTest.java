@@ -1,29 +1,39 @@
 package me.whereareiam.yui.common.service.requirement;
 
-import me.whereareiam.yui.model.profile.UserProfile;
+import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.requirement.Requirements;
 import me.whereareiam.yui.model.requirement.type.UserRequirement;
 import me.whereareiam.yui.model.requirement.RequirementContext;
 import me.whereareiam.yui.type.requirement.RequirementCondition;
 import me.whereareiam.yui.type.requirement.RequirementOperator;
 import me.whereareiam.yui.common.service.requirement.evaluators.UserRequirementEvaluator;
+import net.dv8tion.jda.api.entities.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class DefaultRequirementEvaluatorTest {
+	@Mock
+	private User jdaUser;
+
     private DefaultRequirementEvaluator evaluator;
 	private RequirementContext context;
 
     @BeforeEach
     void setUp() {
         evaluator = new DefaultRequirementEvaluator(List.of(new UserRequirementEvaluator()));
-	    UserProfile userProfile = new UserProfile(12345L);
-        context = new RequirementContext("test", userProfile);
+		when(jdaUser.getIdLong()).thenReturn(12345L);
+		Fluctlight fluctlight = new Fluctlight(jdaUser);
+        context = new RequirementContext("test", fluctlight);
     }
 
     @Test
@@ -38,7 +48,7 @@ class DefaultRequirementEvaluatorTest {
         requirements.setOperator(RequirementOperator.AND);
         requirements.getGroups().put("user", userReq);
         
-        // When expected=true, requirement should pass when user is in the list
+        // When expected=true, requirement should pass when fluctlight is in the list
         assertTrue(evaluator.evaluate(context, requirements));
     }
 
@@ -54,8 +64,8 @@ class DefaultRequirementEvaluatorTest {
         requirements.setOperator(RequirementOperator.AND);
         requirements.getGroups().put("user", userReq);
         
-        // When expected=false, requirement should pass when user is NOT in the list
-        // Since user IS in the list, requirement should fail
+        // When expected=false, requirement should pass when fluctlight is NOT in the list
+        // Since fluctlight IS in the list, requirement should fail
         assertFalse(evaluator.evaluate(context, requirements));
     }
 
@@ -71,8 +81,8 @@ class DefaultRequirementEvaluatorTest {
         requirements.setOperator(RequirementOperator.AND);
         requirements.getGroups().put("user", userReq);
         
-        // When expected=false, requirement should pass when user is NOT in the list
-        // Since user is NOT in the list, requirement should pass
+        // When expected=false, requirement should pass when fluctlight is NOT in the list
+        // Since fluctlight is NOT in the list, requirement should pass
         assertTrue(evaluator.evaluate(context, requirements));
     }
 
@@ -90,7 +100,7 @@ class DefaultRequirementEvaluatorTest {
         requirements.getGroups().put("user", userReq);
         
         // The logic should be:
-        // 1. UserRequirementEvaluator.evaluate() returns true (user is in list)
+        // 1. UserRequirementEvaluator.evaluate() returns true (fluctlight is in list)
         // 2. DefaultRequirementEvaluator applies: expected == result -> false == true -> false
         // 3. Final result: false (requirement fails)
         

@@ -32,7 +32,7 @@ public class DefaultRequirementEvaluator implements RequirementEvaluator {
 	/**
 	 * Evaluates requirements with a specific configuration that filters which evaluators to use.
 	 *
-	 * @param context      The context object containing UserProfile and original context
+	 * @param context      The context object containing Fluctlight and original context
 	 * @param requirements The requirements to evaluate
 	 * @param config       Configuration specifying which requirement types to use (null for all)
 	 * @return true if all requirements are met, false otherwise

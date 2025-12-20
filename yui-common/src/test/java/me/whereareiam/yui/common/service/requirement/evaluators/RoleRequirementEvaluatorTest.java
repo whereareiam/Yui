@@ -1,6 +1,6 @@
 package me.whereareiam.yui.common.service.requirement.evaluators;
 
-import me.whereareiam.yui.model.profile.UserProfile;
+import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.requirement.type.RoleRequirement;
 import me.whereareiam.yui.model.requirement.RequirementContext;
 import me.whereareiam.yui.type.requirement.RequirementCondition;
@@ -13,6 +13,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,9 +23,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 class RoleRequirementEvaluatorTest {
 	private RoleRequirementEvaluator evaluator;
-	private UserProfile userProfile;
+	private Fluctlight fluctlight;
 	private RequirementContext context;
 	
 	@Mock private SlashCommandInteractionEvent mockEvent;
@@ -33,21 +36,23 @@ class RoleRequirementEvaluatorTest {
 	@Mock private Role role100;
 	@Mock private Role role200;
 	@Mock private Role role300;
+	@Mock private User jdaUser;
 
 	@BeforeEach
 	void setUp() {
 		MockitoAnnotations.openMocks(this);
 		evaluator = new RoleRequirementEvaluator();
 		
-		// Setup mock user profile
-		userProfile = new UserProfile(12345L);
-		userProfile.setRoles(new long[]{100L, 200L, 300L});
+		// Setup mock fluctlight
+		when(jdaUser.getIdLong()).thenReturn(12345L);
+		fluctlight = new Fluctlight(jdaUser);
+		fluctlight.setAllowedRoles(new long[]{100L, 200L, 300L});
 		
 		// Setup mock Discord event with roles
 		setupMockDiscordEvent();
 		
 		// Create context with mock Discord event
-		context = new RequirementContext(mockEvent, userProfile);
+		context = new RequirementContext(mockEvent, fluctlight);
 	}
 	
 	private void setupMockDiscordEvent() {
@@ -144,10 +149,10 @@ class RoleRequirementEvaluatorTest {
 	}
 
 	@Test
-	void testEvaluateWithUserProfileNoRoles() {
-		UserProfile noRolesProfile = new UserProfile(12345L);
-		noRolesProfile.setRoles(null);
-		RequirementContext noRolesContext = new RequirementContext("test", noRolesProfile);
+	void testEvaluateWithFluctlightNoRoles() {
+		Fluctlight noRolesFluctlight = new Fluctlight(jdaUser);
+		noRolesFluctlight.setAllowedRoles(null);
+		RequirementContext noRolesContext = new RequirementContext("test", noRolesFluctlight);
 
 		RoleRequirement roleReq = new RoleRequirement(
 				RequirementCondition.HAS,
@@ -166,7 +171,7 @@ class RoleRequirementEvaluatorTest {
 			Arrays.asList("100", "200"),
 			"ID"
 		);
-		// Test raw evaluator behavior - this should return true because user has all required roles
+		// Test raw evaluator behavior - this should return true because fluctlight has all required roles
 		// The expected=false logic is handled by DefaultRequirementEvaluator, not this evaluator
 		assertTrue(evaluator.evaluate(context, roleReq));
 	}
@@ -179,30 +184,9 @@ class RoleRequirementEvaluatorTest {
 			Arrays.asList("100", "200", "400"),
 			"ID"
 		);
-		// Test raw evaluator behavior - this should return false because user is missing role 400
+		// Test raw evaluator behavior - this should return false because fluctlight is missing role 400
 		// The expected=false logic is handled by DefaultRequirementEvaluator, not this evaluator
 		assertFalse(evaluator.evaluate(context, roleReq));
-	}
-
-	@Test
-	void testDebugExpectedFalseLogic() {
-		// Let's debug what's happening with expected=false
-		RoleRequirement roleReq = new RoleRequirement(
-			RequirementCondition.HAS, 
-			false, 
-			Arrays.asList("100", "200"),
-			"ID"
-		);
-		
-		// Our user has roles [100, 200, 300]
-		// Required roles are ["100", "200"] 
-		// HAS condition: user must have ALL required roles
-		// Result: user has both 100 and 200, so result = true
-		// Note: This evaluator only returns the raw result, it doesn't handle expected=false logic
-		
-		boolean result = evaluator.evaluate(context, roleReq);
-		System.out.println("Debug: expected=false, user has all required roles, raw result=" + result);
-		assertTrue(result); // Raw evaluator should return true
 	}
 
 	@Test
@@ -264,8 +248,8 @@ class RoleRequirementEvaluatorTest {
 		// When matching by NAME, it extracts from Discord member context
 		// Our mock member has roles [Role100, Role200, Role300]
 		// Required roles are ["Role100", "Role200"] 
-		// HAS condition: user must have ALL required roles
-		// Result: user has both Role100 and Role200, so result = true
+		// HAS condition: fluctlight must have ALL required roles
+		// Result: fluctlight has both Role100 and Role200, so result = true
 		assertTrue(evaluator.evaluate(context, roleReq));
 	}
 
@@ -280,15 +264,15 @@ class RoleRequirementEvaluatorTest {
 		// When matching by NAME, it extracts from Discord member context
 		// Our mock member has roles [Role100, Role200, Role300]
 		// Required roles are ["Role100", "Role400"] 
-		// HAS condition: user must have ALL required roles
-		// Result: user is missing Role400, so result = false
+		// HAS condition: fluctlight must have ALL required roles
+		// Result: fluctlight is missing Role400, so result = false
 		assertFalse(evaluator.evaluate(context, roleReq));
 	}
 
 	@Test
 	void testEvaluateWithNoDiscordContext() {
-		// Create context without Discord event (fallback to user profile)
-		RequirementContext noDiscordContext = new RequirementContext("test", userProfile);
+		// Create context without Discord event (fallback to fluctlight)
+		RequirementContext noDiscordContext = new RequirementContext("test", fluctlight);
 		
 		RoleRequirement roleReq = new RoleRequirement(
 				RequirementCondition.HAS,
@@ -296,18 +280,18 @@ class RoleRequirementEvaluatorTest {
 				Arrays.asList("100", "200"),
 				"ID"
 		);
-		// When there's no Discord context, it falls back to user profile
-		// Our user profile has roles [100, 200, 300]
+		// When there's no Discord context, it falls back to fluctlight
+		// Our fluctlight has roles [100, 200, 300]
 		// Required roles are ["100", "200"] 
-		// HAS condition: user must have ALL required roles
-		// Result: user has both 100 and 200, so result = true
+		// HAS condition: fluctlight must have ALL required roles
+		// Result: fluctlight has both 100 and 200, so result = true
 		assertTrue(evaluator.evaluate(noDiscordContext, roleReq));
 	}
 
 	@Test
 	void testEvaluateWithNoDiscordContextNameMatching() {
-		// Create context without Discord event (fallback to user profile)
-		RequirementContext noDiscordContext = new RequirementContext("test", userProfile);
+		// Create context without Discord event (fallback to fluctlight)
+		RequirementContext noDiscordContext = new RequirementContext("test", fluctlight);
 		
 		RoleRequirement roleReq = new RoleRequirement(
 				RequirementCondition.HAS,
@@ -315,12 +299,12 @@ class RoleRequirementEvaluatorTest {
 				Arrays.asList("100", "200"),
 				"NAME"
 		);
-		// When matching by NAME with no Discord context, it falls back to user profile
-		// Note: This will actually match by ID since user profile only stores IDs
-		// Our user profile has roles [100, 200, 300]
+		// When matching by NAME with no Discord context, it falls back to fluctlight
+		// Note: This will actually match by ID since fluctlight only stores IDs
+		// Our fluctlight has roles [100, 200, 300]
 		// Required roles are ["100", "200"] 
-		// HAS condition: user must have ALL required roles
-		// Result: user has both 100 and 200, so result = true
+		// HAS condition: fluctlight must have ALL required roles
+		// Result: fluctlight has both 100 and 200, so result = true
 		assertTrue(evaluator.evaluate(noDiscordContext, roleReq));
 	}
 }

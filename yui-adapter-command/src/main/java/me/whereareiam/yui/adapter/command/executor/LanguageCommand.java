@@ -5,9 +5,10 @@ import me.whereareiam.yui.annotation.ComponentListener;
 import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.model.PayloadButton;
-import me.whereareiam.yui.model.profile.UserProfile;
-import me.whereareiam.yui.translation.LanguageService;
-import me.whereareiam.yui.service.UserProfileService;
+import me.whereareiam.yui.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.persistence.LanguagePersistence;
+import me.whereareiam.yui.fluctlight.FluctlightService;
+import me.whereareiam.yui.persistence.FluctlightPersistence;
 import me.whereareiam.yui.util.style.StyleKit;
 import me.whereareiam.yui.translation.Translatable;
 import me.whereareiam.yui.util.Components;
@@ -28,8 +29,9 @@ import java.util.*;
 @Component
 @AllArgsConstructor
 public class LanguageCommand {
-	private final LanguageService languageService;
-	private final UserProfileService userProfileService;
+	private final LanguagePersistence languagePersistence;
+	private final FluctlightService fluctlightService;
+	private final FluctlightPersistence fluctlightPersistence;
 
 	private static final String SELECT_PRIMARY_LISTENER = "command_language_select_primary";
 	private static final String SELECT_ADDITIONAL_LISTENER = "command_language_select_additional";
@@ -42,8 +44,8 @@ public class LanguageCommand {
 	public void onCommand(JDAInteraction interaction) {
 		long userId = interaction.user().getIdLong();
 
-		Optional<UserProfile> profileOpt = userProfileService.getProfile(userId);
-		if (profileOpt.isEmpty())
+		Optional<Fluctlight> fluctlightOpt = fluctlightService.get(userId);
+		if (fluctlightOpt.isEmpty())
 			return;
 
 		showPrimaryLanguageSelection(interaction.replyCallback(), false);
@@ -60,14 +62,16 @@ public class LanguageCommand {
 		DiscordLocale selectedLanguage = DiscordLocale.from(payload);
 		long userId = event.getUser().getIdLong();
 
-		userProfileService.changePrimaryLanguage(userId, selectedLanguage);
-		userProfileService.getProfile(userId).ifPresent(profile -> {
-			DiscordLocale[] additionals = profile.getAdditionalLanguages();
+		fluctlightPersistence.updatePrimaryLanguage(userId, selectedLanguage);
+		fluctlightService.get(userId).ifPresent(fluctlight -> {
+			DiscordLocale[] additionals = fluctlight.getAdditionalLanguages();
 			if (additionals != null)
 				for (DiscordLocale lang : additionals)
 					if (lang != null)
-						userProfileService.removeAdditionalLanguage(userId, lang);
+						fluctlightPersistence.removeAdditionalLanguage(userId, lang);
 		});
+		// Reload to update cache
+		fluctlightService.get(userId);
 
 		showPrimaryLanguageSelection(event, true);
 	}
@@ -87,7 +91,9 @@ public class LanguageCommand {
 
 		DiscordLocale selectedLanguage = DiscordLocale.from(payload);
 		long userId = event.getUser().getIdLong();
-		userProfileService.addAdditionalLanguage(userId, selectedLanguage);
+		fluctlightPersistence.addAdditionalLanguage(userId, selectedLanguage);
+		// Reload to update cache
+		fluctlightService.get(userId);
 
 		showAdditionalLanguageSelection(event);
 	}
@@ -95,9 +101,9 @@ public class LanguageCommand {
 	@ComponentListener(CONFIRM_LISTENER)
 	public void onConfirm(ButtonInteractionEvent event) {
 		long userId = event.getUser().getIdLong();
-		Optional<UserProfile> profileOpt = userProfileService.getProfile(userId);
+		Optional<Fluctlight> fluctlightOpt = fluctlightService.get(userId);
 
-		if (profileOpt.isEmpty()) {
+		if (fluctlightOpt.isEmpty()) {
 			event.deferEdit().queue();
 			return;
 		}
@@ -120,14 +126,14 @@ public class LanguageCommand {
 	private void showPrimaryLanguageSelection(IReplyCallback event, boolean postSelection) {
 		long userId = event.getUser().getIdLong();
 
-		Optional<UserProfile> profileOpt = userProfileService.getProfile(userId);
-		if (profileOpt.isEmpty()) {
+		Optional<Fluctlight> fluctlightOpt = fluctlightService.get(userId);
+		if (fluctlightOpt.isEmpty()) {
 			if (event instanceof ButtonInteractionEvent bie)
 				bie.deferEdit().queue();
 			return;
 		}
 
-		UserProfile profile = profileOpt.get();
+		Fluctlight fluctlight = fluctlightOpt.get();
 
 		EmbedBuilder embed = StyleKit.embeds().primary()
 				.setTitle(Translatable.of("commands.language.primary.title", userId))
@@ -135,11 +141,11 @@ public class LanguageCommand {
 
 		// Exclude ONLY the current primary (ignore additional languages here)
 		Set<DiscordLocale> excluded = new HashSet<>();
-		if (profile.getPrimaryLanguage() != null)
-			excluded.add(profile.getPrimaryLanguage());
+		if (fluctlight.getPrimaryLanguage() != null)
+			excluded.add(fluctlight.getPrimaryLanguage());
 
 		List<Button> languageButtons = buildLanguageButtons(
-				languageService.getAvailableLanguages(),
+				languagePersistence.getAvailableLanguages(),
 				excluded,
 				SELECT_PRIMARY_LISTENER
 		);
@@ -173,31 +179,31 @@ public class LanguageCommand {
 	private void showAdditionalLanguageSelection(IReplyCallback event) {
 		long userId = event.getUser().getIdLong();
 
-		Optional<UserProfile> profileOpt = userProfileService.getProfile(userId);
-		if (profileOpt.isEmpty()) {
+		Optional<Fluctlight> fluctlightOpt = fluctlightService.get(userId);
+		if (fluctlightOpt.isEmpty()) {
 			if (event instanceof ButtonInteractionEvent bie) {
 				bie.deferEdit().queue();
 			}
 			return;
 		}
 
-		UserProfile profile = profileOpt.get();
+		Fluctlight fluctlight = fluctlightOpt.get();
 
 		EmbedBuilder embed = StyleKit.embeds().primary()
 				.setTitle(Translatable.of("commands.language.additional.title", userId))
 				.setDescription(Translatable.of("commands.language.additional.description", userId));
 
-		Set<DiscordLocale> currentAdditionals = profile.getAdditionalLanguages() != null
-				? new HashSet<>(Arrays.asList(profile.getAdditionalLanguages()))
+		Set<DiscordLocale> currentAdditionals = fluctlight.getAdditionalLanguages() != null
+				? new HashSet<>(Arrays.asList(fluctlight.getAdditionalLanguages()))
 				: new HashSet<>();
 
 		// Exclude primary + already-selected additionals
 		Set<DiscordLocale> excluded = new HashSet<>(currentAdditionals);
-		if (profile.getPrimaryLanguage() != null)
-			excluded.add(profile.getPrimaryLanguage());
+		if (fluctlight.getPrimaryLanguage() != null)
+			excluded.add(fluctlight.getPrimaryLanguage());
 
 		List<Button> languageButtons = buildLanguageButtons(
-				languageService.getAvailableLanguages(),
+				languagePersistence.getAvailableLanguages(),
 				excluded,
 				SELECT_ADDITIONAL_LISTENER
 		);

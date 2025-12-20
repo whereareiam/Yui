@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.service;
 
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.service.TemporaryChannelService;
 import me.whereareiam.yui.model.channel.ChannelDecoration;
 import me.whereareiam.yui.model.channel.ChannelRequest;

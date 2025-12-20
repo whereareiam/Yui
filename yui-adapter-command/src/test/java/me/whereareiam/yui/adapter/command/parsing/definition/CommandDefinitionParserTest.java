@@ -76,7 +76,7 @@ class CommandDefinitionParserTest {
 
 		builders.forEach(manager::command);
 		Collection<org.incendo.cloud.Command<Object>> commands = manager.commands();
-		assertEquals(1, commands.size(), "Should register one command");
+		assertEquals(2, commands.size(), "Should register two commands");
 		org.incendo.cloud.Command<Object> built = commands.iterator().next();
 		assertEquals("cfgmain", built.rootComponent().name(), "Primary alias should be root");
 	}

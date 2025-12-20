@@ -6,11 +6,11 @@ import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
 import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
 import me.whereareiam.yui.exception.command.RequirementFailedException;
 import me.whereareiam.yui.model.command.CommandDefinition;
-import me.whereareiam.yui.model.profile.UserProfile;
+import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.requirement.RequirementContext;
 import me.whereareiam.yui.model.requirement.Requirements;
 import me.whereareiam.yui.requirement.RequirementEvaluator;
-import me.whereareiam.yui.service.UserProfileService;
+import me.whereareiam.yui.fluctlight.FluctlightService;
 import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.context.CommandContext;
@@ -37,7 +37,7 @@ public class CommandRequirementsPostprocessor implements CommandPostprocessor<JD
 	private final RequirementEvaluator requirementEvaluator;
 	private final CommandRequirementEvaluatorConfig evaluatorConfig;
 	private final CommandDefinitionRegistry definitionRegistry;
-	private final UserProfileService userProfileService;
+	private final FluctlightService fluctlightService;
 
 	@Override
 	public void accept(@NotNull CommandPostprocessingContext<JDAInteraction> context) {
@@ -62,13 +62,12 @@ public class CommandRequirementsPostprocessor implements CommandPostprocessor<JD
 		if (requirements == null) return;
 
 		long userId = interaction.user().getIdLong();
-		Optional<UserProfile> profileOpt = userProfileService.getProfile(userId);
-		UserProfile profile = profileOpt.orElseGet(() ->
-				userProfileService.createProfile(userId)
-						.orElseThrow(() -> new IllegalStateException("Unable to create user profile for " + userId))
+		Optional<Fluctlight> fluctlightOpt = fluctlightService.get(userId);
+		Fluctlight fluctlight = fluctlightOpt.orElseGet(() ->
+				fluctlightService.getOrCreate(userId)
 		);
 
-		RequirementContext requirementContext = new RequirementContext(event, profile);
+		RequirementContext requirementContext = new RequirementContext(event, fluctlight);
 		boolean allowed = requirementEvaluator.evaluate(requirementContext, requirements, evaluatorConfig);
 
 		if (allowed) return;

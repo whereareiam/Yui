@@ -11,7 +11,7 @@ import me.whereareiam.yui.event.plugin.PluginDisabledEvent;
 import me.whereareiam.yui.event.plugin.PluginEnabledEvent;
 import me.whereareiam.yui.event.plugin.PluginLoadedEvent;
 import me.whereareiam.yui.event.plugin.PluginUnloadedEvent;
-import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.model.plugin.Dependency;
 import me.whereareiam.yui.model.plugin.InternalPlugin;
 import me.whereareiam.yui.model.plugin.Plugin;

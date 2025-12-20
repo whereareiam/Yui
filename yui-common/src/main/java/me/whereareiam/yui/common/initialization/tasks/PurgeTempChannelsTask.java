@@ -2,7 +2,7 @@ package me.whereareiam.yui.common.initialization.tasks;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.LifecycleTask;
 import me.whereareiam.yui.common.service.DefaultTemporaryChannelService;
 import org.springframework.beans.factory.annotation.Autowired;

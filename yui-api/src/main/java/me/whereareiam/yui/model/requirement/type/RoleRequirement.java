@@ -8,7 +8,7 @@ import me.whereareiam.yui.type.requirement.RequirementCondition;
 import java.util.List;
 
 /**
- * Requirement for checking user roles.
+ * Requirement for checking fluctlight roles.
  */
 @Getter
 @Setter

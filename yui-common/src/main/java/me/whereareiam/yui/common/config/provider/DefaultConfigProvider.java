@@ -4,7 +4,7 @@ import jakarta.annotation.PostConstruct;
 import me.whereareiam.yui.Reloadable;
 import me.whereareiam.yui.common.config.ConfiguraBootstrap;
 import me.whereareiam.yui.config.ConfigProvider;
-import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.Registry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 

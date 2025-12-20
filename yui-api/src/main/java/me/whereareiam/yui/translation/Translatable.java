@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
  * <p>
  * Usage examples:
  * <pre>{@code
- * // Translate for a specific user
+ * // Translate for a specific fluctlight
  * String cancelText = Translatable.of("vocabulary.cancel", userId);
  *
  * // Translate using default locale
@@ -58,10 +58,10 @@ public class Translatable {
 	}
 
 	/**
-	 * Translates a key for a specific user.
+	 * Translates a key for a specific fluctlight.
 	 *
 	 * @param key    The translation key to look up
-	 * @param userId The ID of the user for whom to translate
+	 * @param userId The ID of the fluctlight for whom to translate
 	 * @return The translated string or the original key if translation is unavailable
 	 */
 	public static String of(String key, long userId) {
@@ -74,7 +74,7 @@ public class Translatable {
 	/**
 	 * Translates a key using the specified locale.
 	 * <p>
-	 * This is useful for translating messages that are not user-specific.
+	 * This is useful for translating messages that are not fluctlight-specific.
 	 *
 	 * @param key    The translation key to look up
 	 * @param locale The locale to usefor translation
@@ -104,13 +104,13 @@ public class Translatable {
 	}
 
 	/**
-	 * Translates a key for a specific user and formats it with the provided arguments.
+	 * Translates a key for a specific fluctlight and formats it with the provided arguments.
 	 * <p>
-	 * This method first translates the key based on the user's locale preference,
+	 * This method first translates the key based on the fluctlight's locale preference,
 	 * then formats the result using the arguments.
 	 *
 	 * @param key    The translation key to look up
-	 * @param userId The ID of the user for whom to translate
+	 * @param userId The ID of the fluctlight for whom to translate
 	 * @param args   The arguments to use for formatting the translated string
 	 * @return The translated and formatted string, or the original key if translation is unavailable
 	 */

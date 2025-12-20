@@ -36,7 +36,7 @@ public class RoleRequirementEvaluator extends BaseRequirementEvaluator {
 		RequirementCondition condition = roleReq.getCondition();
 		String roleMatchBy = roleReq.getRoleMatchBy();
 
-		// Get user's roles based on the match type
+		// Get fluctlight's roles based on the match type
 		List<String> userRoles = extractUserRoles(context, roleMatchBy);
 
 		return switch (condition) {
@@ -52,11 +52,11 @@ public class RoleRequirementEvaluator extends BaseRequirementEvaluator {
 	}
 
 	/**
-	 * Extracts user roles from the context based on the specified match type.
+	 * Extracts fluctlight roles from the context based on the specified match type.
 	 *
 	 * @param context The context object containing UserProfile and original context
 	 * @param roleMatchBy The type of matching to use ("ID" or "NAME")
-	 * @return List of user role identifiers or names based on the match type
+	 * @return List of fluctlight role identifiers or names based on the match type
 	 */
 	private List<String> extractUserRoles(RequirementContext context, String roleMatchBy) {
 		// Default to ID matching if not specified
@@ -79,7 +79,7 @@ public class RoleRequirementEvaluator extends BaseRequirementEvaluator {
 	 * Extracts role names from the original context (JDA events).
 	 *
 	 * @param context The context object containing UserProfile and original context
-	 * @return List of user role names
+	 * @return List of fluctlight role names
 	 */
 	private List<String> extractRoleNamesFromContext(RequirementContext context) {
 		Object originalContext = context.getOriginalContext();
@@ -94,21 +94,21 @@ public class RoleRequirementEvaluator extends BaseRequirementEvaluator {
 		if (originalContext instanceof StringSelectInteractionEvent event)
 			return extractRolesFromMember(event.getMember());
 		
-		// Fallback to user profile if no Discord context is available
+		// Fallback to fluctlight profile if no Discord context is available
 		return extractRoleNamesFromUserProfile(context);
 	}
 
 	/**
-	 * Extracts role names from user profile as fallback when Discord context is not available.
-	 * Note: This will return role IDs as strings since user profile only stores IDs.
+	 * Extracts role names from Fluctlight as fallback when Discord context is not available.
+	 * Note: This will return role IDs as strings since Fluctlight only stores allowed role IDs.
 	 */
 	private List<String> extractRoleNamesFromUserProfile(RequirementContext context) {
-		if (context.getUserProfile().getRoles() == null)
+		if (context.getFluctlight().getAllowedRoles() == null)
 			return List.of();
 		
-		// User profile only stores role IDs, so we return them as strings
+		// Fluctlight only stores allowed role IDs, so we return them as strings
 		// This maintains backward compatibility but may not be ideal for name-based matching
-		return Arrays.stream(context.getUserProfile().getRoles())
+		return Arrays.stream(context.getFluctlight().getAllowedRoles())
 				.mapToObj(String::valueOf)
 				.collect(Collectors.toList());
 	}
@@ -117,7 +117,7 @@ public class RoleRequirementEvaluator extends BaseRequirementEvaluator {
 	 * Extracts role IDs from the original context (JDA events).
 	 *
 	 * @param context The context object containing UserProfile and original context
-	 * @return List of user role IDs
+	 * @return List of fluctlight role IDs
 	 */
 	private List<String> extractRoleIdsFromContext(RequirementContext context) {
 		Object originalContext = context.getOriginalContext();
@@ -132,18 +132,18 @@ public class RoleRequirementEvaluator extends BaseRequirementEvaluator {
 		if (originalContext instanceof StringSelectInteractionEvent event)
 			return extractRoleIdsFromMember(event.getMember());
 		
-		// Fallback to user profile if no Discord context is available
+		// Fallback to fluctlight profile if no Discord context is available
 		return extractRoleIdsFromUserProfile(context);
 	}
 
 	/**
-	 * Extracts role IDs from user profile as fallback when Discord context is not available.
+	 * Extracts role IDs from Fluctlight as fallback when Discord context is not available.
 	 */
 	private List<String> extractRoleIdsFromUserProfile(RequirementContext context) {
-		if (context.getUserProfile().getRoles() == null)
+		if (context.getFluctlight().getAllowedRoles() == null)
 			return List.of();
 		
-		return Arrays.stream(context.getUserProfile().getRoles())
+		return Arrays.stream(context.getFluctlight().getAllowedRoles())
 				.mapToObj(String::valueOf)
 				.collect(Collectors.toList());
 	}

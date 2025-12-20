@@ -1,6 +1,6 @@
 package me.whereareiam.yui.common.provider;
 
-import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.Reloadable;
 import org.springframework.stereotype.Component;
 

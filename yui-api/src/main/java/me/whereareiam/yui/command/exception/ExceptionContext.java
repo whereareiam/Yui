@@ -3,15 +3,14 @@ package me.whereareiam.yui.command.exception;
 /**
  * Context information available when handling a command exception.
  * <p>
- * This abstraction provides access to user information without exposing
+ * This abstraction provides access to fluctlight information without exposing
  * platform-specific or framework-specific types.
  */
 public interface ExceptionContext {
-	
 	/**
-	 * Returns the ID of the user who triggered the command.
+	 * Returns the ID of the fluctlight who triggered the command.
 	 *
-	 * @return The user ID
+	 * @return The fluctlight ID
 	 */
 	long getUserId();
 	

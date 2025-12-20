@@ -3,7 +3,7 @@ package me.whereareiam.yui.adapter.database.adapter;
 import jakarta.transaction.Transactional;
 import me.whereareiam.yui.adapter.database.entity.LanguageEntity;
 import me.whereareiam.yui.adapter.database.repository.LanguageRepository;
-import me.whereareiam.yui.translation.LanguageService;
+import me.whereareiam.yui.persistence.LanguagePersistence;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,11 +11,11 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class LanguageServiceAdapter implements LanguageService {
+public class LanguagePersistenceAdapter implements LanguagePersistence {
 	private final LanguageRepository languageRepository;
 
 	@Autowired
-	public LanguageServiceAdapter(LanguageRepository languageRepository) {
+	public LanguagePersistenceAdapter(LanguageRepository languageRepository) {
 		this.languageRepository = languageRepository;
 	}
 

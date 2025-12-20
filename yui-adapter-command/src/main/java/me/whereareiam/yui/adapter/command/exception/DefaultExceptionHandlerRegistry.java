@@ -152,7 +152,7 @@ public final class DefaultExceptionHandlerRegistry {
 	}
 	
 	/**
-	 * Sends the response to the user when already deferred.
+	 * Sends the response to the fluctlight when already deferred.
 	 * <p>
 	 * This is package-private so DefaultExceptionFormatter can use it for PipelineException unwrapping.
 	 */
@@ -186,7 +186,7 @@ public final class DefaultExceptionHandlerRegistry {
 	}
 
 	/**
-	 * Sends the response to the user.
+	 * Sends the response to the fluctlight.
 	 * <p>
 	 * This is package-private so DefaultExceptionFormatter can use it for PipelineException unwrapping.
 	 */
@@ -195,7 +195,7 @@ public final class DefaultExceptionHandlerRegistry {
 	}
 
 	/**
-	 * Internal method to send the response to the user.
+	 * Internal method to send the response to the fluctlight.
 	 */
 	private void sendResponseInternal(@NotNull CommandContext<JDAInteraction> context, @NotNull ExceptionResponse response) {
 		JDAInteraction interaction = context.sender();

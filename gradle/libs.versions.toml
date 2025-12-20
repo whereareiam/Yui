@@ -9,10 +9,10 @@ annotations = "26.0.2-1"
 jda = "5.6.1"
 postgres = "42.7.7"
 configura = "dev-12738f5"
-h2 = "2.3.232"
 
 # testing
 junit-platform = "6.0.1"
+testcontainers = "2.0.3"
 
 # spring
 spring = "3.5.4"
@@ -31,10 +31,11 @@ annotations = { group = "org.jetbrains", name = "annotations", version.ref = "an
 jda = { group = "net.dv8tion", name = "JDA", version.ref = "jda" }
 postgres = { group = "org.postgresql", name = "postgresql", version.ref = "postgres" }
 configura = { group = "me.whereareiam", name = "configura", version.ref = "configura" }
-h2 = { group = "com.h2database", name = "h2", version.ref = "h2" }
 
 # testing
 junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junit-platform" }
+testcontainers-junit = { group = "org.testcontainers", name = "testcontainers-junit-jupiter", version.ref = "testcontainers" }
+testcontainers-postgres = { group = "org.testcontainers", name = "testcontainers-postgresql", version.ref = "testcontainers" }
 
 # spring
 spring-boot = { group = "org.springframework.boot", name = "spring-boot-starter", version.ref = "spring" }

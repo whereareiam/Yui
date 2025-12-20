@@ -8,7 +8,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
-import me.whereareiam.yui.adapter.database.entity.userprofile.UserProfileEntity;
 
 import java.util.Set;
 
@@ -24,5 +23,5 @@ public class RoleEntity {
 	private long id;
 
 	@ManyToMany(mappedBy = "roles")
-	private Set<UserProfileEntity> userProfiles;
+	private Set<FluctlightEntity> fluctlights;
 }

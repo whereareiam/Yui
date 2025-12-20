@@ -8,7 +8,7 @@ import me.whereareiam.yui.type.requirement.RequirementCondition;
 import java.util.List;
 
 /**
- * Requirement for checking user IDs (allow/deny lists).
+ * Requirement for checking fluctlight IDs (allow/deny lists).
  */
 @Getter
 @Setter

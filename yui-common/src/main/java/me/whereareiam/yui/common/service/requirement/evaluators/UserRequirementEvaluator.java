@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * Evaluates user requirements.
+ * Evaluates fluctlight requirements.
  */
 @Component
 public class UserRequirementEvaluator extends BaseRequirementEvaluator {
@@ -28,13 +28,13 @@ public class UserRequirementEvaluator extends BaseRequirementEvaluator {
 		List<Long> requiredUserIds = userReq.getUserIds();
 		RequirementCondition condition = userReq.getCondition();
 
-		// Get current user ID from UserProfile context
+		// Get current fluctlight ID from UserProfile context
 		Long currentUserId = context.getUserId();
 
 		return switch (condition) {
 			case HAS -> requiredUserIds.contains(currentUserId); // User must be in the list
 			case CONTAINS ->
-					requiredUserIds.contains(currentUserId); // User must be in the list (same as HAS for single user)
+					requiredUserIds.contains(currentUserId); // User must be in the list (same as HAS for single fluctlight)
 			case EQUALS ->
 					requiredUserIds.size() == 1 && requiredUserIds.contains(currentUserId); // User must be the only one in the list
 			case GREATER_THAN -> requiredUserIds.stream().anyMatch(id -> currentUserId > id);

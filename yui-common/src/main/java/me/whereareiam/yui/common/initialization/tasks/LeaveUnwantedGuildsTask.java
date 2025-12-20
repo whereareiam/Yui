@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.LifecycleTask;
 import me.whereareiam.yui.model.config.settings.Settings;
-import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.Registry;
 import net.dv8tion.jda.api.JDA;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;

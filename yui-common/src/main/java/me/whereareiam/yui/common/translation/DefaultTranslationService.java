@@ -1,12 +1,12 @@
 package me.whereareiam.yui.common.translation;
 
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.Registry;
+import me.whereareiam.yui.fluctlight.FluctlightService;
 import me.whereareiam.yui.translation.TranslationLoader;
 import me.whereareiam.yui.translation.TranslationService;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.Reloadable;
-import me.whereareiam.yui.registry.UserProfileCacheRegistry;
 import me.whereareiam.yui.translation.TranslationTags;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.ObjectProvider;
@@ -25,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DefaultTranslationService implements TranslationService, Reloadable {
 	private final ObjectProvider<Settings> settings;
 	private final List<TranslationLoader> loaders;
-	private final UserProfileCacheRegistry userProfileCache;
+	private final FluctlightService fluctlightService;
 
 	/**
 	 * Merged translations:
@@ -41,12 +41,12 @@ public class DefaultTranslationService implements TranslationService, Reloadable
 	public DefaultTranslationService(
 			ObjectProvider<Settings> settings,
 			List<TranslationLoader> loaders,
-			UserProfileCacheRegistry userProfileCache,
+			FluctlightService fluctlightService,
 			Registry<Reloadable> reloadableRegistry
 	) {
 		this.settings = settings;
 		this.loaders = loaders;
-		this.userProfileCache = userProfileCache;
+		this.fluctlightService = fluctlightService;
 
 		reloadableRegistry.register(this);
 	}
@@ -193,8 +193,8 @@ public class DefaultTranslationService implements TranslationService, Reloadable
 
 	private DiscordLocale getEffectiveLocaleForUser(long userId) {
 		DiscordLocale defaultLocale = settings.getObject().getLocale();
-		return userProfileCache.getProfile(userId)
-				.map(profile -> profile.getPrimaryLanguage() != null ? profile.getPrimaryLanguage() : defaultLocale)
+		return fluctlightService.get(userId)
+				.map(fluctlight -> fluctlight.getPrimaryLanguage() != null ? fluctlight.getPrimaryLanguage() : defaultLocale)
 				.orElse(defaultLocale);
 	}
 
@@ -220,14 +220,14 @@ public class DefaultTranslationService implements TranslationService, Reloadable
 	}
 
 	private DiscordLocale[] getUserLocalesOrDefault(long userId, DiscordLocale defaultBotLocale) {
-		return userProfileCache.getProfile(userId)
-				.map(profile -> {
+		return fluctlightService.get(userId)
+				.map(fluctlight -> {
 					List<DiscordLocale> locales = new ArrayList<>();
-					if (profile.getPrimaryLanguage() != null)
-						locales.add(profile.getPrimaryLanguage());
+					if (fluctlight.getPrimaryLanguage() != null)
+						locales.add(fluctlight.getPrimaryLanguage());
 
-					if (profile.getAdditionalLanguages() != null)
-						locales.addAll(Arrays.asList(profile.getAdditionalLanguages()));
+					if (fluctlight.getAdditionalLanguages() != null)
+						locales.addAll(Arrays.asList(fluctlight.getAdditionalLanguages()));
 
 					locales.add(defaultBotLocale);
 					log.trace("[TranslationService]: User {} locales: {}", userId, locales);

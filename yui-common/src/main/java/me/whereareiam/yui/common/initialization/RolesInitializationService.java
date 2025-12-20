@@ -3,7 +3,7 @@ package me.whereareiam.yui.common.initialization;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.model.config.Roles;
-import me.whereareiam.yui.service.RoleService;
+import me.whereareiam.yui.persistence.RolePersistence;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
@@ -21,7 +21,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class RolesInitializationService {
 	private final ObjectProvider<Roles> rolesProvider;
-	private final RoleService roleService;
+	private final RolePersistence rolePersistence;
 	private final JDA jda;
 
 	@Order(Integer.MIN_VALUE)
@@ -42,12 +42,12 @@ public class RolesInitializationService {
 		List<Role> removableRoles = guild.getRoles().stream()
 				.filter(role -> !allowedRoles.containsValue(role.getIdLong()))
 				.filter(role -> !role.isManaged() && !role.isPublicRole())
-				.filter(role -> roleService.roleExists(role.getIdLong()))
+				.filter(role -> rolePersistence.roleExists(role.getIdLong()))
 				.toList();
 
 		for (Role role : removableRoles) {
 			try {
-				roleService.removeRole(role.getIdLong());
+				rolePersistence.removeRole(role.getIdLong());
 				log.info("Removed obsolete role: {} (id={})", role.getName(), role.getIdLong());
 			} catch (Exception e) {
 				log.warn("Failed to remove role: {}", role.getName(), e);
@@ -57,9 +57,9 @@ public class RolesInitializationService {
 
 	private void addMissingConfiguredRoles(Map<String, Long> allowedRoles) {
 		allowedRoles.forEach((name, id) -> {
-			if (!roleService.roleExists(id)) {
+			if (!rolePersistence.roleExists(id)) {
 				try {
-					roleService.addRole(id);
+					rolePersistence.addRole(id);
 					log.info("Created new role: {} (id={})", name, id);
 				} catch (Exception e) {
 					log.warn("Failed to create role: {} (id={})", name, id, e);

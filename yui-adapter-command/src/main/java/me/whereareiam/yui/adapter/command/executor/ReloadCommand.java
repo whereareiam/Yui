@@ -6,7 +6,7 @@ import me.whereareiam.yui.Reloadable;
 import me.whereareiam.yui.annotation.ComponentListener;
 import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;
-import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.util.style.StyleKit;
 import me.whereareiam.yui.translation.Translatable;
 import me.whereareiam.yui.util.Components;

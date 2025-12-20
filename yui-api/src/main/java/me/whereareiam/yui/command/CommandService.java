@@ -43,7 +43,7 @@ public interface CommandService {
 	 * Registers an exception handler for a custom {@link CommandException}.
 	 * <p>
 	 * The handler function receives the exception and should return an {@link ExceptionResponse}
-	 * that defines what message or embed to send to the user.
+	 * that defines what message or embed to send to the fluctlight.
 	 * <p>
 	 * If no handler is registered, the exception's {@link CommandException#createResponse(ExceptionContext)}
 	 * method will be used instead.
@@ -79,7 +79,7 @@ public interface CommandService {
 	/**
 	 * Remove any registered definitions whose primary (first) alias matches the given {@code alias}.
 	 * <p>
-	 * This is a best-effort helper for unregistration by user-facing command name.
+	 * This is a best-effort helper for unregistration by fluctlight-facing command name.
 	 */
 	void unregisterByAlias(@NotNull String alias);
 

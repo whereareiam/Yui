@@ -67,9 +67,9 @@ public abstract class CommandException extends RuntimeException {
 	 * Creates the response that should be sent when this exception occurs.
 	 * <p>
 	 * This method is called by the exception handler system to determine
-	 * what message or embed to send to the user.
+	 * what message or embed to send to the fluctlight.
 	 *
-	 * @param context The exception context providing user and command information
+	 * @param context The exception context providing fluctlight and command information
 	 * @return The response to send (message or embed)
 	 */
 	@NotNull

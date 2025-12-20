@@ -3,7 +3,7 @@ package me.whereareiam.yui.common.initialization;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.model.config.Roles;
-import me.whereareiam.yui.translation.LanguageService;
+import me.whereareiam.yui.persistence.LanguagePersistence;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -20,7 +20,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class LanguagesInitializationService {
 	private final ObjectProvider<Roles> rolesProvider;
-	private final LanguageService languageService;
+	private final LanguagePersistence languagePersistence;
 
 	@Order(Integer.MIN_VALUE)
 	@EventListener(ApplicationReadyEvent.class)
@@ -35,21 +35,21 @@ public class LanguagesInitializationService {
 
 	private void removeObsoleteLanguages(List<DiscordLocale> languageRoles) {
 		Set<DiscordLocale> languageRolesSet = Set.copyOf(languageRoles);
-		languageService.getAvailableLanguages().stream()
+		languagePersistence.getAvailableLanguages().stream()
 				.filter(lang -> !languageRolesSet.contains(lang))
 				.forEach(lang -> {
 					log.info("Removing obsolete language: {}", lang);
-					languageService.removeLanguage(lang);
+					languagePersistence.removeLanguage(lang);
 				});
 	}
 
 	private void addMissingLanguages(List<DiscordLocale> languageRoles) {
-		Set<DiscordLocale> availableLanguagesSet = new HashSet<>(languageService.getAvailableLanguages());
+		Set<DiscordLocale> availableLanguagesSet = new HashSet<>(languagePersistence.getAvailableLanguages());
 		languageRoles.stream()
 				.filter(lang -> !availableLanguagesSet.contains(lang))
 				.forEach(lang -> {
 					log.info("Adding missing language: {}", lang);
-					languageService.addLanguage(lang);
+					languagePersistence.addLanguage(lang);
 				});
 	}
 }

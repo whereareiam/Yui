@@ -3,7 +3,7 @@ package me.whereareiam.yui.common.initialization.tasks;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.model.plugin.InternalPlugin;
 import me.whereareiam.yui.LifecycleTask;
 import me.whereareiam.yui.plugin.PluginManager;

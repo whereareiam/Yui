@@ -1,6 +1,6 @@
-package me.whereareiam.yui.service;
+package me.whereareiam.yui.persistence;
 
-public interface RoleService {
+public interface RolePersistence {
 	void addRole(long id);
 
 	void removeRole(long id);

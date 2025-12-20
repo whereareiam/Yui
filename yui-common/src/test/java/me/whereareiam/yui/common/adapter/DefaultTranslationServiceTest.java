@@ -1,12 +1,13 @@
 package me.whereareiam.yui.common.adapter;
 
-import me.whereareiam.yui.registry.Registry;
+import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.translation.TranslationLoader;
 import me.whereareiam.yui.model.config.settings.Settings;
-import me.whereareiam.yui.model.profile.UserProfile;
+import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.Reloadable;
-import me.whereareiam.yui.registry.UserProfileCacheRegistry;
+import me.whereareiam.yui.fluctlight.FluctlightService;
 import me.whereareiam.yui.common.translation.DefaultTranslationService;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,13 +34,16 @@ class DefaultTranslationServiceTest {
 	private TranslationLoader pluginLoader;
 
 	@Mock
-	private UserProfileCacheRegistry userProfileCache;
+	private FluctlightService fluctlightService;
 
 	@Mock
 	private Registry<Reloadable> reloadableRegistry;
 
 	@Mock
 	private ObjectProvider<Settings> settings;
+
+	@Mock
+	private User jdaUser;
 
 	private DefaultTranslationService translationService;
 
@@ -85,7 +89,7 @@ class DefaultTranslationServiceTest {
 		translationService = new DefaultTranslationService(
 				settings,
 				List.of(coreLoader, pluginLoader),
-				userProfileCache,
+				fluctlightService,
 				reloadableRegistry
 		);
 
@@ -95,8 +99,10 @@ class DefaultTranslationServiceTest {
 	@Test
 	void translate_withExistingKey_shouldReturnTranslation() {
 		// Arrange
-		UserProfile profile = new UserProfile(123, DiscordLocale.ENGLISH_US);
-		when(userProfileCache.getProfile(123L)).thenReturn(Optional.of(profile));
+		when(jdaUser.getIdLong()).thenReturn(123L);
+		Fluctlight fluctlight = new Fluctlight(jdaUser);
+		fluctlight.setPrimaryLanguage(DiscordLocale.ENGLISH_US);
+		when(fluctlightService.get(123L)).thenReturn(Optional.of(fluctlight));
 
 		// Act & Assert
 		assertEquals("Cancel", translationService.translate("vocabulary.cancel", 123L));
@@ -106,7 +112,7 @@ class DefaultTranslationServiceTest {
 	@Test
 	void translate_withUnknownUser_shouldUseDefaultLocale() {
 		// Arrange
-		when(userProfileCache.getProfile(999L)).thenReturn(Optional.empty());
+		when(fluctlightService.get(999L)).thenReturn(Optional.empty());
 
 		// Act & Assert
 		assertEquals("Cancel", translationService.translate("vocabulary.cancel", 999L));
@@ -115,8 +121,10 @@ class DefaultTranslationServiceTest {
 	@Test
 	void translate_withLocaleFallback_shouldSelectCorrectTranslation() {
 		// Arrange
-		UserProfile profile = new UserProfile(456, DiscordLocale.GERMAN);
-		when(userProfileCache.getProfile(456L)).thenReturn(Optional.of(profile));
+		when(jdaUser.getIdLong()).thenReturn(456L);
+		Fluctlight fluctlight = new Fluctlight(jdaUser);
+		fluctlight.setPrimaryLanguage(DiscordLocale.GERMAN);
+		when(fluctlightService.get(456L)).thenReturn(Optional.of(fluctlight));
 
 		// Act & Assert
 		assertEquals("Abbrechen", translationService.translate("vocabulary.cancel", 456L));

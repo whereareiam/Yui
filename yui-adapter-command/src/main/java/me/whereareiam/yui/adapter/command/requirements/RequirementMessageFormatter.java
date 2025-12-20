@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Service for generating user-friendly error messages when command requirements are not met.
+ * Service for generating fluctlight-friendly error messages when command requirements are not met.
  * This is specific to the command framework and not part of the global requirement system.
  */
 @Service
@@ -23,7 +23,7 @@ public class RequirementMessageFormatter {
 	 * Generates a localized error message explaining which requirements failed.
 	 *
 	 * @param requirements The requirements that were evaluated
-	 * @param userId       The user ID for translation
+	 * @param userId       The fluctlight ID for translation
 	 * @return A localized error message
 	 */
 	public String generateErrorMessage(Requirements requirements, long userId) {
@@ -100,7 +100,7 @@ public class RequirementMessageFormatter {
 	}
 
 	/**
-	 * Generates a detailed description for user requirements.
+	 * Generates a detailed description for fluctlight requirements.
 	 */
 	private String generateUserRequirementDescription(UserRequirement userReq, long userId) {
 		if (userReq.getUserIds() == null || userReq.getUserIds().isEmpty()) {

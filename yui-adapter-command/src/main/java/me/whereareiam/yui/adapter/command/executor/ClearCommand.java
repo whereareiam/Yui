@@ -5,7 +5,7 @@ import me.whereareiam.yui.annotation.ComponentListener;
 import me.whereareiam.yui.annotation.command.Argument;
 import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;
-import me.whereareiam.yui.service.ProfileManagementService;
+import me.whereareiam.yui.fluctlight.FluctlightService;
 import me.whereareiam.yui.util.style.StyleKit;
 import me.whereareiam.yui.translation.Translatable;
 import me.whereareiam.yui.util.Components;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 @AllArgsConstructor
 public class ClearCommand {
-	private final ProfileManagementService profileManagementService;
+	private final FluctlightService fluctlightService;
 
 	private static final String CONFIRM_LISTENER = "command_clear_confirm";
 	private static final String CANCEL_LISTENER = "command_clear_cancel";
@@ -81,7 +81,7 @@ public class ClearCommand {
 		long targetUserId = Long.parseLong(payload);
 		net.dv8tion.jda.api.entities.User targetUser = event.getJDA().getUserById(targetUserId);
 
-		var result = profileManagementService.clearAndReinitializeProfile(targetUser.getIdLong());
+		var result = fluctlightService.clear(targetUser.getIdLong());
 
 		if (result.isPresent()) {
 			// Success embed

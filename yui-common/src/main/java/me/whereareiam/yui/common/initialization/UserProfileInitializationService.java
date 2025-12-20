@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.initialization;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.service.ProfileManagementService;
+import me.whereareiam.yui.fluctlight.FluctlightService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 @AllArgsConstructor
 public class UserProfileInitializationService {
-	private final ProfileManagementService profileManagementService;
+	private final FluctlightService fluctlightService;
 	private final JDA jda;
 
 	@Order(Integer.MIN_VALUE)
@@ -22,7 +22,7 @@ public class UserProfileInitializationService {
 	}
 
 	public void initializeForUser(long userId) {
-		profileManagementService.getOrCreateProfile(userId);
+		fluctlightService.getOrCreate(userId);
 	}
 
 	public void initializeForGuild(Guild guild) {

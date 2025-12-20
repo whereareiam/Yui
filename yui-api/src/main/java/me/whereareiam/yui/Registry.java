@@ -1,4 +1,4 @@
-package me.whereareiam.yui.registry;
+package me.whereareiam.yui;
 
 import java.util.Collection;
 

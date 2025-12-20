@@ -1,12 +1,14 @@
 package me.whereareiam.yui.common.service.user;
 
-import me.whereareiam.yui.model.profile.UserProfile;
-import me.whereareiam.yui.service.RoleService;
-import me.whereareiam.yui.service.UserProfileService;
+import me.whereareiam.yui.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.persistence.FluctlightPersistence;
+import me.whereareiam.yui.persistence.RolePersistence;
+import me.whereareiam.yui.fluctlight.FluctlightService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.utils.concurrent.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,13 +26,16 @@ import static org.mockito.Mockito.*;
 
 @SuppressWarnings("unused")
 @ExtendWith(MockitoExtension.class)
-class DefaultUserRoleServiceTest {
+class DefaultUserRolePersistenceTest {
 
 	@Mock
-	private RoleService roleService;
+	private RolePersistence rolePersistence;
 	
 	@Mock
-	private UserProfileService userProfileService;
+	private FluctlightService fluctlightService;
+	
+	@Mock
+	private FluctlightPersistence fluctlightPersistence;
 	
 	@Mock
 	private ExecutorService scheduledPool;
@@ -53,54 +58,61 @@ class DefaultUserRoleServiceTest {
 	@Mock
 	private Task<List<Member>> memberTask;
 	
+	@Mock
+	private User jdaUser;
+	
 	private DefaultUserRoleService userRoleService;
 	
 	@BeforeEach
 	void setUp() {
 		userRoleService = new DefaultUserRoleService(
-			roleService, userProfileService, scheduledPool, jda
+				rolePersistence, fluctlightService, fluctlightPersistence, scheduledPool, jda
 		);
 	}
 	
 	@Test
-	void testAddRoleToUser_WithExistingProfile() {
+	void testAddRoleToUser_WithExistingFluctlight() {
 		// Arrange
 		long userId = 123L;
 		long roleId = 1L;
-		UserProfile profile = new UserProfile(userId, null, null, new long[]{});
+		Fluctlight fluctlight = new Fluctlight(jdaUser);
+		fluctlight.setAllowedRoles(new long[]{});
 		
-		when(roleService.roleExists(roleId)).thenReturn(true);
-		when(userProfileService.getProfile(userId)).thenReturn(Optional.of(profile));
+		when(jdaUser.getIdLong()).thenReturn(userId);
+		when(rolePersistence.roleExists(roleId)).thenReturn(true);
+		when(fluctlightService.get(userId)).thenReturn(Optional.of(fluctlight));
 		
 		// Act
 		userRoleService.addRoleToUser(userId, roleId);
 		
 		// Assert
-		verify(roleService).roleExists(roleId);
-		verify(userProfileService).getProfile(userId);
-		verify(userProfileService).addRole(userId, roleId);
+		verify(rolePersistence).roleExists(roleId);
+		verify(fluctlightService).get(userId);
+		verify(fluctlightPersistence).addAllowedRole(userId, roleId);
 		verify(scheduledPool).execute(any());
 	}
 	
 	@Test
-	void testAddRoleToUser_WithNonExistentProfile() {
+	void testAddRoleToUser_WithNonExistentFluctlight() {
 		// Arrange
 		long userId = 123L;
 		long roleId = 1L;
-		UserProfile newProfile = new UserProfile(userId, null, null, new long[]{});
+		Fluctlight newFluctlight = new Fluctlight(jdaUser);
+		newFluctlight.setAllowedRoles(new long[]{});
 		
-		when(roleService.roleExists(roleId)).thenReturn(true);
-		when(userProfileService.getProfile(userId)).thenReturn(Optional.empty());
-		when(userProfileService.createProfile(userId)).thenReturn(Optional.of(newProfile));
+		when(jdaUser.getIdLong()).thenReturn(userId);
+		when(rolePersistence.roleExists(roleId)).thenReturn(true);
+		when(fluctlightService.get(userId)).thenReturn(Optional.empty());
+		when(fluctlightService.getOrCreate(userId)).thenReturn(newFluctlight);
 		
 		// Act
 		userRoleService.addRoleToUser(userId, roleId);
 		
 		// Assert
-		verify(roleService).roleExists(roleId);
-		verify(userProfileService).getProfile(userId);
-		verify(userProfileService).createProfile(userId);
-		verify(userProfileService).addRole(userId, roleId);
+		verify(rolePersistence).roleExists(roleId);
+		verify(fluctlightService).get(userId);
+		verify(fluctlightService).getOrCreate(userId);
+		verify(fluctlightPersistence).addAllowedRole(userId, roleId);
 		verify(scheduledPool).execute(any());
 	}
 	
@@ -110,14 +122,14 @@ class DefaultUserRoleServiceTest {
 		long userId = 123L;
 		long roleId = 999L;
 		
-		when(roleService.roleExists(roleId)).thenReturn(false);
+		when(rolePersistence.roleExists(roleId)).thenReturn(false);
 		
 		// Act
 		userRoleService.addRoleToUser(userId, roleId);
 		
 		// Assert
-		verify(roleService).roleExists(roleId);
-		verify(userProfileService, never()).getProfile(anyLong());
+		verify(rolePersistence).roleExists(roleId);
+		verify(fluctlightService, never()).get(anyLong());
 		verify(scheduledPool, never()).execute(any());
 	}
 	
@@ -126,17 +138,19 @@ class DefaultUserRoleServiceTest {
 		// Arrange
 		long userId = 123L;
 		long roleId = 1L;
-		UserProfile profile = new UserProfile(userId, null, null, new long[]{1L});
+		Fluctlight fluctlight = new Fluctlight(jdaUser);
+		fluctlight.setAllowedRoles(new long[]{1L});
 		
-		when(roleService.roleExists(roleId)).thenReturn(true);
-		when(userProfileService.getProfile(userId)).thenReturn(Optional.of(profile));
+		when(jdaUser.getIdLong()).thenReturn(userId);
+		when(rolePersistence.roleExists(roleId)).thenReturn(true);
+		when(fluctlightService.get(userId)).thenReturn(Optional.of(fluctlight));
 		
 		// Act
 		userRoleService.addRoleToUser(userId, roleId);
 		
 		// Assert
-		verify(roleService).roleExists(roleId);
-		verify(userProfileService).getProfile(userId);
+		verify(rolePersistence).roleExists(roleId);
+		verify(fluctlightService).get(userId);
 		verify(scheduledPool, never()).execute(any());
 	}
 	
@@ -150,7 +164,7 @@ class DefaultUserRoleServiceTest {
 		userRoleService.removeRoleFromUser(userId, roleId);
 		
 		// Assert
-		verify(userProfileService).removeRole(userId, roleId);
+		verify(fluctlightPersistence).removeAllowedRole(userId, roleId);
 		verify(scheduledPool).execute(any());
 	}
 	
