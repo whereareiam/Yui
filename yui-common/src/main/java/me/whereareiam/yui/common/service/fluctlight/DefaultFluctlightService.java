@@ -3,12 +3,13 @@ package me.whereareiam.yui.common.service.fluctlight;
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.yui.event.fluctlight.FluctlightClearEvent;
 import me.whereareiam.yui.event.fluctlight.FluctlightClearedEvent;
 import me.whereareiam.yui.event.fluctlight.FluctlightCreatedEvent;
 import me.whereareiam.yui.event.fluctlight.FluctlightUpdatedEvent;
-import me.whereareiam.yui.event.language.AdditionalLanguageAddedEvent;
-import me.whereareiam.yui.event.language.AdditionalLanguageRemovedEvent;
-import me.whereareiam.yui.event.language.LanguageChangeEvent;
+import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguageAddedEvent;
+import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguageRemovedEvent;
+import me.whereareiam.yui.event.fluctlight.language.FluctlightLanguageChangeEvent;
 import me.whereareiam.yui.fluctlight.FluctlightRegistry;
 import me.whereareiam.yui.fluctlight.FluctlightService;
 import me.whereareiam.yui.model.config.settings.Settings;
@@ -131,11 +132,11 @@ public class DefaultFluctlightService implements FluctlightService {
 			// Get the old Fluctlight before clearing
 			Fluctlight oldFluctlight = fluctlightRegistry.getFluctlight(userId).orElse(null);
 
-			// Publish event before clearing
-			FluctlightClearedEvent event = new FluctlightClearedEvent(userId, oldFluctlight, null);
-			eventPublisher.publishEvent(event);
+			// Publish cancellable event before clearing
+			FluctlightClearEvent clearEvent = new FluctlightClearEvent(userId, oldFluctlight);
+			eventPublisher.publishEvent(clearEvent);
 
-			if (event.isCancelled()) {
+			if (clearEvent.isCancelled()) {
 				log.debug("Fluctlight clear operation cancelled for fluctlight: {}", userId);
 				return Optional.ofNullable(oldFluctlight);
 			}
@@ -144,27 +145,24 @@ public class DefaultFluctlightService implements FluctlightService {
 			fluctlightRegistry.evictFluctlight(userId);
 			log.debug("Evicted fluctlight {} from registry", userId);
 
-			// Delete from database - create data with bot's default language to reset
-			// We need a temporary Fluctlight for this
+			// Reset data in database with bot's default language
 			User jdaUser = jda.getUserById(userId);
 			if (jdaUser != null) {
 				Fluctlight tempFluctlight = new Fluctlight(jdaUser);
 				DiscordLocale defaultLocale = settings.getObject().getLocale();
 				FluctlightData resetData = new FluctlightData(defaultLocale, new DiscordLocale[0], null);
 				fluctlightPersistence.saveData(tempFluctlight, resetData);
-				// Publish event to synchronize in-memory state
-				eventPublisher.publishEvent(new FluctlightUpdatedEvent(tempFluctlight, resetData));
 			}
-			log.debug("Deleted fluctlight {} Fluctlight from database", userId);
+			log.debug("Reset fluctlight {} data in database", userId);
 
-			// Create fresh Fluctlight
+			// Create fresh Fluctlight (will load reset data from DB and register in-memory)
 			Optional<Fluctlight> newFluctlight = get(userId);
 			if (newFluctlight.isPresent()) {
-				// Update event with new Fluctlight and republish
-				FluctlightClearedEvent completedEvent = new FluctlightClearedEvent(
+				// Publish non-cancellable event after clearing is complete
+				FluctlightClearedEvent clearedEvent = new FluctlightClearedEvent(
 						userId, oldFluctlight, newFluctlight.get()
 				);
-				eventPublisher.publishEvent(completedEvent);
+				eventPublisher.publishEvent(clearedEvent);
 				
 				log.info("Successfully reinitialized Fluctlight for fluctlight: {}", userId);
 				return newFluctlight;
@@ -186,7 +184,7 @@ public class DefaultFluctlightService implements FluctlightService {
 		fluctlightPersistence.updatePrimaryLanguage(fluctlight, locale);
 		
 		// Publish event
-		LanguageChangeEvent event = new LanguageChangeEvent(fluctlight, oldLanguage);
+		FluctlightLanguageChangeEvent event = new FluctlightLanguageChangeEvent(fluctlight, oldLanguage);
 		eventPublisher.publishEvent(event);
 		
 		if (event.isCancelled()) {
@@ -215,7 +213,7 @@ public class DefaultFluctlightService implements FluctlightService {
 		fluctlightPersistence.addAdditionalLanguage(fluctlight, locale);
 		
 		// Publish event
-		AdditionalLanguageAddedEvent event = new AdditionalLanguageAddedEvent(fluctlight);
+		FluctlightAdditionalLanguageAddedEvent event = new FluctlightAdditionalLanguageAddedEvent(fluctlight);
 		event.setLanguage(locale);
 		eventPublisher.publishEvent(event);
 		
@@ -247,7 +245,7 @@ public class DefaultFluctlightService implements FluctlightService {
 		fluctlightPersistence.removeAdditionalLanguage(fluctlight, locale);
 		
 		// Publish event
-		AdditionalLanguageRemovedEvent event = new AdditionalLanguageRemovedEvent(fluctlight);
+		FluctlightAdditionalLanguageRemovedEvent event = new FluctlightAdditionalLanguageRemovedEvent(fluctlight);
 		event.setLanguage(locale);
 		eventPublisher.publishEvent(event);
 		

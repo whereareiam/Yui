@@ -1,5 +1,6 @@
 package me.whereareiam.yui.common.service.requirement.evaluators;
 
+import me.whereareiam.yui.common.requirement.evaluators.UserRequirementEvaluator;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.requirement.type.UserRequirement;
 import me.whereareiam.yui.model.requirement.RequirementContext;

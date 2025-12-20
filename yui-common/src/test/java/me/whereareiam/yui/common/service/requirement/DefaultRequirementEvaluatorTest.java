@@ -1,12 +1,13 @@
 package me.whereareiam.yui.common.service.requirement;
 
+import me.whereareiam.yui.common.requirement.DefaultRequirementEvaluator;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.requirement.Requirements;
 import me.whereareiam.yui.model.requirement.type.UserRequirement;
 import me.whereareiam.yui.model.requirement.RequirementContext;
 import me.whereareiam.yui.type.requirement.RequirementCondition;
 import me.whereareiam.yui.type.requirement.RequirementOperator;
-import me.whereareiam.yui.common.service.requirement.evaluators.UserRequirementEvaluator;
+import me.whereareiam.yui.common.requirement.evaluators.UserRequirementEvaluator;
 import net.dv8tion.jda.api.entities.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

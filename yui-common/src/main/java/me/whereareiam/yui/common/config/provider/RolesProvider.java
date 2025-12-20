@@ -2,7 +2,7 @@ package me.whereareiam.yui.common.config.provider;
 
 import me.whereareiam.configura.Config;
 import me.whereareiam.yui.common.config.template.RolesTemplate;
-import me.whereareiam.yui.model.config.Roles;
+import me.whereareiam.yui.model.config.roles.Roles;
 import org.springframework.stereotype.Component;
 
 @Component

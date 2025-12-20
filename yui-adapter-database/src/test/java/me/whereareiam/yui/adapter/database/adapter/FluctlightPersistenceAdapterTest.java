@@ -7,10 +7,12 @@ import me.whereareiam.yui.adapter.database.mapper.FluctlightMapper;
 import me.whereareiam.yui.adapter.database.repository.FluctlightRepository;
 import me.whereareiam.yui.adapter.database.repository.LanguageRepository;
 import me.whereareiam.yui.adapter.database.repository.RoleRepository;
-import me.whereareiam.yui.event.language.AdditionalLanguageAddedEvent;
-import me.whereareiam.yui.event.language.AdditionalLanguageRemovedEvent;
-import me.whereareiam.yui.event.language.LanguageChangeEvent;
+import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguageAddedEvent;
+import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguageRemovedEvent;
+import me.whereareiam.yui.event.fluctlight.language.FluctlightLanguageChangeEvent;
+import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.fluctlight.FluctlightData;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,8 +82,7 @@ class FluctlightPersistenceAdapterTest {
 				fluctlightRepository,
 				languageRepository,
 				roleRepository,
-				new FluctlightMapper(),
-				eventPublisher
+				new FluctlightMapper()
 		);
 
 		// Create test languages
@@ -107,12 +108,24 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.flush();
 	}
 
+	/**
+	 * Helper method to create a Fluctlight with a mocked User for testing.
+	 */
+	private Fluctlight createFluctlight(long userId) {
+		User mockUser = mock(User.class);
+		when(mockUser.getIdLong()).thenReturn(userId);
+		return new Fluctlight(mockUser);
+	}
+
 	// Basic CRUD operations
 
 	@Test
 	void loadData_WhenEntityDoesNotExist_ReturnsEmpty() {
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(999L);
+
 		// Act
-		Optional<FluctlightData> result = adapter.loadData(999L);
+		Optional<FluctlightData> result = adapter.loadData(fluctlight);
 
 		// Assert
 		assertFalse(result.isPresent());
@@ -134,7 +147,8 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.clear();
 
 		// Act
-		Optional<FluctlightData> result = adapter.loadData(123L);
+		Fluctlight fluctlight = createFluctlight(123L);
+		Optional<FluctlightData> result = adapter.loadData(fluctlight);
 
 		// Assert
 		assertTrue(result.isPresent());
@@ -157,7 +171,8 @@ class FluctlightPersistenceAdapterTest {
 		);
 
 		// Act
-		adapter.saveData(123L, data);
+		Fluctlight fluctlight = createFluctlight(123L);
+		adapter.saveData(fluctlight, data);
 
 		// Assert
 		Optional<FluctlightEntity> entity = fluctlightRepository.findById(123L);
@@ -187,7 +202,8 @@ class FluctlightPersistenceAdapterTest {
 		);
 
 		// Act
-		adapter.saveData(123L, newData);
+		Fluctlight fluctlight = createFluctlight(123L);
+		adapter.saveData(fluctlight, newData);
 
 		// Assert
 		Optional<FluctlightEntity> entity = fluctlightRepository.findById(123L);
@@ -209,7 +225,8 @@ class FluctlightPersistenceAdapterTest {
 		);
 
 		// Act
-		adapter.saveData(123L, data);
+		Fluctlight fluctlight = createFluctlight(123L);
+		adapter.saveData(fluctlight, data);
 
 		// Assert
 		Optional<FluctlightEntity> entity = fluctlightRepository.findById(123L);
@@ -221,8 +238,11 @@ class FluctlightPersistenceAdapterTest {
 
 	@Test
 	void existsById_WhenEntityDoesNotExist_ReturnsFalse() {
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(999L);
+
 		// Act
-		boolean result = adapter.existsById(999L);
+		boolean result = adapter.existsById(fluctlight);
 
 		// Assert
 		assertFalse(result);
@@ -239,8 +259,11 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.persist(entity);
 		entityManager.flush();
 
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(123L);
+
 		// Act
-		boolean result = adapter.existsById(123L);
+		boolean result = adapter.existsById(fluctlight);
 
 		// Assert
 		assertTrue(result);
@@ -258,8 +281,11 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.flush();
 		assertTrue(fluctlightRepository.existsById(123L));
 
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(123L);
+
 		// Act
-		adapter.deleteById(123L);
+		adapter.deleteById(fluctlight);
 
 		// Assert
 		assertFalse(fluctlightRepository.existsById(123L));
@@ -267,8 +293,11 @@ class FluctlightPersistenceAdapterTest {
 
 	@Test
 	void deleteById_WhenEntityDoesNotExist_NoError() {
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(999L);
+
 		// Act & Assert
-		assertDoesNotThrow(() -> adapter.deleteById(999L));
+		assertDoesNotThrow(() -> adapter.deleteById(fluctlight));
 	}
 
 	// Language operations
@@ -286,11 +315,14 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.flush();
 		entityManager.clear();
 
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(123L);
+
 		// Act
-		adapter.updatePrimaryLanguage(123L, DiscordLocale.GERMAN);
+		adapter.updatePrimaryLanguage(fluctlight, DiscordLocale.GERMAN);
 
 		// Assert
-		verify(eventPublisher).publishEvent(any(LanguageChangeEvent.class));
+		verify(eventPublisher).publishEvent(any(FluctlightLanguageChangeEvent.class));
 		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
 		assertTrue(updated.isPresent());
 		assertEquals(germanLanguage.getId(), updated.get().getPrimaryLanguage().getId());
@@ -298,9 +330,12 @@ class FluctlightPersistenceAdapterTest {
 
 	@Test
 	void updatePrimaryLanguage_WhenEntityDoesNotExist_ThrowsException() {
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(999L);
+
 		// Act & Assert
 		assertThrows(IllegalArgumentException.class, () ->
-				adapter.updatePrimaryLanguage(999L, DiscordLocale.ENGLISH_US)
+				adapter.updatePrimaryLanguage(fluctlight, DiscordLocale.ENGLISH_US)
 		);
 	}
 
@@ -315,9 +350,12 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.persist(entity);
 		entityManager.flush();
 
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(123L);
+
 		// Act & Assert
 		assertThrows(IllegalArgumentException.class, () ->
-				adapter.updatePrimaryLanguage(123L, DiscordLocale.JAPANESE)
+				adapter.updatePrimaryLanguage(fluctlight, DiscordLocale.JAPANESE)
 		);
 	}
 
@@ -336,13 +374,16 @@ class FluctlightPersistenceAdapterTest {
 
 		// Mock event publisher to cancel the event
 		doAnswer(invocation -> {
-			LanguageChangeEvent event = invocation.getArgument(0);
+			FluctlightLanguageChangeEvent event = invocation.getArgument(0);
 			event.setCancelled(true);
 			return null;
-		}).when(eventPublisher).publishEvent(any(LanguageChangeEvent.class));
+		}).when(eventPublisher).publishEvent(any(FluctlightLanguageChangeEvent.class));
+
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(123L);
 
 		// Act
-		adapter.updatePrimaryLanguage(123L, DiscordLocale.GERMAN);
+		adapter.updatePrimaryLanguage(fluctlight, DiscordLocale.GERMAN);
 
 		// Assert
 		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
@@ -363,11 +404,14 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.flush();
 		entityManager.clear();
 
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(123L);
+
 		// Act
-		adapter.addAdditionalLanguage(123L, DiscordLocale.GERMAN);
+		adapter.addAdditionalLanguage(fluctlight, DiscordLocale.GERMAN);
 
 		// Assert
-		verify(eventPublisher).publishEvent(any(AdditionalLanguageAddedEvent.class));
+		verify(eventPublisher).publishEvent(any(FluctlightAdditionalLanguageAddedEvent.class));
 		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
 		assertTrue(updated.isPresent());
 		assertTrue(updated.get().getAdditionalLanguages().contains(germanLanguage));
@@ -375,9 +419,12 @@ class FluctlightPersistenceAdapterTest {
 
 	@Test
 	void addAdditionalLanguage_WhenEntityDoesNotExist_ThrowsException() {
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(999L);
+
 		// Act & Assert
 		assertThrows(IllegalArgumentException.class, () ->
-				adapter.addAdditionalLanguage(999L, DiscordLocale.GERMAN)
+				adapter.addAdditionalLanguage(fluctlight, DiscordLocale.GERMAN)
 		);
 	}
 
@@ -392,9 +439,12 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.persist(entity);
 		entityManager.flush();
 
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(123L);
+
 		// Act & Assert
 		assertThrows(IllegalArgumentException.class, () ->
-				adapter.addAdditionalLanguage(123L, DiscordLocale.JAPANESE)
+				adapter.addAdditionalLanguage(fluctlight, DiscordLocale.JAPANESE)
 		);
 	}
 
@@ -411,8 +461,11 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.flush();
 		entityManager.clear();
 
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(123L);
+
 		// Act
-		adapter.addAdditionalLanguage(123L, DiscordLocale.GERMAN);
+		adapter.addAdditionalLanguage(fluctlight, DiscordLocale.GERMAN);
 
 		// Assert
 		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
@@ -436,13 +489,16 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.clear();
 
 		doAnswer(invocation -> {
-			AdditionalLanguageAddedEvent event = invocation.getArgument(0);
+			FluctlightAdditionalLanguageAddedEvent event = invocation.getArgument(0);
 			event.setCancelled(true);
 			return null;
-		}).when(eventPublisher).publishEvent(any(AdditionalLanguageAddedEvent.class));
+		}).when(eventPublisher).publishEvent(any(FluctlightAdditionalLanguageAddedEvent.class));
+
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(123L);
 
 		// Act
-		adapter.addAdditionalLanguage(123L, DiscordLocale.GERMAN);
+		adapter.addAdditionalLanguage(fluctlight, DiscordLocale.GERMAN);
 
 		// Assert
 		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
@@ -464,11 +520,14 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.flush();
 		entityManager.clear();
 
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(123L);
+
 		// Act
-		adapter.removeAdditionalLanguage(123L, DiscordLocale.GERMAN);
+		adapter.removeAdditionalLanguage(fluctlight, DiscordLocale.GERMAN);
 
 		// Assert
-		verify(eventPublisher).publishEvent(any(AdditionalLanguageRemovedEvent.class));
+		verify(eventPublisher).publishEvent(any(FluctlightAdditionalLanguageRemovedEvent.class));
 		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
 		assertTrue(updated.isPresent());
 		assertFalse(updated.get().getAdditionalLanguages().contains(germanLanguage));
@@ -477,9 +536,12 @@ class FluctlightPersistenceAdapterTest {
 
 	@Test
 	void removeAdditionalLanguage_WhenEntityDoesNotExist_ThrowsException() {
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(999L);
+
 		// Act & Assert
 		assertThrows(IllegalArgumentException.class, () ->
-				adapter.removeAdditionalLanguage(999L, DiscordLocale.GERMAN)
+				adapter.removeAdditionalLanguage(fluctlight, DiscordLocale.GERMAN)
 		);
 	}
 
@@ -496,8 +558,11 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.flush();
 		entityManager.clear();
 
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(123L);
+
 		// Act
-		adapter.removeAdditionalLanguage(123L, DiscordLocale.GERMAN);
+		adapter.removeAdditionalLanguage(fluctlight, DiscordLocale.GERMAN);
 
 		// Assert
 		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
@@ -519,13 +584,16 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.clear();
 
 		doAnswer(invocation -> {
-			AdditionalLanguageRemovedEvent event = invocation.getArgument(0);
+			FluctlightAdditionalLanguageRemovedEvent event = invocation.getArgument(0);
 			event.setCancelled(true);
 			return null;
-		}).when(eventPublisher).publishEvent(any(AdditionalLanguageRemovedEvent.class));
+		}).when(eventPublisher).publishEvent(any(FluctlightAdditionalLanguageRemovedEvent.class));
+
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(123L);
 
 		// Act
-		adapter.removeAdditionalLanguage(123L, DiscordLocale.GERMAN);
+		adapter.removeAdditionalLanguage(fluctlight, DiscordLocale.GERMAN);
 
 		// Assert
 		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
@@ -547,8 +615,11 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.flush();
 		entityManager.clear();
 
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(123L);
+
 		// Act
-		adapter.addAllowedRole(123L, 100L);
+		adapter.addAllowedRole(fluctlight, 100L);
 
 		// Assert
 		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
@@ -558,9 +629,12 @@ class FluctlightPersistenceAdapterTest {
 
 	@Test
 	void addAllowedRole_WhenEntityDoesNotExist_ThrowsException() {
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(999L);
+
 		// Act & Assert
 		assertThrows(IllegalArgumentException.class, () ->
-				adapter.addAllowedRole(999L, 100L)
+				adapter.addAllowedRole(fluctlight, 100L)
 		);
 	}
 
@@ -575,9 +649,12 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.persist(entity);
 		entityManager.flush();
 
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(123L);
+
 		// Act & Assert
 		assertThrows(IllegalArgumentException.class, () ->
-				adapter.addAllowedRole(123L, 999L)
+				adapter.addAllowedRole(fluctlight, 999L)
 		);
 	}
 
@@ -594,8 +671,11 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.flush();
 		entityManager.clear();
 
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(123L);
+
 		// Act
-		adapter.addAllowedRole(123L, 100L);
+		adapter.addAllowedRole(fluctlight, 100L);
 
 		// Assert
 		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
@@ -620,8 +700,11 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.flush();
 		entityManager.clear();
 
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(123L);
+
 		// Act
-		adapter.removeAllowedRole(123L, 100L);
+		adapter.removeAllowedRole(fluctlight, 100L);
 
 		// Assert
 		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
@@ -632,9 +715,12 @@ class FluctlightPersistenceAdapterTest {
 
 	@Test
 	void removeAllowedRole_WhenEntityDoesNotExist_ThrowsException() {
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(999L);
+
 		// Act & Assert
 		assertThrows(IllegalArgumentException.class, () ->
-				adapter.removeAllowedRole(999L, 100L)
+				adapter.removeAllowedRole(fluctlight, 100L)
 		);
 	}
 
@@ -651,8 +737,11 @@ class FluctlightPersistenceAdapterTest {
 		entityManager.flush();
 		entityManager.clear();
 
+		// Arrange
+		Fluctlight fluctlight = createFluctlight(123L);
+
 		// Act
-		adapter.removeAllowedRole(123L, 100L);
+		adapter.removeAllowedRole(fluctlight, 100L);
 
 		// Assert
 		Optional<FluctlightEntity> updated = fluctlightRepository.findById(123L);
@@ -672,7 +761,8 @@ class FluctlightPersistenceAdapterTest {
 		);
 
 		// Act
-		adapter.saveData(123L, data);
+		Fluctlight fluctlight = createFluctlight(123L);
+		adapter.saveData(fluctlight, data);
 
 		// Assert
 		Optional<FluctlightEntity> entity = fluctlightRepository.findById(123L);
@@ -690,7 +780,8 @@ class FluctlightPersistenceAdapterTest {
 		);
 
 		// Act
-		adapter.saveData(123L, data);
+		Fluctlight fluctlight = createFluctlight(123L);
+		adapter.saveData(fluctlight, data);
 
 		// Assert
 		Optional<FluctlightEntity> entity = fluctlightRepository.findById(123L);
@@ -702,6 +793,7 @@ class FluctlightPersistenceAdapterTest {
 	void multipleOperationsInSequence_WorksCorrectly() {
 		// Arrange
 		long userId = 123L;
+		Fluctlight fluctlight = createFluctlight(userId);
 
 		// Act - Create
 		FluctlightData initial = new FluctlightData(
@@ -709,25 +801,25 @@ class FluctlightPersistenceAdapterTest {
 				new DiscordLocale[]{DiscordLocale.GERMAN},
 				new long[]{100L}
 		);
-		adapter.saveData(userId, initial);
+		adapter.saveData(fluctlight, initial);
 
 		// Act - Update primary language
-		adapter.updatePrimaryLanguage(userId, DiscordLocale.FRENCH);
+		adapter.updatePrimaryLanguage(fluctlight, DiscordLocale.FRENCH);
 
 		// Act - Add additional language
-		adapter.addAdditionalLanguage(userId, DiscordLocale.GERMAN); // Already exists, should not duplicate
+		adapter.addAdditionalLanguage(fluctlight, DiscordLocale.GERMAN); // Already exists, should not duplicate
 
 		// Act - Remove additional language
-		adapter.removeAdditionalLanguage(userId, DiscordLocale.GERMAN);
+		adapter.removeAdditionalLanguage(fluctlight, DiscordLocale.GERMAN);
 
 		// Act - Add role
-		adapter.addAllowedRole(userId, 200L);
+		adapter.addAllowedRole(fluctlight, 200L);
 
 		// Act - Remove role
-		adapter.removeAllowedRole(userId, 100L);
+		adapter.removeAllowedRole(fluctlight, 100L);
 
 		// Assert
-		Optional<FluctlightData> finalData = adapter.loadData(userId);
+		Optional<FluctlightData> finalData = adapter.loadData(fluctlight);
 		assertTrue(finalData.isPresent());
 		assertEquals(DiscordLocale.FRENCH, finalData.get().getPrimaryLanguage());
 		assertEquals(0, finalData.get().getAdditionalLanguages().length);

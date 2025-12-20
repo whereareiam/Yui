@@ -2,28 +2,16 @@ package me.whereareiam.yui.event.fluctlight;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.event.Cancellable;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 
 /**
- * Event published when a fluctlight's Fluctlight is cleared and reinitialized.
- * This event can be cancelled to prevent the Fluctlight clearing operation.
+ * Event published after a fluctlight's Fluctlight has been cleared and reinitialized.
+ * This event is published for informational purposes and cannot be cancelled.
  */
 @Getter
 @RequiredArgsConstructor
-public class FluctlightClearedEvent implements Cancellable {
+public class FluctlightClearedEvent {
 	private final long userId;
 	private final Fluctlight oldFluctlight;
 	private final Fluctlight newFluctlight;
-	private boolean cancelled = false;
-
-	@Override
-	public boolean isCancelled() {
-		return cancelled;
-	}
-
-	@Override
-	public void setCancelled(boolean cancelled) {
-		this.cancelled = cancelled;
-	}
 }
