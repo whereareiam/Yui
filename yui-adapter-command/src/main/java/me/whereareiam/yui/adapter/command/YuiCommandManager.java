@@ -35,7 +35,7 @@ public final class YuiCommandManager extends JDA6CommandManager<Interaction> {
 	) {
 		super(executionCoordinator, senderMapper);
 
-		// Enable root command deletion support and install a registration handler
+		// Enable root command deletion support and install a registration type
 		// that can react when Cloud deletes root commands.
 		this.registerCapability(CloudCapability.StandardCapabilities.ROOT_COMMAND_DELETION);
 		this.commandRegistrationHandler(new JDARegistrationHandler(scheduledExecutorService, this, jda));
@@ -44,4 +44,3 @@ public final class YuiCommandManager extends JDA6CommandManager<Interaction> {
 		this.commandFactory(new YuiJDACommandFactory<>(this.commandTree(), definitionRegistry));
 	}
 }
-

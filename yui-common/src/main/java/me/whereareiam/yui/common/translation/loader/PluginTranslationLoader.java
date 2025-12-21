@@ -52,10 +52,10 @@ public class PluginTranslationLoader extends AbstractTranslationLoader {
         Map<String, Map<TranslationLocale, String>> accumulator = new HashMap<>();
         AtomicInteger templateCount = new AtomicInteger(0);
 
-        // Load all translation files (locales) and template files
+        // Load all translation files (LOCALE, MULTI_LOCALE, and TEMPLATE types)
         loadFromDirectory(
                 languagesDir,
-                // Locale processor
+                // LOCALE processor
                 (_, locale, translations) -> {
                     TranslationLocale translationLocale = localeParser.parse(locale);
                     
@@ -65,7 +65,24 @@ public class PluginTranslationLoader extends AbstractTranslationLoader {
                         accumulator.computeIfAbsent(fullKey, _ -> new HashMap<>()).put(translationLocale, text);
                     });
                 },
-                // Template processor
+                // MULTI_LOCALE processor
+                (file, multiLocaleData) -> {
+                    multiLocaleData.forEach((key, localeMap) -> {
+                        String fullKey = prefix + key;
+                        Map<TranslationLocale, String> translations = new HashMap<>();
+                        
+                        localeMap.forEach((locale, textValue) -> {
+                            TranslationLocale translationLocale = localeParser.parse(locale);
+                            translations.put(translationLocale, textValue.asString());
+                        });
+                        
+                        accumulator.computeIfAbsent(fullKey, _ -> new HashMap<>()).putAll(translations);
+                    });
+                    
+                    log.info("[PluginTranslations] Loaded {} multi-locale entries from '{}' for plugin: {}", 
+                            multiLocaleData.size(), file.getFileName(), pluginId);
+                },
+                // TEMPLATE processor
                 (file, templates) -> {
                     templates.forEach((key, textValue) -> {
                         String fullKey = prefix + key;

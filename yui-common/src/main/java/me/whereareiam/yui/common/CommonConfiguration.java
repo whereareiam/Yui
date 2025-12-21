@@ -82,13 +82,8 @@ public class CommonConfiguration {
 	}
 
 	@Bean
-	public TranslationService<DiscordLocale> semanticaService(
-			SemanticaConfiguration<DiscordLocale> config,
-			YuiTranslationLoader yuiTranslationLoader
-	) {
-		TranslationService<DiscordLocale> service = Semantica.createService(config);
-		yuiTranslationLoader.registerTemplates(service);
-		return service;
+	public TranslationService<DiscordLocale> semanticaService(SemanticaConfiguration<DiscordLocale> config) {
+		return Semantica.createService(config);
 	}
 
 	@Bean

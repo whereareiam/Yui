@@ -2,13 +2,15 @@ package me.whereareiam.yui.common.translation.loader;
 
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.configura.Config;
+import me.whereareiam.semantica.model.ProviderResult;
 import me.whereareiam.semantica.model.translation.TranslationSource;
 import me.whereareiam.semantica.model.translation.entry.TemplateEntry;
-import me.whereareiam.semantica.translation.TranslationService;
 import me.whereareiam.semantica.translation.base.TranslationProvider;
 import me.whereareiam.yui.Constants;
 import me.whereareiam.yui.common.config.template.MessagesTemplate;
+import me.whereareiam.yui.common.config.template.messages.VocabularyTemplate;
 import me.whereareiam.yui.model.config.messages.Messages;
+import me.whereareiam.yui.model.config.vocabulary.Vocabulary;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -17,94 +19,102 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Component
 public class YuiTranslationLoader extends AbstractTranslationLoader implements TranslationProvider<DiscordLocale> {
     private final Path dataPath;
     private final MessagesTemplate messagesTemplate;
+    private final VocabularyTemplate vocabularyTemplate;
 
     public YuiTranslationLoader(
             @Qualifier("dataPath") Path dataPath,
-            MessagesTemplate messagesTemplate
+            MessagesTemplate messagesTemplate,
+            VocabularyTemplate vocabularyTemplate
     ) {
         this.dataPath = dataPath;
         this.messagesTemplate = messagesTemplate;
+        this.vocabularyTemplate = vocabularyTemplate;
     }
 
     @Override
-    public Map<DiscordLocale, Map<String, TranslationSource>> provideAll() {
+    public ProviderResult<DiscordLocale> provide() {
         Path languagesDir = dataPath.resolve(Constants.Structure.languagesDir);
 
-        // Generate default translation file if directory is empty
+        // Generate default translation files if directory is empty
         if (!Files.exists(languagesDir) || isEmpty(languagesDir)) {
-            log.info("[YuiTranslations] No translations found, generating default en-US translation");
-            generateDefaultTemplate(languagesDir);
+            log.info("[YuiTranslations] No translations found, generating defaults");
+            generateDefaultFiles(languagesDir);
         }
 
-        Map<DiscordLocale, Map<String, TranslationSource>> result = new HashMap<>();
+        Map<DiscordLocale, Map<String, TranslationSource>> localized = new HashMap<>();
+        Map<String, TemplateEntry> templates = new HashMap<>();
 
-        // Load all translation files (locales) and template files
+        // Load all translation files in a single pass
         loadFromDirectory(
                 languagesDir,
-                // Locale processor
+                // LOCALE processor
                 (_, locale, translations) -> {
                     Map<String, TranslationSource> sources = new HashMap<>();
                     translations.forEach((key, textValue) -> 
                         sources.put(key, new TranslationSource(textValue))
                     );
-                    result.put(locale, sources);
+                    localized.put(locale, sources);
                 },
-                // Template processor - templates are handled separately
-                (file, templates) -> {
+                // MULTI_LOCALE processor
+                (file, multiLocaleData) -> {
+                    log.info("[YuiTranslations] Found {} multi-locale entries in '{}'", 
+                            multiLocaleData.size(), file.getFileName());
+                    
+                    // Convert multi-locale data to per-locale sources
+                    multiLocaleData.forEach((key, localeMap) -> {
+                        localeMap.forEach((locale, textValue) -> {
+                            localized.computeIfAbsent(locale, _ -> new HashMap<>())
+                                    .put(key, new TranslationSource(textValue));
+                        });
+                    });
+                },
+                // TEMPLATE processor
+                (file, templateData) -> {
                     log.info("[YuiTranslations] Found {} templates in '{}'", 
-                            templates.size(), file.getFileName());
-                }
-        );
-
-        int totalKeys = result.values().stream().mapToInt(Map::size).sum();
-        log.info("[YuiTranslations] Loaded {} translation keys across {} locales",
-                totalKeys, result.size());
-
-        return result;
-    }
-
-    public void registerTemplates(TranslationService<DiscordLocale> translationService) {
-        Path languagesDir = dataPath.resolve(Constants.Structure.languagesDir);
-        AtomicInteger templateCount = new AtomicInteger(0);
-
-        loadFromDirectory(
-                languagesDir,
-                (_, _, _) -> {}, // Skip locales
-                (_, templates) -> {
-                    templates.forEach((key, textValue) -> {
-                        TemplateEntry entry = new TemplateEntry(textValue.asString());
-                        translationService.register(key, entry);
-                        templateCount.incrementAndGet();
+                            templateData.size(), file.getFileName());
+                    templateData.forEach((key, textValue) -> {
+                        templates.put(key, new TemplateEntry(textValue.asString()));
                     });
                 }
         );
 
-        log.info("[YuiTranslations] Registered {} template entries", templateCount.get());
+        int totalKeys = localized.values().stream().mapToInt(Map::size).sum();
+        log.info("[YuiTranslations] Loaded {} translation keys across {} locales",
+                totalKeys, localized.size());
+        log.info("[YuiTranslations] Loaded {} template entries", templates.size());
+
+        return new ProviderResult<>(localized, templates);
     }
 
-    private void generateDefaultTemplate(Path languagesDir) {
+    private void generateDefaultFiles(Path languagesDir) {
         try {
             Files.createDirectories(languagesDir);
             
-            // MessagesTemplate has dependencies, so Configura can't instantiate it.
-            // Instead, use the Spring-injected instance to populate a Messages object manually
+            // Generate default en-US locale file
             Messages messages = new Messages();
             messages = messagesTemplate.supply(messages);
             
-            // Save the populated messages with Config.save (adds extension automatically)
             Path enUsFile = languagesDir.resolve(DiscordLocale.ENGLISH_US.getLocale());
             Config.save(enUsFile, messages);
             
-            log.info("[YuiTranslations] Generated default template: {}", enUsFile);
+            log.info("[YuiTranslations] Generated default locale file: {}", enUsFile);
+            
+            // Generate default vocabulary file
+            Vocabulary vocabulary = new Vocabulary();
+            vocabulary = vocabularyTemplate.supply(vocabulary);
+            
+            Path vocabularyFile = languagesDir.resolve("vocabulary");
+            Config.save(vocabularyFile, vocabulary);
+            
+            log.info("[YuiTranslations] Generated default vocabulary file: {}", vocabularyFile);
         } catch (Exception e) {
-            log.error("[YuiTranslations] Failed to generate default template", e);
+            log.error("[YuiTranslations] Failed to generate default files", e);
         }
     }
 }

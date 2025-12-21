@@ -4,12 +4,10 @@ import lombok.RequiredArgsConstructor;
 import me.whereareiam.configura.TemplateProvider;
 import me.whereareiam.yui.common.config.template.messages.ErrorMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.GeneralMessagesTemplate;
-import me.whereareiam.yui.common.config.template.messages.VocabularyMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.command.*;
 import me.whereareiam.yui.model.config.messages.CommandMessages;
 import me.whereareiam.yui.model.config.messages.GeneralMessages;
 import me.whereareiam.yui.model.config.messages.Messages;
-import me.whereareiam.yui.model.config.messages.VocabularyMessages;
 import me.whereareiam.yui.model.config.messages.command.*;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +24,6 @@ public class MessagesTemplate implements TemplateProvider<Messages> {
 	private final ReloadCommandMessagesTemplate reloadTemplate;
 	private final PluginCommandMessagesTemplate pluginTemplate;
 	private final LanguageCommandMessagesTemplate languageTemplate;
-	private final VocabularyMessagesTemplate vocabularyTemplate;
 
 	@Override
 	public Messages supply(Messages messages) {
@@ -41,8 +38,6 @@ public class MessagesTemplate implements TemplateProvider<Messages> {
 		commandMessages.setPlugin(supply(pluginTemplate, PluginCommandMessages::new));
 		commandMessages.setLanguage(supply(languageTemplate, LanguageCommandMessages::new));
 		messages.setCommands(commandMessages);
-
-		messages.setVocabulary(supply(vocabularyTemplate, VocabularyMessages::new));
 
 		return messages;
 	}

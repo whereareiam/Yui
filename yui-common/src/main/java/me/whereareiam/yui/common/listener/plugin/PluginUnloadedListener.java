@@ -28,10 +28,9 @@ public class PluginUnloadedListener {
 			log.debug("Unregistered listener: {}", listener.getClass().getSimpleName());
 		}
 
-		if (plugin.getPlugin().getId() != null)
-			interactions.unregister(plugin.getPlugin().getId());
+		if (plugin.getPlugin().getId() == null) return;
 
-		if (plugin.getPlugin().getId() != null)
-			pluginTranslationLoader.unloadPlugin(plugin.getPlugin().getId());
+		interactions.unregister(plugin.getPlugin().getId());
+		pluginTranslationLoader.unloadPlugin(plugin.getPlugin().getId());
 	}
 }
