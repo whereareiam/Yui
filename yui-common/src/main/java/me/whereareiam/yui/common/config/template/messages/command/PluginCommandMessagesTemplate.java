@@ -36,7 +36,7 @@ public class PluginCommandMessagesTemplate implements TemplateProvider<PluginCom
 				"You can also reload the list of plugins to see any changes made.",
 				""
 		));
-		main.setFormat("{index}. {name} [v{version}]\n {authors}");
+		main.setFormat("<index>. <name> [v<version>]\n <authors>");
 		PluginCommandMessages.Main.Fields fields = new PluginCommandMessages.Main.Fields();
 		fields.setEnabled("Active [<p:count>]");
 		fields.setDisabled("Disabled [<p:count>]");
@@ -50,9 +50,9 @@ public class PluginCommandMessagesTemplate implements TemplateProvider<PluginCom
 		enable.setDescription(List.of(
 				"Here you can enable plugins that are currently disabled.",
 				"",
-				"{list}"
+				"<list>"
 		));
-		enable.setFormat("{index}. {name} [v{version}]\n {authors}");
+		enable.setFormat("<index>. <name> [v<version>]\n <authors>");
 		plugins.setEnable(enable);
 
 		PluginCommandMessages.Category disable = new PluginCommandMessages.Category();
@@ -61,9 +61,9 @@ public class PluginCommandMessagesTemplate implements TemplateProvider<PluginCom
 		disable.setDescription(List.of(
 				"Here you can disable plugins that are currently enabled.",
 				"",
-				"{list}"
+				"<list>"
 		));
-		disable.setFormat("{index}. {name} [v{version}]\n {authors}");
+		disable.setFormat("<index>. <name> [v<version>]\n <authors>");
 		plugins.setDisable(disable);
 
 		PluginCommandMessages.Category unload = new PluginCommandMessages.Category();
@@ -72,9 +72,9 @@ public class PluginCommandMessagesTemplate implements TemplateProvider<PluginCom
 		unload.setDescription(List.of(
 				"Here you can unload plugins that are currently loaded or enabled.",
 				"",
-				"{list}"
+				"<list>"
 		));
-		unload.setFormat("{index}. {name} [v{version}]\n {authors}");
+		unload.setFormat("<index>. <name> [v<version>]\n <authors>");
 		plugins.setUnload(unload);
 
 		PluginCommandMessages.Category load = new PluginCommandMessages.Category();
@@ -83,9 +83,9 @@ public class PluginCommandMessagesTemplate implements TemplateProvider<PluginCom
 		load.setDescription(List.of(
 				"Here you can load plugins that are currently not loaded.",
 				"",
-				"{list}"
+				"<list>"
 		));
-		load.setFormat("{index}. {name}");
+		load.setFormat("<index>. <name>");
 		plugins.setLoad(load);
 
 		PluginCommandMessages.Action action = new PluginCommandMessages.Action();

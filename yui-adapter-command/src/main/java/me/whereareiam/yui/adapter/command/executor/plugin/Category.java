@@ -108,11 +108,11 @@ public final class Category {
 
 		String list = formatPlugins(plugins, userId);
 		String description = Translatable.text(descriptionKey).resolve(userId);
-		return description.replace("{list}", list);
+		return description.replace("<list>", list);
 	}
 
 	private String formatPlugins(List<InternalPlugin> plugins, long userId) {
-		String format = pluginFormatKey == null ? "{index}. {name} v{version} (``{id}``)" : Translatable.text(pluginFormatKey).resolve(userId);
+		String format = pluginFormatKey == null ? "<index>. <name> v<version> (``<id>``)" : Translatable.text(pluginFormatKey).resolve(userId);
 		List<String> lines = new ArrayList<>();
 		for (int i = 0; i < plugins.size(); i++) {
 			InternalPlugin p = plugins.get(i);
@@ -121,11 +121,11 @@ public final class Category {
 					: String.join(", ", p.getPlugin().getAuthors());
 
 			String line = format
-					.replace("{index}", String.valueOf(i + 1))
-					.replace("{name}", safe(p.getPlugin().getName()))
-					.replace("{version}", safe(p.getPlugin().getVersion()))
-					.replace("{authors}", authors)
-					.replace("{id}", safe(p.getPlugin().getId()));
+					.replace("<index>", String.valueOf(i + 1))
+					.replace("<name>", safe(p.getPlugin().getName()))
+					.replace("<version>", safe(p.getPlugin().getVersion()))
+					.replace("<authors>", authors)
+					.replace("<id>", safe(p.getPlugin().getId()));
 
 			if (authors.isBlank()) line = line.replace(" — ", " ");
 			lines.add(line.trim());

@@ -417,15 +417,15 @@ public class PluginCommand {
 			Plugin p = loadable.get(i).getValue();
 			String name = p.getName() == null ? loadable.get(i).getKey() : p.getName();
 			String line = format
-					.replace("{index}", String.valueOf(i + 1))
-					.replace("{name}", name);
+					.replace("<index>", String.valueOf(i + 1))
+					.replace("<name>", name);
 			lines.add(line);
 		}
 
 		String list = String.join("\n", lines);
 		String template = Translatable.text("commands.plugin.load.description").resolve(fluctlight);
 
-		return template.replace("{list}", list);
+		return template.replace("<list>", list);
 	}
 
 	private String enumerateLoadable(Map<String, Plugin> loadable, Fluctlight fluctlight) {
@@ -440,8 +440,8 @@ public class PluginCommand {
 			Plugin p = entries.get(i).getValue();
 			String name = p.getName() == null ? entries.get(i).getKey() : p.getName();
 			String line = format
-					.replace("{index}", String.valueOf(i + 1))
-					.replace("{name}", name);
+					.replace("<index>", String.valueOf(i + 1))
+					.replace("<name>", name);
 			lines.add(line);
 		}
 
@@ -459,11 +459,11 @@ public class PluginCommand {
 					: String.join(", ", p.getPlugin().getAuthors());
 			String authorsPart = authors.isBlank() ? "" : " " + authors;
 			String line = format
-					.replace("{index}", String.valueOf(i + 1))
-					.replace("{name}", safe(p.getPlugin().getName()))
-					.replace("{version}", safe(p.getPlugin().getVersion()))
-					.replace("{authors}", authorsPart)
-					.replace("{id}", safe(p.getPlugin().getId()));
+					.replace("<index>", String.valueOf(i + 1))
+					.replace("<name>", safe(p.getPlugin().getName()))
+					.replace("<version>", safe(p.getPlugin().getVersion()))
+					.replace("<authors>", authorsPart)
+					.replace("<id>", safe(p.getPlugin().getId()));
 			String indented = line.replace("\n", "\n    ");
 			lines.add(indented.trim());
 		}
