@@ -11,6 +11,7 @@ import me.whereareiam.yui.command.CommandService;
 import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.util.style.StyleKit;
 import me.whereareiam.yui.translation.Translatable;
+import me.whereareiam.yui.translation.TranslationResolver;
 import me.whereareiam.yui.type.CommandCategory;
 import me.whereareiam.yui.util.Components;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -120,8 +121,8 @@ public class HelpCommand {
 			String description = def.getDescription();
 
 			String commandName = Translatable.text(primaryName).resolve(fluctlight);
-			String exampleText = Translatable.text(example).resolve(fluctlight);
-			String descriptionText = Translatable.text(description).resolve(fluctlight);
+			String exampleText = TranslationResolver.text(example).resolve(fluctlight);
+			String descriptionText = TranslationResolver.text(description).resolve(fluctlight);
 
 			embed.addField(
 				Translatable.text("commands.help.information.specific.headFormat")

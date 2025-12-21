@@ -296,7 +296,7 @@ public final class YuiJDACommandFactory<C> implements JDACommandFactory<C> {
             // Skip UNKNOWN locale as JDA doesn't allow it in localizations
             if (locale == DiscordLocale.UNKNOWN) continue;
 
-            String translated = TranslationResolver.resolve(text, locale);
+            String translated = TranslationResolver.text(text).resolve(locale);
             // Only add if translation resolved to something meaningful
             // (not empty and not the same as the original key)
             if (translated != null && !translated.isBlank() && !translated.equals(text))
