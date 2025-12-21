@@ -9,7 +9,7 @@ annotations = "26.0.2-1"
 jda = "5.6.1"
 postgres = "42.7.7"
 configura = "dev-e082ac5"
-semantica = "dev"
+semantica = "dev-ffdb76d"
 
 # testing
 junit-platform = "6.0.1"
