@@ -40,6 +40,10 @@ public class SettingsTemplate implements TemplateProvider<Settings> {
 		DatabaseSettings databaseSettings = getDatabaseSettings();
 		settings.setDatabase(databaseSettings);
 
+		me.whereareiam.yui.model.config.settings.TranslationSettings translationSettings =
+				new me.whereareiam.yui.model.config.settings.TranslationSettings();
+		settings.setTranslation(translationSettings);
+
 		return settings;
 	}
 

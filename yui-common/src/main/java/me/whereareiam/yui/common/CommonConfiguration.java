@@ -3,9 +3,19 @@ package me.whereareiam.yui.common;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.semantica.Semantica;
+import me.whereareiam.semantica.SemanticaConfiguration;
+import me.whereareiam.semantica.locale.LocaleParser;
+import me.whereareiam.semantica.model.SemanticLocale;
+import me.whereareiam.semantica.translation.TranslationService;
+import me.whereareiam.yui.common.translation.DiscordLocaleAdapter;
+import me.whereareiam.yui.common.translation.YuiSemanticaLogger;
+import me.whereareiam.yui.common.translation.loader.YuiTranslationLoader;
 import me.whereareiam.yui.model.config.settings.Settings;
+import me.whereareiam.yui.model.config.settings.TranslationSettings;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.springframework.beans.factory.ObjectProvider;
@@ -13,7 +23,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -65,5 +74,48 @@ public class CommonConfiguration {
 				Math.max(2, Runtime.getRuntime().availableProcessors()),
 				Thread.ofVirtual().name("yui-scheduled", 0).factory()
 		);
+	}
+
+	@Bean
+	public LocaleParser<DiscordLocale> localeParser() {
+		return DiscordLocaleAdapter::wrap;
+	}
+
+	@Bean
+	public TranslationService<DiscordLocale> semanticaService(
+			SemanticaConfiguration<DiscordLocale> config,
+			YuiTranslationLoader yuiTranslationLoader
+	) {
+		TranslationService<DiscordLocale> service = Semantica.createService(config);
+		yuiTranslationLoader.registerTemplates(service);
+		return service;
+	}
+
+	@Bean
+	public SemanticaConfiguration<DiscordLocale> semanticaConfiguration(
+			YuiTranslationLoader yuiTranslationLoader,
+			LocaleParser<DiscordLocale> localeParser
+	) {
+		Settings settings = settingsProvider.getObject();
+		TranslationSettings translationSettings = settings.getTranslation();
+
+		return SemanticaConfiguration.<DiscordLocale>builder()
+				.defaultLocale(SemanticLocale.wrap(settings.getLocale().toLocale()))
+				.performance(SemanticaConfiguration.PerformanceSettings.builder()
+						.cache(SemanticaConfiguration.PerformanceSettings.CacheSettings.builder()
+								.enabled(translationSettings.isCacheEnabled())
+								.semiStaticSize(translationSettings.getCacheSemiStaticSize())
+								.dynamicSize(translationSettings.getCacheDynamicSize())
+								.semiStaticExpireMinutes(translationSettings.getCacheSemiStaticTtl())
+								.dynamicExpireMinutes(translationSettings.getCacheDynamicTtl())
+								.build())
+						.prerenderStatic(translationSettings.isPrerenderStatic())
+						.buildDependencyGraph(translationSettings.isBuildDependencyGraph())
+						.logTimings(translationSettings.isLogTimings())
+						.build())
+				.localeParser(localeParser)
+				.translationProvider(yuiTranslationLoader)
+				.logger(new YuiSemanticaLogger())
+				.build();
 	}
 }

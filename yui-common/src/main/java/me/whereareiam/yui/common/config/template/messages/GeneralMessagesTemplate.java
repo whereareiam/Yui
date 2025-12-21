@@ -13,7 +13,7 @@ public class GeneralMessagesTemplate implements TemplateProvider<GeneralMessages
 		GeneralMessages.TemporaryChannels temporaryChannels = new GeneralMessages.TemporaryChannels();
 		GeneralMessages.TemporaryChannels.Close close = new GeneralMessages.TemporaryChannels.Close();
 		close.setTitle("Temporary Channel Closing");
-		close.setDescription(List.of("This temporary channel will be closed in *{0}* seconds."));
+		close.setDescription(List.of("This temporary channel will be closed in *<p:seconds>* seconds."));
 		temporaryChannels.setClose(close);
 
 		generalMessages.setTemporaryChannels(temporaryChannels);

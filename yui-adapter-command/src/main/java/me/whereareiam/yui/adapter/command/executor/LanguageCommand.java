@@ -83,7 +83,7 @@ public class LanguageCommand {
 
 	@ComponentListener(CONFIRM_LISTENER)
 	public void onConfirm(Fluctlight fluctlight, ButtonInteractionEvent event) {
-		EmbedBuilder embed = StyleKit.embeds().success().setTitle(Translatable.of("commands.language.success.title", fluctlight));
+		EmbedBuilder embed = StyleKit.embeds().success().setTitle(Translatable.text("commands.language.success.title").resolve(fluctlight));
 		event.editMessageEmbeds(embed.build())
 				.setComponents()
 				.queue();
@@ -92,7 +92,7 @@ public class LanguageCommand {
 	@ComponentListener(CANCEL_LISTENER)
 	public void onCancel(Fluctlight fluctlight, ButtonInteractionEvent event) {
 		event.editMessageEmbeds(StyleKit.embeds().info()
-						.setTitle(Translatable.of("commands.language.cancelled.title", fluctlight))
+						.setTitle(Translatable.text("commands.language.cancelled.title").resolve(fluctlight))
 						.build())
 				.setComponents()
 				.queue();
@@ -100,8 +100,8 @@ public class LanguageCommand {
 
 	private void showPrimaryLanguageSelection(IReplyCallback event, Fluctlight fluctlight, boolean postSelection) {
 		EmbedBuilder embed = StyleKit.embeds().primary()
-				.setTitle(Translatable.of("commands.language.primary.title", fluctlight))
-				.setDescription(Translatable.of("commands.language.primary.description", fluctlight));
+				.setTitle(Translatable.text("commands.language.primary.title").resolve(fluctlight))
+				.setDescription(Translatable.text("commands.language.primary.description").resolve(fluctlight));
 
 		// Exclude ONLY the current primary (ignore additional languages here)
 		Set<DiscordLocale> excluded = new HashSet<>();
@@ -120,18 +120,18 @@ public class LanguageCommand {
 			footer.add(Components.button(
 					ButtonStyle.SUCCESS,
 					CONTINUE_LISTENER,
-					Translatable.of("vocabulary.proceed", fluctlight)
+					Translatable.text("vocabulary.proceed").resolve(fluctlight)
 			));
 			footer.add(Components.button(
 					ButtonStyle.SECONDARY,
 					CONFIRM_LISTENER,
-					Translatable.of("vocabulary.confirm", fluctlight)
+					Translatable.text("vocabulary.confirm").resolve(fluctlight)
 			));
 		} else {
 			footer.add(Components.button(
 					ButtonStyle.SECONDARY,
 					CANCEL_LISTENER,
-					Translatable.of("vocabulary.cancel", fluctlight)
+					Translatable.text("vocabulary.cancel").resolve(fluctlight)
 			));
 		}
 
@@ -142,8 +142,8 @@ public class LanguageCommand {
 
 	private void showAdditionalLanguageSelection(IReplyCallback event, Fluctlight fluctlight) {
 		EmbedBuilder embed = StyleKit.embeds().primary()
-				.setTitle(Translatable.of("commands.language.additional.title", fluctlight))
-				.setDescription(Translatable.of("commands.language.additional.description", fluctlight));
+				.setTitle(Translatable.text("commands.language.additional.title").resolve(fluctlight))
+				.setDescription(Translatable.text("commands.language.additional.description").resolve(fluctlight));
 
 		Set<DiscordLocale> currentAdditionals = fluctlight.getAdditionalLanguages() != null
 				? new HashSet<>(Arrays.asList(fluctlight.getAdditionalLanguages()))
@@ -166,13 +166,13 @@ public class LanguageCommand {
 			footer.add(Components.button(
 					ButtonStyle.SECONDARY,
 					CONFIRM_LISTENER,
-					Translatable.of("vocabulary.confirm", fluctlight)
+					Translatable.text("vocabulary.confirm").resolve(fluctlight)
 			));
 		} else {
 			footer.add(Components.button(
 					ButtonStyle.SECONDARY,
 					CANCEL_LISTENER,
-					Translatable.of("vocabulary.cancel", fluctlight)
+					Translatable.text("vocabulary.cancel").resolve(fluctlight)
 			));
 		}
 

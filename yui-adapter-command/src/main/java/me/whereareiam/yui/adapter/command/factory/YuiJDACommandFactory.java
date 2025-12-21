@@ -4,7 +4,7 @@ import io.leangen.geantyref.TypeToken;
 import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
 import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
 import me.whereareiam.yui.model.command.CommandDefinition;
-import me.whereareiam.yui.translation.TranslationTags;
+import me.whereareiam.yui.translation.TranslationResolver;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.InteractionContextType;
 import net.dv8tion.jda.api.interactions.commands.Command;
@@ -296,9 +296,9 @@ public final class YuiJDACommandFactory<C> implements JDACommandFactory<C> {
             // Skip UNKNOWN locale as JDA doesn't allow it in localizations
             if (locale == DiscordLocale.UNKNOWN) continue;
 
-            String translated = TranslationTags.resolve(text, locale);
+            String translated = TranslationResolver.resolve(text, locale);
             // Only add if translation resolved to something meaningful
-            // (not empty and not the same as the original translate tag)
+            // (not empty and not the same as the original key)
             if (translated != null && !translated.isBlank() && !translated.equals(text))
                 localizations.put(locale, translated);
         }

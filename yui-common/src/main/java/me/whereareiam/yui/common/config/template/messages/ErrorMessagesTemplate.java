@@ -15,16 +15,16 @@ public class ErrorMessagesTemplate implements TemplateProvider<ErrorMessages> {
 		RequirementErrorMessages requirement = new RequirementErrorMessages();
 		requirement.setTitle("Seems like you don't have the rights");
 		requirement.setUnknown("You do not meet the requirements for this command. We could not determine the exact reason, if you think this is an error, please contact the server administrator.");
-		requirement.setFailed("You do not meet the following requirements:\n\n{0}");
-		requirement.setRole("**Required Role(s):**\n {0}");
+		requirement.setFailed("You do not meet the following requirements:\n\n<p:requirements>");
+		requirement.setRole("**Required Role(s):**\n <p:roles>");
 		requirement.setRoleUnknown("**Required Role(s):**\n *Unknown*");
-		requirement.setScope("**Required Scope(s):**\n {0}");
+		requirement.setScope("**Required Scope(s):**\n <p:scopes>");
 		requirement.setScopeUnknown("**Required Scope(s):**\n *Unknown*");
-		requirement.setChannel("**Required Channel Type(s):**\n {0}");
+		requirement.setChannel("**Required Channel Type(s):**\n <p:channelTypes>");
 		requirement.setChannelUnknown("**Required Channel Type(s):**\n *Unknown*");
-		requirement.setUser("**User Restriction:**\n {0}");
+		requirement.setUser("**User Restriction:**\n <p:userIds>");
 		requirement.setUserUnknown("**User Restriction:**\n *Unknown*");
-		requirement.setGuild("**Guild Restriction:**\n {0}");
+		requirement.setGuild("**Guild Restriction:**\n <p:guildIds>");
 		requirement.setGuildUnknown("**Guild Restriction:**\n *Unknown*");
 		error.setRequirement(requirement);
 

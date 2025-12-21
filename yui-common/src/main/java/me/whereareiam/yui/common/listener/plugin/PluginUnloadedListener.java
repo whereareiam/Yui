@@ -2,10 +2,10 @@ package me.whereareiam.yui.common.listener.plugin;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.yui.common.translation.loader.PluginTranslationLoader;
 import me.whereareiam.yui.event.plugin.PluginUnloadedEvent;
-import me.whereareiam.yui.service.InteractionService;
 import me.whereareiam.yui.model.plugin.InternalPlugin;
-import me.whereareiam.yui.common.translation.DefaultTranslationService;
+import me.whereareiam.yui.service.InteractionService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.context.event.EventListener;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class PluginUnloadedListener {
 	private final InteractionService interactions;
-	private final DefaultTranslationService translations;
+	private final PluginTranslationLoader pluginTranslationLoader;
 	private final JDA jda;
 
 	@EventListener
@@ -32,6 +32,6 @@ public class PluginUnloadedListener {
 			interactions.unregister(plugin.getPlugin().getId());
 
 		if (plugin.getPlugin().getId() != null)
-			translations.removeTranslations(plugin.getPlugin().getId());
+			pluginTranslationLoader.unloadPlugin(plugin.getPlugin().getId());
 	}
 }

@@ -34,7 +34,7 @@ public class ClearCommand {
 		if (targetUser.getIdLong() == fluctlight.getId()) {
 			interaction.replyCallback()
 					.replyEmbeds(StyleKit.embeds().error()
-							.setTitle(Translatable.of("commands.error.validation.sameUser", fluctlight))
+							.setTitle(Translatable.text("commands.error.validation.sameUser").resolve(fluctlight))
 							.build())
 					.setEphemeral(true)
 					.queue();
@@ -43,17 +43,17 @@ public class ClearCommand {
 
 		// Create confirmation embed
 		EmbedBuilder embed = StyleKit.embeds().warning();
-		embed.setTitle(Translatable.of("commands.clear.confirmation.title", fluctlight));
-		embed.setDescription(Translatable.of("commands.clear.confirmation.description", fluctlight));
+		embed.setTitle(Translatable.text("commands.clear.confirmation.title").resolve(fluctlight));
+		embed.setDescription(Translatable.text("commands.clear.confirmation.description").resolve(fluctlight));
 		embed.addField(
-				Translatable.of("commands.clear.confirmation.userInfo", fluctlight),
+				Translatable.text("commands.clear.confirmation.userInfo").resolve(fluctlight),
 				String.format("**%s** (`%s`)", targetUser.getAsMention(), targetUser.getId()),
 				false
 		);
 
 		// Create buttons using the proper Components utility with embedded payload
-		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.of("vocabulary.confirm", fluctlight), String.valueOf(targetUser.getIdLong()));
-		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.of("vocabulary.cancel", fluctlight), String.valueOf(targetUser.getIdLong()));
+		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.text("vocabulary.confirm").resolve(fluctlight), String.valueOf(targetUser.getIdLong()));
+		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.text("vocabulary.cancel").resolve(fluctlight), String.valueOf(targetUser.getIdLong()));
 
 		// Send the confirmation message with buttons
 		interaction.replyCallback()
@@ -72,7 +72,7 @@ public class ClearCommand {
 		String payload = Components.payload(event);
 		if (payload == null) {
 			event.getHook().editOriginalEmbeds(StyleKit.embeds().error()
-							.setTitle(Translatable.of("commands.error.validation.invalidButton", fluctlight))
+							.setTitle(Translatable.text("commands.error.validation.invalidButton").resolve(fluctlight))
 							.build())
 					.setComponents()
 					.queue();
@@ -87,10 +87,10 @@ public class ClearCommand {
 		if (result.isPresent()) {
 			// Success embed
 			EmbedBuilder successEmbed = StyleKit.embeds().success();
-			successEmbed.setTitle(Translatable.of("commands.clear.success.title", fluctlight));
-			successEmbed.setDescription(Translatable.of("commands.clear.success.description", fluctlight));
+			successEmbed.setTitle(Translatable.text("commands.clear.success.title").resolve(fluctlight));
+			successEmbed.setDescription(Translatable.text("commands.clear.success.description").resolve(fluctlight));
 			successEmbed.addField(
-					Translatable.of("commands.clear.success.userInfo", fluctlight),
+					Translatable.text("commands.clear.success.userInfo").resolve(fluctlight),
 					String.format("**%s** (`%s`)", targetUser.getAsMention(), targetUser.getId()),
 					false
 			);
@@ -101,7 +101,7 @@ public class ClearCommand {
 		} else {
 			// Use predefined error embed with exception message
 			event.getHook().editOriginalEmbeds(StyleKit.embeds().error()
-					.setTitle(Translatable.of("commands.error.exception", fluctlight))
+					.setTitle(Translatable.text("commands.error.exception").resolve(fluctlight))
 					.build()).queue();
 		}
 	}
@@ -113,8 +113,8 @@ public class ClearCommand {
 
 		// Show cancellation message
 		event.getHook().editOriginalEmbeds(StyleKit.embeds().info()
-						.setTitle(Translatable.of("commands.clear.cancelled.title", fluctlight))
-						.setDescription(Translatable.of("commands.clear.cancelled.description", fluctlight))
+						.setTitle(Translatable.text("commands.clear.cancelled.title").resolve(fluctlight))
+						.setDescription(Translatable.text("commands.clear.cancelled.description").resolve(fluctlight))
 						.build())
 				.setComponents()
 				.queue();

@@ -38,9 +38,9 @@ public class PluginCommandMessagesTemplate implements TemplateProvider<PluginCom
 		));
 		main.setFormat("{index}. {name} [v{version}]\n {authors}");
 		PluginCommandMessages.Main.Fields fields = new PluginCommandMessages.Main.Fields();
-		fields.setEnabled("Active [{0}]");
-		fields.setDisabled("Disabled [{0}]");
-		fields.setLoadable("Loadable [{0}]");
+		fields.setEnabled("Active [<p:count>]");
+		fields.setDisabled("Disabled [<p:count>]");
+		fields.setLoadable("Loadable [<p:count>]");
 		main.setFields(fields);
 		plugins.setMain(main);
 
@@ -89,7 +89,7 @@ public class PluginCommandMessagesTemplate implements TemplateProvider<PluginCom
 		plugins.setLoad(load);
 
 		PluginCommandMessages.Action action = new PluginCommandMessages.Action();
-		action.setErrorTitle("Action failed for {0}");
+		action.setErrorTitle("Action failed for <p:actionName>");
 		plugins.setAction(action);
 
 		// Reload action under Action

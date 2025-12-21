@@ -56,16 +56,16 @@ public class HelpCommand {
 
 	private void globalHelp(IReplyCallback reply, Fluctlight fluctlight) {
 		EmbedBuilder embed = StyleKit.embeds().primary();
-		embed.setTitle(Translatable.of("commands.help.information.global.title", fluctlight));
-		embed.setDescription(Translatable.of("commands.help.information.global.description", fluctlight));
+		embed.setTitle(Translatable.text("commands.help.information.global.title").resolve(fluctlight));
+		embed.setDescription(Translatable.text("commands.help.information.global.description").resolve(fluctlight));
 
 		for (CommandCategory category : CommandCategory.values()) {
 			if (category == CommandCategory.NONE)
 				continue;
 
 			embed.addField(
-					Translatable.of(category.getKey(), fluctlight),
-					Translatable.of("commands.help.category." + category.name().toLowerCase(), fluctlight),
+					Translatable.text(category.getKey()).resolve(fluctlight),
+					Translatable.text("commands.help.category." + category.name().toLowerCase()).resolve(fluctlight),
 					false
 			);
 		}
@@ -73,7 +73,7 @@ public class HelpCommand {
 		List<SelectOption> options = Arrays.stream(CommandCategory.values())
 				.filter(category -> category != CommandCategory.NONE)
 				.map(category -> SelectOption.of(
-						Translatable.of(category.getKey(), fluctlight),
+						Translatable.text(category.getKey()).resolve(fluctlight),
 						category.name().toLowerCase()
 				))
 				.toList();
@@ -90,16 +90,16 @@ public class HelpCommand {
 
 	private void categoryHelp(IReplyCallback event, Fluctlight fluctlight, CommandCategory category) {
 		EmbedBuilder embed = StyleKit.embeds().primary();
-		embed.setTitle(Translatable.forUser(
-				"commands.help.information.specific.title",
-				fluctlight,
-				Translatable.of(category.getKey(), fluctlight)
-		));
-		embed.setDescription(Translatable.forUser(
-				"commands.help.information.specific.description",
-				fluctlight,
-				Translatable.of(category.getKey(), fluctlight)
-		));
+		
+		String categoryName = Translatable.text(category.getKey()).resolve(fluctlight);
+		
+		embed.setTitle(Translatable.text("commands.help.information.specific.title")
+			.with("categoryName", categoryName)
+			.resolve(fluctlight));
+		
+		embed.setDescription(Translatable.text("commands.help.information.specific.description")
+			.with("categoryName", categoryName)
+			.resolve(fluctlight));
 
 		// Get commands for this category, showing only primary command names (first alias)
 		for (Map.Entry<String, CommandDefinition> entry : commandService.getDefinitions().entrySet().stream()
@@ -119,19 +119,19 @@ public class HelpCommand {
 			String example = def.getExample();
 			String description = def.getDescription();
 
+			String commandName = Translatable.text(primaryName).resolve(fluctlight);
+			String exampleText = Translatable.text(example).resolve(fluctlight);
+			String descriptionText = Translatable.text(description).resolve(fluctlight);
+
 			embed.addField(
-					Translatable.forUser(
-							"commands.help.information.specific.headFormat",
-							fluctlight,
-							Translatable.of(primaryName, fluctlight)
-					),
-					Translatable.forUser(
-							"commands.help.information.specific.footFormat",
-							fluctlight,
-							Translatable.of(example, fluctlight),
-							Translatable.of(description, fluctlight)
-					),
-					false
+				Translatable.text("commands.help.information.specific.headFormat")
+					.with("commandName", commandName)
+					.resolve(fluctlight),
+				Translatable.text("commands.help.information.specific.footFormat")
+					.with("example", exampleText)
+					.with("description", descriptionText)
+					.resolve(fluctlight),
+				false
 			);
 		}
 

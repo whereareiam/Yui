@@ -228,12 +228,17 @@ public class DefaultTemporaryChannelService implements TemporaryChannelService, 
 
 		EmbedBuilder builder = StyleKit.embeds().warning();
 		if (userId != null) {
-			builder.setTitle(Translatable.of("general.temporaryChannels.close.title", userId));
+			builder.setTitle(Translatable.text("general.temporaryChannels.close.title").resolve(userId));
 			builder.setDescription(
-					Translatable.forUser("general.temporaryChannels.close.description", userId, delay));
+					Translatable.text("general.temporaryChannels.close.description")
+						.with("seconds", delay)
+						.resolve(userId));
 		} else {
-			builder.setTitle(Translatable.of("general.temporaryChannels.close.title"));
-			builder.setDescription(Translatable.of("general.temporaryChannels.close.description", String.valueOf(delay)));
+			builder.setTitle(Translatable.text("general.temporaryChannels.close.title").resolveDefault());
+			builder.setDescription(
+					Translatable.text("general.temporaryChannels.close.description")
+						.with("seconds", delay)
+						.resolveDefault());
 		}
 
 		channel.sendMessageEmbeds(builder.build())

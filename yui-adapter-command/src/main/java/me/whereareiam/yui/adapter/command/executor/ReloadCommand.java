@@ -47,12 +47,12 @@ public class ReloadCommand {
 
 		// Create confirmation embed
 		EmbedBuilder embed = StyleKit.embeds().warning();
-		embed.setTitle(Translatable.of("commands.reload.confirmation.title", fluctlight));
-		embed.setDescription(Translatable.of("commands.reload.confirmation.description", fluctlight));
+		embed.setTitle(Translatable.text("commands.reload.confirmation.title").resolve(fluctlight));
+		embed.setDescription(Translatable.text("commands.reload.confirmation.description").resolve(fluctlight));
 
 		// Create buttons
-		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.of("vocabulary.confirm", fluctlight));
-		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.of("vocabulary.cancel", fluctlight));
+		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.text("vocabulary.confirm").resolve(fluctlight));
+		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.text("vocabulary.cancel").resolve(fluctlight));
 
 		// Send the confirmation message with buttons
 		interaction.replyCallback()
@@ -73,8 +73,8 @@ public class ReloadCommand {
 					log.error("Error during reload process", throwable);
 
 					event.getHook().editOriginalEmbeds(StyleKit.embeds().error()
-									.setTitle(Translatable.of("commands.reload.error.title", fluctlight))
-									.setDescription(Translatable.of("commands.reload.error.description", fluctlight))
+									.setTitle(Translatable.text("commands.reload.error.title").resolve(fluctlight))
+									.setDescription(Translatable.text("commands.reload.error.description").resolve(fluctlight))
 									.build())
 							.setComponents()
 							.queue();
@@ -104,8 +104,8 @@ public class ReloadCommand {
 
 			// Success embed
 			EmbedBuilder successEmbed = StyleKit.embeds().success();
-			successEmbed.setTitle(Translatable.of("commands.reload.success.title", fluctlight));
-			successEmbed.setDescription(Translatable.of("commands.reload.success.description", fluctlight));
+			successEmbed.setTitle(Translatable.text("commands.reload.success.title").resolve(fluctlight));
+			successEmbed.setDescription(Translatable.text("commands.reload.success.description").resolve(fluctlight));
 
 			// Remove buttons and show success message
 			event.getHook()
@@ -116,7 +116,7 @@ public class ReloadCommand {
 		} catch (Exception e) {
 			log.error("Error during reload process", e);
 			event.getHook().editOriginalEmbeds(StyleKit.embeds().error()
-							.setTitle(Translatable.of("commands.reload.error.title", fluctlight))
+							.setTitle(Translatable.text("commands.reload.error.title").resolve(fluctlight))
 							.build())
 					.setComponents()
 					.queue();
@@ -130,8 +130,8 @@ public class ReloadCommand {
 
 		// Show cancellation message and remove buttons
 		event.getHook().editOriginalEmbeds(StyleKit.embeds().info()
-						.setTitle(Translatable.of("commands.reload.cancelled.title", fluctlight))
-						.setDescription(Translatable.of("commands.reload.cancelled.description", fluctlight))
+						.setTitle(Translatable.text("commands.reload.cancelled.title").resolve(fluctlight))
+						.setDescription(Translatable.text("commands.reload.cancelled.description").resolve(fluctlight))
 						.build())
 				.setComponents()
 				.queue();

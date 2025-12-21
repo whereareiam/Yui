@@ -11,6 +11,7 @@ dependencies {
     "implementation"(libs.jda)
     "implementation"(libs.postgres)
     "implementation"(libs.configura)
+    "implementation"(libs.semantica)
 
     // include all projects
     rootProject.subprojects.forEach { subproject ->

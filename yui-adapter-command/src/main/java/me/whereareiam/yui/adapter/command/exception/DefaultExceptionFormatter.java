@@ -41,8 +41,8 @@ public final class DefaultExceptionFormatter {
 			handleWithDefer(commandContext, () -> {
 				Interaction interaction = commandContext.sender();
 				long userId = interaction.fluctlight().getId();
-				String title = Translatable.forUser("error.command.notFound.title", userId);
-				String description = Translatable.forUser("error.command.notFound.description", userId);
+				String title = Translatable.text("error.command.notFound.title").resolve(userId);
+				String description = Translatable.text("error.command.notFound.description").resolve(userId);
 				
 				return StyleKit.embeds().error()
 						.setTitle(title)
@@ -62,8 +62,8 @@ public final class DefaultExceptionFormatter {
 			handleWithDefer(commandContext, () -> {
 				Interaction interaction = commandContext.sender();
 				long userId = interaction.fluctlight().getId();
-				String title = Translatable.forUser("error.syntax.invalid.title", userId);
-				String description = Translatable.forUser("error.syntax.invalid.description", userId, correctSyntax);
+				String title = Translatable.text("error.syntax.invalid.title").resolve(userId);
+				String description = Translatable.text("error.syntax.invalid.description").with("value", correctSyntax).resolve(userId);
 				
 				return StyleKit.embeds().error()
 						.setTitle(title)
@@ -84,12 +84,10 @@ public final class DefaultExceptionFormatter {
 			handleWithDefer(commandContext, () -> {
 				Interaction interaction = commandContext.sender();
 				long userId = interaction.fluctlight().getId();
-				String title = Translatable.forUser("error.argument.parse.title", userId);
-				String description = Translatable.forUser(
-						"error.argument.parse.description",
-						userId,
-						errorMessage
-				);
+				String title = Translatable.text("error.argument.parse.title").resolve(userId);
+				String description = Translatable.text("error.argument.parse.description")
+					.with("value", errorMessage)
+					.resolve(userId);
 				
 				return StyleKit.embeds().error()
 						.setTitle(title)
@@ -109,8 +107,8 @@ public final class DefaultExceptionFormatter {
 			handleWithDefer(commandContext, () -> {
 				Interaction interaction = commandContext.sender();
 				long userId = interaction.fluctlight().getId();
-				String title = Translatable.forUser("error.permission.denied.title", userId);
-				String description = Translatable.forUser("error.permission.denied.description", userId, permission);
+				String title = Translatable.text("error.permission.denied.title").resolve(userId);
+				String description = Translatable.text("error.permission.denied.description").with("value", permission).resolve(userId);
 				
 				return StyleKit.embeds().error()
 						.setTitle(title)
@@ -129,8 +127,8 @@ public final class DefaultExceptionFormatter {
 			handleWithDefer(commandContext, () -> {
 				Interaction interaction = commandContext.sender();
 				long userId = interaction.fluctlight().getId();
-				String title = Translatable.forUser("error.sender.invalid.title", userId);
-				String description = Translatable.forUser("error.sender.invalid.description", userId);
+				String title = Translatable.text("error.sender.invalid.title").resolve(userId);
+				String description = Translatable.text("error.sender.invalid.description").resolve(userId);
 				
 				return StyleKit.embeds().error()
 						.setTitle(title)
@@ -217,8 +215,8 @@ public final class DefaultExceptionFormatter {
 			handleWithDefer(commandContext, () -> {
 				Interaction interaction = commandContext.sender();
 				long userId = interaction.fluctlight().getId();
-				String title = Translatable.forUser("error.unexpected.title", userId);
-				String description = Translatable.forUser("error.unexpected.description", userId, finalErrorMessage);
+				String title = Translatable.text("error.unexpected.title").resolve(userId);
+				String description = Translatable.text("error.unexpected.description").with("value", finalErrorMessage).resolve(userId);
 				
 				return StyleKit.embeds().error()
 						.setTitle(title)
@@ -253,8 +251,8 @@ public final class DefaultExceptionFormatter {
 			handleWithDefer(commandContext, () -> {
 				Interaction interaction = commandContext.sender();
 				long userId = interaction.fluctlight().getId();
-				String title = Translatable.forUser("error.unexpected.title", userId);
-				String description = Translatable.forUser("error.unexpected.description", userId, finalErrorMessage);
+				String title = Translatable.text("error.unexpected.title").resolve(userId);
+				String description = Translatable.text("error.unexpected.description").with("value", finalErrorMessage).resolve(userId);
 				
 				return StyleKit.embeds().error()
 						.setTitle(title)

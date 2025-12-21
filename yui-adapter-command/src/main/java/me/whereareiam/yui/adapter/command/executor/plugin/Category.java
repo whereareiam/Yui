@@ -101,18 +101,18 @@ public final class Category {
 	}
 
 	public String content(PluginManager pluginManager, long userId) {
-		if (!listsPlugins) return Translatable.of(descriptionKey, userId);
+		if (!listsPlugins) return Translatable.text(descriptionKey).resolve(userId);
 
 		List<InternalPlugin> plugins = candidates(pluginManager);
-		if (plugins.isEmpty()) return emptyKey == null ? "" : Translatable.of(emptyKey, userId);
+		if (plugins.isEmpty()) return emptyKey == null ? "" : Translatable.text(emptyKey).resolve(userId);
 
 		String list = formatPlugins(plugins, userId);
-		String description = Translatable.of(descriptionKey, userId);
+		String description = Translatable.text(descriptionKey).resolve(userId);
 		return description.replace("{list}", list);
 	}
 
 	private String formatPlugins(List<InternalPlugin> plugins, long userId) {
-		String format = pluginFormatKey == null ? "{index}. {name} v{version} (``{id}``)" : Translatable.of(pluginFormatKey, userId);
+		String format = pluginFormatKey == null ? "{index}. {name} v{version} (``{id}``)" : Translatable.text(pluginFormatKey).resolve(userId);
 		List<String> lines = new ArrayList<>();
 		for (int i = 0; i < plugins.size(); i++) {
 			InternalPlugin p = plugins.get(i);

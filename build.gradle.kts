@@ -16,6 +16,7 @@ allprojects {
 
 subprojects {
     repositories {
+        mavenLocal()
         mavenCentral()
         maven("https://maven.whereareiam.me/release")
         maven("https://maven.whereareiam.me/development")
@@ -42,12 +43,14 @@ subprojects {
             "compileOnly"(rootProject.libs.spring.boot)
             "compileOnly"(rootProject.libs.jda)
             "compileOnly"(rootProject.libs.configura)
+            "compileOnly"(rootProject.libs.semantica)
 
             // testing
             "testImplementation"(project(":yui-api"))
             "testImplementation"(rootProject.libs.spring.boot.test)
             "testImplementation"(rootProject.libs.jda)
             "testImplementation"(rootProject.libs.configura)
+            "testImplementation"(rootProject.libs.semantica)
             "testRuntimeOnly"(rootProject.libs.junit.platform.launcher)
         }
     }

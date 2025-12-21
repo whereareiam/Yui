@@ -1,180 +1,180 @@
 package me.whereareiam.yui.translation;
 
+import me.whereareiam.semantica.translation.TranslationService;
+import me.whereareiam.yui.fluctlight.FluctlightService;
+import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Utility component that provides static access to translations.
+ * Fluent API for translations with named placeholder support.
  * <p>
- * This class serves as a convenient wrapper around the {@link TranslationService},
- * allowing for easy access to translations from anywhere in the application without
- * needing to inject the service directly.
+ * This class provides a builder-style API for constructing translations with type-safe
+ * named placeholders, making code more readable and maintainable.
  * <p>
  * Usage examples:
  * <pre>{@code
- * // Translate for a specific fluctlight
- * String cancelText = Translatable.of("vocabulary.cancel", fluctlight);
+ * // Simple translation
+ * String text = Translatable.text("vocabulary.cancel").resolve(fluctlight);
  *
- * // Translate using default locale
- * String helpText = Translatable.of("vocabulary.help");
+ * // With named placeholders
+ * String greeting = Translatable.text("greeting.welcome")
+ *     .with("playerName", "Steve")
+ *     .with("points", 1500)
+ *     .resolve(fluctlight);
+ *
+ * // With default locale
+ * String error = Translatable.text("error.generic").resolveDefault();
+ *
+ * // With specific locale
+ * String msg = Translatable.text("message.info").resolve(DiscordLocale.GERMAN);
  * }</pre>
- * <p>
- * The class handles the case when the translation service is not yet initialized
- * by returning the original key.
- *
- * @see TranslationService
  */
-@Component
 @SuppressWarnings("unused")
 public class Translatable {
-	private static TranslationService translationService;
+	private static TranslationService<DiscordLocale> service;
+	private static FluctlightService fluctlightService;
+	private static ObjectProvider<Settings> settingsProvider;
+
+	private final String key;
+	private final Map<String, Object> placeholders;
 
 	/**
-	 * Sets the translation service instance.
+	 * Component to initialize static dependencies.
+	 */
+	@Component
+	static class Initializer {
+		@Autowired
+		public Initializer(
+				TranslationService<DiscordLocale> service,
+				FluctlightService fluctlightService,
+				ObjectProvider<Settings> settingsProvider
+		) {
+			Translatable.service = service;
+			Translatable.fluctlightService = fluctlightService;
+			Translatable.settingsProvider = settingsProvider;
+		}
+	}
+
+	private Translatable(String key) {
+		this.key = key;
+		this.placeholders = new HashMap<>();
+	}
+
+	private Translatable(String key, Map<String, Object> placeholders) {
+		this.key = key;
+		this.placeholders = new HashMap<>(placeholders);
+	}
+
+	/**
+	 * Start building a translatable text with the given key.
+	 *
+	 * @param key The translation key
+	 * @return A new Translatable builder
+	 */
+	public static Translatable text(String key) {
+		return new Translatable(key);
+	}
+
+	/**
+	 * Add a named placeholder to this translation.
 	 * <p>
-	 * This method is called automatically by Spring during component lifecycle.
+	 * Returns a new Translatable instance with the placeholder added.
+	 * This ensures immutability and prevents placeholder leakage.
 	 *
-	 * @param translationService The translation service to use
+	 * @param name  The placeholder name (e.g., "playerName" for &lt;p:playerName&gt;)
+	 * @param value The value to replace the placeholder with
+	 * @return A new Translatable with the placeholder added
 	 */
-	@Autowired
-	public void init(TranslationService translationService) {
-		Translatable.translationService = translationService;
+	public Translatable with(String name, Object value) {
+		Map<String, Object> newPlaceholders = new HashMap<>(this.placeholders);
+		newPlaceholders.put(name, value);
+		return new Translatable(this.key, newPlaceholders);
 	}
 
 	/**
-	 * Translates a key using the default locale.
+	 * Add multiple named placeholders at once.
 	 * <p>
-	 * This is equivalent to calling {@code of(key, 0)}.
+	 * Returns a new Translatable instance with the placeholders added.
+	 * This ensures immutability and prevents placeholder leakage.
 	 *
-	 * @param key The translation key to look up
-	 * @return The translated string or the original key if translation is unavailable
+	 * @param placeholders Map of placeholder names to values
+	 * @return A new Translatable with the placeholders added
 	 */
-	public static String of(String key) {
-		if (translationService == null)
-			return key;
-
-		return translationService.translate(key, 0);
+	public Translatable with(Map<String, Object> placeholders) {
+		Map<String, Object> newPlaceholders = new HashMap<>(this.placeholders);
+		newPlaceholders.putAll(placeholders);
+		return new Translatable(this.key, newPlaceholders);
 	}
 
 	/**
-	 * Translates a key for a specific fluctlight.
+	 * Resolve the translation using the default locale.
 	 *
-	 * @param key    The translation key to look up
-	 * @param userId The ID of the fluctlight for whom to translate
-	 * @return The translated string or the original key if translation is unavailable
+	 * @return The translated text
 	 */
-	public static String of(String key, long userId) {
-		if (translationService == null)
-			return key;
-
-		return translationService.translate(key, userId);
+	public String resolveDefault() {
+		if (service == null) return key;
+		DiscordLocale locale = settingsProvider.getObject().getLocale();
+		if (placeholders.isEmpty()) {
+			return service.resolve(key, locale);
+		}
+		return service.resolve(key, locale, placeholders);
 	}
 
 	/**
-	 * Translates a key for a specific fluctlight.
+	 * Resolve the translation for a specific fluctlight.
 	 *
-	 * @param key       The translation key to look up
-	 * @param fluctlight The fluctlight for whom to translate
-	 * @return The translated string or the original key if translation is unavailable
+	 * @param fluctlight The fluctlight whose locale should be used
+	 * @return The translated text
 	 */
-	public static String of(String key, Fluctlight fluctlight) {
-		if (translationService == null)
-			return key;
-
-		return translationService.translate(key, fluctlight.getId());
+	public String resolve(Fluctlight fluctlight) {
+		if (service == null) return key;
+		return resolve(fluctlight.getId());
 	}
 
 	/**
-	 * Translates a key using the specified locale.
-	 * <p>
-	 * This is useful for translating messages that are not fluctlight-specific.
+	 * Resolve the translation for a specific user ID.
 	 *
-	 * @param key    The translation key to look up
-	 * @param locale The locale to usefor translation
+	 * @param userId The user ID whose locale should be used
+	 * @return The translated text
 	 */
-	public static String of(String key, DiscordLocale locale) {
-		if (translationService == null)
-			return key;
-
-		return translationService.translate(key, locale);
+	public String resolve(long userId) {
+		if (service == null) return key;
+		DiscordLocale locale = resolveLocale(userId);
+		if (placeholders.isEmpty()) {
+			return service.resolve(key, locale);
+		}
+		return service.resolve(key, locale, placeholders);
 	}
 
 	/**
-	 * Translates a key using the default locale and formats it with the provided arguments.
-	 * <p>
-	 * This method first translates the key, then formats the result using the arguments.
-	 * It's equivalent to calling {@code forUser(key, 0, args)}.
+	 * Resolve the translation using a specific locale.
 	 *
-	 * @param key  The translation key to look up
-	 * @param args The arguments to use for formatting the translated string
-	 * @return The translated and formatted string, or the original key if translation is unavailable
+	 * @param locale The locale to use
+	 * @return The translated text
 	 */
-	public static String of(String key, Object... args) {
-		if (translationService == null)
-			return key;
-
-		return translationService.translate(key, 0, args);
+	public String resolve(DiscordLocale locale) {
+		if (service == null) return key;
+		if (placeholders.isEmpty()) {
+			return service.resolve(key, locale);
+		}
+		return service.resolve(key, locale, placeholders);
 	}
 
-	/**
-	 * Translates a key for a specific fluctlight and formats it with the provided arguments.
-	 * <p>
-	 * This method first translates the key based on the fluctlight's locale preference,
-	 * then formats the result using the arguments.
-	 *
-	 * @param key    The translation key to look up
-	 * @param userId The ID of the fluctlight for whom to translate
-	 * @param args   The arguments to use for formatting the translated string
-	 * @return The translated and formatted string, or the original key if translation is unavailable
-	 */
-	public static String forUser(String key, long userId, Object... args) {
-		if (translationService == null)
-			return key;
-
-		return translationService.translate(key, userId, args);
-	}
-
-	/**
-	 * Translates a key for a specific fluctlight and formats it with the provided arguments.
-	 * <p>
-	 * This method first translates the key based on the fluctlight's locale preference,
-	 * then formats the result using the arguments.
-	 *
-	 * @param key       The translation key to look up
-	 * @param fluctlight The fluctlight for whom to translate
-	 * @param args      The arguments to use for formatting the translated string
-	 * @return The translated and formatted string, or the original key if translation is unavailable
-	 */
-	public static String forUser(String key, Fluctlight fluctlight, Object... args) {
-		if (translationService == null)
-			return key;
-
-		return translationService.translate(key, fluctlight.getId(), args);
-	}
-
-	/**
-	 * Translates a key using the specified locale and formats it with the provided arguments.
-	 * <p>
-	 * This method first translates the key using the given locale,
-	 * then formats the result using the arguments.
-	 *
-	 * @param key    The translation key to look up
-	 * @param locale The locale to use for translation
-	 * @param args   The arguments to use for formatting the translated string
-	 * @return The translated and formatted string, or the original key if translation is unavailable
-	 */
-	public static String forLocale(String key, DiscordLocale locale, Object... args) {
-		if (translationService == null)
-			return key;
-
-		return translationService.translate(key, locale, args);
-	}
-
-	/**
-	 * Private constructor to prevent instantiation.
-	 */
-	private Translatable() {
+	private static DiscordLocale resolveLocale(long userId) {
+		return fluctlightService.get(userId)
+				.map(fluctlight -> {
+					if (fluctlight.getPrimaryLanguage() != null) {
+						return fluctlight.getPrimaryLanguage();
+					}
+					return settingsProvider.getObject().getLocale();
+				})
+				.orElseGet(() -> settingsProvider.getObject().getLocale());
 	}
 }

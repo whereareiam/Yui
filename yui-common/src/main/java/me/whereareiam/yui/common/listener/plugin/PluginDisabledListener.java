@@ -3,9 +3,8 @@ package me.whereareiam.yui.common.listener.plugin;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.event.plugin.PluginDisabledEvent;
-import me.whereareiam.yui.service.InteractionService;
 import me.whereareiam.yui.model.plugin.InternalPlugin;
-import me.whereareiam.yui.common.translation.DefaultTranslationService;
+import me.whereareiam.yui.service.InteractionService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.context.event.EventListener;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class PluginDisabledListener {
 	private final InteractionService interactions;
-	private final DefaultTranslationService translations;
 	private final JDA jda;
 
 	@EventListener
@@ -31,7 +29,7 @@ public class PluginDisabledListener {
 		if (plugin.getPlugin().getId() != null)
 			interactions.unregister(plugin.getPlugin().getId());
 
-		if (plugin.getPlugin().getName() != null)
-			translations.removeTranslations(plugin.getPlugin().getName());
+		// Note: We keep translations loaded even when plugin is disabled
+		// They will be unloaded only when the plugin is fully unloaded
 	}
 }

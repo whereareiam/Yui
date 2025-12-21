@@ -11,4 +11,5 @@ public class Settings {
 	private DiscordLocale locale;
 	private DiscordSettings discord;
 	private DatabaseSettings database;
+	private TranslationSettings translation;
 }
