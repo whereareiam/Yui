@@ -1,4 +1,4 @@
-package me.whereareiam.yui.translation;
+package me.whereareiam.yui.util.translation;
 
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import net.dv8tion.jda.api.interactions.DiscordLocale;

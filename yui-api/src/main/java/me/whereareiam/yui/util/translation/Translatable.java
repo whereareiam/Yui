@@ -1,4 +1,4 @@
-package me.whereareiam.yui.translation;
+package me.whereareiam.yui.util.translation;
 
 import me.whereareiam.semantica.translation.TranslationService;
 import me.whereareiam.yui.fluctlight.FluctlightService;

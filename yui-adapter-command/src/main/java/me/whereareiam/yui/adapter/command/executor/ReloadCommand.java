@@ -9,7 +9,7 @@ import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.translation.Translatable;
+import me.whereareiam.yui.util.translation.Translatable;
 import me.whereareiam.yui.util.Components;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;

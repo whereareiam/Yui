@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.command.exception.ExceptionResponse;
 import me.whereareiam.yui.exception.command.base.CommandException;
 import me.whereareiam.yui.command.Interaction;
-import me.whereareiam.yui.translation.Translatable;
+import me.whereareiam.yui.util.translation.Translatable;
 import me.whereareiam.yui.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
 import org.incendo.cloud.context.CommandContext;

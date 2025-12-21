@@ -4,7 +4,7 @@ import me.whereareiam.semantica.translation.TranslationService;
 import me.whereareiam.yui.fluctlight.FluctlightService;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
-import me.whereareiam.yui.translation.Translatable;
+import me.whereareiam.yui.util.translation.Translatable;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

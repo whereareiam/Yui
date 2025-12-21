@@ -13,7 +13,7 @@ import me.whereareiam.yui.model.plugin.InternalPlugin;
 import me.whereareiam.yui.model.plugin.Plugin;
 import me.whereareiam.yui.plugin.PluginManager;
 import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.translation.Translatable;
+import me.whereareiam.yui.util.translation.Translatable;
 import me.whereareiam.yui.util.Components;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;

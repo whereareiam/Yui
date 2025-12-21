@@ -1,5 +1,6 @@
 package me.whereareiam.yui.translation;
 
+import me.whereareiam.yui.util.translation.TranslationResolver;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.Test;
 

@@ -8,7 +8,7 @@ import me.whereareiam.yui.model.channel.ChannelRequest;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.Reloadable;
 import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.translation.Translatable;
+import me.whereareiam.yui.util.translation.Translatable;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;

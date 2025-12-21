@@ -9,7 +9,7 @@ import me.whereareiam.yui.model.PayloadButton;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.persistence.LanguagePersistence;
 import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.translation.Translatable;
+import me.whereareiam.yui.util.translation.Translatable;
 import me.whereareiam.yui.util.Components;
 import me.whereareiam.yui.util.EmojiUtil;
 import net.dv8tion.jda.api.EmbedBuilder;
