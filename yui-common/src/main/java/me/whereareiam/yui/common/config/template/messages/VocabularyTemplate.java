@@ -1,12 +1,29 @@
 package me.whereareiam.yui.common.config.template.messages;
 
-import me.whereareiam.configura.TemplateProvider;
 import me.whereareiam.yui.model.config.vocabulary.Vocabulary;
+import me.whereareiam.yui.localization.format.FileFormat;
+import me.whereareiam.yui.localization.format.FileFormats;
+import me.whereareiam.yui.localization.provider.LocalizationProvider;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.stereotype.Component;
 
 @Component
-public class VocabularyTemplate implements TemplateProvider<Vocabulary> {
+public class VocabularyTemplate implements LocalizationProvider<Vocabulary> {
+    @Override
+    public Class<Vocabulary> getModelClass() {
+        return Vocabulary.class;
+    }
+
+    @Override
+    public FileFormat getFormat() {
+        return FileFormats.MULTI_LOCALE;
+    }
+
+    @Override
+    public String getTargetFilename() {
+        return "vocabulary";
+    }
+
     @Override
     public Vocabulary supply(Vocabulary vocabulary) {
         DiscordLocale locale = DiscordLocale.ENGLISH_US;

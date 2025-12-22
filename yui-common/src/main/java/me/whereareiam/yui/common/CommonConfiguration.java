@@ -8,11 +8,16 @@ import me.whereareiam.semantica.SemanticaConfiguration;
 import me.whereareiam.semantica.locale.LocaleParser;
 import me.whereareiam.semantica.model.SemanticLocale;
 import me.whereareiam.semantica.translation.TranslationService;
-import me.whereareiam.yui.common.translation.DiscordLocaleAdapter;
-import me.whereareiam.yui.common.translation.YuiSemanticaLogger;
-import me.whereareiam.yui.common.translation.loader.YuiTranslationLoader;
+import me.whereareiam.yui.common.localization.DiscordLocaleAdapter;
+import me.whereareiam.yui.common.localization.YuiSemanticaLogger;
+import me.whereareiam.yui.common.localization.format.LocaleFileHandler;
+import me.whereareiam.yui.common.localization.format.MultiLocaleFileHandler;
+import me.whereareiam.yui.common.localization.format.TemplateFileHandler;
+import me.whereareiam.yui.common.localization.loader.DefaultFileTypeHandlerRegistry;
+import me.whereareiam.yui.common.localization.loader.YuiTranslationLoader;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.config.settings.TranslationSettings;
+import me.whereareiam.yui.localization.loader.FileTypeHandlerRegistry;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -79,6 +84,20 @@ public class CommonConfiguration {
 	@Bean
 	public LocaleParser<DiscordLocale> localeParser() {
 		return DiscordLocaleAdapter::wrap;
+	}
+
+	@Bean
+	public FileTypeHandlerRegistry fileTypeHandlerRegistry() {
+		FileTypeHandlerRegistry registry = new DefaultFileTypeHandlerRegistry();
+		
+		// Register built-in handlers
+		registry.registerHandler(new LocaleFileHandler());
+		registry.registerHandler(new MultiLocaleFileHandler());
+		registry.registerHandler(new TemplateFileHandler());
+		
+		log.info("[Localization] Registered {} built-in file type handlers", registry.getHandlers().size());
+		
+		return registry;
 	}
 
 	@Bean

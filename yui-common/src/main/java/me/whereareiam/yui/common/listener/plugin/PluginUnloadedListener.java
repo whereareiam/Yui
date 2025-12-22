@@ -2,7 +2,6 @@ package me.whereareiam.yui.common.listener.plugin;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.common.translation.loader.PluginTranslationLoader;
 import me.whereareiam.yui.event.plugin.PluginUnloadedEvent;
 import me.whereareiam.yui.model.plugin.InternalPlugin;
 import me.whereareiam.yui.service.InteractionService;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class PluginUnloadedListener {
 	private final InteractionService interactions;
-	private final PluginTranslationLoader pluginTranslationLoader;
 	private final JDA jda;
 
 	@EventListener
@@ -31,6 +29,5 @@ public class PluginUnloadedListener {
 		if (plugin.getPlugin().getId() == null) return;
 
 		interactions.unregister(plugin.getPlugin().getId());
-		pluginTranslationLoader.unloadPlugin(plugin.getPlugin().getId());
 	}
 }

@@ -1,4 +1,4 @@
-package me.whereareiam.yui.common.translation;
+package me.whereareiam.yui.common.localization;
 
 import me.whereareiam.semantica.translation.base.TranslationLocale;
 import me.whereareiam.semantica.locale.LocaleParser;
@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class DiscordLocaleConverterTest {
-
     private LocaleParser<DiscordLocale> parser;
 
     @BeforeEach

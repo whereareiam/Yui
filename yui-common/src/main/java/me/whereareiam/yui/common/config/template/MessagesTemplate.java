@@ -5,6 +5,9 @@ import me.whereareiam.configura.TemplateProvider;
 import me.whereareiam.yui.common.config.template.messages.ErrorMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.GeneralMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.command.*;
+import me.whereareiam.yui.localization.format.FileFormat;
+import me.whereareiam.yui.localization.format.FileFormats;
+import me.whereareiam.yui.localization.provider.LocalizationProvider;
 import me.whereareiam.yui.model.config.messages.CommandMessages;
 import me.whereareiam.yui.model.config.messages.GeneralMessages;
 import me.whereareiam.yui.model.config.messages.Messages;
@@ -15,7 +18,7 @@ import java.util.function.Supplier;
 
 @Component
 @RequiredArgsConstructor
-public class MessagesTemplate implements TemplateProvider<Messages> {
+public class MessagesTemplate implements LocalizationProvider<Messages> {
 	private final GeneralMessagesTemplate generalTemplate;
 	private final ErrorMessagesTemplate errorTemplate;
 	private final MainCommandMessagesTemplate mainTemplate;
@@ -24,6 +27,16 @@ public class MessagesTemplate implements TemplateProvider<Messages> {
 	private final ReloadCommandMessagesTemplate reloadTemplate;
 	private final PluginCommandMessagesTemplate pluginTemplate;
 	private final LanguageCommandMessagesTemplate languageTemplate;
+
+	@Override
+	public Class<Messages> getModelClass() {
+		return Messages.class;
+	}
+
+	@Override
+	public FileFormat getFormat() {
+		return FileFormats.LOCALE;
+	}
 
 	@Override
 	public Messages supply(Messages messages) {
@@ -40,6 +53,11 @@ public class MessagesTemplate implements TemplateProvider<Messages> {
 		messages.setCommands(commandMessages);
 
 		return messages;
+	}
+
+	@Override
+	public boolean applyOnce() {
+		return false;
 	}
 
 	private <T> T supply(TemplateProvider<T> provider, Supplier<T> supplier) {

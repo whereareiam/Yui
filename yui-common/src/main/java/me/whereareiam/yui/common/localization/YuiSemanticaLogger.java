@@ -1,4 +1,4 @@
-package me.whereareiam.yui.common.translation;
+package me.whereareiam.yui.common.localization;
 
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.semantica.SemanticaLogger;
@@ -7,21 +7,21 @@ import me.whereareiam.semantica.SemanticaLogger;
 public class YuiSemanticaLogger implements SemanticaLogger {
     @Override
     public void debug(String message, Object... args) {
-        log.debug("[Semantica] " + message, args);
+        log.debug("[localization] " + message, args);
     }
 
     @Override
     public void info(String message, Object... args) {
-        log.info("[Semantica] " + message, args);
+        log.info("[localization] " + message, args);
     }
 
     @Override
     public void warn(String message, Object... args) {
-        log.warn("[Semantica] " + message, args);
+        log.warn("[localization] " + message, args);
     }
 
     @Override
     public void error(String message, Object... args) {
-        log.error("[Semantica] " + message, args);
+        log.error("[localization] " + message, args);
     }
 }

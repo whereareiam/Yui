@@ -1,4 +1,4 @@
-package me.whereareiam.yui.common.translation;
+package me.whereareiam.yui.common.localization;
 
 import me.whereareiam.semantica.translation.base.TranslationLocale;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
