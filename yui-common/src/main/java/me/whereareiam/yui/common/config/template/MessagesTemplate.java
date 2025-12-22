@@ -2,12 +2,14 @@ package me.whereareiam.yui.common.config.template;
 
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.configura.TemplateProvider;
+import me.whereareiam.yui.common.config.template.messages.AuditMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.ErrorMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.GeneralMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.command.*;
 import me.whereareiam.yui.localization.format.FileFormat;
 import me.whereareiam.yui.localization.format.FileFormats;
 import me.whereareiam.yui.localization.provider.LocalizationProvider;
+import me.whereareiam.yui.model.config.messages.AuditMessages;
 import me.whereareiam.yui.model.config.messages.CommandMessages;
 import me.whereareiam.yui.model.config.messages.GeneralMessages;
 import me.whereareiam.yui.model.config.messages.Messages;
@@ -20,6 +22,7 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class MessagesTemplate implements LocalizationProvider<Messages> {
 	private final GeneralMessagesTemplate generalTemplate;
+	private final AuditMessagesTemplate auditTemplate;
 	private final ErrorMessagesTemplate errorTemplate;
 	private final MainCommandMessagesTemplate mainTemplate;
 	private final HelpCommandMessagesTemplate helpTemplate;
@@ -41,6 +44,7 @@ public class MessagesTemplate implements LocalizationProvider<Messages> {
 	@Override
 	public Messages supply(Messages messages) {
 		messages.setGeneral(supply(generalTemplate, GeneralMessages::new));
+		messages.setAudit(supply(auditTemplate, AuditMessages::new));
 
 		CommandMessages commandMessages = new CommandMessages();
 		commandMessages.setError(supply(errorTemplate, CommandMessages.ErrorMessages::new));

@@ -8,4 +8,5 @@ import lombok.Setter;
 public class Messages {
 	private GeneralMessages general;
 	private CommandMessages commands;
+	private AuditMessages audit;
 }

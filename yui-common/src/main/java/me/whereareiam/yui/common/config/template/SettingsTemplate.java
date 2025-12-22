@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class SettingsTemplate implements TemplateProvider<Settings> {
@@ -33,6 +34,11 @@ public class SettingsTemplate implements TemplateProvider<Settings> {
 
 		DiscordSettings.Channels channels = new DiscordSettings.Channels();
 		channels.setTempChannelCategories(List.of("SET_YOUR_TEMP_CHANNEL_CATEGORY_ID"));
+		channels.setAudit(Map.of(
+				"user_join", "SET_YOUR_AUDIT_CHANNEL_ID",
+				"user_leave", "SET_YOUR_AUDIT_CHANNEL_ID",
+				"user_kick", "SET_YOUR_AUDIT_CHANNEL_ID"
+		));
 		discordSettings.setChannels(channels);
 
 		settings.setDiscord(discordSettings);

@@ -1,6 +1,8 @@
-package me.whereareiam.yui.util.audit;
+package me.whereareiam.yui.util;
 
+import lombok.Getter;
 import me.whereareiam.yui.service.AuditService;
+import me.whereareiam.yui.type.AuditSeverity;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
@@ -20,33 +22,25 @@ import java.util.function.Consumer;
  * <p>
  * Usage examples:
  * <pre>{@code
- * // Simple text audit
+ * // Simple text audit with default INFO severity
  * Audit.log(Constants.AuditTypes.USER_JOIN)
  *     .withText("User <user> joined the server")
  *     .with("user", member.getAsMention())
  *     .send();
  *
- * // Rich embed audit
- * Audit.log(Constants.AuditTypes.MODERATION)
- *     .withEmbed(embed -> embed
+ * // Severe audit with ERROR severity
+ * Audit.log(Constants.AuditTypes.USER_KICK)
+ *     .withSeverity(AuditSeverity.ERROR)
+ *     .withEmbed(StyleKit.embeds().error()
  *         .setTitle("User Kicked")
  *         .setDescription("User was kicked for rule violation")
- *         .addField("User", member.getAsMention(), true)
- *         .addField("Moderator", moderator.getAsMention(), true)
- *         .setColor(Color.RED)
- *         .setTimestamp(Instant.now()))
+ *         .build())
  *     .send();
  *
- * // Check if configured before building
- * if (Audit.isConfigured("verification_start")) {
- *     Audit.log("verification_start")
- *         .withEmbed(embed -> embed.setTitle("Verification Started"))
- *         .send();
- * }
- *
- * // Plugin usage with custom audit type
- * Audit.log("my_plugin_custom_event")
- *     .withText("Custom event occurred")
+ * // Warning severity audit
+ * Audit.log("suspicious_activity")
+ *     .withSeverity(AuditSeverity.WARNING)
+ *     .withText("Suspicious activity detected")
  *     .send();
  * }</pre>
  *
@@ -67,6 +61,8 @@ public class Audit {
 
 	private final String auditType;
 	private final Map<String, Object> placeholders;
+	@Getter
+	private AuditSeverity severity;
 	private MessageEmbed embed;
 	private MessageCreateData customMessage;
 	private String textTemplate;
@@ -74,6 +70,7 @@ public class Audit {
 	private Audit(String auditType) {
 		this.auditType = auditType;
 		this.placeholders = new HashMap<>();
+		this.severity = AuditSeverity.INFO; // Default severity
 	}
 
 	/**
@@ -113,6 +110,24 @@ public class Audit {
 	}
 
 	/**
+	 * Set the severity level of this audit log.
+	 * <p>
+	 * Severity determines which StyleKit embed style will be used:
+	 * <ul>
+	 *   <li>INFO - info embed style (default)</li>
+	 *   <li>WARNING - warning embed style</li>
+	 *   <li>ERROR - error embed style</li>
+	 * </ul>
+	 *
+	 * @param severity The severity level
+	 * @return This Audit builder for chaining
+	 */
+	public Audit withSeverity(AuditSeverity severity) {
+		this.severity = severity;
+		return this;
+	}
+
+	/**
 	 * Set a text template with placeholders.
 	 * <p>
 	 * Placeholders should be enclosed in angle brackets and will be replaced
@@ -131,13 +146,16 @@ public class Audit {
 	/**
 	 * Build a custom embed using a consumer.
 	 * <p>
-	 * The consumer receives an EmbedBuilder to configure.
+	 * The consumer receives an EmbedBuilder that is pre-configured with the
+	 * appropriate StyleKit style based on the severity level.
+	 * <p>
+	 * If no severity is set, INFO style will be used.
 	 *
 	 * @param embedBuilder Consumer that configures the embed
 	 * @return This Audit builder for chaining
 	 */
 	public Audit withEmbed(Consumer<EmbedBuilder> embedBuilder) {
-		EmbedBuilder builder = new EmbedBuilder();
+		EmbedBuilder builder = getStyleKitEmbedForSeverity();
 		embedBuilder.accept(builder);
 		this.embed = builder.build();
 		return this;
@@ -145,6 +163,9 @@ public class Audit {
 
 	/**
 	 * Set a pre-built embed.
+	 * <p>
+	 * Note: When using this method, StyleKit styling based on severity is NOT applied.
+	 * Consider using {@link #withEmbed(Consumer)} for automatic style application.
 	 *
 	 * @param embed The embed to send
 	 * @return This Audit builder for chaining
@@ -206,5 +227,26 @@ public class Audit {
 		}
 
 		return result;
+	}
+
+	private EmbedBuilder getStyleKitEmbedForSeverity() {
+		if (!isStyleKitAvailable()) {
+			return new EmbedBuilder();
+		}
+
+		return switch (severity) {
+			case WARNING -> me.whereareiam.yui.util.style.StyleKit.embeds().warning();
+			case ERROR -> me.whereareiam.yui.util.style.StyleKit.embeds().error();
+			default -> me.whereareiam.yui.util.style.StyleKit.embeds().info();
+		};
+	}
+
+	private boolean isStyleKitAvailable() {
+		try {
+			me.whereareiam.yui.util.style.StyleKit.embeds();
+			return true;
+		} catch (IllegalStateException e) {
+			return false;
+		}
 	}
 }

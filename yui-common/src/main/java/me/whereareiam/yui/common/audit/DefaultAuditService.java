@@ -1,4 +1,4 @@
-package me.whereareiam.yui.common.service;
+package me.whereareiam.yui.common.audit;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
