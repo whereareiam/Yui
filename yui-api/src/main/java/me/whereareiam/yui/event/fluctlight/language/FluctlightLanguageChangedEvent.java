@@ -2,20 +2,17 @@ package me.whereareiam.yui.event.fluctlight.language;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import me.whereareiam.yui.event.Cancellable;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 /**
- * Cancellable event published BEFORE the primary language is changed.
- * Listeners can cancel this event to prevent the language change.
+ * Non-cancellable event published AFTER the primary language has been changed.
+ * This event is published after successful persistence to the database.
  */
 @Getter
-@Setter
 @RequiredArgsConstructor
-public class FluctlightLanguageChangeEvent implements Cancellable {
+public class FluctlightLanguageChangedEvent {
 	private final Fluctlight fluctlight;
 	private final DiscordLocale oldLanguage;
-	private boolean cancelled;
+	private final DiscordLocale newLanguage;
 }

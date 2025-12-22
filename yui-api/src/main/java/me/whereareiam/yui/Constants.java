@@ -14,7 +14,5 @@ public final class Constants {
 		public static final String USER_JOIN = "user_join";
 		public static final String USER_LEAVE = "user_leave";
 		public static final String USER_KICK = "user_kick";
-
-		private AuditTypes() {}
 	}
 }

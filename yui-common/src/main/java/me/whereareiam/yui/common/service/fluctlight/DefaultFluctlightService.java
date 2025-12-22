@@ -10,11 +10,17 @@ import me.whereareiam.yui.event.fluctlight.FluctlightUpdatedEvent;
 import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguageAddedEvent;
 import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguageRemovedEvent;
 import me.whereareiam.yui.event.fluctlight.language.FluctlightLanguageChangeEvent;
+import me.whereareiam.yui.event.fluctlight.language.FluctlightLanguageChangedEvent;
+import me.whereareiam.yui.event.fluctlight.role.FluctlightRoleAddEvent;
+import me.whereareiam.yui.event.fluctlight.role.FluctlightRoleAddedEvent;
+import me.whereareiam.yui.event.fluctlight.role.FluctlightRoleRemoveEvent;
+import me.whereareiam.yui.event.fluctlight.role.FluctlightRoleRemovedEvent;
 import me.whereareiam.yui.fluctlight.FluctlightRegistry;
 import me.whereareiam.yui.fluctlight.FluctlightService;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.fluctlight.FluctlightData;
+import me.whereareiam.yui.model.fluctlight.FluctlightStateUpdater;
 import me.whereareiam.yui.persistence.FluctlightPersistence;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.User;
@@ -68,9 +74,9 @@ public class DefaultFluctlightService implements FluctlightService {
 		if (customDataOpt.isPresent()) {
 			// Apply custom data from database
 			FluctlightData customData = customDataOpt.get();
-			fluctlight.setPrimaryLanguageInternal(customData.getPrimaryLanguage());
-			fluctlight.setAdditionalLanguagesInternal(customData.getAdditionalLanguages());
-			fluctlight.setAllowedRolesInternal(customData.getAllowedRoles());
+			FluctlightStateUpdater.updatePrimaryLanguage(fluctlight, customData.getPrimaryLanguage());
+			FluctlightStateUpdater.updateAdditionalLanguages(fluctlight, customData.getAdditionalLanguages());
+			FluctlightStateUpdater.updateAllowedRoles(fluctlight, customData.getAllowedRoles());
 		} else {
 			// Create new entry in database with bot's default language
 			DiscordLocale defaultLocale = settings.getObject().getLocale();
@@ -180,22 +186,22 @@ public class DefaultFluctlightService implements FluctlightService {
 	public void updatePrimaryLanguage(Fluctlight fluctlight, DiscordLocale locale) {
 		DiscordLocale oldLanguage = fluctlight.getPrimaryLanguage();
 		
-		// Update persistence
-		fluctlightPersistence.updatePrimaryLanguage(fluctlight, locale);
-		
-		// Publish event
+		// Publish cancellable event BEFORE persistence
 		FluctlightLanguageChangeEvent event = new FluctlightLanguageChangeEvent(fluctlight, oldLanguage);
 		eventPublisher.publishEvent(event);
 		
 		if (event.isCancelled()) {
-			// Rollback: restore old language
-			if (oldLanguage != null) {
-				fluctlightPersistence.updatePrimaryLanguage(fluctlight, oldLanguage);
-			}
+			log.debug("Primary language change cancelled for user {}", fluctlight.getId());
 			return;
 		}
 		
-		// Publish event to synchronize in-memory state (already persisted above)
+		// Update persistence
+		fluctlightPersistence.updatePrimaryLanguage(fluctlight, locale);
+		
+		// Publish non-cancellable event AFTER persistence
+		eventPublisher.publishEvent(new FluctlightLanguageChangedEvent(fluctlight, oldLanguage, locale));
+		
+		// Publish generic update event
 		FluctlightData updatedData = new FluctlightData(
 				locale,
 				fluctlight.getAdditionalLanguages(),
@@ -209,21 +215,20 @@ public class DefaultFluctlightService implements FluctlightService {
 
 	@Override
 	public void addAdditionalLanguage(Fluctlight fluctlight, DiscordLocale locale) {
-		// Update persistence
-		fluctlightPersistence.addAdditionalLanguage(fluctlight, locale);
-		
-		// Publish event
+		// Publish cancellable event BEFORE persistence
 		FluctlightAdditionalLanguageAddedEvent event = new FluctlightAdditionalLanguageAddedEvent(fluctlight);
 		event.setLanguage(locale);
 		eventPublisher.publishEvent(event);
 		
 		if (event.isCancelled()) {
-			// Rollback: remove the language
-			fluctlightPersistence.removeAdditionalLanguage(fluctlight, locale);
+			log.debug("Additional language add cancelled for user {} (language: {})", fluctlight.getId(), locale);
 			return;
 		}
 		
-		// Publish event to synchronize in-memory state (already persisted above)
+		// Update persistence
+		fluctlightPersistence.addAdditionalLanguage(fluctlight, locale);
+		
+		// Publish generic update event
 		DiscordLocale[] current = fluctlight.getAdditionalLanguages();
 		DiscordLocale[] updated = new DiscordLocale[current.length + 1];
 		System.arraycopy(current, 0, updated, 0, current.length);
@@ -241,21 +246,20 @@ public class DefaultFluctlightService implements FluctlightService {
 
 	@Override
 	public void removeAdditionalLanguage(Fluctlight fluctlight, DiscordLocale locale) {
-		// Update persistence
-		fluctlightPersistence.removeAdditionalLanguage(fluctlight, locale);
-		
-		// Publish event
+		// Publish cancellable event BEFORE persistence
 		FluctlightAdditionalLanguageRemovedEvent event = new FluctlightAdditionalLanguageRemovedEvent(fluctlight);
 		event.setLanguage(locale);
 		eventPublisher.publishEvent(event);
 		
 		if (event.isCancelled()) {
-			// Rollback: add the language back
-			fluctlightPersistence.addAdditionalLanguage(fluctlight, locale);
+			log.debug("Additional language remove cancelled for user {} (language: {})", fluctlight.getId(), locale);
 			return;
 		}
 		
-		// Publish event to synchronize in-memory state (already persisted above)
+		// Update persistence
+		fluctlightPersistence.removeAdditionalLanguage(fluctlight, locale);
+		
+		// Publish generic update event
 		DiscordLocale[] current = fluctlight.getAdditionalLanguages();
 		DiscordLocale[] updated = new DiscordLocale[Math.max(0, current.length - 1)];
 		int index = 0;
@@ -276,20 +280,27 @@ public class DefaultFluctlightService implements FluctlightService {
 
 	@Override
 	public void addAllowedRole(Fluctlight fluctlight, long roleId) {
+		// Publish cancellable event BEFORE persistence
+		FluctlightRoleAddEvent addEvent = new FluctlightRoleAddEvent(fluctlight, roleId);
+		eventPublisher.publishEvent(addEvent);
+		
+		if (addEvent.isCancelled()) {
+			log.debug("Role add operation cancelled for user {} (roleId: {})", fluctlight.getId(), roleId);
+			return;
+		}
+		
 		// Update persistence
 		fluctlightPersistence.addAllowedRole(fluctlight, roleId);
 		
-		// Publish event to synchronize in-memory state (already persisted above)
+		// Publish non-cancellable event AFTER persistence
+		eventPublisher.publishEvent(new FluctlightRoleAddedEvent(fluctlight, roleId));
+		
+		// Publish generic update event for consistency with language changes
 		long[] current = fluctlight.getAllowedRoles();
 		long[] updated;
 		if (current == null) {
 			updated = new long[]{roleId};
 		} else {
-			// Check if already present
-			for (long role : current)
-				if (role == roleId)
-					return; // Already present
-
 			updated = new long[current.length + 1];
 			System.arraycopy(current, 0, updated, 0, current.length);
 			updated[current.length] = roleId;
@@ -301,20 +312,29 @@ public class DefaultFluctlightService implements FluctlightService {
 				updated
 		);
 		eventPublisher.publishEvent(new FluctlightUpdatedEvent(fluctlight, updatedData));
-		
-		// Update registry
-		fluctlightRegistry.putFluctlight(fluctlight.getId(), fluctlight);
 	}
 
 	@Override
 	public void removeAllowedRole(Fluctlight fluctlight, long roleId) {
+		// Publish cancellable event BEFORE persistence
+		FluctlightRoleRemoveEvent removeEvent = new FluctlightRoleRemoveEvent(fluctlight, roleId);
+		eventPublisher.publishEvent(removeEvent);
+		
+		if (removeEvent.isCancelled()) {
+			log.debug("Role remove operation cancelled for user {} (roleId: {})", fluctlight.getId(), roleId);
+			return;
+		}
+		
 		// Update persistence
 		fluctlightPersistence.removeAllowedRole(fluctlight, roleId);
 		
-		// Publish event to synchronize in-memory state (already persisted above)
+		// Publish non-cancellable event AFTER persistence
+		eventPublisher.publishEvent(new FluctlightRoleRemovedEvent(fluctlight, roleId));
+		
+		// Publish generic update event for consistency with language changes
 		long[] current = fluctlight.getAllowedRoles();
 		if (current == null || current.length == 0)
-			return; // Nothing to remove
+			return;
 		
 		long[] updated = new long[current.length - 1];
 		int index = 0;
@@ -327,9 +347,6 @@ public class DefaultFluctlightService implements FluctlightService {
 				updated.length > 0 ? updated : null
 		);
 		eventPublisher.publishEvent(new FluctlightUpdatedEvent(fluctlight, updatedData));
-		
-		// Update registry
-		fluctlightRegistry.putFluctlight(fluctlight.getId(), fluctlight);
 	}
 
 }

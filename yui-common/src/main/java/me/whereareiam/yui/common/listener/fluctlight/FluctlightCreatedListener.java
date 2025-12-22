@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.event.fluctlight.FluctlightCreatedEvent;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.model.fluctlight.FluctlightStateUpdater;
 import me.whereareiam.yui.persistence.FluctlightPersistence;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
@@ -26,11 +27,10 @@ public class FluctlightCreatedListener {
 
 		// Load persisted data and apply to in-memory object
 		fluctlightPersistence.loadData(fluctlight).ifPresent(data -> {
-			fluctlight.setPrimaryLanguageInternal(data.getPrimaryLanguage());
-			fluctlight.setAdditionalLanguagesInternal(data.getAdditionalLanguages());
-			fluctlight.setAllowedRolesInternal(data.getAllowedRoles());
+			FluctlightStateUpdater.updatePrimaryLanguage(fluctlight, data.getPrimaryLanguage());
+			FluctlightStateUpdater.updateAdditionalLanguages(fluctlight, data.getAdditionalLanguages());
+			FluctlightStateUpdater.updateAllowedRoles(fluctlight, data.getAllowedRoles());
 			log.trace("Initialized in-memory Fluctlight {} with persisted data", fluctlight.getId());
 		});
 	}
 }
-

@@ -128,7 +128,7 @@ class DefaultRoleServiceTest {
 		when(rolesProvider.get()).thenReturn(config);
 		
 		Fluctlight fluctlight = new Fluctlight(jdaUser);
-		fluctlight.setAllowedRoles(new long[]{100L}); // User should have role 100
+		me.whereareiam.yui.model.fluctlight.FluctlightStateUpdater.updateAllowedRoles(fluctlight, new long[]{100L}); // User should have role 100
 		
 		when(jdaUser.getIdLong()).thenReturn(123L);
 		when(guild.getMemberById(123L)).thenReturn(member);
@@ -158,7 +158,7 @@ class DefaultRoleServiceTest {
 		when(rolesProvider.get()).thenReturn(config);
 		
 		Fluctlight fluctlight = new Fluctlight(jdaUser);
-		fluctlight.setAllowedRoles(null); // User shouldn't have role 100
+		me.whereareiam.yui.model.fluctlight.FluctlightStateUpdater.updateAllowedRoles(fluctlight, null); // User shouldn't have role 100
 		
 		when(jdaUser.getIdLong()).thenReturn(123L);
 		when(guild.getMemberById(123L)).thenReturn(member);

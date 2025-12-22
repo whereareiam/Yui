@@ -1,12 +1,10 @@
 package me.whereareiam.yui.model.fluctlight;
 
 import lombok.Getter;
-import lombok.Setter;
 import me.whereareiam.yui.fluctlight.FluctlightService;
 import me.whereareiam.yui.persistence.FluctlightPersistence;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
-
 
 /**
  * Fluctlight represents a unified fluctlight model that combines JDA User data
@@ -21,14 +19,13 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
  * and persist changes to the database automatically.
  */
 @Getter
-@Setter
 @SuppressWarnings("unused")
 public class Fluctlight {
 	private final User jdaUser;
 
-	private DiscordLocale primaryLanguage;
-	private DiscordLocale[] additionalLanguages;
-	private long[] allowedRoles;
+	DiscordLocale primaryLanguage;
+	DiscordLocale[] additionalLanguages;
+	long[] allowedRoles;
 
 	private static FluctlightService managementService;
 
@@ -151,39 +148,6 @@ public class Fluctlight {
 	public void setPrimaryLanguage(DiscordLocale locale) {
 		ensureServicesInitialized();
 		managementService.updatePrimaryLanguage(this, locale);
-	}
-
-	/**
-	 * Sets the primary language on the in-memory object without persisting.
-	 * This method is intended for internal use by event listeners to synchronize
-	 * in-memory state with persisted data. External code should use {@link #setPrimaryLanguage(DiscordLocale)} instead.
-	 *
-	 * @param locale The new primary language locale
-	 */
-	public void setPrimaryLanguageInternal(DiscordLocale locale) {
-		this.primaryLanguage = locale;
-	}
-
-	/**
-	 * Sets the additional languages on the in-memory object without persisting.
-	 * This method is intended for internal use by event listeners to synchronize
-	 * in-memory state with persisted data.
-	 *
-	 * @param locales The additional language locales
-	 */
-	public void setAdditionalLanguagesInternal(DiscordLocale[] locales) {
-		this.additionalLanguages = locales != null ? locales : new DiscordLocale[0];
-	}
-
-	/**
-	 * Sets the allowed roles on the in-memory object without persisting.
-	 * This method is intended for internal use by event listeners to synchronize
-	 * in-memory state with persisted data.
-	 *
-	 * @param roleIds The allowed role IDs
-	 */
-	public void setAllowedRolesInternal(long[] roleIds) {
-		this.allowedRoles = roleIds;
 	}
 
 	/**

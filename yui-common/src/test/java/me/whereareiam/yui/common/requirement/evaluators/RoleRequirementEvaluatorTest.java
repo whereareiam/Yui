@@ -1,6 +1,7 @@
 package me.whereareiam.yui.common.requirement.evaluators;
 
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.model.fluctlight.FluctlightStateUpdater;
 import me.whereareiam.yui.model.requirement.RequirementContext;
 import me.whereareiam.yui.model.requirement.type.RoleRequirement;
 import me.whereareiam.yui.type.requirement.RequirementCondition;
@@ -52,7 +53,7 @@ class RoleRequirementEvaluatorTest {
 		// Setup mock fluctlight
 		when(jdaUser.getIdLong()).thenReturn(12345L);
 		fluctlight = new Fluctlight(jdaUser);
-		fluctlight.setAllowedRoles(new long[]{100L, 200L, 300L});
+		FluctlightStateUpdater.updateAllowedRoles(fluctlight, new long[]{100L, 200L, 300L});
 
 		// Setup mock Discord event with roles
 		setupMockDiscordEvent();
@@ -132,7 +133,7 @@ class RoleRequirementEvaluatorTest {
 	@Test
 	void testEvaluateWithFluctlightNoRoles() {
 		Fluctlight noRolesFluctlight = new Fluctlight(jdaUser);
-		noRolesFluctlight.setAllowedRoles(null);
+		FluctlightStateUpdater.updateAllowedRoles(noRolesFluctlight, null);
 		RequirementContext noRolesContext = new RequirementContext("test", noRolesFluctlight);
 
 		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.HAS, true, Arrays.asList("100", "200", "300"), "ID");

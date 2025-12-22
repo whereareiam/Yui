@@ -3,6 +3,7 @@ package me.whereareiam.yui.common.listener.fluctlight;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.event.fluctlight.FluctlightUpdatedEvent;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.model.fluctlight.FluctlightStateUpdater;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -21,9 +22,9 @@ public class FluctlightUpdatedListener {
 		var data = event.getData();
 
 		// Update in-memory Fluctlight object with persisted data
-		fluctlight.setPrimaryLanguageInternal(data.getPrimaryLanguage());
-		fluctlight.setAdditionalLanguagesInternal(data.getAdditionalLanguages());
-		fluctlight.setAllowedRolesInternal(data.getAllowedRoles());
+		FluctlightStateUpdater.updatePrimaryLanguage(fluctlight, data.getPrimaryLanguage());
+		FluctlightStateUpdater.updateAdditionalLanguages(fluctlight, data.getAdditionalLanguages());
+		FluctlightStateUpdater.updateAllowedRoles(fluctlight, data.getAllowedRoles());
 
 		log.trace("Updated in-memory Fluctlight {} with persisted data", fluctlight.getId());
 	}
