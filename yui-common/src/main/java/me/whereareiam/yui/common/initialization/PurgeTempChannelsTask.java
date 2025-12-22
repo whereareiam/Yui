@@ -4,7 +4,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.LifecycleTask;
-import me.whereareiam.yui.common.service.DefaultTemporaryChannelService;
+import me.whereareiam.yui.common.service.conversation.DefaultConversationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
 @Component
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class PurgeTempChannelsTask implements LifecycleTask {
-	private final DefaultTemporaryChannelService tempChannels;
+	private final DefaultConversationService conversationService;
 	private final Registry<LifecycleTask> lifecycleRegistry;
 
 	@PostConstruct
@@ -28,8 +28,7 @@ public class PurgeTempChannelsTask implements LifecycleTask {
 
 	@Override
 	public CompletableFuture<Void> start() {
-		return tempChannels.purgeChannels();
+		return conversationService.purgeChannels();
 	}
 }
-
 

@@ -5,7 +5,6 @@ allprojects {
     group = "me.whereareiam"
 
     apply(plugin = "java-library")
-    apply(plugin = "maven-publish")
 
     tasks.withType<JavaCompile> {
         sourceCompatibility = JavaVersion.VERSION_25.toString()
@@ -52,21 +51,6 @@ subprojects {
             "testImplementation"(rootProject.libs.configura)
             "testImplementation"(rootProject.libs.semantica)
             "testRuntimeOnly"(rootProject.libs.junit.platform.launcher)
-        }
-    }
-
-    extensions.configure<PublishingExtension> {
-        repositories {
-            maven {
-                val realm = (System.getenv("PUBLISH_REALM")
-                    ?: if ((System.getenv("VERSION") ?: "dev").contains("dev", true)) "development" else "release")
-                    .lowercase()
-                url = uri("https://maven.whereareiam.me/$realm")
-                credentials {
-                    username = System.getenv("PUBLISH_USER") ?: ""
-                    password = System.getenv("PUBLISH_TOKEN") ?: ""
-                }
-            }
         }
     }
 }

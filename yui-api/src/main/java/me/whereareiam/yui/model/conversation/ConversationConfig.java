@@ -1,0 +1,23 @@
+package me.whereareiam.yui.model.conversation;
+
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
+@Builder
+public class ConversationConfig {
+	@Builder.Default
+	private final boolean preferPrivateMessage = false;
+
+	@Builder.Default
+	private final boolean allowTemporaryChannel = true;
+
+	private final String channelName;
+	private final String channelDescription;
+	private final String initialMessage;
+
+	@Builder.Default
+	private final boolean mentionUsers = true;
+
+	private final Long closeDelaySeconds;
+}
