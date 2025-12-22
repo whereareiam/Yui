@@ -6,9 +6,11 @@ import me.whereareiam.configura.Config;
 import me.whereareiam.configura.reader.ConfigReader;
 import me.whereareiam.configura.type.Format;
 import me.whereareiam.configura.writer.ConfigWriter;
+import me.whereareiam.yui.common.adapter.DurationAdapter;
 import me.whereareiam.yui.common.config.adapter.ColorAdapter;
 import me.whereareiam.yui.common.config.adapter.DiscordLocaleAdapter;
 import me.whereareiam.yui.config.ConfigurationTypeResolver;
+import me.whereareiam.yui.model.type.Duration;
 import me.whereareiam.yui.type.ConfigurationType;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,5 +38,6 @@ public class ConfiguraBootstrap {
 		// Register adapters
 		Config.registerAdapter(Color.class, ColorAdapter.class);
 		Config.registerAdapter(DiscordLocale.class, DiscordLocaleAdapter.class);
+		Config.registerAdapter(Duration.class, DurationAdapter.class);
 	}
 }
