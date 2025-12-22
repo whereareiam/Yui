@@ -5,6 +5,7 @@ import lombok.Setter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -18,5 +19,6 @@ public class DiscordSettings {
 	@Setter
 	public static class Channels {
 		private List<String> tempChannelCategories;
+		private Map<String, String> audit;
 	}
 }
