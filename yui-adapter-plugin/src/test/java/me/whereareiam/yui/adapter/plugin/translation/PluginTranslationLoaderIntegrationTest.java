@@ -96,6 +96,8 @@ class PluginTranslationLoaderIntegrationTest {
         String pluginId = "testplugin";
         String prefix = "plugin.testplugin.";
 
+        InternalPlugin plugin = createMockPlugin(pluginId);
+
         when(translationService.getKeys(prefix))
                 .thenReturn(Set.of(
                         "plugin.testplugin.key1",
@@ -103,7 +105,7 @@ class PluginTranslationLoaderIntegrationTest {
                         "plugin.testplugin.key3"
                 ));
 
-        loader.unloadPlugin(pluginId);
+        loader.unloadPlugin(plugin);
 
         verify(translationService, times(3)).unregister(startsWith(prefix));
     }
@@ -111,6 +113,7 @@ class PluginTranslationLoaderIntegrationTest {
     private InternalPlugin createMockPlugin(String pluginId) {
         Plugin descriptor = mock(Plugin.class);
         when(descriptor.getId()).thenReturn(pluginId);
+        when(descriptor.getName()).thenReturn(pluginId); // For simplicity, use id as name
 
         AnnotationConfigApplicationContext context = mock(AnnotationConfigApplicationContext.class);
         InternalPlugin plugin = mock(InternalPlugin.class);

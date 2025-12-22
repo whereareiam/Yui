@@ -31,6 +31,6 @@ public class PluginTranslationListener {
         InternalPlugin plugin = event.getPlugin();
         if (plugin.getPlugin().getId() == null) return;
 
-        pluginTranslationLoader.unloadPlugin(plugin.getPlugin().getId());
+        pluginTranslationLoader.unloadPlugin(plugin);
     }
 }

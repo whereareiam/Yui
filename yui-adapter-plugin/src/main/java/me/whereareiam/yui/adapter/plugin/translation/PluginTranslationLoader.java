@@ -50,8 +50,11 @@ public class PluginTranslationLoader {
         String pluginId = plugin.getPlugin().getId();
         if (pluginId == null || pluginId.isBlank()) return;
 
+        // Use plugin name for directory, sanitized for filesystem
+        String pluginDirName = plugin.getPlugin().getName().replaceAll("[^a-zA-Z0-9.-]", "_");
+
         Path languagesDir = pluginsPath
-                .resolve(pluginId)
+                .resolve(pluginDirName)
                 .resolve(Constants.Structure.languagesDir);
 
         // Generate defaults from LocalizationProvider beans if directory is empty
@@ -160,7 +163,9 @@ public class PluginTranslationLoader {
         }
     }
 
-    public void unloadPlugin(String pluginId) {
+    public void unloadPlugin(InternalPlugin plugin) {
+        if (plugin == null) return;
+        String pluginId = plugin.getPlugin().getId();
         if (pluginId == null || pluginId.isBlank()) return;
 
         String prefix = "plugin." + pluginId.toLowerCase() + ".";
