@@ -27,14 +27,14 @@ public class ClearCommand {
 
 	@Definition("clear")
 	@Command("clear <user>")
-	public void onCommand(Interaction interaction, @Argument("user") User targetUser) {
-		Fluctlight fluctlight = interaction.fluctlight();
+	public void onCommand(Interaction interaction, @Argument("user") Fluctlight target) {
+		Fluctlight executor = interaction.fluctlight();
 
 		// Check if user is trying to clear their own profile
-		if (targetUser.getIdLong() == fluctlight.getId()) {
+		if (target.getId() == executor.getId()) {
 			interaction.replyCallback()
 					.replyEmbeds(StyleKit.embeds().error()
-							.setTitle(Translatable.text("commands.error.validation.sameUser").resolve(fluctlight))
+							.setTitle(Translatable.text("commands.error.validation.sameUser").resolve(executor))
 							.build())
 					.setEphemeral(true)
 					.queue();
@@ -43,17 +43,17 @@ public class ClearCommand {
 
 		// Create confirmation embed
 		EmbedBuilder embed = StyleKit.embeds().warning();
-		embed.setTitle(Translatable.text("commands.clear.confirmation.title").resolve(fluctlight));
-		embed.setDescription(Translatable.text("commands.clear.confirmation.description").resolve(fluctlight));
+		embed.setTitle(Translatable.text("commands.clear.confirmation.title").resolve(executor));
+		embed.setDescription(Translatable.text("commands.clear.confirmation.description").resolve(executor));
 		embed.addField(
-				Translatable.text("commands.clear.confirmation.userInfo").resolve(fluctlight),
-				String.format("**%s** (`%s`)", targetUser.getAsMention(), targetUser.getId()),
+				Translatable.text("commands.clear.confirmation.userInfo").resolve(executor),
+				String.format("**%s** (`%s`)", target.getAsMention(), target.getId()),
 				false
 		);
 
 		// Create buttons using the proper Components utility with embedded payload
-		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.text("vocabulary.confirm").resolve(fluctlight), String.valueOf(targetUser.getIdLong()));
-		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.text("vocabulary.cancel").resolve(fluctlight), String.valueOf(targetUser.getIdLong()));
+		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.text("vocabulary.confirm").resolve(executor), String.valueOf(target.getId()));
+		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.text("vocabulary.cancel").resolve(executor), String.valueOf(target.getId()));
 
 		// Send the confirmation message with buttons
 		interaction.replyCallback()
@@ -80,18 +80,18 @@ public class ClearCommand {
 		}
 
 		long targetUserId = Long.parseLong(payload);
-		User targetUser = event.getJDA().getUserById(targetUserId);
 
-		var result = fluctlightService.clear(targetUser.getIdLong());
+		var result = fluctlightService.clear(targetUserId);
 
 		if (result.isPresent()) {
+			Fluctlight target = result.get();
 			// Success embed
 			EmbedBuilder successEmbed = StyleKit.embeds().success();
 			successEmbed.setTitle(Translatable.text("commands.clear.success.title").resolve(fluctlight));
 			successEmbed.setDescription(Translatable.text("commands.clear.success.description").resolve(fluctlight));
 			successEmbed.addField(
 					Translatable.text("commands.clear.success.userInfo").resolve(fluctlight),
-					String.format("**%s** (`%s`)", targetUser.getAsMention(), targetUser.getId()),
+					String.format("**%s** (`%s`)", target.getAsMention(), target.getId()),
 					false
 			);
 
