@@ -7,21 +7,21 @@ import me.whereareiam.semantica.SemanticaLogger;
 public class YuiSemanticaLogger implements SemanticaLogger {
     @Override
     public void debug(String message, Object... args) {
-        log.debug("[localization] " + message, args);
+        log.debug("[Localization] " + message, args);
     }
 
     @Override
     public void info(String message, Object... args) {
-        log.info("[localization] " + message, args);
+        log.info("[Localization] " + message, args);
     }
 
     @Override
     public void warn(String message, Object... args) {
-        log.warn("[localization] " + message, args);
+        log.warn("[Localization] " + message, args);
     }
 
     @Override
     public void error(String message, Object... args) {
-        log.error("[localization] " + message, args);
+        log.error("[Localization] " + message, args);
     }
 }

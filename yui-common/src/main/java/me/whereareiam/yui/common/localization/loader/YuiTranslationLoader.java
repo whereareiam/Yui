@@ -42,12 +42,12 @@ public class YuiTranslationLoader implements TranslationProvider<DiscordLocale> 
 
         // Generate defaults from LocalizationProvider beans if directory is empty
         if (!Files.exists(languagesDir) || LocalizationLoaderBase.isEmpty(languagesDir)) {
-            log.info("[localization] No translations found, generating defaults");
+            log.info("[Localization] No translations found, generating defaults");
             generateDefaultsFromProviders(languagesDir);
         }
 
         if (!Files.isDirectory(languagesDir)) {
-            log.warn("[localization] Languages directory not found: {}", languagesDir);
+            log.warn("[Localization] Languages directory not found: {}", languagesDir);
             return new ProviderResult<>(new HashMap<>(), new HashMap<>());
         }
 
@@ -68,7 +68,7 @@ public class YuiTranslationLoader implements TranslationProvider<DiscordLocale> 
                 },
                 // MULTI_LOCALE processor
                 (file, multiLocaleData) -> {
-                    log.debug("[localization] Found {} multi-locale entries in '{}'",
+                    log.debug("[Localization] Found {} multi-locale entries in '{}'",
                             multiLocaleData.size(), file.getFileName());
 
                     multiLocaleData.forEach((key, localeMap) -> {
@@ -80,7 +80,7 @@ public class YuiTranslationLoader implements TranslationProvider<DiscordLocale> 
                 },
                 // TEMPLATE processor
                 (file, templateData) -> {
-                    log.debug("[localization] Found {} templates in '{}'",
+                    log.debug("[Localization] Found {} templates in '{}'",
                             templateData.size(), file.getFileName());
                     templateData.forEach((key, textValue) -> {
                         templates.put(key, new TemplateEntry(textValue.asString()));
@@ -89,9 +89,9 @@ public class YuiTranslationLoader implements TranslationProvider<DiscordLocale> 
         );
 
         int totalKeys = localized.values().stream().mapToInt(Map::size).sum();
-        log.info("[localization] Loaded {} localization keys across {} locales",
+        log.info("[Localization] Loaded {} localization keys across {} locales",
                 totalKeys, localized.size());
-        log.info("[localization] Loaded {} template entries", templates.size());
+        log.info("[Localization] Loaded {} template entries", templates.size());
 
         return new ProviderResult<>(localized, templates);
     }
@@ -106,7 +106,7 @@ public class YuiTranslationLoader implements TranslationProvider<DiscordLocale> 
                     applicationContext.getBeansOfType(LocalizationProvider.class);
 
             if (providerBeans.isEmpty()) {
-                log.warn("[localization] No LocalizationProvider beans found");
+                log.warn("[Localization] No LocalizationProvider beans found");
                 return;
             }
 
@@ -124,7 +124,7 @@ public class YuiTranslationLoader implements TranslationProvider<DiscordLocale> 
                     
                     // Skip if file exists and provider should only apply once
                     if (p.applyOnce() && Files.exists(out)) {
-                        log.debug("[localization] Skipping existing file: {}", out);
+                        log.debug("[Localization] Skipping existing file: {}", out);
                         continue;
                     }
                     
@@ -132,13 +132,13 @@ public class YuiTranslationLoader implements TranslationProvider<DiscordLocale> 
                     Object supplied = p.supply(model);
                     
                     Config.save(out, supplied);
-                    log.info("[localization] Generated default file: {}", out);
+                    log.info("[Localization] Generated default file: {}", out);
                 } catch (Exception e) {
-                    log.warn("[localization] Failed to generate defaults from provider", e);
+                    log.warn("[Localization] Failed to generate defaults from provider", e);
                 }
             }
         } catch (Exception e) {
-            log.error("[localization] Failed to generate defaults", e);
+            log.error("[Localization] Failed to generate defaults", e);
         }
     }
 }
