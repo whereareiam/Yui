@@ -4,7 +4,7 @@ allprojects {
     version = (System.getenv("VERSION") ?: "dev")
     group = "me.whereareiam"
 
-    apply(plugin = "java")
+    apply(plugin = "java-library")
     apply(plugin = "maven-publish")
 
     tasks.withType<JavaCompile> {

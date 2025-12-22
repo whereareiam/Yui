@@ -2,6 +2,15 @@ plugins {
     alias(libs.plugins.buildconfig)
 }
 
+// libraries that should be transitively visible to API consumers
+dependencies {
+    "api"(rootProject.libs.jda)
+    "api"(rootProject.libs.configura)
+    "api"(rootProject.libs.semantica)
+    "api"(rootProject.libs.annotations)
+    "api"(rootProject.libs.spring.boot)
+}
+
 buildConfig {
     packageName("me.whereareiam.yui")
 
