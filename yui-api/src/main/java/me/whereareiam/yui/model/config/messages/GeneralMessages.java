@@ -8,11 +8,11 @@ import java.util.List;
 @Getter
 @Setter
 public class GeneralMessages {
-	private TemporaryChannels temporaryChannels;
+	private Conversation conversation;
 
 	@Getter
 	@Setter
-	public static class TemporaryChannels {
+	public static class Conversation {
 		private Close close;
 
 		@Getter

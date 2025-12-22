@@ -10,16 +10,14 @@ import java.util.List;
 public class GeneralMessagesTemplate implements TemplateProvider<GeneralMessages> {
 	@Override
 	public GeneralMessages supply(GeneralMessages generalMessages) {
-		GeneralMessages.TemporaryChannels temporaryChannels = new GeneralMessages.TemporaryChannels();
-		GeneralMessages.TemporaryChannels.Close close = new GeneralMessages.TemporaryChannels.Close();
-		close.setTitle("Temporary Channel Closing");
-		close.setDescription(List.of("This temporary channel will be closed in *<p:seconds>* seconds."));
-		temporaryChannels.setClose(close);
+		GeneralMessages.Conversation conversation = new GeneralMessages.Conversation();
+		GeneralMessages.Conversation.Close close = new GeneralMessages.Conversation.Close();
+		close.setTitle("Closing conversation");
+		close.setDescription(List.of("This conversation will be closed in *<p:seconds>* seconds."));
+		conversation.setClose(close);
 
-		generalMessages.setTemporaryChannels(temporaryChannels);
+		generalMessages.setConversation(conversation);
 		
 		return generalMessages;
 	}
 }
-
-
