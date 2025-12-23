@@ -3,8 +3,8 @@ package me.whereareiam.yui.common.audit.type;
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.Constants;
 import me.whereareiam.yui.util.Audit;
-import me.whereareiam.yui.util.style.StyleKit;
 import me.whereareiam.yui.util.translation.Translatable;
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.audit.ActionType;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
@@ -38,13 +38,13 @@ public class UserLeaveAudit extends ListenerAdapter {
 					// This is a normal leave
 					Audit.log(Constants.AuditTypes.USER_LEAVE)
 							.withLocalizedEmbed(locale -> {
-								String title = Translatable.text("messages.audit.user.leave.title").resolve(locale);
-								String description = Translatable.text("messages.audit.user.leave.description")
+								String title = Translatable.text("audit.user.leave.title").resolve(locale);
+								String description = Translatable.text("audit.user.leave.description")
 										.with("mention", event.getUser().getAsMention())
 										.resolve(locale);
-								String targetField = Translatable.text("messages.audit.user.leave.fields.target").resolve(locale);
+								String targetField = Translatable.text("audit.user.leave.fields.target").resolve(locale);
 
-								return StyleKit.embeds().info()
+								return new EmbedBuilder()
 										.setTitle(title)
 										.setDescription(description)
 										.addField(targetField, event.getUser().getAsMention(), true)

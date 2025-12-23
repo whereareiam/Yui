@@ -42,13 +42,13 @@ public class UserKickAudit extends ListenerAdapter {
 
 					Audit.log(Constants.AuditTypes.USER_KICK)
 							.withLocalizedEmbed(locale -> {
-								String title = Translatable.text("messages.audit.user.kick.title").resolve(locale);
-								String description = Translatable.text("messages.audit.user.kick.description")
+								String title = Translatable.text("audit.user.kick.title").resolve(locale);
+								String description = Translatable.text("audit.user.kick.description")
 										.with("mention", target.getAsMention())
 										.resolve(locale);
-								String targetField = Translatable.text("messages.audit.user.kick.fields.target").resolve(locale);
-								String reasonField = Translatable.text("messages.audit.user.kick.fields.reason").resolve(locale);
-								String moderatorField = Translatable.text("messages.audit.user.kick.fields.moderator").resolve(locale);
+								String targetField = Translatable.text("audit.user.kick.fields.target").resolve(locale);
+								String reasonField = Translatable.text("audit.user.kick.fields.reason").resolve(locale);
+								String moderatorField = Translatable.text("audit.user.kick.fields.moderator").resolve(locale);
 
 								return StyleKit.embeds().error()
 										.setTitle(title)

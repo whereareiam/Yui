@@ -19,12 +19,12 @@ public class UserJoinAudit extends ListenerAdapter {
 	public void onGuildMemberJoin(@NonNull GuildMemberJoinEvent event) {
 		Audit.log(Constants.AuditTypes.USER_JOIN)
 				.withLocalizedEmbed(locale -> {
-					String title = Translatable.text("messages.audit.user.join.title").resolve(locale);
-					String description = Translatable.text("messages.audit.user.join.description")
+					String title = Translatable.text("audit.user.join.title").resolve(locale);
+					String description = Translatable.text("audit.user.join.description")
 							.with("mention", event.getUser().getAsMention())
 							.resolve(locale);
-					String targetField = Translatable.text("messages.audit.user.join.fields.target").resolve(locale);
-					String accountCreatedField = Translatable.text("messages.audit.user.join.fields.accountCreated").resolve(locale);
+					String targetField = Translatable.text("audit.user.join.fields.target").resolve(locale);
+					String accountCreatedField = Translatable.text("audit.user.join.fields.accountCreated").resolve(locale);
 					return new EmbedBuilder()
 							.setTitle(title)
 							.setDescription(description)
