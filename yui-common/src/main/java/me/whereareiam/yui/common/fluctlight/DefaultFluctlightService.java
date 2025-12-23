@@ -155,18 +155,20 @@ public class DefaultFluctlightService implements FluctlightService {
 			fluctlightRegistry.evictFluctlight(userId);
 			log.debug("Evicted fluctlight {} from registry", userId);
 
-			// Reset data in database with bot's default language
-			User jdaUser = jda.getUserById(userId);
-			if (jdaUser != null) {
-				Fluctlight tempFluctlight = new Fluctlight(jdaUser);
-				DiscordLocale defaultLocale = settings.getObject().getLocale();
-				FluctlightData resetData = new FluctlightData(defaultLocale, new DiscordLocale[0], null);
-				fluctlightPersistence.saveData(tempFluctlight, resetData);
-			}
-			log.debug("Reset fluctlight {} data in database", userId);
+		// Reset data in database with bot's default language
+		User jdaUser = jda.getUserById(userId);
+		if (jdaUser != null) {
+			Fluctlight tempFluctlight = new Fluctlight(jdaUser);
+			DiscordLocale defaultLocale = settings.getObject().getLocale();
+			FluctlightData resetData = new FluctlightData(defaultLocale, new DiscordLocale[0], null);
+			fluctlightPersistence.saveData(tempFluctlight, resetData);
+			// CRITICAL: Flush to ensure reset data is persisted before loading
+			fluctlightPersistence.flush();
+		}
+		log.debug("Reset fluctlight {} data in database", userId);
 
-			// Create fresh Fluctlight (will load reset data from DB and register in-memory)
-			Optional<Fluctlight> newFluctlight = get(userId);
+		// Create fresh Fluctlight (will load reset data from DB and register in-memory)
+		Optional<Fluctlight> newFluctlight = get(userId);
 			if (newFluctlight.isPresent()) {
 				// Publish non-cancellable event after clearing is complete
 				FluctlightClearedEvent clearedEvent = new FluctlightClearedEvent(
