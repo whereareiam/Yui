@@ -170,7 +170,7 @@ public class DefaultFluctlightService implements FluctlightService {
 				);
 				eventPublisher.publishEvent(clearedEvent);
 				
-				log.info("Successfully reinitialized Fluctlight for fluctlight: {}", userId);
+				log.debug("Successfully reinitialized Fluctlight for fluctlight: {}", userId);
 				return newFluctlight;
 			}
 
