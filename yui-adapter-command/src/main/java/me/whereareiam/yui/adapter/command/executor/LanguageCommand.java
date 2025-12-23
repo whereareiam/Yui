@@ -50,14 +50,15 @@ public class LanguageCommand {
 		}
 
 		DiscordLocale selectedLanguage = DiscordLocale.from(payload);
-		fluctlight.setPrimaryLanguage(selectedLanguage);
-		
-		// Remove all additional languages when primary changes
+
+		// Remove all additional languages before changing primary so we don't drop the new primary role
 		DiscordLocale[] additionals = fluctlight.getAdditionalLanguages();
 		if (additionals != null)
 			for (DiscordLocale lang : additionals)
 				if (lang != null)
 					fluctlight.removeAdditionalLanguage(lang);
+
+		fluctlight.setPrimaryLanguage(selectedLanguage);
 
 		showPrimaryLanguageSelection(event, fluctlight, true);
 	}
