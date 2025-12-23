@@ -3,16 +3,13 @@ package me.whereareiam.yui.adapter.plugin.factory;
 import me.whereareiam.yui.adapter.plugin.PluginInteractionService;
 import me.whereareiam.yui.adapter.plugin.bean.DependencyBeanBridge;
 import me.whereareiam.yui.adapter.plugin.bean.PluginBeanRegistry;
-import me.whereareiam.yui.service.InteractionService;
 import me.whereareiam.yui.model.plugin.Plugin;
+import me.whereareiam.yui.service.InteractionService;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.*;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.stereotype.Component;
@@ -83,8 +80,20 @@ public class PluginContextFactory {
 				ApplicationEventMulticaster childMulticaster =
 						childContext.getBean(ApplicationEventMulticaster.class);
 
-				// Bridge parent events to child context and ensure proper cleanup on context close
-				ApplicationListener<ApplicationEvent> bridge = childMulticaster::multicastEvent;
+				// Bridge parent events to child context, but avoid echoing events that originated
+				// from this child context (they are already delivered locally via Spring).
+				ApplicationListener<ApplicationEvent> bridge = event -> {
+					if (event.getSource() == childContext) return;
+					// Also skip if the payload was created by the plugin classloader to prevent
+					// the child -> parent -> child loop that causes duplicate handling.
+					if (event instanceof PayloadApplicationEvent<?> pae) {
+						Object payload = pae.getPayload();
+						if (payload.getClass().getClassLoader() == childContext.getClassLoader())
+							return;
+					}
+
+					childMulticaster.multicastEvent(event);
+				};
 				parentMulticaster.addApplicationListener(bridge);
 				childContext.registerBean("pluginEventBridgeCleanup", DisposableBean.class,
 						() -> () -> parentMulticaster.removeApplicationListener(bridge));
