@@ -42,6 +42,11 @@ public class MessagesTemplate implements LocalizationProvider<Messages> {
 	}
 
 	@Override
+	public boolean applyOnce() {
+		return false;
+	}
+
+	@Override
 	public Messages supply(Messages messages) {
 		messages.setGeneral(supply(generalTemplate, GeneralMessages::new));
 		messages.setAudit(supply(auditTemplate, AuditMessages::new));
@@ -57,11 +62,6 @@ public class MessagesTemplate implements LocalizationProvider<Messages> {
 		messages.setCommands(commandMessages);
 
 		return messages;
-	}
-
-	@Override
-	public boolean applyOnce() {
-		return false;
 	}
 
 	private <T> T supply(TemplateProvider<T> provider, Supplier<T> supplier) {
