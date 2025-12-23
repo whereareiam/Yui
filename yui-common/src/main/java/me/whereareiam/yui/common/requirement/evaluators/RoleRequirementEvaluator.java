@@ -1,14 +1,19 @@
 package me.whereareiam.yui.common.requirement.evaluators;
 
+import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.model.requirement.RequirementEntry;
-import me.whereareiam.yui.model.requirement.type.RoleRequirement;
 import me.whereareiam.yui.model.requirement.RequirementContext;
+import me.whereareiam.yui.model.requirement.type.RoleRequirement;
+import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.type.requirement.RequirementCondition;
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -19,7 +24,11 @@ import java.util.stream.Collectors;
  * Evaluates role-based requirements.
  */
 @Component
+@RequiredArgsConstructor
 public class RoleRequirementEvaluator extends BaseRequirementEvaluator {
+	private final JDA jda;
+	private final ObjectProvider<Settings> settings;
+
 	@Override
 	public boolean supports(RequirementEntry entry) {
 		return entry instanceof RoleRequirement;
@@ -76,24 +85,16 @@ public class RoleRequirementEvaluator extends BaseRequirementEvaluator {
 	}
 
 	/**
-	 * Extracts role names from the original context (JDA events).
+	 * Extracts role names from the original context (JDA events) or by resolving the member from the configured guild.
 	 *
 	 * @param context The context object containing UserProfile and original context
 	 * @return List of fluctlight role names
 	 */
 	private List<String> extractRoleNamesFromContext(RequirementContext context) {
-		Object originalContext = context.getOriginalContext();
-		
-		// Try to extract roles from any event type that has a member
-		if (originalContext instanceof SlashCommandInteractionEvent event)
-			return extractRolesFromMember(event.getMember());
-		
-		if (originalContext instanceof ButtonInteractionEvent event)
-			return extractRolesFromMember(event.getMember());
-		
-		if (originalContext instanceof StringSelectInteractionEvent event)
-			return extractRolesFromMember(event.getMember());
-		
+		Member member = resolveMember(context);
+		if (member != null)
+			return extractRolesFromMember(member);
+
 		// Fallback to fluctlight profile if no Discord context is available
 		return extractRoleNamesFromUserProfile(context);
 	}
@@ -114,24 +115,16 @@ public class RoleRequirementEvaluator extends BaseRequirementEvaluator {
 	}
 
 	/**
-	 * Extracts role IDs from the original context (JDA events).
+	 * Extracts role IDs from the original context (JDA events) or by resolving the member from the configured guild.
 	 *
 	 * @param context The context object containing UserProfile and original context
 	 * @return List of fluctlight role IDs
 	 */
 	private List<String> extractRoleIdsFromContext(RequirementContext context) {
-		Object originalContext = context.getOriginalContext();
-		
-		// Try to extract roles from any event type that has a member
-		if (originalContext instanceof SlashCommandInteractionEvent event)
-			return extractRoleIdsFromMember(event.getMember());
-		
-		if (originalContext instanceof ButtonInteractionEvent event)
-			return extractRoleIdsFromMember(event.getMember());
-		
-		if (originalContext instanceof StringSelectInteractionEvent event)
-			return extractRoleIdsFromMember(event.getMember());
-		
+		Member member = resolveMember(context);
+		if (member != null)
+			return extractRoleIdsFromMember(member);
+
 		// Fallback to fluctlight profile if no Discord context is available
 		return extractRoleIdsFromUserProfile(context);
 	}
@@ -146,6 +139,34 @@ public class RoleRequirementEvaluator extends BaseRequirementEvaluator {
 		return Arrays.stream(context.getFluctlight().getAllowedRoles())
 				.mapToObj(String::valueOf)
 				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Resolves a JDA member either from the interaction event (guild context) or from the configured guild (DM context).
+	 */
+	private Member resolveMember(RequirementContext context) {
+		Object originalContext = context.getOriginalContext();
+
+		// Try to extract member from the event directly
+		if (originalContext instanceof SlashCommandInteractionEvent event && event.getMember() != null)
+			return event.getMember();
+
+		if (originalContext instanceof ButtonInteractionEvent event && event.getMember() != null)
+			return event.getMember();
+
+		if (originalContext instanceof StringSelectInteractionEvent event && event.getMember() != null)
+			return event.getMember();
+
+		// Fallback: resolve member from the configured guild (supports DM interactions)
+		Settings cfg = settings.getIfAvailable();
+		if (cfg == null || cfg.getDiscord() == null)
+			return null;
+
+		Guild guild = jda.getGuildById(cfg.getDiscord().getGuildId());
+		if (guild == null)
+			return null;
+
+		return guild.getMemberById(context.getUserId());
 	}
 
 	/**
