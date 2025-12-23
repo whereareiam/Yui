@@ -3,6 +3,10 @@ package me.whereareiam.yui.adapter.command.factory;
 import io.leangen.geantyref.TypeToken;
 import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
 import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
+import me.whereareiam.yui.adapter.command.parser.FluctlightParser;
+import me.whereareiam.yui.command.Interaction;
+import me.whereareiam.yui.fluctlight.FluctlightService;
+import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import me.whereareiam.yui.util.translation.TranslationResolver;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -18,6 +22,7 @@ import org.incendo.cloud.discord.jda6.JDAParser;
 import org.incendo.cloud.discord.slash.*;
 import org.incendo.cloud.internal.CommandNode;
 import org.incendo.cloud.permission.Permission;
+import org.incendo.cloud.parser.ParserDescriptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,21 +36,27 @@ import java.util.stream.Collectors;
  * Wraps Cloud's standard implementation and adds localization support from CommandDefinition
  * when descriptions contain translate(...) tags.
  */
-public final class YuiJDACommandFactory<C> implements JDACommandFactory<C> {
-    private final CommandTree<C> commandTree;
+public final class YuiJDACommandFactory implements JDACommandFactory<Interaction> {
+    private final CommandTree<Interaction> commandTree;
     private final CommandDefinitionRegistry definitionRegistry;
-    private final DiscordCommandFactory<C> discordCommandFactory;
-    private final NodeProcessor<C> nodeProcessor;
+    private final DiscordCommandFactory<Interaction> discordCommandFactory;
+    private final NodeProcessor<Interaction> nodeProcessor;
 
-    private CommandScopePredicate<C> commandScopePredicate = CommandScopePredicate.alwaysTrue();
+    private CommandScopePredicate<Interaction> commandScopePredicate = CommandScopePredicate.alwaysTrue();
 
-    public YuiJDACommandFactory(@NotNull CommandTree<C> commandTree, @NotNull CommandDefinitionRegistry definitionRegistry) {
+    public YuiJDACommandFactory(
+            @NotNull CommandTree<Interaction> commandTree,
+            @NotNull CommandDefinitionRegistry definitionRegistry,
+            @NotNull FluctlightParser fluctlightParser
+    ) {
         this.commandTree = Objects.requireNonNull(commandTree, "commandTree");
         this.definitionRegistry = Objects.requireNonNull(definitionRegistry, "definitionRegistry");
 
         // Reuse Cloud's standard option registry setup
-        OptionRegistry<C> optionRegistry = new StandardOptionRegistry<>();
+        OptionRegistry<Interaction> optionRegistry = new StandardOptionRegistry<>();
         optionRegistry
+                // Map Fluctlight arguments to Discord USER option (keep default USER->User mapping too)
+                .registerMapping(JDAOptionType.USER, ParserDescriptor.of(fluctlightParser, Fluctlight.class))
                 .registerMapping(JDAOptionType.USER, JDAParser.userParser())
                 .registerMapping(JDAOptionType.CHANNEL, JDAParser.channelParser())
                 .registerMapping(JDAOptionType.ROLE, JDAParser.roleParser())
@@ -57,41 +68,40 @@ public final class YuiJDACommandFactory<C> implements JDACommandFactory<C> {
     }
 
     @Override
-    public void commandScopePredicate(@NotNull CommandScopePredicate<C> predicate) {
+    public void commandScopePredicate(@NotNull CommandScopePredicate<Interaction> predicate) {
         this.commandScopePredicate = Objects.requireNonNull(predicate, "predicate");
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public @NotNull Collection<@NotNull CommandData> createCommands(@NotNull CommandScope<C> scope) {
+    public @NotNull Collection<@NotNull CommandData> createCommands(@NotNull CommandScope<Interaction> scope) {
         this.nodeProcessor.prepareTree();
 
         List<CommandData> commands = new ArrayList<>();
-        for (CommandNode<C> rootNode : this.commandTree.rootNodes()) {
-            CommandScope<C> rootScope = (CommandScope<C>) rootNode.nodeMeta().get(NodeProcessor.NODE_META_SCOPE);
+        for (CommandNode<Interaction> rootNode : this.commandTree.rootNodes()) {
+            CommandScope<Interaction> rootScope = (CommandScope<Interaction>) rootNode.nodeMeta().get(NodeProcessor.NODE_META_SCOPE);
 
             if (!rootScope.overlaps(scope)) continue;
             if (!this.commandScopePredicate.test(rootNode, scope)) continue;
 
-            DiscordCommand<C> command = this.discordCommandFactory.create(rootNode);
+            DiscordCommand<Interaction> command = this.discordCommandFactory.create(rootNode);
             SlashCommandData data = Commands.slash(command.name(), command.description());
 
             // Get definition once for this command
             CommandDefinition definition = getDefinition(rootNode);
 
             // Apply options
-            for (DiscordOption<C> option : command.options()) {
+            for (DiscordOption<Interaction> option : command.options()) {
                 if (option instanceof DiscordOption.SubCommand) {
                     if (option.type().equals(DiscordOptionType.SUB_COMMAND)) {
-                        data.addSubcommands(createSubCommand((DiscordOption.SubCommand<C>) option, definition));
+                        data.addSubcommands(createSubCommand((DiscordOption.SubCommand<Interaction>) option, definition));
                         continue;
                     }
 
-                    data.addSubcommandGroups(createSubCommandGroup((DiscordOption.SubCommand<C>) option, definition));
+                    data.addSubcommandGroups(createSubCommandGroup((DiscordOption.SubCommand<Interaction>) option, definition));
                     continue;
                 }
 
-                data.addOptions(createOption((DiscordOption.Variable<C>) option, definition));
+                data.addOptions(createOption((DiscordOption.Variable<Interaction>) option, definition));
             }
 
             // Apply permissions
@@ -183,19 +193,19 @@ public final class YuiJDACommandFactory<C> implements JDACommandFactory<C> {
      * Mirrors StandardJDACommandFactory.createSubCommand but adds localization.
      */
     private @NotNull SubcommandData createSubCommand(
-            DiscordOption.SubCommand<C> option,
+            DiscordOption.SubCommand<Interaction> option,
             @Nullable CommandDefinition definition
     ) {
         SubcommandData subcommandData = new SubcommandData(option.name(), option.description());
         applyLocalization(subcommandData, option.description(), definition, null);
 
-        for (DiscordOption<C> child : option.options()) {
+        for (DiscordOption<Interaction> child : option.options()) {
             if (child instanceof DiscordOption.SubCommand)
                 throw new IllegalArgumentException(
                         "Cannot add subcommand " + child.name() + " as a child of subcommand " + option.name()
                 );
 
-            OptionData childOption = createOption((DiscordOption.Variable<C>) child, definition);
+            OptionData childOption = createOption((DiscordOption.Variable<Interaction>) child, definition);
             subcommandData.addOptions(childOption);
         }
 
@@ -207,20 +217,20 @@ public final class YuiJDACommandFactory<C> implements JDACommandFactory<C> {
      * Mirrors StandardJDACommandFactory.createSubCommandGroup but adds localization.
      */
     private @NotNull SubcommandGroupData createSubCommandGroup(
-            DiscordOption.SubCommand<C> option,
+            DiscordOption.SubCommand<Interaction> option,
             @Nullable CommandDefinition definition
     ) {
         SubcommandGroupData subcommandGroupData = new SubcommandGroupData(option.name(), option.description());
         applyLocalization(subcommandGroupData, option.description(), definition, null);
 
-        for (DiscordOption<C> child : option.options()) {
+        for (DiscordOption<Interaction> child : option.options()) {
             if (child instanceof DiscordOption.Variable)
                 throw new IllegalArgumentException(
                         "Cannot add variable option " + child.name() + " as child of group " + option.name()
                 );
 
             subcommandGroupData = subcommandGroupData.addSubcommands(
-                    createSubCommand((DiscordOption.SubCommand<C>) child, definition)
+                    createSubCommand((DiscordOption.SubCommand<Interaction>) child, definition)
             );
         }
         return subcommandGroupData;
@@ -231,7 +241,7 @@ public final class YuiJDACommandFactory<C> implements JDACommandFactory<C> {
      * Mirrors StandardJDACommandFactory.createOption but adds localization.
      */
     private @NotNull OptionData createOption(
-            DiscordOption.Variable<C> option,
+            DiscordOption.Variable<Interaction> option,
             @Nullable CommandDefinition definition
     ) {
         OptionData optionData = new OptionData(
@@ -264,7 +274,7 @@ public final class YuiJDACommandFactory<C> implements JDACommandFactory<C> {
      * Gets the CommandDefinition for the given root node.
      */
     @Nullable
-    private CommandDefinition getDefinition(@NotNull CommandNode<C> rootNode) {
+    private CommandDefinition getDefinition(@NotNull CommandNode<Interaction> rootNode) {
         if (rootNode.command() == null) return null;
 
         String definitionId = rootNode.command().commandMeta()

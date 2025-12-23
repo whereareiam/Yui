@@ -8,11 +8,12 @@ import me.whereareiam.yui.adapter.command.mapper.FluctlightInteractionMapper;
 import me.whereareiam.yui.adapter.command.parser.FluctlightParser;
 import me.whereareiam.yui.adapter.command.requirements.CommandRequirementsPostprocessor;
 import me.whereareiam.yui.command.Interaction;
-import me.whereareiam.yui.fluctlight.FluctlightService;
+import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import net.dv8tion.jda.api.JDA;
 import org.incendo.cloud.discord.jda6.JDA6CommandManager;
 import org.incendo.cloud.discord.slash.DiscordSetting;
 import org.incendo.cloud.execution.ExecutionCoordinator;
+import org.incendo.cloud.parser.ParserDescriptor;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +34,7 @@ public class CommandManagerFactory implements FactoryBean<JDA6CommandManager<Int
 	private final FluctlightInteractionMapper fluctlightInteractionMapper;
 	private final ScheduledExecutorService scheduledExecutorService;
 	private final CommandDefinitionRegistry definitionRegistry;
-	private final FluctlightService fluctlightService;
+	private final FluctlightParser fluctlightParser;
 	private final JDA jda;
 
 	private JDA6CommandManager<Interaction> commandManager;
@@ -48,6 +49,7 @@ public class CommandManagerFactory implements FactoryBean<JDA6CommandManager<Int
 					fluctlightInteractionMapper,
 					scheduledExecutorService,
 					definitionRegistry,
+					fluctlightParser,
 					jda
 			);
 
@@ -56,7 +58,7 @@ public class CommandManagerFactory implements FactoryBean<JDA6CommandManager<Int
 			commandManager.discordSettings().set(DiscordSetting.EPHEMERAL_ERROR_MESSAGES, true);
 
 			// Register Fluctlight parser for user arguments
-			commandManager.parserRegistry().registerParser(FluctlightParser.fluctlightParser(fluctlightService));
+			commandManager.parserRegistry().registerParser(ParserDescriptor.of(fluctlightParser, Fluctlight.class));
 
 			// Register global command postprocessors (runs after parsing, can access command meta)
 			commandManager.registerCommandPostProcessor(requirementsPostprocessor);

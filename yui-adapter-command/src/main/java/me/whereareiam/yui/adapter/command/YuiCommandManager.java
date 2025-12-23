@@ -3,6 +3,7 @@ package me.whereareiam.yui.adapter.command;
 import lombok.Getter;
 import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
 import me.whereareiam.yui.adapter.command.factory.YuiJDACommandFactory;
+import me.whereareiam.yui.adapter.command.parser.FluctlightParser;
 import me.whereareiam.yui.adapter.command.registration.JDARegistrationHandler;
 import me.whereareiam.yui.command.Interaction;
 import net.dv8tion.jda.api.JDA;
@@ -31,6 +32,7 @@ public final class YuiCommandManager extends JDA6CommandManager<Interaction> {
 			final @NotNull JDAInteraction.InteractionMapper<Interaction> senderMapper,
 			final @NotNull ScheduledExecutorService scheduledExecutorService,
 			final @NotNull CommandDefinitionRegistry definitionRegistry,
+			final @NotNull FluctlightParser fluctlightParser,
 			final @NotNull JDA jda
 	) {
 		super(executionCoordinator, senderMapper);
@@ -41,6 +43,6 @@ public final class YuiCommandManager extends JDA6CommandManager<Interaction> {
 		this.commandRegistrationHandler(new JDARegistrationHandler(scheduledExecutorService, this, jda));
 
 		// Install custom command factory with multilanguage support
-		this.commandFactory(new YuiJDACommandFactory<>(this.commandTree(), definitionRegistry));
+		this.commandFactory(new YuiJDACommandFactory(this.commandTree(), definitionRegistry, fluctlightParser));
 	}
 }

@@ -10,8 +10,8 @@ import org.incendo.cloud.discord.jda6.JDA6CommandManager;
 import org.incendo.cloud.discord.jda6.JDAInteraction;
 import org.incendo.cloud.discord.slash.NullableParser;
 import org.incendo.cloud.parser.ArgumentParseResult;
-import org.incendo.cloud.parser.ParserDescriptor;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -21,6 +21,7 @@ import java.util.concurrent.CompletableFuture;
  * This parser follows the same pattern as JDAParser, extracting the User from OptionMapping
  * and converting it to a Fluctlight using FluctlightService.
  */
+@Component
 @RequiredArgsConstructor
 public class FluctlightParser extends NullableParser<Interaction, Fluctlight> {
 	private final FluctlightService fluctlightService;
@@ -32,34 +33,21 @@ public class FluctlightParser extends NullableParser<Interaction, Fluctlight> {
 	) {
 		// Get the JDAInteraction from context (Cloud stores it there)
 		JDAInteraction jdaInteraction = commandContext.get(JDA6CommandManager.CONTEXT_JDA_INTERACTION);
-		
-		return jdaInteraction.getOptionMapping(commandInput.readString())
+		String optionName = commandInput.readString();
+
+		ArgumentParseResult<Fluctlight> result = jdaInteraction.getOptionMapping(optionName)
 				.map(mapping -> {
 					try {
-						return fluctlightService.getOrCreate(mapping.getAsUser().getIdLong());
-					} catch (final IllegalStateException ignored) {
-						return null;
+						Fluctlight fluctlight = fluctlightService.getOrCreate(mapping.getAsUser().getIdLong());
+						return ArgumentParseResult.success(fluctlight);
 					} catch (final Exception e) {
-						// Return null for now - Cloud will handle the error
-						return null;
+						return ArgumentParseResult.<Fluctlight>failure(e);
 					}
 				})
-				.map(ArgumentParseResult::successFuture)
-				.orElseGet(() -> CompletableFuture.completedFuture(null));
-	}
+				.orElseGet(() -> ArgumentParseResult.failure(
+						new IllegalArgumentException("Option mapping not found for '" + optionName + "'")
+				));
 
-	/**
-	 * Creates a parser descriptor for Fluctlight.
-	 *
-	 * @param fluctlightService The FluctlightService instance
-	 * @return Parser descriptor
-	 */
-	public static ParserDescriptor<Interaction, Fluctlight> fluctlightParser(
-			FluctlightService fluctlightService
-	) {
-		return ParserDescriptor.of(
-				new FluctlightParser(fluctlightService),
-				Fluctlight.class
-		);
+		return CompletableFuture.completedFuture(result);
 	}
 }
