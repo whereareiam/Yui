@@ -16,6 +16,7 @@ import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.*;
 import org.incendo.cloud.CommandTree;
+import org.incendo.cloud.component.CommandComponent;
 import org.incendo.cloud.discord.jda6.JDACommandFactory;
 import org.incendo.cloud.discord.jda6.JDAOptionType;
 import org.incendo.cloud.discord.jda6.JDAParser;
@@ -84,20 +85,27 @@ public final class YuiJDACommandFactory implements JDACommandFactory<Interaction
             if (!this.commandScopePredicate.test(rootNode, scope)) continue;
 
             DiscordCommand<Interaction> command = this.discordCommandFactory.create(rootNode);
+            Map<List<String>, CommandDefinition> definitionsByPath = buildDefinitionLookup(rootNode);
+            CommandDefinition definition = definitionForPath(definitionsByPath, List.of(command.name()));
             SlashCommandData data = Commands.slash(command.name(), command.description());
-
-            // Get definition once for this command
-            CommandDefinition definition = getDefinition(rootNode);
 
             // Apply options
             for (DiscordOption<Interaction> option : command.options()) {
+                List<String> optionPath = new ArrayList<>(List.of(command.name(), option.name()));
+                CommandDefinition optionDefinition = definitionForPath(definitionsByPath, optionPath);
+
                 if (option instanceof DiscordOption.SubCommand) {
                     if (option.type().equals(DiscordOptionType.SUB_COMMAND)) {
-                        data.addSubcommands(createSubCommand((DiscordOption.SubCommand<Interaction>) option, definition));
+                        data.addSubcommands(createSubCommand((DiscordOption.SubCommand<Interaction>) option, optionDefinition));
                         continue;
                     }
 
-                    data.addSubcommandGroups(createSubCommandGroup((DiscordOption.SubCommand<Interaction>) option, definition));
+                    data.addSubcommandGroups(createSubCommandGroup(
+                            (DiscordOption.SubCommand<Interaction>) option,
+                            optionDefinition,
+                            definitionsByPath,
+                            optionPath
+                    ));
                     continue;
                 }
 
@@ -160,10 +168,10 @@ public final class YuiJDACommandFactory implements JDACommandFactory<Interaction
         if (containsTranslateTag(variableDescription))
             descriptionToLocalize = variableDescription;
 
-        if (containsTranslateTag(primaryDescription))
+        if (descriptionToLocalize == null && containsTranslateTag(primaryDescription))
             descriptionToLocalize = primaryDescription;
 
-        if (definition != null) {
+        if (!(localizable instanceof OptionData) && descriptionToLocalize == null && definition != null) {
             String definitionDescription = definition.getDescription();
             if (containsTranslateTag(definitionDescription))
                 descriptionToLocalize = definitionDescription;
@@ -218,7 +226,9 @@ public final class YuiJDACommandFactory implements JDACommandFactory<Interaction
      */
     private @NotNull SubcommandGroupData createSubCommandGroup(
             DiscordOption.SubCommand<Interaction> option,
-            @Nullable CommandDefinition definition
+            @Nullable CommandDefinition definition,
+            Map<List<String>, CommandDefinition> definitionsByPath,
+            List<String> currentPath
     ) {
         SubcommandGroupData subcommandGroupData = new SubcommandGroupData(option.name(), option.description());
         applyLocalization(subcommandGroupData, option.description(), definition, null);
@@ -229,8 +239,11 @@ public final class YuiJDACommandFactory implements JDACommandFactory<Interaction
                         "Cannot add variable option " + child.name() + " as child of group " + option.name()
                 );
 
+            List<String> childPath = new ArrayList<>(currentPath);
+            childPath.add(child.name());
+            CommandDefinition childDefinition = definitionForPath(definitionsByPath, childPath);
             subcommandGroupData = subcommandGroupData.addSubcommands(
-                    createSubCommand((DiscordOption.SubCommand<Interaction>) child, definition)
+                    createSubCommand((DiscordOption.SubCommand<Interaction>) child, childDefinition)
             );
         }
         return subcommandGroupData;
@@ -274,16 +287,65 @@ public final class YuiJDACommandFactory implements JDACommandFactory<Interaction
      * Gets the CommandDefinition for the given root node.
      */
     @Nullable
-    private CommandDefinition getDefinition(@NotNull CommandNode<Interaction> rootNode) {
-        if (rootNode.command() == null) return null;
+    private CommandDefinition getDefinition(@NotNull CommandNode<Interaction> node) {
+        if (node.command() == null) return null;
 
-        String definitionId = rootNode.command().commandMeta()
+        String definitionId = node.command().commandMeta()
                 .optional(YuiCommandMetaKeys.DEFINITION)
                 .orElse(null);
 
         if (definitionId == null) return null;
 
         return definitionRegistry.get(definitionId).orElse(null);
+    }
+
+    /**
+     * Builds a lookup map of command definition by literal path for a root node.
+     */
+    private Map<List<String>, CommandDefinition> buildDefinitionLookup(@NotNull CommandNode<Interaction> rootNode) {
+        Map<List<String>, CommandDefinition> map = new LinkedHashMap<>();
+        collectDefinitions(rootNode, new ArrayList<>(), map);
+        return map;
+    }
+
+    private void collectDefinitions(
+            @NotNull CommandNode<Interaction> node,
+            @NotNull List<String> literalPath,
+            @NotNull Map<List<String>, CommandDefinition> map
+    ) {
+        CommandComponent<Interaction> component = node.component();
+        if (component != null && component.type() == CommandComponent.ComponentType.LITERAL)
+            literalPath.add(component.name());
+
+        if (node.command() != null) {
+            CommandDefinition definition = getDefinition(node);
+            if (definition != null)
+                map.put(List.copyOf(literalPath), definition);
+        }
+
+        for (CommandNode<Interaction> child : node.children())
+            collectDefinitions(child, new ArrayList<>(literalPath), map);
+    }
+
+    /**
+     * Resolves the best matching definition for a given literal path.
+     */
+    private @Nullable CommandDefinition definitionForPath(
+            @NotNull Map<List<String>, CommandDefinition> definitionsByPath,
+            @NotNull List<String> literalPath
+    ) {
+        CommandDefinition direct = definitionsByPath.get(literalPath);
+        if (direct != null) return direct;
+
+        for (Map.Entry<List<String>, CommandDefinition> entry : definitionsByPath.entrySet()) {
+            List<String> candidatePath = entry.getKey();
+            if (candidatePath.size() < literalPath.size()) continue;
+
+            if (candidatePath.subList(0, literalPath.size()).equals(literalPath))
+                return entry.getValue();
+        }
+
+        return null;
     }
 
     /**
