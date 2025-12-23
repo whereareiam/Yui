@@ -1,8 +1,9 @@
-package me.whereareiam.yui.common.service.fluctlight;
+package me.whereareiam.yui.common.fluctlight;
 
 import jakarta.annotation.PostConstruct;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.yui.common.role.sync.RoleSyncScheduler;
 import me.whereareiam.yui.event.fluctlight.FluctlightClearEvent;
 import me.whereareiam.yui.event.fluctlight.FluctlightClearedEvent;
 import me.whereareiam.yui.event.fluctlight.FluctlightCreatedEvent;
@@ -48,6 +49,7 @@ public class DefaultFluctlightService implements FluctlightService {
 	private final FluctlightRegistry fluctlightRegistry;
 	private final FluctlightPersistence fluctlightPersistence;
 	private final ApplicationEventPublisher eventPublisher;
+	private final RoleSyncScheduler roleSyncScheduler;
 	private final ObjectProvider<Settings> settings;
 
 	@PostConstruct
@@ -135,7 +137,7 @@ public class DefaultFluctlightService implements FluctlightService {
 	@Override
 	public Optional<Fluctlight> clear(long userId) {
 		try {
-			log.info("Clearing and reinitializing Fluctlight for fluctlight: {}", userId);
+			log.debug("Clearing and reinitializing Fluctlight for user: {}", userId);
 
 			// Get the old Fluctlight before clearing
 			Fluctlight oldFluctlight = fluctlightRegistry.getFluctlight(userId).orElse(null);
@@ -145,7 +147,7 @@ public class DefaultFluctlightService implements FluctlightService {
 			eventPublisher.publishEvent(clearEvent);
 
 			if (clearEvent.isCancelled()) {
-				log.debug("Fluctlight clear operation cancelled for fluctlight: {}", userId);
+				log.debug("Fluctlight clear operation cancelled for user: {}", userId);
 				return Optional.ofNullable(oldFluctlight);
 			}
 
@@ -172,14 +174,14 @@ public class DefaultFluctlightService implements FluctlightService {
 				);
 				eventPublisher.publishEvent(clearedEvent);
 				
-				log.debug("Successfully reinitialized Fluctlight for fluctlight: {}", userId);
+				log.debug("Successfully reinitialized Fluctlight for user: {}", userId);
 				return newFluctlight;
 			}
 
-			log.error("Failed to create new Fluctlight for fluctlight: {}", userId);
+			log.error("Failed to create new Fluctlight for user: {}", userId);
 			return Optional.empty();
 		} catch (Exception e) {
-			log.error("Error during Fluctlight clear and reinitialization for fluctlight: {}", userId, e);
+			log.error("Error during Fluctlight clear and reinitialization for user: {}", userId, e);
 			return Optional.empty();
 		}
 	}
@@ -324,7 +326,7 @@ public class DefaultFluctlightService implements FluctlightService {
 
 	@Override
 	public void addAllowedRole(Fluctlight fluctlight, long roleId) {
-		// Publish cancellable event BEFORE persistence
+		// Publish cancellable event BEFORE any changes
 		FluctlightRoleAddEvent addEvent = new FluctlightRoleAddEvent(fluctlight, roleId);
 		eventPublisher.publishEvent(addEvent);
 		
@@ -333,34 +335,49 @@ public class DefaultFluctlightService implements FluctlightService {
 			return;
 		}
 		
-		// Update persistence
-		fluctlightPersistence.addAllowedRole(fluctlight, roleId);
-		
-		// Publish non-cancellable event AFTER persistence
-		eventPublisher.publishEvent(new FluctlightRoleAddedEvent(fluctlight, roleId));
-		
-		// Publish generic update event for consistency with language changes
+		// Update IN-MEMORY state IMMEDIATELY (non-blocking!)
 		long[] current = fluctlight.getAllowedRoles();
 		long[] updated;
 		if (current == null) {
 			updated = new long[]{roleId};
 		} else {
+			// Check if already present
+			for (long existingRole : current) {
+				if (existingRole == roleId) {
+					log.debug("Role {} already present for user {}", roleId, fluctlight.getId());
+					return;
+				}
+			}
+			
 			updated = new long[current.length + 1];
 			System.arraycopy(current, 0, updated, 0, current.length);
 			updated[current.length] = roleId;
 		}
 		
+		FluctlightStateUpdater.updateAllowedRoles(fluctlight, updated);
+		
+		// Update registry (in-memory)
+		fluctlightRegistry.putFluctlight(fluctlight.getId(), fluctlight);
+		
+		// Publish non-cancellable event AFTER in-memory update
+		eventPublisher.publishEvent(new FluctlightRoleAddedEvent(fluctlight, roleId));
+		
+		// Publish generic update event
 		FluctlightData updatedData = new FluctlightData(
 				fluctlight.getPrimaryLanguage(),
 				fluctlight.getAdditionalLanguages(),
 				updated
 		);
 		eventPublisher.publishEvent(new FluctlightUpdatedEvent(fluctlight, updatedData));
+		
+		// Queue async operations (NON-BLOCKING!)
+		roleSyncScheduler.queueRoleChange(fluctlight.getId(), roleId, true);
+		fluctlightPersistence.saveData(fluctlight, updatedData);
 	}
 
 	@Override
 	public void removeAllowedRole(Fluctlight fluctlight, long roleId) {
-		// Publish cancellable event BEFORE persistence
+		// Publish cancellable event BEFORE any changes
 		FluctlightRoleRemoveEvent removeEvent = new FluctlightRoleRemoveEvent(fluctlight, roleId);
 		eventPublisher.publishEvent(removeEvent);
 		
@@ -369,38 +386,60 @@ public class DefaultFluctlightService implements FluctlightService {
 			return;
 		}
 		
-		// Update persistence
-		fluctlightPersistence.removeAllowedRole(fluctlight, roleId);
-		
-		// Publish non-cancellable event AFTER persistence
-		eventPublisher.publishEvent(new FluctlightRoleRemovedEvent(fluctlight, roleId));
-		
-		// Publish generic update event for consistency with language changes
+		// Update IN-MEMORY state IMMEDIATELY (non-blocking!)
 		long[] current = fluctlight.getAllowedRoles();
-		if (current == null || current.length == 0)
+		if (current == null || current.length == 0) {
+			log.debug("No roles to remove for user {}", fluctlight.getId());
 			return;
+		}
 		
 		long[] updated = new long[current.length - 1];
 		int index = 0;
-		for (long role : current)
-			if (role != roleId) updated[index++] = role;
+		boolean found = false;
+		for (long role : current) {
+			if (role != roleId) {
+				updated[index++] = role;
+				continue;
+			}
 
+			found = true;
+		}
+		
+		if (!found) {
+			log.debug("Role {} not found for user {}", roleId, fluctlight.getId());
+			return;
+		}
+		
+		FluctlightStateUpdater.updateAllowedRoles(fluctlight, updated.length > 0 ? updated : null);
+		
+		// Update registry (in-memory)
+		fluctlightRegistry.putFluctlight(fluctlight.getId(), fluctlight);
+		
+		// Publish non-cancellable event AFTER in-memory update
+		eventPublisher.publishEvent(new FluctlightRoleRemovedEvent(fluctlight, roleId));
+		
+		// Publish generic update event
 		FluctlightData updatedData = new FluctlightData(
 				fluctlight.getPrimaryLanguage(),
 				fluctlight.getAdditionalLanguages(),
 				updated.length > 0 ? updated : null
 		);
 		eventPublisher.publishEvent(new FluctlightUpdatedEvent(fluctlight, updatedData));
+		
+		// Queue async operations (NON-BLOCKING!)
+		roleSyncScheduler.queueRoleChange(fluctlight.getId(), roleId, false);
+		fluctlightPersistence.saveData(fluctlight, updatedData);
 	}
 
 	private Set<DiscordLocale> toLocaleSet(DiscordLocale[] locales) {
 		Set<DiscordLocale> result = new HashSet<>();
 		if (locales == null)
 			return result;
-		for (DiscordLocale locale : locales) {
+
+		for (DiscordLocale locale : locales)
 			if (locale != null)
 				result.add(locale);
-		}
+
 		return result;
 	}
 

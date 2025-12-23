@@ -2,7 +2,7 @@ package me.whereareiam.yui.common.service.conversation.type.pm;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.model.conversation.Conversation;
+import me.whereareiam.yui.conversation.Conversation;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;

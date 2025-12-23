@@ -1,4 +1,4 @@
-package me.whereareiam.yui.model.conversation;
+package me.whereareiam.yui.model;
 
 import lombok.Builder;
 import lombok.Getter;

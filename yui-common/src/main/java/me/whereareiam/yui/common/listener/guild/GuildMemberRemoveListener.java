@@ -1,4 +1,4 @@
-package me.whereareiam.yui.common.listener;
+package me.whereareiam.yui.common.listener.guild;
 
 import lombok.AllArgsConstructor;
 import me.whereareiam.yui.fluctlight.FluctlightRegistry;

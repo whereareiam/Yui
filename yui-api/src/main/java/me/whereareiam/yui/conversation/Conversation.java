@@ -1,12 +1,13 @@
-package me.whereareiam.yui.model.conversation;
+package me.whereareiam.yui.conversation;
 
-import me.whereareiam.yui.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.type.ConversationType;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
+@SuppressWarnings("unused")
 public interface Conversation {
 	Collection<Long> getParticipants();
 

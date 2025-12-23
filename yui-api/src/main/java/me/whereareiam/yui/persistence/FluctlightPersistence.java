@@ -9,9 +9,14 @@ import java.util.Optional;
 /**
  * Service interface for Fluctlight database operations.
  * <p>
- * This service handles ONLY database persistence operations for Fluctlight data.
+ * This service handles database persistence operations for Fluctlight data.
  * It does not handle caching, JDA User retrieval, or business logic.
+ * <p>
+ * <b>Implementation Note:</b> By default, all write operations are batched
+ * and asynchronous for performance. Use {@link #flush()} to ensure all
+ * pending writes are completed (e.g., during shutdown or in tests).
  */
+@SuppressWarnings("unused")
 public interface FluctlightPersistence {
 	/**
 	 * Loads data for a fluctlight from the database.
@@ -96,4 +101,21 @@ public interface FluctlightPersistence {
 	 * @param roleId The allowed role ID to remove
 	 */
 	void removeAllowedRole(Fluctlight fluctlight, long roleId);
+
+	/**
+	 * Flushes all pending write operations to ensure they complete.
+	 * <p>
+	 * By default, persistence operations are batched and asynchronous.
+	 * Call this method when you need to ensure all pending writes have
+	 * completed, such as:
+	 * <ul>
+	 *   <li>During application shutdown</li>
+	 *   <li>In integration tests</li>
+	 *   <li>Before critical operations that depend on persisted state</li>
+	 * </ul>
+	 * This method blocks until all pending operations complete.
+	 */
+	default void flush() {
+		// Default: no-op for implementations that don't queue
+	}
 }

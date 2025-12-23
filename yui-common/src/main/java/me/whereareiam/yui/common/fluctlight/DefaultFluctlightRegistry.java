@@ -1,4 +1,4 @@
-package me.whereareiam.yui.common.service.fluctlight;
+package me.whereareiam.yui.common.fluctlight;
 
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.fluctlight.FluctlightRegistry;

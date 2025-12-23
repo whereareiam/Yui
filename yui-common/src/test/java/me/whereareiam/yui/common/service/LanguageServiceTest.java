@@ -1,7 +1,8 @@
-package me.whereareiam.yui.common.service.language;
+package me.whereareiam.yui.common.service;
 
+import me.whereareiam.yui.Registry;
+import me.whereareiam.yui.Reloadable;
 import me.whereareiam.yui.common.config.provider.LanguagesProvider;
-import me.whereareiam.yui.common.service.LanguageService;
 import me.whereareiam.yui.model.config.languages.LanguageEntry;
 import me.whereareiam.yui.model.config.languages.Languages;
 import me.whereareiam.yui.model.config.settings.Settings;
@@ -15,7 +16,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.ObjectProvider;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.mockito.Mockito.*;
 
@@ -37,7 +41,7 @@ class LanguageServiceTest {
 	private Settings settings;
 	
 	@Mock
-	private me.whereareiam.yui.Registry<me.whereareiam.yui.Reloadable> reloadableRegistry;
+	private Registry<Reloadable> reloadableRegistry;
 	
 	private LanguageService languageService;
 	

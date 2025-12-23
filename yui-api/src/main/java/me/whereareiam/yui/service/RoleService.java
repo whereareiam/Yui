@@ -1,11 +1,10 @@
 package me.whereareiam.yui.service;
 
 import me.whereareiam.yui.model.config.roles.RoleEntry;
-import me.whereareiam.yui.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.model.ManagedRole;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * Service interface for managing roles and role synchronization.
@@ -89,58 +88,29 @@ public interface RoleService {
 	boolean updateRoleSync(long roleId, boolean sync);
 
 	/**
-	 * Syncs a user's roles to Discord (ensures Discord matches DB/in-memory).
-	 * <p>
-	 * Synchronizes a user's roles between the database/in-memory cache (source of truth)
-	 * and Discord. This method:
-	 * <ul>
-	 *   <li>Adds roles in Discord that the user should have but doesn't have</li>
-	 *   <li>Removes roles from Discord that the user shouldn't have but does have</li>
-	 * </ul>
-	 * Only roles with sync enabled are synchronized.
-	 * <p>
-	 * This operation is performed asynchronously and returns a CompletableFuture
-	 * that completes when the sync operation finishes.
-	 *
-	 * @param fluctlight The Fluctlight instance representing the user
-	 * @return CompletableFuture that completes when the sync operation finishes
-	 */
-	CompletableFuture<Void> syncUserRoles(Fluctlight fluctlight);
-
-	/**
-	 * Syncs all cached users.
-	 * <p>
-	 * Synchronizes roles for all users that are currently cached in the FluctlightRegistry.
-	 * This is useful for bulk synchronization operations. Each user is synced using
-	 * {@link #syncUserRoles(Fluctlight)}.
-	 * <p>
-	 * This operation is performed asynchronously and returns a CompletableFuture
-	 * that completes when all sync operations finish.
-	 *
-	 * @return CompletableFuture that completes when all sync operations finish
-	 */
-	CompletableFuture<Void> syncAllUsers();
-
-	/**
-	 * Gets all roles (config + API-added) merged together.
+	 * Gets all roles (config + API-added) merged together as managed roles.
 	 * <p>
 	 * Returns a list of all roles that the bot is allowed to work with,
 	 * combining roles from the configuration file and roles added via API.
+	 * Each role is wrapped in a {@link ManagedRole} that provides metadata
+	 * about its source (CONFIG or API) and persistence characteristics.
 	 * API-added roles take precedence over config roles when there are duplicates.
 	 *
-	 * @return List of all allowed roles
+	 * @return List of all allowed roles as ManagedRole instances
 	 */
-	List<RoleEntry> getAllRoles();
+	List<ManagedRole> getAllRoles();
 
 	/**
 	 * Gets a role by ID (checks both config and API-added roles).
 	 * <p>
 	 * Searches for a role with the specified ID in both the configuration
 	 * and API-added roles. API-added roles are checked first and take precedence.
+	 * The returned role is wrapped in a {@link ManagedRole} that provides
+	 * metadata about its source and persistence characteristics.
 	 *
 	 * @param roleId The role ID to look up
-	 * @return Optional containing the role if found, empty otherwise
+	 * @return Optional containing the managed role if found, empty otherwise
 	 */
-	Optional<RoleEntry> getRole(long roleId);
+	Optional<ManagedRole> getRole(long roleId);
 }
 

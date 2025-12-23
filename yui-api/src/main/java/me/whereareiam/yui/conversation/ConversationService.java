@@ -1,7 +1,6 @@
-package me.whereareiam.yui.service;
+package me.whereareiam.yui.conversation;
 
-import me.whereareiam.yui.model.conversation.Conversation;
-import me.whereareiam.yui.model.conversation.ConversationConfig;
+import me.whereareiam.yui.model.ConversationConfig;
 
 import java.util.Collection;
 import java.util.Optional;

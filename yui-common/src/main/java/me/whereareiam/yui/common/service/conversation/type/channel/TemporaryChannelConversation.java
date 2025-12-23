@@ -2,8 +2,8 @@ package me.whereareiam.yui.common.service.conversation.type.channel;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.model.conversation.Conversation;
-import me.whereareiam.yui.model.conversation.ConversationType;
+import me.whereareiam.yui.conversation.Conversation;
+import me.whereareiam.yui.type.ConversationType;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
