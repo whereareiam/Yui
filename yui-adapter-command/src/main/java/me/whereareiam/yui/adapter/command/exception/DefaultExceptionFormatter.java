@@ -41,9 +41,9 @@ public final class DefaultExceptionFormatter {
 			handleWithDefer(commandContext, () -> {
 				Interaction interaction = commandContext.sender();
 				long userId = interaction.fluctlight().getId();
-				String title = Translatable.text("error.command.notFound.title").resolve(userId);
-				String description = Translatable.text("error.command.notFound.description").resolve(userId);
-				
+				String title = Translatable.text("commands.error.command.title").resolve(userId);
+				String description = Translatable.text("commands.error.command.description").resolve(userId);
+
 				return StyleKit.embeds().error()
 						.setTitle(title)
 						.setDescription(description);
@@ -62,12 +62,14 @@ public final class DefaultExceptionFormatter {
 			handleWithDefer(commandContext, () -> {
 				Interaction interaction = commandContext.sender();
 				long userId = interaction.fluctlight().getId();
-				String title = Translatable.text("error.syntax.invalid.title").resolve(userId);
-				String description = Translatable.text("error.syntax.invalid.description").with("value", correctSyntax).resolve(userId);
-				
+				String title = Translatable.text("commands.error.syntax.title").resolve(userId);
+				String description = Translatable.text("commands.error.syntax.description").resolve(userId);
+				String fieldName = Translatable.text("commands.error.syntax.fields.correctUsage").resolve(userId);
+
 				return StyleKit.embeds().error()
 						.setTitle(title)
-						.setDescription(description);
+						.setDescription(description)
+						.addField(fieldName, "`" + correctSyntax + "`", false);
 			});
 		};
 	}
@@ -84,14 +86,14 @@ public final class DefaultExceptionFormatter {
 			handleWithDefer(commandContext, () -> {
 				Interaction interaction = commandContext.sender();
 				long userId = interaction.fluctlight().getId();
-				String title = Translatable.text("error.argument.parse.title").resolve(userId);
-				String description = Translatable.text("error.argument.parse.description")
-					.with("value", errorMessage)
-					.resolve(userId);
-				
+				String title = Translatable.text("commands.error.argument.title").resolve(userId);
+				String description = Translatable.text("commands.error.argument.description").resolve(userId);
+				String fieldName = Translatable.text("commands.error.argument.fields.errorDetails").resolve(userId);
+
 				return StyleKit.embeds().error()
 						.setTitle(title)
-						.setDescription(description);
+						.setDescription(description)
+						.addField(fieldName, errorMessage, false);
 			});
 		};
 	}
@@ -107,12 +109,14 @@ public final class DefaultExceptionFormatter {
 			handleWithDefer(commandContext, () -> {
 				Interaction interaction = commandContext.sender();
 				long userId = interaction.fluctlight().getId();
-				String title = Translatable.text("error.permission.denied.title").resolve(userId);
-				String description = Translatable.text("error.permission.denied.description").with("value", permission).resolve(userId);
-				
+				String title = Translatable.text("commands.error.permission.title").resolve(userId);
+				String description = Translatable.text("commands.error.permission.description").resolve(userId);
+				String fieldName = Translatable.text("commands.error.permission.fields.requiredPermission").resolve(userId);
+
 				return StyleKit.embeds().error()
 						.setTitle(title)
-						.setDescription(description);
+						.setDescription(description)
+						.addField(fieldName, permission, false);
 			});
 		};
 	}
@@ -127,9 +131,9 @@ public final class DefaultExceptionFormatter {
 			handleWithDefer(commandContext, () -> {
 				Interaction interaction = commandContext.sender();
 				long userId = interaction.fluctlight().getId();
-				String title = Translatable.text("error.sender.invalid.title").resolve(userId);
-				String description = Translatable.text("error.sender.invalid.description").resolve(userId);
-				
+				String title = Translatable.text("commands.error.sender.title").resolve(userId);
+				String description = Translatable.text("commands.error.sender.description").resolve(userId);
+
 				return StyleKit.embeds().error()
 						.setTitle(title)
 						.setDescription(description);
@@ -215,9 +219,9 @@ public final class DefaultExceptionFormatter {
 			handleWithDefer(commandContext, () -> {
 				Interaction interaction = commandContext.sender();
 				long userId = interaction.fluctlight().getId();
-				String title = Translatable.text("error.unexpected.title").resolve(userId);
-				String description = Translatable.text("error.unexpected.description").with("value", finalErrorMessage).resolve(userId);
-				
+				String title = Translatable.text("commands.error.unexpected.title").resolve(userId);
+				String description = Translatable.text("commands.error.unexpected.description").with("value", finalErrorMessage).resolve(userId);
+
 				return StyleKit.embeds().error()
 						.setTitle(title)
 						.setDescription(description);
@@ -251,9 +255,9 @@ public final class DefaultExceptionFormatter {
 			handleWithDefer(commandContext, () -> {
 				Interaction interaction = commandContext.sender();
 				long userId = interaction.fluctlight().getId();
-				String title = Translatable.text("error.unexpected.title").resolve(userId);
-				String description = Translatable.text("error.unexpected.description").with("value", finalErrorMessage).resolve(userId);
-				
+				String title = Translatable.text("commands.error.unexpected.title").resolve(userId);
+				String description = Translatable.text("commands.error.unexpected.description").with("value", finalErrorMessage).resolve(userId);
+
 				return StyleKit.embeds().error()
 						.setTitle(title)
 						.setDescription(description);
@@ -351,5 +355,3 @@ public final class DefaultExceptionFormatter {
 		}
 	}
 }
-
-

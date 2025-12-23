@@ -19,8 +19,77 @@ public class CommandMessages {
 	@Setter
 	public static class ErrorMessages {
 		private String exception;
+		private CommandErrorMessages command;
+		private SyntaxErrorMessages syntax;
+		private ArgumentErrorMessages argument;
+		private PermissionErrorMessages permission;
+		private SenderErrorMessages sender;
+		private UnexpectedErrorMessages unexpected;
 		private RequirementErrorMessages requirement;
 		private ValidationErrorMessages validation;
+
+		@Getter
+		@Setter
+		public static class CommandErrorMessages {
+			private String title;
+			private String description;
+		}
+
+		@Getter
+		@Setter
+		public static class SyntaxErrorMessages {
+			private String title;
+			private String description;
+			private Fields fields;
+
+			@Getter
+			@Setter
+			public static class Fields {
+				private String correctUsage;
+			}
+		}
+
+		@Getter
+		@Setter
+		public static class ArgumentErrorMessages {
+			private String title;
+			private String description;
+			private Fields fields;
+
+			@Getter
+			@Setter
+			public static class Fields {
+				private String errorDetails;
+			}
+		}
+
+		@Getter
+		@Setter
+		public static class PermissionErrorMessages {
+			private String title;
+			private String description;
+			private Fields fields;
+
+			@Getter
+			@Setter
+			public static class Fields {
+				private String requiredPermission;
+			}
+		}
+
+		@Getter
+		@Setter
+		public static class SenderErrorMessages {
+			private String title;
+			private String description;
+		}
+
+		@Getter
+		@Setter
+		public static class UnexpectedErrorMessages {
+			private String title;
+			private String description;
+		}
 
 		@Getter
 		@Setter

@@ -37,9 +37,9 @@ public class RequirementFailedException extends CommandException {
 	public ExceptionResponse createResponse(@NotNull Interaction interaction) {
 		long userId = interaction.fluctlight().getId();
 		
-		String title = Translatable.text("error.requirement.failed.title").resolve(userId);
-		String description = Translatable.text("error.requirement.failed.description").resolve(userId);
-		
+		String title = Translatable.text("commands.error.requirement.title").resolve(userId);
+		String description = Translatable.text("commands.error.requirement.failed").resolve(userId);
+
 		EmbedBuilder embed = StyleKit.embeds().error()
 				.setTitle(title)
 				.setDescription(description);
