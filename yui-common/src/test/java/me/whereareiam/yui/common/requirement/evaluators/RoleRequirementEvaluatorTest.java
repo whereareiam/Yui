@@ -1,10 +1,12 @@
 package me.whereareiam.yui.common.requirement.evaluators;
 
+import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.fluctlight.FluctlightStateUpdater;
 import me.whereareiam.yui.model.requirement.RequirementContext;
 import me.whereareiam.yui.model.requirement.type.RoleRequirement;
 import me.whereareiam.yui.type.requirement.RequirementCondition;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -15,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
 
 import java.util.Arrays;
 import java.util.List;
@@ -45,10 +48,17 @@ class RoleRequirementEvaluatorTest {
 	private Role role300;
 	@Mock(strictness = Mock.Strictness.LENIENT)
 	private User jdaUser;
+	@Mock(strictness = Mock.Strictness.LENIENT)
+	private JDA mockJda;
+	@Mock(strictness = Mock.Strictness.LENIENT)
+	private ObjectProvider<Settings> mockSettingsProvider;
 
 	@BeforeEach
 	void setUp() {
-		evaluator = new RoleRequirementEvaluator();
+		// Mock the settings provider to return null (no settings available)
+		when(mockSettingsProvider.getIfAvailable()).thenReturn(null);
+
+		evaluator = new RoleRequirementEvaluator(mockJda, mockSettingsProvider);
 
 		// Setup mock fluctlight
 		when(jdaUser.getIdLong()).thenReturn(12345L);
