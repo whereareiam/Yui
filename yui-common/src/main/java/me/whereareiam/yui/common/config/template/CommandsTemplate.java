@@ -59,7 +59,7 @@ public class CommandsTemplate implements TemplateProvider<Commands> {
 				List.of("clear"),
 				"translate(commands.clear.description)",
 				"translate(commands.clear.example)",
-				"{command} {alias} (user)",
+				"{command} {alias} <user>",
 				Map.of(
 						"user", "The Discord user whose profile should be cleared"
 				),
