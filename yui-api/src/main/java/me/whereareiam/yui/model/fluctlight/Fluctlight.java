@@ -96,7 +96,7 @@ public class Fluctlight {
 	/**
 	 * Gets the mention string for this fluctlight.
 	 *
-	 * @return The mention string (e.g., "<@123456789>")
+	 * @return The mention string (e.g., "&lt;@123456789>")
 	 */
 	public String getAsMention() {
 		return jdaUser.getAsMention();
