@@ -12,7 +12,7 @@ public class PluginCommandMessagesTemplate implements TemplateProvider<PluginCom
 	@Override
 	public PluginCommandMessages supply(PluginCommandMessages plugins) {
 		plugins.setDescription("Manage bot plugins");
-		plugins.setExample("/yui plugins [action] [plugin]");
+		plugins.setExample("/yui plugin enable Cardinal");
 		plugins.setVariables(Map.of(
 				"action", "The action to perform on a specific plugin",
 				"plugin", "The plugin identifier or jar base name (for load)"

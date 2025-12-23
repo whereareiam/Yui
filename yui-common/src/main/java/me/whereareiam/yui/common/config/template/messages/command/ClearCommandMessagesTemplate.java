@@ -11,7 +11,7 @@ public class ClearCommandMessagesTemplate implements TemplateProvider<ClearComma
 	@Override
 	public ClearCommandMessages supply(ClearCommandMessages clearCommand) {
 		clearCommand.setDescription("Clears a user's profile data and reinitializes it. This action cannot be undone.");
-		clearCommand.setExample("/yui clear @user");
+		clearCommand.setExample("/yui clear @Asuna");
 
 		ClearCommandMessages.Confirmation confirmation = new ClearCommandMessages.Confirmation();
 		confirmation.setTitle("Confirm User Profile Clear");
@@ -40,5 +40,3 @@ public class ClearCommandMessagesTemplate implements TemplateProvider<ClearComma
 		return clearCommand;
 	}
 }
-
-
