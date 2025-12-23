@@ -1,4 +1,4 @@
-package me.whereareiam.yui.common.service.conversation;
+package me.whereareiam.yui.common.service.conversation.type.pm;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package me.whereareiam.yui.common.service.conversation;
+package me.whereareiam.yui.common.service.conversation.type.channel;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import java.util.concurrent.CompletableFuture;
 class TemporaryChannelConversation implements Conversation {
 	private final Set<Long> participants;
 	private final TextChannel channel;
-	private final DefaultConversationService conversationService;
+	private final TempChannelConversationCreator channelCreator;
 	private volatile boolean active = true;
 
 	@Override
@@ -46,13 +46,13 @@ class TemporaryChannelConversation implements Conversation {
 	@Override
 	public CompletableFuture<Void> close() {
 		active = false;
-		return conversationService.closeChannel(channel, 0);
+		return channelCreator.closeChannel(channel, 0);
 	}
 
 	@Override
 	public CompletableFuture<Void> close(long delaySeconds) {
 		active = false;
-		return conversationService.closeChannel(channel, delaySeconds);
+		return channelCreator.closeChannel(channel, delaySeconds);
 	}
 
 	@Override

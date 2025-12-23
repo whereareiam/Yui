@@ -3,116 +3,44 @@ package me.whereareiam.yui.common.service.conversation;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.Reloadable;
-import me.whereareiam.yui.model.config.settings.Settings;
+import me.whereareiam.yui.common.service.conversation.type.pm.PrivateMessageConversationCreator;
+import me.whereareiam.yui.common.service.conversation.type.channel.TempChannelConversationCreator;
 import me.whereareiam.yui.model.conversation.Conversation;
 import me.whereareiam.yui.model.conversation.ConversationConfig;
 import me.whereareiam.yui.service.ConversationService;
-import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.util.translation.Translatable;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.entities.channel.concrete.Category;
-import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
-import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
-import net.dv8tion.jda.api.exceptions.ErrorResponseException;
-import net.dv8tion.jda.api.requests.restaction.ChannelAction;
+import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Component
-public class DefaultConversationService implements ConversationService, Reloadable {
-	private static final int DISCORD_CATEGORY_LIMIT = 50;
-	private static final EnumSet<Permission> CHANNEL_PERMISSIONS =
-			EnumSet.of(Permission.VIEW_CHANNEL,
-					Permission.MESSAGE_SEND,
-					Permission.MESSAGE_HISTORY,
-					Permission.MESSAGE_EXT_EMOJI,
-					Permission.MESSAGE_ATTACH_FILES);
-
-	private final JDA jda;
-	private final List<Long> categoryIds;
-
+public class DefaultConversationService extends ListenerAdapter implements ConversationService, Reloadable {
 	private final Map<ConversationKey, Conversation> userConversations = new ConcurrentHashMap<>();
-	private final Map<Long, Set<Long>> channelUsers = new ConcurrentHashMap<>();
 	private final Set<Conversation> activeConversations = ConcurrentHashMap.newKeySet();
-	private final Queue<PendingChannelRequest> pendingRequests = new ConcurrentLinkedQueue<>();
-	private final AtomicBoolean drainingQueue = new AtomicBoolean(false);
-
-	private final ScheduledExecutorService scheduler =
-			Executors.newSingleThreadScheduledExecutor(r -> {
-				Thread t = new Thread(r, "conversation-scheduler");
-				t.setDaemon(true);
-				return t;
-			});
+	private final PrivateMessageConversationCreator privateMessageConversationCreator;
+	private final TempChannelConversationCreator tempChannelConversationCreator;
 
 	@Autowired
 	public DefaultConversationService(
-			JDA jda,
-			Settings settings,
+			PrivateMessageConversationCreator privateMessageConversationCreator,
+			TempChannelConversationCreator tempChannelConversationCreator,
 			Registry<Reloadable> reloadableRegistry
 	) {
-		this.jda = jda;
-		this.categoryIds = settings.getDiscord()
-				.getChannels()
-				.getTempChannelCategories()
-				.stream()
-				.map(Long::parseLong)
-				.toList();
+		this.privateMessageConversationCreator = privateMessageConversationCreator;
+		this.tempChannelConversationCreator = tempChannelConversationCreator;
 
 		reloadableRegistry.register(this);
 	}
 
 	public CompletableFuture<Void> purgeChannels() {
-		CompletableFuture<Void> result = new CompletableFuture<>();
-		Guild guild = jda.getGuilds().getFirst();
-
-		List<GuildChannel> channelsToDelete = new ArrayList<>();
-		for (long cid : categoryIds) {
-			Category cat = guild.getCategoryById(cid);
-			if (cat == null) continue;
-			channelsToDelete.addAll(cat.getChannels());
-		}
-
-		if (channelsToDelete.isEmpty())
-			return CompletableFuture.completedFuture(null);
-
-		log.info("[ConversationService]: Queuing {} channels for purge", channelsToDelete.size());
-
-		AtomicInteger remaining = new AtomicInteger(channelsToDelete.size());
-		for (int i = 0; i < channelsToDelete.size(); i++) {
-			final int index = i;
-			scheduler.schedule(() -> channelsToDelete.get(index)
-					.delete()
-					.reason("Yui restart – removing stale temp channel")
-					.queue(
-							_ -> {
-								if (remaining.decrementAndGet() == 0) {
-									log.info("[ConversationService]: Startup channel purge completed");
-									result.complete(null);
-								}
-							},
-							ex -> {
-								log.warn("Failed to delete channel {}: {}",
-										channelsToDelete.get(index).getName(), ex.getMessage());
-								if (remaining.decrementAndGet() == 0) {
-									result.complete(null);
-								}
-							}
-					), i * 1000L, TimeUnit.MILLISECONDS);
-		}
-
-		return result;
+		return tempChannelConversationCreator.purgeChannels();
 	}
 
 	@Override
@@ -156,178 +84,31 @@ public class DefaultConversationService implements ConversationService, Reloadab
 	}
 
 	private CompletableFuture<Conversation> tryCreatePrivateMessage(long userId, String context, ConversationConfig config) {
-		CompletableFuture<Conversation> future = new CompletableFuture<>();
-
-		jda.retrieveUserById(userId).queue(
-				user -> user.openPrivateChannel().queue(
-						channel -> testPrivateMessageAccess(user, channel, context, config, future),
-						ex -> {
-							log.debug("Failed to open PM for user {}: {}", userId, ex.getMessage());
-							fallbackToChannel(userId, context, config, future);
-						}
-				),
-				ex -> {
-					log.warn("Failed to retrieve user {}: {}", userId, ex.getMessage());
-					future.completeExceptionally(ex);
-				}
-		);
-
-		return future;
-	}
-
-	private void testPrivateMessageAccess(User user, PrivateChannel channel, String context, ConversationConfig config, CompletableFuture<Conversation> future) {
 		String pmMessage = pmInitialMessage(config);
+		return privateMessageConversationCreator.create(userId, pmMessage)
+				.thenApply(conv -> {
+					registerConversation(conv, context);
+					return conv;
+				})
+				.handle((conv, ex) -> {
+					if (ex == null)
+						return CompletableFuture.completedFuture(conv);
 
-		if (pmMessage != null && !pmMessage.isBlank()) {
-			channel.sendMessage(pmMessage).queue(
-					_ -> {
-						Conversation conversation = new PrivateMessageConversation(user, channel);
-						registerConversation(conversation, context);
-						future.complete(conversation);
-					},
-					ex -> {
-						log.debug("Cannot send PM to user {}: {}", user.getIdLong(), ex.getMessage());
-						fallbackToChannel(user.getIdLong(), context, config, future);
-					}
-			);
-		} else {
-			Conversation conversation = new PrivateMessageConversation(user, channel);
-			registerConversation(conversation, context);
-			future.complete(conversation);
-		}
-	}
+					if (config.isAllowTemporaryChannel())
+						return createTemporaryChannel(Collections.singleton(userId), context, config);
 
-	private void fallbackToChannel(long userId, String context, ConversationConfig config, CompletableFuture<Conversation> future) {
-		if (config.isAllowTemporaryChannel()) {
-			createTemporaryChannel(Collections.singleton(userId), context, config)
-					.whenComplete((conv, ex) -> {
-						if (ex == null)
-							future.complete(conv);
-						else
-							future.completeExceptionally(ex);
-					});
-		} else {
-			future.completeExceptionally(
-					new IllegalStateException("Cannot create PM and temp channels are disabled"));
-		}
+					return CompletableFuture.<Conversation>failedFuture(ex);
+				})
+				.thenCompose(future -> future);
 	}
 
 	private CompletableFuture<Conversation> createTemporaryChannel(Collection<Long> userIds, String context, ConversationConfig config) {
-		CompletableFuture<Conversation> result = new CompletableFuture<>();
-		Guild guild = jda.getGuilds().getFirst();
-
-		String channelName = config.getChannelName() != null ? config.getChannelName() : "#" + new Random().nextInt();
-		tryCreateChannelRecursive(guild, userIds, context, config, channelName, 0, result);
-		return result;
-	}
-
-	private void tryCreateChannelRecursive(Guild guild, Collection<Long> userIds, String context, ConversationConfig config, String channelName, int index, CompletableFuture<Conversation> result) {
-		if (index >= categoryIds.size()) {
-			pendingRequests.add(new PendingChannelRequest(userIds, context, config, channelName, result));
-			log.info("[ConversationService]: All temporary-channel categories are full – queued a request for {} user(s)", userIds.size());
-			return;
-		}
-
-		Long cid = categoryIds.get(index);
-		Category category = guild.getCategoryById(cid);
-		if (category == null || category.getChannels().size() >= DISCORD_CATEGORY_LIMIT) {
-			tryCreateChannelRecursive(guild, userIds, context, config, channelName, index + 1, result);
-			return;
-		}
-
-		ChannelAction<TextChannel> action = category
-				.createTextChannel(channelName)
-				.addPermissionOverride(guild.getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL));
-
-		if (config.getChannelDescription() != null && !config.getChannelDescription().isEmpty())
-			action = action.setTopic(config.getChannelDescription());
-
-		for (long uid : userIds) {
-			Member member = guild.retrieveMemberById(uid).complete();
-			if (member != null)
-				action = action.addPermissionOverride(member, CHANNEL_PERMISSIONS, null);
-		}
-
-		action.queue(
-				channel -> {
-					channelUsers.put(channel.getIdLong(), new HashSet<>(userIds));
-
-					String channelMessage = channelInitialMessage(config);
-
-					if (config.isMentionUsers() || (channelMessage != null && !channelMessage.isBlank())) {
-						StringBuilder sb = new StringBuilder();
-						if (config.isMentionUsers())
-							userIds.forEach(id -> sb.append("<@").append(id).append("> "));
-						if (channelMessage != null && !channelMessage.isBlank())
-							sb.append(channelMessage);
-						channel.sendMessage(sb.toString().trim()).queue();
-					}
-
-					Conversation conversation = new TemporaryChannelConversation(new HashSet<>(userIds), channel, this);
-					registerConversation(conversation, context);
-
-					result.complete(conversation);
-				},
-				failure -> {
-					boolean categoryFull = failure instanceof ErrorResponseException ex
-							&& ex.getErrorCode() == 50035
-							&& ex.getMessage() != null
-							&& ex.getMessage().contains("CHANNEL_PARENT_MAX_CHANNELS");
-
-					if (categoryFull) {
-						tryCreateChannelRecursive(guild, userIds, context, config, channelName, index + 1, result);
-						return;
-					}
-
-					result.completeExceptionally(failure);
+		String channelMessage = channelInitialMessage(config);
+		return tempChannelConversationCreator.create(userIds, config, channelMessage)
+				.thenApply(conv -> {
+					registerConversation(conv, context);
+					return conv;
 				});
-	}
-
-	CompletableFuture<Void> closeChannel(TextChannel channel, long delaySeconds) {
-		if (channel == null)
-			return CompletableFuture.completedFuture(null);
-
-		if (delaySeconds <= 0) {
-			CompletableFuture<Void> future = new CompletableFuture<>();
-			channel.delete()
-					.reason("Closed via ConversationService")
-					.queue(_ -> future.complete(null), future::completeExceptionally);
-			return future;
-		}
-
-		CompletableFuture<Void> future = new CompletableFuture<>();
-		Set<Long> userIds = channelUsers.get(channel.getIdLong());
-		Long firstUserId = (userIds != null && !userIds.isEmpty()) ? userIds.iterator().next() : null;
-
-		EmbedBuilder builder = StyleKit.embeds().warning();
-		if (firstUserId != null) {
-			builder.setTitle(Translatable.text("general.conversation.close.title").resolve(firstUserId));
-			builder.setDescription(
-					Translatable.text("general.conversation.close.description")
-							.with("seconds", delaySeconds)
-							.resolve(firstUserId));
-		} else {
-			builder.setTitle(Translatable.text("general.conversation.close.title").resolveDefault());
-			builder.setDescription(
-					Translatable.text("general.conversation.close.description")
-							.with("seconds", delaySeconds)
-							.resolveDefault());
-		}
-
-		channel.sendMessageEmbeds(builder.build())
-				.queue(
-						_ -> scheduler.schedule(() ->
-										closeChannel(channel, 0)
-												.whenComplete((_, ex) -> {
-													if (ex == null)
-														future.complete(null);
-													else
-														future.completeExceptionally(ex);
-												}),
-								delaySeconds, TimeUnit.SECONDS),
-						future::completeExceptionally);
-
-		return future;
 	}
 
 	private void registerConversation(Conversation conversation, String context) {
@@ -392,73 +173,29 @@ public class DefaultConversationService implements ConversationService, Reloadab
 		});
 		activeConversations.clear();
 		userConversations.clear();
-		channelUsers.clear();
 	}
 
 	public void handleChannelDeletion(long channelId) {
-		Set<Long> users = channelUsers.remove(channelId);
-		if (users != null) {
-			userConversations.entrySet().removeIf(entry -> 
-				users.contains(entry.getKey().userId()) &&
-				entry.getValue().getChannel() instanceof TextChannel &&
-				entry.getValue().getChannel().getIdLong() == channelId
-			);
-		}
+		tempChannelConversationCreator.handleChannelDeletion(channelId);
 
 		activeConversations.stream()
 				.filter(conv -> conv.getChannel() instanceof TextChannel)
 				.filter(conv -> conv.getChannel().getIdLong() == channelId)
 				.findFirst()
-				.ifPresent(activeConversations::remove);
-
-		drainQueue();
+				.ifPresent(conv -> {
+					activeConversations.remove(conv);
+					userConversations.values().removeIf(existing -> existing == conv);
+				});
 	}
 
-	private void drainQueue() {
-		if (!drainingQueue.compareAndSet(false, true)) return;
-
-		scheduler.execute(() -> {
-			try {
-				PendingChannelRequest req;
-				while ((req = pendingRequests.peek()) != null) {
-					Guild guild = jda.getGuilds().getFirst();
-
-					CompletableFuture<Conversation> marker = new CompletableFuture<>();
-					tryCreateChannelRecursive(guild, req.userIds(), req.context(), req.config(), req.channelName(), 0, marker);
-
-					PendingChannelRequest finalReq = req;
-					marker.whenComplete((conv, ex) -> {
-						if (ex == null) {
-							pendingRequests.poll();
-							finalReq.future().complete(conv);
-						} else {
-							drainingQueue.set(false);
-						}
-					});
-
-					if (!marker.isDone()) break;
-				}
-			} finally {
-				drainingQueue.set(false);
-			}
-		});
-	}
-
-	public void handleUserLeave(long userId) {
+	@Override
+	public void onGuildMemberRemove(@NonNull GuildMemberRemoveEvent event) {
 		userConversations.entrySet().stream()
-				.filter(entry -> entry.getKey().userId() == userId)
+				.filter(entry -> entry.getKey().userId() == event.getUser().getIdLong())
 				.map(Map.Entry::getValue)
 				.distinct()
 				.forEach(this::close);
 	}
 
 	private record ConversationKey(long userId, String context) {}
-
-	private record PendingChannelRequest(
-			Collection<Long> userIds,
-			String context,
-			ConversationConfig config,
-			String channelName,
-			CompletableFuture<Conversation> future
-	) {}
 }
