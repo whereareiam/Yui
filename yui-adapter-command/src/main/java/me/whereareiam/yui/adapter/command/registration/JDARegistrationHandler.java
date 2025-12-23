@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * Command registration handler that integrates Cloud's root command deletion
@@ -66,6 +67,15 @@ public final class JDARegistrationHandler implements CommandRegistrationHandler<
 
 	@Override
 	public void unregisterRootCommand(@NotNull CommandComponent<Interaction> rootCommand) {
+		if (!commandManager.discordSettings().get(DiscordSetting.AUTO_REGISTER_SLASH_COMMANDS))
+			return;
+
+		// If JDA is shutting down we can't talk to Discord; skip to avoid rejected requests
+		if (jda.getStatus() != JDA.Status.CONNECTED) {
+			log.debug("Skipping Discord command sync for '{}' because JDA status is {}", rootCommand.name(), jda.getStatus());
+			return;
+		}
+
 		log.debug("Re-synchronizing Discord slash commands after root command '{}' deletion", rootCommand.name());
 
 		try {
@@ -74,6 +84,8 @@ public final class JDARegistrationHandler implements CommandRegistrationHandler<
 
 			// Guild-specific commands for all known guilds
 			jda.getGuilds().forEach(commandManager::registerGuildCommands);
+		} catch (RejectedExecutionException e) {
+			log.debug("Skipping Discord re-sync for '{}' because JDA is shutting down", rootCommand.name());
 		} catch (Exception e) {
 			log.warn("Failed to re-register Discord commands after root command deletion", e);
 		}
