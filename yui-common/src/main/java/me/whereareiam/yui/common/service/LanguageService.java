@@ -52,7 +52,7 @@ public class LanguageService implements Reloadable {
 		try {
 			Languages config = languagesProvider.get();
 			if (config == null || config.getLanguages() == null) {
-				log.warn("Languages config is null or empty, skipping sync");
+				log.warn("[LanguageService] Languages config is null or empty, skipping sync");
 				return;
 			}
 
@@ -66,7 +66,7 @@ public class LanguageService implements Reloadable {
 				defaultLanguage.setEnabled(true);
 				defaultLanguage.setDisplayName(defaultLocale.getNativeName());
 				config.getLanguages().put(defaultLocaleKey, defaultLanguage);
-				log.info("Added default language {} to languages config", defaultLocale);
+				log.info("[LanguageService] Added default language {} to languages config", defaultLocale);
 			}
 
 			Set<DiscordLocale> configLocales = new HashSet<>();
@@ -78,14 +78,14 @@ public class LanguageService implements Reloadable {
 				LanguageEntry languageEntry = entry.getValue();
 
 				if (!languageEntry.isEnabled()) {
-					log.debug("Skipping disabled language: {}", locale);
+					log.debug("[LanguageService] Skipping disabled language: {}", locale);
 					continue;
 				}
 
 				// Validate role if specified
 				if (languageEntry.getRole() != null) {
 					if (!roleService.isRoleAllowed(languageEntry.getRole())) {
-						log.warn("Language {} has role {} which is not in allowed roles. Skipping language.", locale, languageEntry.getRole());
+						log.warn("[LanguageService] Language {} has role {} which is not in allowed roles. Skipping language.", locale, languageEntry.getRole());
 						continue;
 					}
 				}
@@ -93,7 +93,7 @@ public class LanguageService implements Reloadable {
 				// Add to database if not exists
 				if (!languagePersistence.languageExists(locale)) {
 					languagePersistence.addLanguage(locale);
-					log.info("Added language {} to database", locale);
+					log.info("[LanguageService] Added language {} to database", locale);
 				}
 
 				configLocales.add(locale);
@@ -105,13 +105,13 @@ public class LanguageService implements Reloadable {
 			for (DiscordLocale dbLocale : allDbLocales) {
 				if (!configLocales.contains(dbLocale)) {
 					languagePersistence.removeLanguage(dbLocale);
-					log.info("Removed language {} from database (not in config)", dbLocale);
+					log.info("[LanguageService] Removed language {} from database", dbLocale);
 				}
 			}
 
-			log.info("Finished syncing languages with database");
+			log.debug("[LanguageService] Finished syncing languages with database");
 		} catch (Exception e) {
-			log.error("Error syncing languages with database", e);
+			log.error("[LanguageService] Error syncing languages with database", e);
 		}
 	}
 }
