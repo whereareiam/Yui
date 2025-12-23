@@ -95,19 +95,54 @@ public class CommandMessages {
 		@Setter
 		public static class RequirementErrorMessages {
 			private String title;
+			private String description;
 			private String unknown;
-			private String failed;
+			private Fields fields;
 
-			private String role;
-			private String roleUnknown;
-			private String scope;
-			private String scopeUnknown;
-			private String channel;
-			private String channelUnknown;
-			private String user;
-			private String userUnknown;
-			private String guild;
-			private String guildUnknown;
+			@Getter
+			@Setter
+			public static class Fields {
+				private RoleField role;
+				private ScopeField scope;
+				private ChannelField channel;
+				private UserField user;
+				private GuildField guild;
+
+				@Getter
+				@Setter
+				public static class RoleField {
+					private String name;
+					private String value;
+				}
+
+				@Getter
+				@Setter
+				public static class ScopeField {
+					private String name;
+					private String value;
+				}
+
+				@Getter
+				@Setter
+				public static class ChannelField {
+					private String name;
+					private String value;
+				}
+
+				@Getter
+				@Setter
+				public static class UserField {
+					private String name;
+					private String value;
+				}
+
+				@Getter
+				@Setter
+				public static class GuildField {
+					private String name;
+					private String value;
+				}
+			}
 		}
 
 		@Getter
