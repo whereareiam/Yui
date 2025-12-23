@@ -176,8 +176,10 @@ public class DefaultConversationService implements ConversationService, Reloadab
 	}
 
 	private void testPrivateMessageAccess(User user, PrivateChannel channel, String context, ConversationConfig config, CompletableFuture<Conversation> future) {
-		if (config.getInitialMessage() != null && !config.getInitialMessage().isBlank()) {
-			channel.sendMessage(config.getInitialMessage()).queue(
+		String pmMessage = pmInitialMessage(config);
+
+		if (pmMessage != null && !pmMessage.isBlank()) {
+			channel.sendMessage(pmMessage).queue(
 					_ -> {
 						Conversation conversation = new PrivateMessageConversation(user, channel);
 						registerConversation(conversation, context);
@@ -250,12 +252,14 @@ public class DefaultConversationService implements ConversationService, Reloadab
 				channel -> {
 					channelUsers.put(channel.getIdLong(), new HashSet<>(userIds));
 
-					if (config.isMentionUsers() || (config.getInitialMessage() != null && !config.getInitialMessage().isBlank())) {
+					String channelMessage = channelInitialMessage(config);
+
+					if (config.isMentionUsers() || (channelMessage != null && !channelMessage.isBlank())) {
 						StringBuilder sb = new StringBuilder();
 						if (config.isMentionUsers())
 							userIds.forEach(id -> sb.append("<@").append(id).append("> "));
-						if (config.getInitialMessage() != null && !config.getInitialMessage().isBlank())
-							sb.append(config.getInitialMessage());
+						if (channelMessage != null && !channelMessage.isBlank())
+							sb.append(channelMessage);
 						channel.sendMessage(sb.toString().trim()).queue();
 					}
 
@@ -356,10 +360,24 @@ public class DefaultConversationService implements ConversationService, Reloadab
 		if (conversation == null)
 			return CompletableFuture.completedFuture(null);
 
-		return conversation.close(delaySeconds).whenComplete((_, __) -> {
+		return conversation.close(delaySeconds).whenComplete((_, _) -> {
 			activeConversations.remove(conversation);
 			userConversations.values().removeIf(conv -> conv == conversation);
 		});
+	}
+
+	private String pmInitialMessage(ConversationConfig config) {
+		if (config.getPrivateInitialMessage() != null && !config.getPrivateInitialMessage().isBlank())
+			return config.getPrivateInitialMessage();
+
+		return config.getInitialMessage();
+	}
+
+	private String channelInitialMessage(ConversationConfig config) {
+		if (config.getChannelInitialMessage() != null && !config.getChannelInitialMessage().isBlank())
+			return config.getChannelInitialMessage();
+
+		return config.getInitialMessage();
 	}
 
 	@Override
@@ -383,13 +401,13 @@ public class DefaultConversationService implements ConversationService, Reloadab
 			userConversations.entrySet().removeIf(entry -> 
 				users.contains(entry.getKey().userId()) &&
 				entry.getValue().getChannel() instanceof TextChannel &&
-				((TextChannel) entry.getValue().getChannel()).getIdLong() == channelId
+				entry.getValue().getChannel().getIdLong() == channelId
 			);
 		}
 
 		activeConversations.stream()
 				.filter(conv -> conv.getChannel() instanceof TextChannel)
-				.filter(conv -> ((TextChannel) conv.getChannel()).getIdLong() == channelId)
+				.filter(conv -> conv.getChannel().getIdLong() == channelId)
 				.findFirst()
 				.ifPresent(activeConversations::remove);
 

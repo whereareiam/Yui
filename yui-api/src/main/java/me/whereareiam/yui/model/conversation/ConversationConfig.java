@@ -15,6 +15,8 @@ public class ConversationConfig {
 	private final String channelName;
 	private final String channelDescription;
 	private final String initialMessage;
+	private final String privateInitialMessage;
+	private final String channelInitialMessage;
 
 	@Builder.Default
 	private final boolean mentionUsers = true;
