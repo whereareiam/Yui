@@ -70,11 +70,10 @@ public class YuiTranslationLoader implements TranslationProvider<DiscordLocale> 
                 handlerRegistry,
                 // LOCALE processor
                 (_, locale, translations) -> {
-                    Map<String, TranslationSource> sources = new HashMap<>();
-                    translations.forEach((key, textValue) ->
-                            sources.put(key, new TranslationSource(textValue))
-                    );
-                    localized.put(locale, sources);
+                    // Merge locale translations instead of replacing so multi-locale files (e.g., vocabulary.yml)
+                    // are not lost when a per-locale file (e.g., en-US.yml) is loaded afterward.
+                    Map<String, TranslationSource> sources = localized.computeIfAbsent(locale, _ -> new HashMap<>());
+                    translations.forEach((key, textValue) -> sources.put(key, new TranslationSource(textValue)));
                 },
                 // MULTI_LOCALE processor
                 (file, multiLocaleData) -> {
