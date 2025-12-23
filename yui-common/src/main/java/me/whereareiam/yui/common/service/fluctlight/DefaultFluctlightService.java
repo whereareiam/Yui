@@ -29,7 +29,9 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Default implementation of FluctlightService.
@@ -279,6 +281,48 @@ public class DefaultFluctlightService implements FluctlightService {
 	}
 
 	@Override
+	public void setAdditionalLanguages(Fluctlight fluctlight, DiscordLocale[] locales) {
+		Set<DiscordLocale> current = toLocaleSet(fluctlight.getAdditionalLanguages());
+		Set<DiscordLocale> desired = toLocaleSet(locales);
+
+		Set<DiscordLocale> toRemove = new HashSet<>(current);
+		toRemove.removeAll(desired);
+
+		Set<DiscordLocale> toAdd = new HashSet<>(desired);
+		toAdd.removeAll(current);
+
+		Set<DiscordLocale> updatedSet = new HashSet<>(current);
+
+		for (DiscordLocale locale : toRemove) {
+			FluctlightAdditionalLanguageRemovedEvent event = new FluctlightAdditionalLanguageRemovedEvent(fluctlight);
+			event.setLanguage(locale);
+			eventPublisher.publishEvent(event);
+			if (!event.isCancelled())
+				updatedSet.remove(locale);
+		}
+
+		for (DiscordLocale locale : toAdd) {
+			FluctlightAdditionalLanguageAddedEvent event = new FluctlightAdditionalLanguageAddedEvent(fluctlight);
+			event.setLanguage(locale);
+			eventPublisher.publishEvent(event);
+			if (!event.isCancelled())
+				updatedSet.add(locale);
+		}
+
+		DiscordLocale[] updated = updatedSet.toArray(new DiscordLocale[0]);
+		fluctlightPersistence.updateAdditionalLanguages(fluctlight, updated);
+
+		FluctlightData updatedData = new FluctlightData(
+				fluctlight.getPrimaryLanguage(),
+				updated,
+				fluctlight.getAllowedRoles()
+		);
+		eventPublisher.publishEvent(new FluctlightUpdatedEvent(fluctlight, updatedData));
+
+		fluctlightRegistry.putFluctlight(fluctlight.getId(), fluctlight);
+	}
+
+	@Override
 	public void addAllowedRole(Fluctlight fluctlight, long roleId) {
 		// Publish cancellable event BEFORE persistence
 		FluctlightRoleAddEvent addEvent = new FluctlightRoleAddEvent(fluctlight, roleId);
@@ -347,6 +391,17 @@ public class DefaultFluctlightService implements FluctlightService {
 				updated.length > 0 ? updated : null
 		);
 		eventPublisher.publishEvent(new FluctlightUpdatedEvent(fluctlight, updatedData));
+	}
+
+	private Set<DiscordLocale> toLocaleSet(DiscordLocale[] locales) {
+		Set<DiscordLocale> result = new HashSet<>();
+		if (locales == null)
+			return result;
+		for (DiscordLocale locale : locales) {
+			if (locale != null)
+				result.add(locale);
+		}
+		return result;
 	}
 
 }

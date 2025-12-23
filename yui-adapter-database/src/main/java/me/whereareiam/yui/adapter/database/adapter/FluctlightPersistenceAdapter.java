@@ -144,6 +144,26 @@ public class FluctlightPersistenceAdapter implements FluctlightPersistence {
 	}
 
 	@Override
+	public void updateAdditionalLanguages(Fluctlight fluctlight, DiscordLocale[] locales) {
+		long userId = fluctlight.getId();
+		FluctlightEntity entity = fluctlightRepository.findById(userId)
+				.orElseGet(() -> FluctlightEntity.builder().id(userId).build());
+
+		if (locales != null && locales.length > 0) {
+			Set<LanguageEntity> additionalLanguageEntities = Arrays.stream(locales)
+					.filter(Objects::nonNull)
+					.map(locale -> languageRepository.findByLocale(locale)
+							.orElseThrow(() -> new IllegalArgumentException("Language not found: " + locale)))
+					.collect(Collectors.toSet());
+			entity.setAdditionalLanguages(additionalLanguageEntities);
+		} else {
+			entity.setAdditionalLanguages(new HashSet<>());
+		}
+
+		fluctlightRepository.save(entity);
+	}
+
+	@Override
 	public void addAllowedRole(Fluctlight fluctlight, long roleId) {
 		long userId = fluctlight.getId();
 		FluctlightEntity entity = fluctlightRepository.findById(userId)
@@ -173,4 +193,3 @@ public class FluctlightPersistenceAdapter implements FluctlightPersistence {
 		}
 	}
 }
-

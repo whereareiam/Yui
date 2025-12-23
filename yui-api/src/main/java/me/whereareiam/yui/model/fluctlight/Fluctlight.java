@@ -171,6 +171,16 @@ public class Fluctlight {
 	}
 
 	/**
+	 * Replaces all additional languages and persists the change to the database.
+	 *
+	 * @param locales The new additional language locales
+	 */
+	public void setAdditionalLanguages(DiscordLocale[] locales) {
+		ensureServicesInitialized();
+		managementService.setAdditionalLanguages(this, locales);
+	}
+
+	/**
 	 * Adds an allowed role and persists the change to the database.
 	 * These are framework roles that the bot is allowed to work with,
 	 * not the fluctlight's guild roles.
@@ -215,4 +225,3 @@ public class Fluctlight {
 			throw new IllegalStateException("Fluctlight services not initialized. Ensure Spring context is loaded.");
 	}
 }
-

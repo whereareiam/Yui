@@ -99,6 +99,16 @@ public interface FluctlightService {
 	void removeAdditionalLanguage(Fluctlight fluctlight, DiscordLocale locale);
 
 	/**
+	 * Replaces all additional languages for a Fluctlight in a single operation.
+	 * <p>
+	 * This method handles persistence and event publishing.
+	 *
+	 * @param fluctlight The Fluctlight instance
+	 * @param locales The new set of additional language locales
+	 */
+	void setAdditionalLanguages(Fluctlight fluctlight, DiscordLocale[] locales);
+
+	/**
 	 * Adds an allowed role for a Fluctlight.
 	 * <p>
 	 * This method handles persistence.

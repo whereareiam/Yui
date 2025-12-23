@@ -70,6 +70,14 @@ public interface FluctlightPersistence {
 	void removeAdditionalLanguage(Fluctlight fluctlight, DiscordLocale locale);
 
 	/**
+	 * Replaces all additional languages for a fluctlight.
+	 *
+	 * @param fluctlight The Fluctlight instance
+	 * @param locales The new additional language locales
+	 */
+	void updateAdditionalLanguages(Fluctlight fluctlight, DiscordLocale[] locales);
+
+	/**
 	 * Adds an allowed role for a fluctlight.
 	 * These are framework roles that the bot is allowed to work with,
 	 * not the fluctlight's guild roles.
