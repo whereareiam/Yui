@@ -20,6 +20,8 @@ import org.incendo.cloud.discord.jda6.JDA6CommandManager;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Method;
@@ -29,7 +31,7 @@ import java.util.function.Function;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DefaultCommandService implements CommandService {
+public class DefaultCommandService implements CommandService, ApplicationListener<ContextClosedEvent> {
 	private final JDA6CommandManager<Interaction> commandManager;
 	private final CommandDefinitionRegistry definitionRegistry;
 	private final DefinitionProviderRegistry definitionProviderRegistry;
@@ -129,6 +131,18 @@ public class DefaultCommandService implements CommandService {
 	public void unregisterProvider(@NotNull String id) {
 		definitionProviderRegistry.removeExternalProvider(id);
 		definitionRegistry.removeBySource(id, Source.EXTERNAL);
+	}
+
+	@Override
+	public void onApplicationEvent(@NotNull ContextClosedEvent event) {
+		ApplicationContext closed = event.getApplicationContext();
+		log.debug("Context closed, unregistering commands for context {}", closed.getId());
+
+		// Remove commands for this context and any child contexts that were tracked
+		Set<ApplicationContext> toCleanup = definitionRegistry.trackedContexts();
+		for (ApplicationContext ctx : toCleanup)
+			if (isSameOrChildContext(ctx, closed))
+				unregisterByContext(ctx);
 	}
 
 	@Override
@@ -253,4 +267,15 @@ public class DefaultCommandService implements CommandService {
 	}
 
 	private record DefinitionSnapshot(Map<String, CommandDefinition> definitions, String rootAlias) {}
+
+	private boolean isSameOrChildContext(ApplicationContext candidate, ApplicationContext parent) {
+		if (candidate == parent) return true;
+
+		ApplicationContext current = candidate.getParent();
+		while (current != null) {
+			if (current == parent) return true;
+			current = current.getParent();
+		}
+		return false;
+	}
 }

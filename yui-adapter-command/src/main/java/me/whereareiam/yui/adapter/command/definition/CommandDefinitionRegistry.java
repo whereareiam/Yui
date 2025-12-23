@@ -24,6 +24,13 @@ public class CommandDefinitionRegistry {
 		return Optional.ofNullable(definitions.get(id)).map(Entry::definition);
 	}
 
+	/**
+	 * Returns the contexts that currently have tracked command definitions.
+	 */
+	public @NotNull Set<ApplicationContext> trackedContexts() {
+		return Set.copyOf(definitionIdsByContext.keySet());
+	}
+
 	public @NotNull Map<String, CommandDefinition> getAll() {
 		return Collections.unmodifiableMap(definitions.entrySet().stream()
 				.collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().definition())));
