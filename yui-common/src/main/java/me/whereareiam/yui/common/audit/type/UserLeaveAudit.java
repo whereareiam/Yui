@@ -36,20 +36,22 @@ public class UserLeaveAudit extends ListenerAdapter {
 					}
 
 					// This is a normal leave
-					String title = Translatable.text("messages.audit.user.leave.title").resolveDefault();
-					String description = Translatable.text("messages.audit.user.leave.description")
-							.with("mention", event.getUser().getAsMention())
-							.resolveDefault();
-					String targetField = Translatable.text("messages.audit.user.leave.fields.target").resolveDefault();
-
 					Audit.log(Constants.AuditTypes.USER_LEAVE)
-							.withEmbed(StyleKit.embeds().info()
-									.setTitle(title)
-									.setDescription(description)
-									.addField(targetField, event.getUser().getAsMention(), true)
-									.setThumbnail(event.getUser().getEffectiveAvatarUrl())
-									.setTimestamp(Instant.now())
-									.build())
+							.withLocalizedEmbed(locale -> {
+								String title = Translatable.text("messages.audit.user.leave.title").resolve(locale);
+								String description = Translatable.text("messages.audit.user.leave.description")
+										.with("mention", event.getUser().getAsMention())
+										.resolve(locale);
+								String targetField = Translatable.text("messages.audit.user.leave.fields.target").resolve(locale);
+
+								return StyleKit.embeds().info()
+										.setTitle(title)
+										.setDescription(description)
+										.addField(targetField, event.getUser().getAsMention(), true)
+										.setThumbnail(event.getUser().getEffectiveAvatarUrl())
+										.setTimestamp(Instant.now())
+										.build();
+							})
 							.send();
 				});
 	}

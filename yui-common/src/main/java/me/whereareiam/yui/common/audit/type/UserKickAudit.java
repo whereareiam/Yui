@@ -2,8 +2,8 @@ package me.whereareiam.yui.common.audit.type;
 
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.Constants;
-import me.whereareiam.yui.type.AuditSeverity;
 import me.whereareiam.yui.util.Audit;
+import me.whereareiam.yui.util.style.StyleKit;
 import me.whereareiam.yui.util.translation.Translatable;
 import net.dv8tion.jda.api.audit.ActionType;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
@@ -36,31 +36,33 @@ public class UserKickAudit extends ListenerAdapter {
 					User target = event.getUser();
 					User moderator = entry.getUser();
 
-					String title = Translatable.text("messages.audit.user.kick.title").resolveDefault();
-					String description = Translatable.text("messages.audit.user.kick.description")
-							.with("mention", target.getAsMention())
-							.resolveDefault();
-					String targetField = Translatable.text("messages.audit.user.kick.fields.target").resolveDefault();
-					String reasonField = Translatable.text("messages.audit.user.kick.fields.reason").resolveDefault();
-					String moderatorField = Translatable.text("messages.audit.user.kick.fields.moderator").resolveDefault();
-
 					final String reason = entry.getReason() != null && !entry.getReason().isBlank()
 							? entry.getReason()
 							: "No reason provided";
 
 					Audit.log(Constants.AuditTypes.USER_KICK)
-							.withSeverity(AuditSeverity.ERROR)
-							.withEmbed(embed -> embed
-									.setTitle(title)
-									.setDescription(description)
-									.addField(targetField, target.getAsMention(), true)
-									.addField(moderatorField, moderator != null
-											? moderator.getAsMention()
-											: "Unknown", true
-									).addField(reasonField, reason, false)
-									.setThumbnail(target.getEffectiveAvatarUrl())
-									.setTimestamp(Instant.now()))
+							.withLocalizedEmbed(locale -> {
+								String title = Translatable.text("messages.audit.user.kick.title").resolve(locale);
+								String description = Translatable.text("messages.audit.user.kick.description")
+										.with("mention", target.getAsMention())
+										.resolve(locale);
+								String targetField = Translatable.text("messages.audit.user.kick.fields.target").resolve(locale);
+								String reasonField = Translatable.text("messages.audit.user.kick.fields.reason").resolve(locale);
+								String moderatorField = Translatable.text("messages.audit.user.kick.fields.moderator").resolve(locale);
+
+								return StyleKit.embeds().error()
+										.setTitle(title)
+										.setDescription(description)
+										.addField(targetField, target.getAsMention(), true)
+										.addField(moderatorField, moderator != null
+												? moderator.getAsMention()
+												: "Unknown", true
+										).addField(reasonField, reason, false)
+										.setThumbnail(target.getEffectiveAvatarUrl())
+										.setTimestamp(Instant.now())
+										.build();
+							})
 							.send();
-		});
+				});
 	}
 }

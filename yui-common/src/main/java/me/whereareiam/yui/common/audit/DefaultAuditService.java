@@ -3,11 +3,13 @@ package me.whereareiam.yui.common.audit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.configura.type.MultiValue;
+import me.whereareiam.yui.util.translation.LocaleScopedValues;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.service.AuditService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
@@ -36,10 +38,15 @@ public class DefaultAuditService implements AuditService {
 
 	@Override
 	public CompletableFuture<Void> audit(String auditType, MessageCreateData message) {
-		List<String> channelIds = getChannelIds(auditType).orElse(List.of());
+		return audit(auditType, message, null);
+	}
+
+	@Override
+	public CompletableFuture<Void> audit(String auditType, MessageCreateData message, DiscordLocale locale) {
+		List<String> channelIds = getChannelIds(auditType, locale).orElse(List.of());
 		if (channelIds.isEmpty()) {
-					log.trace("No audit channel configured for type: {}", auditType);
-					return CompletableFuture.completedFuture(null);
+						log.trace("No audit channel configured for type: {}", auditType);
+						return CompletableFuture.completedFuture(null);
 		}
 
 		// Send to all configured channels; complete when all attempts are done
@@ -53,11 +60,11 @@ public class DefaultAuditService implements AuditService {
 
 	@Override
 	public boolean isConfigured(String auditType) {
-		return getChannelIds(auditType).map(list -> !list.isEmpty()).orElse(false);
+		return getChannelIds(auditType, null).map(list -> !list.isEmpty()).orElse(false);
 	}
 
 	@Override
-	public Optional<List<String>> getChannelIds(String auditType) {
+	public Optional<List<String>> getChannelIds(String auditType, DiscordLocale locale) {
 		Settings settings = settingsProvider.getObject();
 
 		Map<String, MultiValue<String>> auditConfig = settings.getDiscord().getChannels().getAudit();
@@ -65,7 +72,21 @@ public class DefaultAuditService implements AuditService {
 			return Optional.empty();
 
 		return Optional.ofNullable(auditConfig.get(auditType))
-				.map(MultiValue::asList);
+				.map(mv -> LocaleScopedValues.resolve(mv, locale));
+	}
+
+	@Override
+	public List<DiscordLocale> getConfiguredLocales(String auditType) {
+		Settings settings = settingsProvider.getObject();
+		Map<String, MultiValue<String>> auditConfig = settings.getDiscord().getChannels().getAudit();
+		if (auditConfig == null)
+			return List.of();
+
+		MultiValue<String> mv = auditConfig.get(auditType);
+		if (mv == null)
+			return List.of();
+
+		return LocaleScopedValues.extractLocales(mv.asList());
 	}
 
 	private CompletableFuture<Void> sendToChannel(TextChannel channel, String auditType, MessageCreateData message) {

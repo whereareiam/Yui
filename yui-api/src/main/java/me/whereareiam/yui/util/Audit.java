@@ -1,18 +1,25 @@
 package me.whereareiam.yui.util;
 
 import lombok.Getter;
+import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.service.AuditService;
 import me.whereareiam.yui.type.AuditSeverity;
+import me.whereareiam.yui.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Fluent API for building and sending audit log messages.
@@ -50,12 +57,14 @@ import java.util.function.Consumer;
 @SuppressWarnings("unused")
 public class Audit {
 	private static AuditService auditService;
+	private static ObjectProvider<Settings> settingsProvider;
 
 	@Component
 	static class Initializer {
 		@Autowired
-		public Initializer(AuditService auditService) {
+		public Initializer(AuditService auditService, ObjectProvider<Settings> settingsProvider) {
 			Audit.auditService = auditService;
+			Audit.settingsProvider = settingsProvider;
 		}
 	}
 
@@ -66,6 +75,10 @@ public class Audit {
 	private MessageEmbed embed;
 	private MessageCreateData customMessage;
 	private String textTemplate;
+	private DiscordLocale locale;
+	private Function<DiscordLocale, MessageCreateData> localizedMessageFactory;
+	private Function<DiscordLocale, MessageEmbed> localizedEmbedFactory;
+	private Function<DiscordLocale, String> localizedTextFactory;
 
 	private Audit(String auditType) {
 		this.auditType = auditType;
@@ -100,7 +113,7 @@ public class Audit {
 	 * Placeholders in the text template should be enclosed in angle brackets.
 	 * Example: "User &lt;user&gt; joined" with placeholder("user", member.getAsMention())
 	 *
-	 * @param name The placeholder name (without angle brackets)
+	 * @param name  The placeholder name (without angle brackets)
 	 * @param value The value to substitute
 	 * @return This Audit builder for chaining
 	 */
@@ -124,6 +137,66 @@ public class Audit {
 	 */
 	public Audit withSeverity(AuditSeverity severity) {
 		this.severity = severity;
+		return this;
+	}
+
+	/**
+	 * Set a preferred locale for this audit log entry.
+	 * <p>
+	 * The specified locale is used to determine the target channel for the audit log.
+	 * If a channel is configured for the given locale, the message will be routed there.
+	 * Otherwise, the default channel for the audit type will be used.
+	 *
+	 * @param locale The Discord locale to use for channel routing and message translation.
+	 * @return This Audit builder for chaining.
+	 */
+	public Audit withLocale(DiscordLocale locale) {
+		this.locale = locale;
+		return this;
+	}
+
+	/**
+	 * Provide a factory for creating locale-aware messages.
+	 * <p>
+	 * This method allows you to define a function that generates custom message data
+	 * for each locale. The generated messages will be sent to the corresponding
+	 * locale-specific channels, if configured, or to the default channel otherwise.
+	 *
+	 * @param factory A function that takes a DiscordLocale and returns MessageCreateData.
+	 * @return This Audit builder for chaining.
+	 */
+	public Audit withLocalizedMessage(Function<DiscordLocale, MessageCreateData> factory) {
+		this.localizedMessageFactory = factory;
+		return this;
+	}
+
+	/**
+	 * Provide a factory for creating locale-aware embeds.
+	 * <p>
+	 * This method allows you to define a function that generates custom embeds
+	 * for each locale. The generated embeds will be sent to the corresponding
+	 * locale-specific channels, if configured, or to the default channel otherwise.
+	 *
+	 * @param factory A function that takes a DiscordLocale and returns a MessageEmbed.
+	 * @return This Audit builder for chaining.
+	 */
+	public Audit withLocalizedEmbed(Function<DiscordLocale, MessageEmbed> factory) {
+		this.localizedEmbedFactory = factory;
+		return this;
+	}
+
+	/**
+	 * Provide a factory for creating locale-aware text messages.
+	 * <p>
+	 * This method allows you to define a function that generates custom text messages
+	 * for each locale. The generated text messages will be sent to the corresponding
+	 * locale-specific channels, if configured, or to the default channel otherwise.
+	 *
+	 * @param factory A function that takes a DiscordLocale and returns a String.
+	 * @return This Audit builder for chaining.
+	 */
+	public Audit withLocalizedText(Function<DiscordLocale, String> factory) {
+		this.localizedTextFactory = factory;
 		return this;
 	}
 
@@ -202,18 +275,21 @@ public class Audit {
 	 * @return CompletableFuture that completes when the message is sent
 	 */
 	public CompletableFuture<Void> send() {
-		if (auditService == null)
-			return CompletableFuture.completedFuture(null);
+		if (auditService == null) return CompletableFuture.completedFuture(null);
 
-		if (customMessage != null)
-			return auditService.audit(auditType, customMessage);
+		if (localizedMessageFactory != null) return sendLocalizedMessages();
 
-		if (embed != null)
-			return auditService.audit(auditType, embed);
+		if (localizedEmbedFactory != null) return sendLocalizedEmbeds();
+
+		if (localizedTextFactory != null) return sendLocalizedTexts();
+
+		if (customMessage != null) return auditService.audit(auditType, customMessage, locale);
+
+		if (embed != null) return auditService.audit(auditType, MessageCreateData.fromEmbeds(embed), locale);
 
 		if (textTemplate != null) {
 			String message = replacePlaceholders(textTemplate);
-			return auditService.audit(auditType, message);
+			return auditService.audit(auditType, MessageCreateData.fromContent(message), locale);
 		}
 
 		return CompletableFuture.completedFuture(null);
@@ -222,31 +298,49 @@ public class Audit {
 	private String replacePlaceholders(String template) {
 		String result = template;
 		for (Map.Entry<String, Object> entry : placeholders.entrySet()) {
-			result = result.replace("<" + entry.getKey() + ">",
-					String.valueOf(entry.getValue()));
+			result = result.replace("<" + entry.getKey() + ">", String.valueOf(entry.getValue()));
 		}
 
 		return result;
 	}
 
 	private EmbedBuilder getStyleKitEmbedForSeverity() {
-		if (!isStyleKitAvailable()) {
-			return new EmbedBuilder();
-		}
-
 		return switch (severity) {
-			case WARNING -> me.whereareiam.yui.util.style.StyleKit.embeds().warning();
-			case ERROR -> me.whereareiam.yui.util.style.StyleKit.embeds().error();
-			default -> me.whereareiam.yui.util.style.StyleKit.embeds().info();
+			case WARNING -> StyleKit.embeds().warning();
+			case ERROR -> StyleKit.embeds().error();
+			default -> StyleKit.embeds().info();
 		};
 	}
 
-	private boolean isStyleKitAvailable() {
-		try {
-			me.whereareiam.yui.util.style.StyleKit.embeds();
-			return true;
-		} catch (IllegalStateException e) {
-			return false;
-		}
+	private CompletableFuture<Void> sendLocalizedMessages() {
+		var locales = resolveTargetLocales();
+		return CompletableFuture.allOf(locales.stream().map(loc -> auditService.audit(auditType, localizedMessageFactory.apply(loc), loc)).toArray(CompletableFuture[]::new));
+	}
+
+	private CompletableFuture<Void> sendLocalizedEmbeds() {
+		var locales = resolveTargetLocales();
+		return CompletableFuture.allOf(locales
+				.stream()
+				.map(loc -> auditService.audit(auditType, MessageCreateData.fromEmbeds(localizedEmbedFactory.apply(loc)), loc))
+				.toArray(CompletableFuture[]::new));
+	}
+
+	private CompletableFuture<Void> sendLocalizedTexts() {
+		var locales = resolveTargetLocales();
+		return CompletableFuture.allOf(locales
+				.stream()
+				.map(loc -> auditService.audit(auditType, MessageCreateData.fromContent(localizedTextFactory.apply(loc)), loc))
+				.toArray(CompletableFuture[]::new));
+	}
+
+	private List<DiscordLocale> resolveTargetLocales() {
+		var locales = new LinkedHashSet<DiscordLocale>();
+		if (settingsProvider != null && settingsProvider.getIfAvailable() != null)
+			locales.add(settingsProvider.getObject().getLocale());
+
+		locales.addAll(auditService.getConfiguredLocales(auditType));
+		if (locale != null) locales.add(locale);
+
+		return List.copyOf(locales);
 	}
 }
