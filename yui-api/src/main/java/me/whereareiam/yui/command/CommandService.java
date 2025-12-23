@@ -88,6 +88,17 @@ public interface CommandService {
 	void unregisterProvider(@NotNull String sourceId);
 
 	/**
+	 * Unregister all commands associated with the given ApplicationContext.
+	 * <p>
+	 * This is primarily used when disabling plugins to clean up their commands.
+	 * Only commands that were registered via {@link #register(ApplicationContext)} for
+	 * the given context will be unregistered.
+	 *
+	 * @param context the application context whose commands should be unregistered
+	 */
+	void unregisterByContext(@NotNull ApplicationContext context);
+
+	/**
 	 * Returns the number of commands currently registered with the underlying command manager.
 	 */
 	int getCommandCount();

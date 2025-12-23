@@ -4,26 +4,26 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
 import me.whereareiam.yui.adapter.command.definition.DefinitionProviderRegistry;
-import me.whereareiam.yui.adapter.command.parsing.definition.CommandDefinitionParser;
-import me.whereareiam.yui.adapter.command.registration.CommandScanner;
-import me.whereareiam.yui.adapter.command.registration.AnnotationCommandRegistrar;
-import me.whereareiam.yui.exception.command.base.CommandException;
 import me.whereareiam.yui.adapter.command.exception.DefaultExceptionHandlerRegistry;
-import me.whereareiam.yui.command.exception.ExceptionResponse;
-import me.whereareiam.yui.model.command.CommandDefinition;
+import me.whereareiam.yui.adapter.command.parsing.definition.CommandDefinitionParser;
+import me.whereareiam.yui.adapter.command.registration.AnnotationCommandRegistrar;
+import me.whereareiam.yui.adapter.command.registration.CommandScanner;
+import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.command.CommandService;
 import me.whereareiam.yui.command.DefinitionProvider;
+import me.whereareiam.yui.command.exception.ExceptionResponse;
+import me.whereareiam.yui.exception.command.base.CommandException;
+import me.whereareiam.yui.model.command.CommandDefinition;
 import me.whereareiam.yui.type.Source;
 import org.incendo.cloud.discord.jda6.JDA6CommandManager;
 import org.incendo.cloud.discord.jda6.JDAInteraction;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.lang.reflect.Method;
+import java.util.*;
 import java.util.function.Function;
 
 @Slf4j
@@ -50,7 +50,26 @@ public class DefaultCommandService implements CommandService {
 	@Override
 	public void register(@NotNull ApplicationContext context) {
 		DefinitionSnapshot snapshot = buildSnapshot();
-		registerContainers(snapshot, commandScanner.findCommand(context));
+		Collection<Object> containers = commandScanner.findCommand(context);
+		
+		// Get plugin ID if this is a plugin context
+		String pluginId = getPluginId(context);
+		
+		log.debug("Registering {} command containers for context (pluginId: {})", containers.size(), pluginId);
+		
+		registerContainers(snapshot, containers);
+		
+		// Track definition IDs by context for proper cleanup
+		for (Object container : containers) {
+			Set<String> definitionIds = extractDefinitionIds(container.getClass());
+			log.debug("Container {} has definition IDs: {}", container.getClass().getSimpleName(), definitionIds);
+			definitionIds.forEach(id -> {
+				// Namespace definition IDs for plugins
+				String namespacedId = pluginId != null ? pluginId + ":" + id : id;
+				definitionRegistry.trackDefinition(context, namespacedId);
+				log.debug("Tracked definition: {}", namespacedId);
+			});
+		}
 	}
 
 	@Override
@@ -113,6 +132,62 @@ public class DefaultCommandService implements CommandService {
 	}
 
 	@Override
+	public void unregisterByContext(@NotNull ApplicationContext context) {
+		Set<String> trackedIds = definitionRegistry.getDefinitionIdsByContext(context);
+		if (trackedIds.isEmpty()) {
+			log.debug("No commands to unregister for context");
+			return;
+		}
+
+		// Get plugin ID to strip namespace prefix when looking up definitions
+		String pluginId = getPluginId(context);
+		
+		for (String trackedId : trackedIds) {
+			// Strip namespace prefix to get the actual definition ID
+			String actualDefinitionId = trackedId;
+			if (pluginId != null && trackedId.startsWith(pluginId + ":"))
+				actualDefinitionId = trackedId.substring(pluginId.length() + 1);
+			
+			CommandDefinition definition = findDefinition(actualDefinitionId);
+			if (definition != null && definition.getAliases() != null) {
+				String finalDefinitionId = actualDefinitionId;
+				definition.getAliases().forEach(alias -> {
+					try {
+						commandManager.deleteRootCommand(alias);
+						log.debug("Deleted command '{}' from definition '{}'", alias, finalDefinitionId);
+					} catch (Exception e) {
+						log.warn("Failed to delete root command '{}' for definition '{}'", alias, finalDefinitionId, e);
+					}
+				});
+			}
+		}
+		
+		// Remove all definitions and context tracking in one call
+		definitionRegistry.removeByContext(context);
+		log.debug("Unregistered {} command definitions from context", trackedIds.size());
+	}
+
+	private Set<String> extractDefinitionIds(Class<?> targetClass) {
+		Set<String> definitionIds = new HashSet<>();
+		
+		// Check class-level @Definition
+		Definition classDefinition = AnnotationUtils.findAnnotation(targetClass, Definition.class);
+		if (classDefinition != null) {
+			definitionIds.add(classDefinition.value());
+		}
+		
+		// Check method-level @Definition
+		for (Method method : targetClass.getDeclaredMethods()) {
+			Definition methodDefinition = AnnotationUtils.findAnnotation(method, Definition.class);
+			if (methodDefinition != null) {
+				definitionIds.add(methodDefinition.value());
+			}
+		}
+		
+		return definitionIds;
+	}
+
+	@Override
 	public int getCommandCount() {
 		return commandManager.commands().size();
 	}
@@ -128,6 +203,14 @@ public class DefaultCommandService implements CommandService {
 		AnnotationCommandRegistrar<JDAInteraction> reg = registrar();
 		reg.setDefinitionLookup(snapshot.definitions()::get);
 		reg.register(snapshot.rootAlias(), containers.toArray());
+	}
+
+	private String getPluginId(ApplicationContext context) {
+		try {
+			return context.getBean("pluginId", String.class);
+		} catch (Exception e) {
+			return null; // Not a plugin context
+		}
 	}
 
 	private DefinitionSnapshot buildSnapshot() {

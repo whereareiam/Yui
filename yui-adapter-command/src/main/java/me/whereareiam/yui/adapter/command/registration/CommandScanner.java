@@ -8,7 +8,6 @@ import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.beans.factory.BeanFactoryUtils;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -45,16 +44,15 @@ public class CommandScanner {
 	}
 
 	/**
-	 * Finds all command container beans in the given bean factory (including ancestors).
+	 * Finds all command container beans in the given bean factory (excluding ancestors).
 	 *
 	 * @param beanFactory the bean factory to scan
 	 * @return collection of command container instances
 	 */
 	public @NotNull Collection<Object> findCommand(@NotNull ListableBeanFactory beanFactory) {
-		Map<String, Object> beans = BeanFactoryUtils.beansOfTypeIncludingAncestors(
-				beanFactory,
-				Object.class
-		);
+		// Use getBeansOfType instead of beansOfTypeIncludingAncestors to avoid
+		// re-registering parent context commands when scanning plugin contexts
+		Map<String, Object> beans = beanFactory.getBeansOfType(Object.class);
 
 		Collection<Object> containers = new ArrayList<>();
 		for (Object bean : beans.values()) {

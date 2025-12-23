@@ -2,6 +2,7 @@ package me.whereareiam.yui.common.listener.plugin;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.yui.command.CommandService;
 import me.whereareiam.yui.event.plugin.PluginDisabledEvent;
 import me.whereareiam.yui.model.plugin.InternalPlugin;
 import me.whereareiam.yui.service.InteractionService;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class PluginDisabledListener {
 	private final InteractionService interactions;
+	private final CommandService commandService;
 	private final JDA jda;
 
 	@EventListener
@@ -25,6 +27,9 @@ public class PluginDisabledListener {
 			jda.removeEventListener(listener);
 			log.debug("Unregistered listener: {}", listener.getClass().getSimpleName());
 		}
+
+		// Unregister commands from plugin context
+		commandService.unregisterByContext(plugin.getContext());
 
 		if (plugin.getPlugin().getId() != null)
 			interactions.unregister(plugin.getPlugin().getId());
