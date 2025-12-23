@@ -8,17 +8,20 @@ import me.whereareiam.semantica.model.translation.entry.TemplateEntry;
 import me.whereareiam.semantica.translation.TranslationService;
 import me.whereareiam.semantica.translation.base.TranslationLocale;
 import me.whereareiam.yui.Constants;
-import me.whereareiam.yui.model.plugin.InternalPlugin;
+import me.whereareiam.yui.config.ConfigurationTypeResolver;
 import me.whereareiam.yui.localization.base.LocalizationLoaderBase;
 import me.whereareiam.yui.localization.loader.FileTypeHandlerRegistry;
 import me.whereareiam.yui.localization.provider.LocalizationProvider;
+import me.whereareiam.yui.model.plugin.InternalPlugin;
+import me.whereareiam.yui.type.ConfigurationType;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -32,17 +35,20 @@ public class PluginTranslationLoader {
     private final Path pluginsPath;
     private final LocaleParser<DiscordLocale> localeParser;
     private final FileTypeHandlerRegistry handlerRegistry;
+    private final ConfigurationTypeResolver configurationTypeResolver;
 
     public PluginTranslationLoader(
             TranslationService<DiscordLocale> translationService,
             @Qualifier("pluginsPath") Path pluginsPath,
             LocaleParser<DiscordLocale> localeParser,
-            FileTypeHandlerRegistry handlerRegistry
+            FileTypeHandlerRegistry handlerRegistry,
+            ConfigurationTypeResolver configurationTypeResolver
     ) {
         this.translationService = translationService;
         this.pluginsPath = pluginsPath;
         this.localeParser = localeParser;
         this.handlerRegistry = handlerRegistry;
+        this.configurationTypeResolver = configurationTypeResolver;
     }
 
     public void loadPlugin(InternalPlugin plugin) {
@@ -57,9 +63,11 @@ public class PluginTranslationLoader {
                 .resolve(pluginDirName)
                 .resolve(Constants.Structure.languagesDir);
 
-        // Generate defaults from LocalizationProvider beans if directory is empty
-        if (!Files.exists(languagesDir) || LocalizationLoaderBase.isEmpty(languagesDir))
-            generateDefaultsFromProviders(plugin, languagesDir, pluginId);
+        boolean empty = !Files.exists(languagesDir) || LocalizationLoaderBase.isEmpty(languagesDir);
+        if (empty) log.info("[Localization] No translations found for plugin '{}', generating defaults", pluginId);
+
+        // Always apply provider defaults so applyOnce=false providers can merge updates into existing files.
+        generateDefaultsFromProviders(plugin, languagesDir, pluginId);
 
         if (!Files.isDirectory(languagesDir)) {
             log.debug("[Localization] No translations for plugin: {}", pluginId);
@@ -132,6 +140,7 @@ public class PluginTranslationLoader {
             }
 
             Files.createDirectories(languagesDir);
+            ConfigurationType configurationType = configurationTypeResolver.getConfigurationType();
 
             // Generate file per provider
             for (Object bean : providerBeans.values()) {
@@ -140,18 +149,26 @@ public class PluginTranslationLoader {
                 try {
                     String target = p.getTargetFilename();
                     if (target == null) target = p.getDefaultLocale().getLocale();
-                    
+
                     Path out = languagesDir.resolve(target);
-                    
+                    boolean exists = Files.exists(resolveConfigPath(out, configurationType));
+
                     // Skip if file exists and provider should only apply once
-                    if (p.applyOnce() && Files.exists(out)) {
+                    if (p.applyOnce() && exists) {
                         log.debug("[Localization] Skipping existing file: {} for plugin: {}", out.getFileName(), pluginId);
                         continue;
                     }
                     
                     Object model = p.getModelClass().getDeclaredConstructor().newInstance();
                     Object supplied = p.supply(model);
-                    
+
+                    if (exists) {
+                        Object merged = Config.merge(out, supplied);
+                        Config.getDefaultWriter().write(out, merged);
+                        log.debug("[Localization] Updated default file '{}' for plugin: {}", out.getFileName(), pluginId);
+                        continue;
+                    }
+
                     Config.save(out, supplied);
                     log.info("[Localization] Generated default file '{}' for plugin: {}", out.getFileName(), pluginId);
                 } catch (Exception e) {
@@ -161,6 +178,16 @@ public class PluginTranslationLoader {
         } catch (Exception e) {
             log.warn("[Localization] Failed to generate plugin defaults for plugin: {}", pluginId, e);
         }
+    }
+
+    private static Path resolveConfigPath(Path pathWithoutExtension, ConfigurationType configurationType) {
+        String raw = pathWithoutExtension.toString();
+        String lower = raw.toLowerCase();
+        for (ConfigurationType type : ConfigurationType.values())
+            if (lower.endsWith(type.getExtension().toLowerCase()))
+                return pathWithoutExtension;
+
+        return Path.of(raw + configurationType.getExtension());
     }
 
     public void unloadPlugin(InternalPlugin plugin) {

@@ -3,6 +3,7 @@ package me.whereareiam.yui.adapter.plugin.translation;
 import me.whereareiam.semantica.locale.LocaleParser;
 import me.whereareiam.semantica.translation.TranslationService;
 import me.whereareiam.semantica.translation.base.TranslationLocale;
+import me.whereareiam.yui.config.ConfigurationTypeResolver;
 import me.whereareiam.yui.localization.format.FileFormat;
 import me.whereareiam.yui.localization.format.FileFormats;
 import me.whereareiam.yui.localization.loader.FileTypeHandler;
@@ -10,6 +11,7 @@ import me.whereareiam.yui.localization.loader.FileTypeHandlerRegistry;
 import me.whereareiam.yui.localization.provider.LocalizationProvider;
 import me.whereareiam.yui.model.plugin.InternalPlugin;
 import me.whereareiam.yui.model.plugin.Plugin;
+import me.whereareiam.yui.type.ConfigurationType;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,16 +38,18 @@ class PluginTranslationLoaderIntegrationTest {
     private LocaleParser<DiscordLocale> localeParser;
     private FileTypeHandlerRegistry handlerRegistry;
 
-    @BeforeEach
+	@BeforeEach
     void setUp() {
         translationService = mock(TranslationService.class);
         localeParser = mock(LocaleParser.class);
+		ConfigurationTypeResolver configurationTypeResolver = mock(ConfigurationTypeResolver.class);
+        when(configurationTypeResolver.getConfigurationType()).thenReturn(ConfigurationType.YAML);
         
         // Simple mock registry
         handlerRegistry = mock(FileTypeHandlerRegistry.class);
         when(handlerRegistry.findHandler(any(), any())).thenReturn(Optional.empty());
 
-        loader = new PluginTranslationLoader(translationService, tempDir, localeParser, handlerRegistry);
+        loader = new PluginTranslationLoader(translationService, tempDir, localeParser, handlerRegistry, configurationTypeResolver);
     }
 
     @Test

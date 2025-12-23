@@ -5,10 +5,12 @@ import me.whereareiam.semantica.model.ProviderResult;
 import me.whereareiam.yui.common.localization.format.LocaleFileHandler;
 import me.whereareiam.yui.common.localization.format.MultiLocaleFileHandler;
 import me.whereareiam.yui.common.localization.format.TemplateFileHandler;
+import me.whereareiam.yui.config.ConfigurationTypeResolver;
 import me.whereareiam.yui.localization.format.FileFormat;
 import me.whereareiam.yui.localization.format.FileFormats;
 import me.whereareiam.yui.localization.loader.FileTypeHandlerRegistry;
 import me.whereareiam.yui.localization.provider.LocalizationProvider;
+import me.whereareiam.yui.type.ConfigurationType;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +19,7 @@ import org.springframework.context.ApplicationContext;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,7 +34,7 @@ class YuiTranslationLoaderIntegrationTest {
     private YuiTranslationLoader loader;
 	private ApplicationContext applicationContext;
 
-    @BeforeEach
+	@BeforeEach
     void setUp() {
 	    FileTypeHandlerRegistry handlerRegistry = new DefaultFileTypeHandlerRegistry();
         // Register built-in handlers directly
@@ -40,7 +43,9 @@ class YuiTranslationLoaderIntegrationTest {
         handlerRegistry.registerHandler(new TemplateFileHandler());
 
         applicationContext = mock(ApplicationContext.class);
-        loader = new YuiTranslationLoader(handlerRegistry, applicationContext, tempDir);
+		ConfigurationTypeResolver configurationTypeResolver = mock(ConfigurationTypeResolver.class);
+        when(configurationTypeResolver.getConfigurationType()).thenReturn(ConfigurationType.YAML);
+        loader = new YuiTranslationLoader(handlerRegistry, applicationContext, configurationTypeResolver, tempDir);
     }
 
     @Test
@@ -129,12 +134,17 @@ class YuiTranslationLoaderIntegrationTest {
     }
 
     @Test
-    void provide_multipleProvidersSameTarget_lastOneWins() {
+    void provide_multipleProvidersSameTarget_applyOnceTrue_firstOneWins() {
         TestLocalizationProvider provider1 = new TestLocalizationProvider("field1", "value1");
         TestLocalizationProvider provider2 = new TestLocalizationProvider("field2", "value2");
 
+        @SuppressWarnings("rawtypes")
+        Map<String, LocalizationProvider> ordered = new LinkedHashMap<>();
+        ordered.put("provider1", provider1);
+        ordered.put("provider2", provider2);
+
         when(applicationContext.getBeansOfType(LocalizationProvider.class))
-                .thenReturn(Map.of("provider1", provider1, "provider2", provider2));
+                .thenReturn(ordered);
 
         Path languagesDir = tempDir.resolve("languages");
 
@@ -142,17 +152,48 @@ class YuiTranslationLoaderIntegrationTest {
 
         assertTrue(Files.exists(languagesDir.resolve("en-US.yml")));
 
-        // Verify last provider wins (no merging)
+        // Verify applyOnce=true providers do not overwrite existing files.
         try {
             @SuppressWarnings("unchecked")
             Map<String, Object> content = Config.load(languagesDir.resolve("en-US.yml"), Map.class);
-            // Only one field should exist (last provider overwrites)
-            assertTrue(content.containsKey("field1") || content.containsKey("field2"));
-            // But not both (no merging)
-            assertFalse(content.containsKey("field1") && content.containsKey("field2"));
+            assertTrue(content.containsKey("field1"));
+            assertFalse(content.containsKey("field2"));
         } catch (Exception e) {
             fail("Failed to load file", e);
         }
+    }
+
+    @Test
+    void provide_applyOnceFalse_mergesNewKeys_preservesExistingValues() throws Exception {
+        Path languagesDir = tempDir.resolve("languages");
+        Files.createDirectories(languagesDir);
+
+        // Existing file with user-modified value
+        Files.writeString(languagesDir.resolve("en-US.yml"), "field1: custom\n");
+
+        LocalizationProvider<TestModel> provider = new TestLocalizationProvider("field2", "value2") {
+            @Override
+            public TestModel supply(TestModel model) {
+                model.put("field1", "default");
+                model.put("field2", "value2");
+                return model;
+            }
+
+            @Override
+            public boolean applyOnce() {
+                return false;
+            }
+        };
+
+        when(applicationContext.getBeansOfType(LocalizationProvider.class))
+                .thenReturn(Map.of("provider", provider));
+
+        loader.provide();
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> content = Config.load(languagesDir.resolve("en-US.yml"), Map.class);
+        assertEquals("custom", content.get("field1"));
+        assertEquals("value2", content.get("field2"));
     }
 
     // Test helper provider
