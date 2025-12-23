@@ -56,6 +56,7 @@ public class PluginTranslationLoader {
         String pluginId = plugin.getPlugin().getId();
         if (pluginId == null || pluginId.isBlank()) return;
 
+        String pluginName = plugin.getPlugin().getName();
         // Use plugin name for directory, sanitized for filesystem
         String pluginDirName = plugin.getPlugin().getName().replaceAll("[^a-zA-Z0-9.-]", "_");
 
@@ -64,13 +65,13 @@ public class PluginTranslationLoader {
                 .resolve(Constants.Structure.languagesDir);
 
         boolean empty = !Files.exists(languagesDir) || LocalizationLoaderBase.isEmpty(languagesDir);
-        if (empty) log.info("[Localization] No translations found for plugin '{}', generating defaults", pluginId);
+        if (empty) log.info("[Localization] No translations found for plugin '{}', generating defaults", pluginName);
 
         // Always apply provider defaults so applyOnce=false providers can merge updates into existing files.
-        generateDefaultsFromProviders(plugin, languagesDir, pluginId);
+        generateDefaultsFromProviders(plugin, languagesDir);
 
         if (!Files.isDirectory(languagesDir)) {
-            log.debug("[Localization] No translations for plugin: {}", pluginId);
+            log.debug("[Localization] No translations for plugin: {}", pluginName);
             return;
         }
 
@@ -102,7 +103,7 @@ public class PluginTranslationLoader {
                         accumulator.computeIfAbsent(fullKey, _ -> new HashMap<>()).putAll(translations);
                     });
                     log.info("[Localization] Loaded {} multi-locale entries from '{}' for plugin: {}",
-                            multiLocaleData.size(), file.getFileName(), pluginId);
+                            multiLocaleData.size(), file.getFileName(), pluginName);
                 },
                 // TEMPLATE processor
                 (file, templates) -> {
@@ -112,7 +113,7 @@ public class PluginTranslationLoader {
                         templateCount.incrementAndGet();
                     });
                     log.info("[Localization] Loaded {} templates from '{}' for plugin: {}",
-                            templates.size(), file.getFileName(), pluginId);
+                            templates.size(), file.getFileName(), pluginName);
                 }
         );
 
@@ -122,20 +123,22 @@ public class PluginTranslationLoader {
         });
 
         log.info("[Localization] Loaded {} localized keys and {} template entries for plugin: {}",
-                accumulator.size(), templateCount.get(), pluginId);
+                accumulator.size(), templateCount.get(), pluginName);
     }
 
     /**
      * Generate default localization files from discovered LocalizationProvider beans.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void generateDefaultsFromProviders(InternalPlugin plugin, Path languagesDir, String pluginId) {
+    private void generateDefaultsFromProviders(InternalPlugin plugin, Path languagesDir) {
+        String pluginName = plugin.getPlugin().getName();
+
         try {
             Map<String, ?> providerBeans =
                     plugin.getContext().getBeansOfType(LocalizationProvider.class);
 
             if (providerBeans.isEmpty()) {
-                log.debug("[Localization] No LocalizationProvider beans found for plugin: {}", pluginId);
+                log.debug("[Localization] No LocalizationProvider beans found for plugin: {}", pluginName);
                 return;
             }
 
@@ -155,7 +158,7 @@ public class PluginTranslationLoader {
 
                     // Skip if file exists and provider should only apply once
                     if (p.applyOnce() && exists) {
-                        log.debug("[Localization] Skipping existing file: {} for plugin: {}", out.getFileName(), pluginId);
+                        log.debug("[Localization] Skipping existing file: {} for plugin: {}", out.getFileName(), pluginName);
                         continue;
                     }
                     
@@ -165,18 +168,18 @@ public class PluginTranslationLoader {
                     if (exists) {
                         Object merged = Config.merge(out, supplied);
                         Config.getDefaultWriter().write(out, merged);
-                        log.debug("[Localization] Updated default file '{}' for plugin: {}", out.getFileName(), pluginId);
+                        log.debug("[Localization] Updated default file '{}' for plugin: {}", out.getFileName(), pluginName);
                         continue;
                     }
 
                     Config.save(out, supplied);
-                    log.info("[Localization] Generated default file '{}' for plugin: {}", out.getFileName(), pluginId);
+                    log.info("[Localization] Generated default file '{}' for plugin: {}", out.getFileName(), pluginName);
                 } catch (Exception e) {
-                    log.warn("[Localization] Failed to generate defaults from provider for plugin: {}", pluginId, e);
+                    log.warn("[Localization] Failed to generate defaults from provider for plugin: {}", pluginName, e);
                 }
             }
         } catch (Exception e) {
-            log.warn("[Localization] Failed to generate plugin defaults for plugin: {}", pluginId, e);
+            log.warn("[Localization] Failed to generate plugin defaults for plugin: {}", pluginName, e);
         }
     }
 
@@ -204,7 +207,7 @@ public class PluginTranslationLoader {
         }
 
         if (removed > 0) {
-            log.info("[Localization] Unloaded {} keys for plugin: {}", removed, pluginId);
+            log.info("[Localization] Unloaded {} keys for plugin: {}", removed, plugin.getPlugin().getName());
         }
     }
 }
