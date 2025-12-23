@@ -3,6 +3,7 @@ package me.whereareiam.yui.service;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -60,10 +61,19 @@ public interface AuditService {
 	boolean isConfigured(String auditType);
 
 	/**
-	 * Get the channel ID configured for an audit type.
+	 * Get the channel IDs configured for an audit type.
 	 *
 	 * @param auditType The audit type
-	 * @return Optional containing the channel ID if configured, empty otherwise
+	 * @return Optional containing the channel IDs if configured, empty otherwise
 	 */
-	Optional<String> getChannelId(String auditType);
+	Optional<List<String>> getChannelIds(String auditType);
+
+	/**
+	 * Legacy helper for single-channel configurations. Returns the first configured channel ID if present.
+	 */
+	default Optional<String> getChannelId(String auditType) {
+		return getChannelIds(auditType)
+				.filter(list -> !list.isEmpty())
+				.map(List::getFirst);
+	}
 }

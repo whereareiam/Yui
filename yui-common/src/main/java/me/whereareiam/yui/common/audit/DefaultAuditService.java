@@ -2,6 +2,7 @@ package me.whereareiam.yui.common.audit;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.configura.type.MultiValue;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.service.AuditService;
 import net.dv8tion.jda.api.JDA;
@@ -11,6 +12,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -34,29 +36,36 @@ public class DefaultAuditService implements AuditService {
 
 	@Override
 	public CompletableFuture<Void> audit(String auditType, MessageCreateData message) {
-		return getChannelId(auditType)
-				.map(jda::getTextChannelById)
-				.map(channel -> sendToChannel(channel, auditType, message))
-				.orElseGet(() -> {
+		List<String> channelIds = getChannelIds(auditType).orElse(List.of());
+		if (channelIds.isEmpty()) {
 					log.trace("No audit channel configured for type: {}", auditType);
 					return CompletableFuture.completedFuture(null);
-				});
+		}
+
+		// Send to all configured channels; complete when all attempts are done
+		List<CompletableFuture<Void>> futures = channelIds.stream()
+				.map(jda::getTextChannelById)
+				.map(channel -> sendToChannel(channel, auditType, message))
+				.toList();
+
+		return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
 	}
 
 	@Override
 	public boolean isConfigured(String auditType) {
-		return getChannelId(auditType).isPresent();
+		return getChannelIds(auditType).map(list -> !list.isEmpty()).orElse(false);
 	}
 
 	@Override
-	public Optional<String> getChannelId(String auditType) {
+	public Optional<List<String>> getChannelIds(String auditType) {
 		Settings settings = settingsProvider.getObject();
 
-		Map<String, String> auditConfig = settings.getDiscord().getChannels().getAudit();
+		Map<String, MultiValue<String>> auditConfig = settings.getDiscord().getChannels().getAudit();
 		if (auditConfig == null)
 			return Optional.empty();
 
-		return Optional.ofNullable(auditConfig.get(auditType));
+		return Optional.ofNullable(auditConfig.get(auditType))
+				.map(MultiValue::asList);
 	}
 
 	private CompletableFuture<Void> sendToChannel(TextChannel channel, String auditType, MessageCreateData message) {

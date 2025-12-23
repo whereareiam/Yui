@@ -1,6 +1,7 @@
 package me.whereareiam.yui.common.config.template;
 
 import me.whereareiam.configura.TemplateProvider;
+import me.whereareiam.configura.type.MultiValue;
 import me.whereareiam.yui.model.config.settings.DiscordSettings;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.config.settings.database.DatabaseSettings;
@@ -35,9 +36,9 @@ public class SettingsTemplate implements TemplateProvider<Settings> {
 		DiscordSettings.Channels channels = new DiscordSettings.Channels();
 		channels.setTempChannelCategories(List.of("SET_YOUR_TEMP_CHANNEL_CATEGORY_ID"));
 		channels.setAudit(Map.of(
-				"user_join", "SET_YOUR_AUDIT_CHANNEL_ID",
-				"user_leave", "SET_YOUR_AUDIT_CHANNEL_ID",
-				"user_kick", "SET_YOUR_AUDIT_CHANNEL_ID"
+				"user_join", MultiValue.of("SET_YOUR_AUDIT_CHANNEL_ID"),
+				"user_leave", MultiValue.of("SET_YOUR_AUDIT_CHANNEL_ID"),
+				"user_kick", MultiValue.of("SET_YOUR_AUDIT_CHANNEL_ID")
 		));
 		discordSettings.setChannels(channels);
 
