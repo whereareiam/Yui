@@ -11,12 +11,12 @@ import me.whereareiam.yui.adapter.command.registration.CommandScanner;
 import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.command.CommandService;
 import me.whereareiam.yui.command.DefinitionProvider;
+import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.command.exception.ExceptionResponse;
 import me.whereareiam.yui.exception.command.base.CommandException;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import me.whereareiam.yui.type.Source;
 import org.incendo.cloud.discord.jda6.JDA6CommandManager;
-import org.incendo.cloud.discord.jda6.JDAInteraction;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -30,18 +30,18 @@ import java.util.function.Function;
 @Service
 @RequiredArgsConstructor
 public class DefaultCommandService implements CommandService {
-	private final JDA6CommandManager<JDAInteraction> commandManager;
+	private final JDA6CommandManager<Interaction> commandManager;
 	private final CommandDefinitionRegistry definitionRegistry;
 	private final DefinitionProviderRegistry definitionProviderRegistry;
 	private final CommandScanner commandScanner;
 	private final DefaultExceptionHandlerRegistry exceptionHandlerRegistry;
 
-	private AnnotationCommandRegistrar<JDAInteraction> registrar;
+	private AnnotationCommandRegistrar<Interaction> registrar;
 
-	private AnnotationCommandRegistrar<JDAInteraction> registrar() {
+	private AnnotationCommandRegistrar<Interaction> registrar() {
 		if (registrar == null) {
-			CommandDefinitionParser<JDAInteraction> definitionParser = new CommandDefinitionParser<>(commandManager);
-			this.registrar = new AnnotationCommandRegistrar<>(definitionParser, JDAInteraction.class, _ -> null);
+			CommandDefinitionParser<Interaction> definitionParser = new CommandDefinitionParser<>(commandManager);
+			this.registrar = new AnnotationCommandRegistrar<>(definitionParser, Interaction.class, _ -> null);
 		}
 
 		return registrar;
@@ -200,7 +200,7 @@ public class DefaultCommandService implements CommandService {
 	private void registerContainers(DefinitionSnapshot snapshot, Collection<Object> containers) {
 		if (containers == null || containers.isEmpty()) return;
 
-		AnnotationCommandRegistrar<JDAInteraction> reg = registrar();
+		AnnotationCommandRegistrar<Interaction> reg = registrar();
 		reg.setDefinitionLookup(snapshot.definitions()::get);
 		reg.register(snapshot.rootAlias(), containers.toArray());
 	}
