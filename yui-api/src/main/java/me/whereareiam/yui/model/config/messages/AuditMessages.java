@@ -68,37 +68,43 @@ public class AuditMessages {
 	@Setter
 	public static class Update {
 		private Available available;
-		private Behind behind;
 		private LocalBuild localBuild;
 
 		@Getter
 		@Setter
 		public static class Available {
-			private String title;
-			private List<String> description;
-			private Fields fields;
+			private Release release;
+			private Dev dev;
+
+			@Getter
+			@Setter
+			public static class Release {
+				private String title;
+				private List<String> description;
+				private Fields fields;
+
+				@Getter
+				@Setter
+				public static class Fields {
+					private String current;
+					private String latest;
+				}
+			}
+
+			@Getter
+			@Setter
+			public static class Dev {
+				private String title;
+				private List<String> description;
+				private Fields fields;
 
 			@Getter
 			@Setter
 			public static class Fields {
-				private String current;
 				private String latest;
+				private String current;
 			}
 		}
-
-		@Getter
-		@Setter
-		public static class Behind {
-			private String title;
-			private List<String> description;
-			private Fields fields;
-
-			@Getter
-			@Setter
-			public static class Fields {
-				private String commits;
-				private String current;
-			}
 		}
 
 		@Getter

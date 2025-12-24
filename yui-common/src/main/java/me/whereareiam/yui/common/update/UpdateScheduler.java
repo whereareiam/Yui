@@ -304,7 +304,9 @@ public class UpdateScheduler implements Reloadable {
             UpdateSource source,
             boolean warnAboutDevBuilds
     ) {
-        String prefix = version.substring(version.lastIndexOf('-') + 1).toLowerCase();
+        int lastDash = version.lastIndexOf('-');
+        String prefix = version.substring(lastDash + 1).toLowerCase();
+        String branchLabel = lastDash > 0 ? version.substring(0, lastDash) : "dev";
 
         try {
             List<String> updates = provider.fetchRecentUpdates(source, BRANCH_UPDATE_LIMIT);
@@ -324,11 +326,15 @@ public class UpdateScheduler implements Reloadable {
                         behind, behind == 1 ? "" : "s", name);
             }
 
+            String latestSha = updates.getFirst();
+            String shortSha = latestSha.length() > 7 ? latestSha.substring(0, 7) : latestSha;
+            String latestVersion = branchLabel + "-" + shortSha;
+
             eventPublisher.publishEvent(new UpdateAvailableEvent(
                     componentId,
                     name,
                     version,
-                    updates.getFirst(),
+                    latestVersion,
                     true,
                     behind
             ));

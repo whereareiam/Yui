@@ -21,10 +21,10 @@ public class UpdateReleaseAvailableAudit {
         Audit.log("update_" + event.getComponentId() + "_available")
                 .withSeverity(AuditSeverity.WARNING)
                 .withLocalizedEmbed(locale -> {
-                    String title = Translatable.text("audit.update.available.title")
+                    String title = Translatable.text("audit.update.available.release.title")
                             .with("name", event.getComponentName())
                             .resolve(locale);
-                    String description = Translatable.text("audit.update.available.description")
+                    String description = Translatable.text("audit.update.available.release.description")
                             .with("name", event.getComponentName())
                             .with("current", event.getCurrentVersion())
                             .with("latest", event.getLatestVersion())
@@ -34,12 +34,12 @@ public class UpdateReleaseAvailableAudit {
                     embed.setTitle(title);
                     embed.setDescription(description);
                     embed.addField(
-                            Translatable.text("audit.update.available.fields.current").resolve(locale),
+                            Translatable.text("audit.update.available.release.fields.current").resolve(locale),
                             event.getCurrentVersion(),
                             true
                     );
                     embed.addField(
-                            Translatable.text("audit.update.available.fields.latest").resolve(locale),
+                            Translatable.text("audit.update.available.release.fields.latest").resolve(locale),
                             event.getLatestVersion(),
                             true
                     );

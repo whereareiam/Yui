@@ -44,22 +44,25 @@ public class AuditMessagesTemplate implements TemplateProvider<AuditMessages> {
 		AuditMessages.Update update = new AuditMessages.Update();
 
 		AuditMessages.Update.Available available = new AuditMessages.Update.Available();
-		available.setTitle("⬆️ Update available");
-		available.setDescription(List.of("A new version of <p:name> is available!"));
-		AuditMessages.Update.Available.Fields availableFields = new AuditMessages.Update.Available.Fields();
-		availableFields.setCurrent("Current version");
-		availableFields.setLatest("Latest version");
-		available.setFields(availableFields);
-		update.setAvailable(available);
+		AuditMessages.Update.Available.Release release = new AuditMessages.Update.Available.Release();
+		release.setTitle("⬆️ Update available");
+		release.setDescription(List.of("A new version of <p:name> is available!"));
+		AuditMessages.Update.Available.Release.Fields releaseFields = new AuditMessages.Update.Available.Release.Fields();
+		releaseFields.setCurrent("Current version");
+		releaseFields.setLatest("Latest version");
+		release.setFields(releaseFields);
+		available.setRelease(release);
 
-		AuditMessages.Update.Behind behind = new AuditMessages.Update.Behind();
-		behind.setTitle("⬆️ Updates available");
-		behind.setDescription(List.of("You are <p:commits> commit<if commits!=1>s</if> behind the latest dev build of <p:name>"));
-		AuditMessages.Update.Behind.Fields behindFields = new AuditMessages.Update.Behind.Fields();
-		behindFields.setCommits("Commits behind");
-		behindFields.setCurrent("Current version");
-		behind.setFields(behindFields);
-		update.setBehind(behind);
+		AuditMessages.Update.Available.Dev dev = new AuditMessages.Update.Available.Dev();
+		dev.setTitle("⬆️ Updates available");
+		dev.setDescription(List.of("A newer dev build of <p:name> is available: <p:latest>"));
+		AuditMessages.Update.Available.Dev.Fields devFields = new AuditMessages.Update.Available.Dev.Fields();
+		devFields.setLatest("Latest version");
+		devFields.setCurrent("Current version");
+		dev.setFields(devFields);
+		available.setDev(dev);
+
+		update.setAvailable(available);
 
 		AuditMessages.Update.LocalBuild localBuild = new AuditMessages.Update.LocalBuild();
 		localBuild.setTitle("🛠️ Local development build");

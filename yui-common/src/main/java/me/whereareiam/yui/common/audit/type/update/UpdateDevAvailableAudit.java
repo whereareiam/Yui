@@ -26,13 +26,13 @@ public class UpdateDevAvailableAudit {
             return;
         }
 
-        Audit.log("update_" + event.getComponentId() + "_behind")
+        Audit.log("update_" + event.getComponentId() + "_available")
                 .withSeverity(AuditSeverity.WARNING)
                 .withLocalizedEmbed(locale -> {
-                    String title = Translatable.text("audit.update.behind.title")
+                    String title = Translatable.text("audit.update.available.dev.title")
                             .with("name", event.getComponentName())
                             .resolve(locale);
-                    String description = Translatable.text("audit.update.behind.description")
+                    String description = Translatable.text("audit.update.available.dev.description")
                             .with("name", event.getComponentName())
                             .with("commits", String.valueOf(commitsBehind))
                             .resolve(locale);
@@ -41,12 +41,12 @@ public class UpdateDevAvailableAudit {
                     embed.setTitle(title);
                     embed.setDescription(description);
                     embed.addField(
-                            Translatable.text("audit.update.behind.fields.commits").resolve(locale),
-                            String.valueOf(commitsBehind),
+                            Translatable.text("audit.update.available.dev.fields.latest").resolve(locale),
+                            event.getLatestVersion(),
                             true
                     );
                     embed.addField(
-                            Translatable.text("audit.update.behind.fields.current").resolve(locale),
+                            Translatable.text("audit.update.available.dev.fields.current").resolve(locale),
                             event.getCurrentVersion(),
                             true
                     );
