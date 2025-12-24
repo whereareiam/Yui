@@ -12,4 +12,5 @@ public class Settings {
 	private DiscordSettings discord;
 	private DatabaseSettings database;
 	private TranslationSettings translation;
+	private UpdaterSettings updater;
 }

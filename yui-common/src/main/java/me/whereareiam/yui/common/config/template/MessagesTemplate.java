@@ -30,6 +30,7 @@ public class MessagesTemplate implements LocalizationProvider<Messages> {
 	private final ReloadCommandMessagesTemplate reloadTemplate;
 	private final PluginCommandMessagesTemplate pluginTemplate;
 	private final LanguageCommandMessagesTemplate languageTemplate;
+	private final UpdateCheckCommandMessagesTemplate updateCheckTemplate;
 
 	@Override
 	public Class<Messages> getModelClass() {
@@ -59,6 +60,7 @@ public class MessagesTemplate implements LocalizationProvider<Messages> {
 		commandMessages.setReload(supply(reloadTemplate, ReloadCommandMessages::new));
 		commandMessages.setPlugin(supply(pluginTemplate, PluginCommandMessages::new));
 		commandMessages.setLanguage(supply(languageTemplate, LanguageCommandMessages::new));
+		commandMessages.setUpdateCheck(supply(updateCheckTemplate, UpdateCheckCommandMessages::new));
 		messages.setCommands(commandMessages);
 
 		return messages;

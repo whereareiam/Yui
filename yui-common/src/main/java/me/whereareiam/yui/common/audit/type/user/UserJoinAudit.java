@@ -1,4 +1,4 @@
-package me.whereareiam.yui.common.audit.type;
+package me.whereareiam.yui.common.audit.type.user;
 
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.Constants;

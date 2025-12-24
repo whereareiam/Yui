@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
  * Tests database operations with a real PostgreSQL database.
  */
 @Transactional
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest(classes = TestDatabaseConfiguration.class)
 class FluctlightPersistenceAdapterTest {
 	@Container

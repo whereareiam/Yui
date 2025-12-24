@@ -127,12 +127,36 @@ public class CommandsTemplate implements TemplateProvider<Commands> {
 				languageRequirements
 		);
 
+		// Create requirements for update-check command
+		Requirements updateCheckRequirements = new Requirements();
+		updateCheckRequirements.setOperator(RequirementOperator.AND);
+
+		RoleRequirement updateCheckRoleRequirement = new RoleRequirement();
+		updateCheckRoleRequirement.setRoles(List.of("EXAMPLE"));
+		updateCheckRoleRequirement.setRoleMatchBy("NAME");
+		updateCheckRequirements.getGroups().put("ROLE", updateCheckRoleRequirement);
+
+		CommandDefinition updateCheck = new CommandDefinition(
+				true,
+				List.of("update", "check-update"),
+				"translate(commands.update_check.description)",
+				"translate(commands.update_check.example)",
+				"{command} {alias} <target>",
+				Map.of(
+						"target", "translate(commands.update_check.variables.target)"
+				),
+				CommandCategory.ADMINISTRATION,
+				new CommandCooldown(false, 10, ""),
+				updateCheckRequirements
+		);
+
 		commands.getCommands().put("main", main);
 		commands.getCommands().put("help", help);
 		commands.getCommands().put("clear", clear);
 		commands.getCommands().put("reload", reload);
 		commands.getCommands().put("plugin", plugin);
 		commands.getCommands().put("language", language);
+		commands.getCommands().put("update-check", updateCheck);
 
 		return commands;
 	}

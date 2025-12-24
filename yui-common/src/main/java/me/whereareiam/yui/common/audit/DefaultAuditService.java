@@ -71,8 +71,53 @@ public class DefaultAuditService implements AuditService {
 		if (auditConfig == null)
 			return Optional.empty();
 
-		return Optional.ofNullable(auditConfig.get(auditType))
-				.map(mv -> LocaleScopedValues.resolve(mv, locale));
+		// Try exact match first
+		MultiValue<String> exactMatch = auditConfig.get(auditType);
+		if (exactMatch != null) {
+			return Optional.of(LocaleScopedValues.resolve(exactMatch, locale));
+		}
+
+		// Try wildcard patterns
+		// Patterns like "update_plugin_*_available" should match "update_plugin_yuiverification_available"
+		for (Map.Entry<String, MultiValue<String>> entry : auditConfig.entrySet()) {
+			String pattern = entry.getKey();
+			if (pattern.contains("*") && matchesWildcard(auditType, pattern)) {
+				return Optional.of(LocaleScopedValues.resolve(entry.getValue(), locale));
+			}
+		}
+
+		return Optional.empty();
+	}
+
+	/**
+	 * Checks if an audit type matches a wildcard pattern.
+	 * Supports * as a wildcard character.
+	 *
+	 * @param auditType the audit type to check
+	 * @param pattern the pattern with wildcards
+	 * @return true if the audit type matches the pattern
+	 */
+	private boolean matchesWildcard(String auditType, String pattern) {
+		// Convert wildcard pattern to regex
+		// Escape special regex characters except *
+		// Note: We don't escape backslash because patterns shouldn't contain them,
+		// and escaping it would interfere with our own escape sequences
+		String regex = pattern
+				.replace(".", "\\.")
+				.replace("$", "\\$")
+				.replace("^", "\\^")
+				.replace("+", "\\+")
+				.replace("?", "\\?")
+				.replace("(", "\\(")
+				.replace(")", "\\)")
+				.replace("[", "\\[")
+				.replace("]", "\\]")
+				.replace("{", "\\{")
+				.replace("}", "\\}")
+				.replace("|", "\\|")
+				.replace("*", ".*"); // Replace * with .*
+
+		return auditType.matches(regex);
 	}
 
 	@Override

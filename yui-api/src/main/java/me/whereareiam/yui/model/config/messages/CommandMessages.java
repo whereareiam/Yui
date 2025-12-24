@@ -14,6 +14,7 @@ public class CommandMessages {
 	private ReloadCommandMessages reload;
 	private PluginCommandMessages plugin;
 	private LanguageCommandMessages language;
+	private UpdateCheckCommandMessages updateCheck;
 
 	@Getter
 	@Setter

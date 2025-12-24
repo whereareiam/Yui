@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.GenericCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.requests.restaction.interactions.ReplyCallbackAction;
 
 import java.util.List;
 import java.util.Objects;
@@ -84,6 +86,27 @@ public class Interaction {
 		return this.optionMappings().stream()
 				.filter(mapping -> mapping.getName().equalsIgnoreCase(key))
 				.findFirst();
+	}
+
+	/**
+	 * Defers the reply for the interaction, typically used when processing may take time.
+	 *
+	 * @param ephemeral whether the deferred response should be ephemeral
+	 * @return the reply callback action for further customization
+	 */
+	public ReplyCallbackAction deferReply(final boolean ephemeral) {
+		Objects.requireNonNull(replyCallback, "replyCallback");
+		return replyCallback.deferReply(ephemeral);
+	}
+
+	/**
+	 * Provides the {@link InteractionHook} to edit the original interaction reply.
+	 *
+	 * @return the interaction hook
+	 */
+	public InteractionHook getHook() {
+		Objects.requireNonNull(replyCallback, "replyCallback");
+		return replyCallback.getHook();
 	}
 }
 

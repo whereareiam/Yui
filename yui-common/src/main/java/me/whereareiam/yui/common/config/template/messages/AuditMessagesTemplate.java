@@ -41,6 +41,33 @@ public class AuditMessagesTemplate implements TemplateProvider<AuditMessages> {
 
 		auditMessages.setUser(user);
 
+		AuditMessages.Update update = new AuditMessages.Update();
+
+		AuditMessages.Update.Available available = new AuditMessages.Update.Available();
+		available.setTitle("⬆️ Update available");
+		available.setDescription(List.of("A new version of <p:name> is available!"));
+		AuditMessages.Update.Available.Fields availableFields = new AuditMessages.Update.Available.Fields();
+		availableFields.setCurrent("Current version");
+		availableFields.setLatest("Latest version");
+		available.setFields(availableFields);
+		update.setAvailable(available);
+
+		AuditMessages.Update.Behind behind = new AuditMessages.Update.Behind();
+		behind.setTitle("⬆️ Updates available");
+		behind.setDescription(List.of("You are <p:commits> commit<if commits!=1>s</if> behind the latest dev build of <p:name>"));
+		AuditMessages.Update.Behind.Fields behindFields = new AuditMessages.Update.Behind.Fields();
+		behindFields.setCommits("Commits behind");
+		behindFields.setCurrent("Current version");
+		behind.setFields(behindFields);
+		update.setBehind(behind);
+
+		AuditMessages.Update.LocalBuild localBuild = new AuditMessages.Update.LocalBuild();
+		localBuild.setTitle("🛠️ Local development build");
+		localBuild.setDescription(List.of("You are running a local dev build of <p:name>"));
+		update.setLocalBuild(localBuild);
+
+		auditMessages.setUpdate(update);
+
 		return auditMessages;
 	}
 }
