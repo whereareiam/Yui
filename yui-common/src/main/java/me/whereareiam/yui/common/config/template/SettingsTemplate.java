@@ -4,8 +4,10 @@ import me.whereareiam.configura.TemplateProvider;
 import me.whereareiam.configura.type.MultiValue;
 import me.whereareiam.yui.model.config.settings.DiscordSettings;
 import me.whereareiam.yui.model.config.settings.Settings;
+import me.whereareiam.yui.model.config.settings.UpdaterSettings;
 import me.whereareiam.yui.model.config.settings.database.DatabaseSettings;
 import me.whereareiam.yui.model.config.settings.database.HikariSettings;
+import me.whereareiam.yui.model.type.Duration;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.springframework.stereotype.Component;
@@ -48,6 +50,9 @@ public class SettingsTemplate implements TemplateProvider<Settings> {
 		DatabaseSettings databaseSettings = getDatabaseSettings();
 		settings.setDatabase(databaseSettings);
 
+		UpdaterSettings updaterSettings = getUpdaterSettings();
+		settings.setUpdater(updaterSettings);
+
 		return settings;
 	}
 
@@ -67,6 +72,19 @@ public class SettingsTemplate implements TemplateProvider<Settings> {
 		hikariSettings.setMinimumIdle(2);
 
 		databaseSettings.setHikari(hikariSettings);
+
 		return databaseSettings;
+	}
+
+	private UpdaterSettings getUpdaterSettings() {
+		UpdaterSettings updaterSettings = new UpdaterSettings();
+		updaterSettings.setCheckForUpdates(true);
+		updaterSettings.setWarnAboutUpdates(true);
+		updaterSettings.setWarnAboutLocalBuilds(true);
+		updaterSettings.setWarnAboutDevBuilds(true);
+		updaterSettings.setCheckPluginUpdates(true);
+		updaterSettings.setInterval(Duration.ofDays(1));
+
+		return updaterSettings;
 	}
 }

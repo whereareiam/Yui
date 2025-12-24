@@ -87,13 +87,13 @@ public class UpdateScheduler implements Reloadable {
         Settings settings = settingsProvider.getObject();
         UpdaterSettings cfg = settings.getUpdater();
 
-        if (cfg == null || !cfg.isCheckForUpdates() || cfg.getInterval() <= 0) {
+        if (!cfg.isCheckForUpdates() || cfg.getInterval().getSeconds() <= 0) {
             log.debug("[Updater] Update checking is disabled");
             return;
         }
 
-        Duration interval = Duration.ofHours(cfg.getInterval());
-        Instant startTime = Instant.now().plus(Duration.ofMinutes(1)); // Start after 1 minute
+        Duration interval = Duration.ofSeconds(cfg.getInterval().getSeconds());
+        Instant startTime = Instant.now();
 
         // Schedule periodic check
         scheduledTask = taskScheduler.scheduleWithFixedDelay(
@@ -102,7 +102,7 @@ public class UpdateScheduler implements Reloadable {
                 interval
         );
 
-        log.debug("[Updater] Update scheduler started with interval: {} hours", cfg.getInterval());
+        log.debug("[Updater] Update scheduler started with interval: {}", cfg.getInterval());
     }
 
     /**
