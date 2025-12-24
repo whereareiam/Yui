@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 @Setter
 public class Languages {
 	private Map<String, LanguageEntry> languages;
+	private TranslationSettings settings;
 
 	/**
 	 * Converts languages map to use DiscordLocale keys.

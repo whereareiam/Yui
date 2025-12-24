@@ -24,7 +24,7 @@ public class RolesTemplate implements TemplateProvider<Roles> {
 		}
 
 		SyncSettings syncSettings = new SyncSettings();
-		config.setSync(syncSettings);
+		config.setSettings(syncSettings);
 
 		return config;
 	}

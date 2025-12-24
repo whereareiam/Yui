@@ -194,9 +194,9 @@ public class RoleSyncScheduler extends ListenerAdapter {
 		if (pendingChanges.isEmpty()) return;
 
 		Roles rolesConfig = rolesProvider.get();
-		if (rolesConfig == null || rolesConfig.getSync() == null) return;
+		if (rolesConfig == null || rolesConfig.getSettings() == null) return;
 
-		long debounceMillis = rolesConfig.getSync().getDebounceMillis();
+		long debounceMillis = rolesConfig.getSettings().getDebounceMillis();
 
 		// Collect users ready to process
 		List<PendingRoleSync> readyToProcess = new ArrayList<>();

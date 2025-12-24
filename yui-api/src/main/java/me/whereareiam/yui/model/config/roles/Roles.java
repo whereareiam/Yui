@@ -9,5 +9,5 @@ import java.util.List;
 @Setter
 public class Roles {
 	private List<RoleEntry> roles;
-	private SyncSettings sync;
+	private SyncSettings settings;
 }

@@ -1,4 +1,4 @@
-package me.whereareiam.yui.model.config.settings;
+package me.whereareiam.yui.model.config.languages;
 
 import lombok.Getter;
 import lombok.Setter;

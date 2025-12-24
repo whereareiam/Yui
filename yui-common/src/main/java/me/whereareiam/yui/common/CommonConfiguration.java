@@ -15,8 +15,9 @@ import me.whereareiam.yui.common.localization.format.MultiLocaleFileHandler;
 import me.whereareiam.yui.common.localization.format.TemplateFileHandler;
 import me.whereareiam.yui.common.localization.loader.DefaultFileTypeHandlerRegistry;
 import me.whereareiam.yui.common.localization.loader.YuiTranslationLoader;
+import me.whereareiam.yui.model.config.languages.Languages;
 import me.whereareiam.yui.model.config.settings.Settings;
-import me.whereareiam.yui.model.config.settings.TranslationSettings;
+import me.whereareiam.yui.model.config.languages.TranslationSettings;
 import me.whereareiam.yui.localization.loader.FileTypeHandlerRegistry;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -36,6 +37,7 @@ import java.util.concurrent.ScheduledExecutorService;
 @RequiredArgsConstructor
 public class CommonConfiguration {
 	private final ObjectProvider<Settings> settingsProvider;
+	private final ObjectProvider<Languages> languagesProvider;
 	private JDA jda;
 
 	@Bean
@@ -111,7 +113,7 @@ public class CommonConfiguration {
 			LocaleParser<DiscordLocale> localeParser
 	) {
 		Settings settings = settingsProvider.getObject();
-		TranslationSettings translationSettings = settings.getTranslation();
+		TranslationSettings translationSettings = languagesProvider.getObject().getSettings();
 
 		return SemanticaConfiguration.<DiscordLocale>builder()
 				.defaultLocale(SemanticLocale.wrap(settings.getLocale().toLocale()))

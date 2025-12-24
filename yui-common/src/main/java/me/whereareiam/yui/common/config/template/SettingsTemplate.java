@@ -38,7 +38,8 @@ public class SettingsTemplate implements TemplateProvider<Settings> {
 		channels.setAudit(Map.of(
 				"user_join", MultiValue.of("SET_YOUR_AUDIT_CHANNEL_ID"),
 				"user_leave", MultiValue.of("SET_YOUR_AUDIT_CHANNEL_ID"),
-				"user_kick", MultiValue.of("SET_YOUR_AUDIT_CHANNEL_ID")
+				"user_kick", MultiValue.of("SET_YOUR_AUDIT_CHANNEL_ID"),
+				"update_*_available", MultiValue.of("SET_YOUR_AUDIT_CHANNEL_ID")
 		));
 		discordSettings.setChannels(channels);
 
@@ -46,10 +47,6 @@ public class SettingsTemplate implements TemplateProvider<Settings> {
 
 		DatabaseSettings databaseSettings = getDatabaseSettings();
 		settings.setDatabase(databaseSettings);
-
-		me.whereareiam.yui.model.config.settings.TranslationSettings translationSettings =
-				new me.whereareiam.yui.model.config.settings.TranslationSettings();
-		settings.setTranslation(translationSettings);
 
 		return settings;
 	}

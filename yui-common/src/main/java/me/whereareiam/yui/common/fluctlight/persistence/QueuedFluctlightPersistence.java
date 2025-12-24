@@ -157,9 +157,9 @@ public class QueuedFluctlightPersistence implements FluctlightPersistence {
 		if (queue.isEmpty()) return;
 
 		Roles rolesConfig = rolesProvider.get();
-		if (rolesConfig == null || rolesConfig.getSync() == null) return;
+		if (rolesConfig == null || rolesConfig.getSettings() == null) return;
 
-		int batchSize = rolesConfig.getSync().getPersistenceBatchSize();
+		int batchSize = rolesConfig.getSettings().getPersistenceBatchSize();
 
 		// Drain up to batchSize tasks from the queue
 		List<PersistenceTask> batch = new ArrayList<>();

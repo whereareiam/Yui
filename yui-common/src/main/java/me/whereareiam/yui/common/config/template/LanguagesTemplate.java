@@ -3,6 +3,7 @@ package me.whereareiam.yui.common.config.template;
 import me.whereareiam.configura.TemplateProvider;
 import me.whereareiam.yui.model.config.languages.LanguageEntry;
 import me.whereareiam.yui.model.config.languages.Languages;
+import me.whereareiam.yui.model.config.languages.TranslationSettings;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +30,8 @@ public class LanguagesTemplate implements TemplateProvider<Languages> {
 			defaultLanguage.setDisplayName("English (US)");
 			config.getLanguages().put(defaultLocaleKey, defaultLanguage);
 		}
+
+		config.setSettings(new TranslationSettings());
 
 		return config;
 	}
