@@ -1,5 +1,9 @@
 package me.whereareiam.yui.plugin;
 
+import me.whereareiam.attache.model.Library;
+
+import java.util.List;
+
 public interface YuiPlugin {
 	default void onLoad() {
 	}
@@ -11,5 +15,13 @@ public interface YuiPlugin {
 	}
 
 	default void onUnload() {
+	}
+
+	default List<String> repositories() {
+		return List.of();
+	}
+
+	default List<Library> dependencies() {
+		return List.of();
 	}
 }

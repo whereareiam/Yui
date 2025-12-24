@@ -10,6 +10,7 @@ jda = "5.6.1"
 postgres = "42.7.7"
 configura = "dev-69d4b1e"
 semantica = "dev-ffdb76d"
+attache = "dev-05e4621"
 
 # testing
 junit-platform = "6.0.1"
@@ -50,6 +51,11 @@ cloud-core = { group = "org.incendo", name = "cloud-core", version.ref = "cloud"
 cloud-annotations = { group = "org.incendo", name = "cloud-annotations", version.ref = "cloud" }
 cloud-cooldown = { group = "org.incendo", name = "cloud-processors-cooldown", version.ref = "cloud-cooldown" }
 cloud-discord = { group = "org.incendo", name = "cloud-jda6", version.ref = "cloud-discord" }
+
+# attache
+attache-spring = { group = "me.whereareiam", name = "attache-spring", version.ref = "attache" }
+attache-common = { group = "me.whereareiam", name = "attache-common", version.ref = "attache" }
+
 
 [plugins]
 buildconfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildconfig" }

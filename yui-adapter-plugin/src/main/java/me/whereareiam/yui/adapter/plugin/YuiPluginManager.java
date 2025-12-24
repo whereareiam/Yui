@@ -7,6 +7,7 @@ import me.whereareiam.yui.adapter.plugin.descriptor.PluginDescriptorReader;
 import me.whereareiam.yui.adapter.plugin.factory.PluginClassLoaderFactory;
 import me.whereareiam.yui.adapter.plugin.factory.PluginContextFactory;
 import me.whereareiam.yui.adapter.plugin.scanner.PluginJarScanner;
+import me.whereareiam.yui.adapter.plugin.loader.RuntimeDependencyLoader;
 import me.whereareiam.yui.event.plugin.PluginDisabledEvent;
 import me.whereareiam.yui.event.plugin.PluginEnabledEvent;
 import me.whereareiam.yui.event.plugin.PluginLoadedEvent;
@@ -42,6 +43,7 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 	private final PluginBeanRegistry registry;
 	private final ApplicationEventPublisher eventPublisher;
 	private final PluginJarScanner jarScanner;
+	private final RuntimeDependencyLoader runtimeDependencyLoader;
 
 	private final ReentrantLock lock = new ReentrantLock(true);
 
@@ -54,6 +56,7 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 			PluginJarScanner jarScanner,
 			PluginBeanRegistry registry,
 			ApplicationEventPublisher eventPublisher,
+			RuntimeDependencyLoader runtimeDependencyLoader,
 			Registry<Reloadable> reloadableRegistry
 	) {
 		this.storage = storage;
@@ -64,6 +67,7 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 		this.jarScanner = jarScanner;
 		this.registry = registry;
 		this.eventPublisher = eventPublisher;
+		this.runtimeDependencyLoader = runtimeDependencyLoader;
 
 		reloadableRegistry.register(this);
 	}
@@ -101,6 +105,8 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 			if (storage.byId(plugin.getId()).isPresent())
 				return;
 
+			runtimeDependencyLoader.loadFromDescriptor(plugin);
+
 			List<ClassLoader> deps = Optional.ofNullable(plugin.getDependencies())
 					.orElse(List.of())
 					.stream()
@@ -117,6 +123,7 @@ public class YuiPluginManager implements PluginManager, Reloadable {
 			AnnotationConfigApplicationContext pluginCtx = contextFactory.build(loader, plugin);
 
 			YuiPlugin bean = pluginCtx.getBean(YuiPlugin.class);
+			runtimeDependencyLoader.loadFromPlugin(plugin, bean);
 			InternalPlugin internal = new InternalPlugin(plugin, loader, pluginCtx, bean);
 
 			eventPublisher.publishEvent(new PluginLoadedEvent(internal));

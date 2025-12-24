@@ -1,6 +1,7 @@
 package me.whereareiam.yui.model.plugin;
 
 import lombok.Getter;
+import me.whereareiam.attache.model.Library;
 import me.whereareiam.yui.model.update.UpdateConfiguration;
 
 import java.util.List;
@@ -15,4 +16,11 @@ public class Plugin {
 	private List<String> authors;
 	private String entrypoint;
 	private UpdateConfiguration updater;
+	private Runtime runtime;
+
+	@Getter
+	public static class Runtime {
+		private List<String> repositories;
+		private List<Library> dependencies;
+	}
 }

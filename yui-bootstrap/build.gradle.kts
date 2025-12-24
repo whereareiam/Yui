@@ -6,12 +6,9 @@ plugins {
 }
 
 dependencies {
-    "implementation"(libs.bundles.cloud)
     "implementation"(libs.bundles.spring)
-    "implementation"(libs.jda)
-    "implementation"(libs.postgres)
-    "implementation"(libs.configura)
-    "implementation"(libs.semantica)
+    "implementation"(libs.attache.spring)
+    "implementation"(libs.attache.common)
 
     // include all projects
     rootProject.subprojects.forEach { subproject ->

@@ -43,6 +43,7 @@ subprojects {
             "compileOnly"(rootProject.libs.jda)
             "compileOnly"(rootProject.libs.configura)
             "compileOnly"(rootProject.libs.semantica)
+            "compileOnly"(rootProject.libs.attache.common)
 
             // testing
             "testImplementation"(project(":yui-api"))
