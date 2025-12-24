@@ -1,16 +1,15 @@
 package me.whereareiam.yui.common.role.sync;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.common.config.provider.RolesProvider;
 import me.whereareiam.yui.event.fluctlight.FluctlightClearedEvent;
 import me.whereareiam.yui.fluctlight.FluctlightRegistry;
+import me.whereareiam.yui.model.ManagedRole;
 import me.whereareiam.yui.model.config.roles.Roles;
 import me.whereareiam.yui.model.config.settings.Settings;
-import me.whereareiam.yui.model.ManagedRole;
-import me.whereareiam.yui.service.RoleService;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.service.RoleService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -58,17 +57,6 @@ public class RoleSyncScheduler extends ListenerAdapter {
 	private final JDA jda;
 
 	private final ConcurrentHashMap<Long, PendingRoleSync> pendingChanges = new ConcurrentHashMap<>();
-
-	/**
-	 * Registers this scheduler as a JDA event listener on startup.
-	 * This allows the sync system to be self-contained and handle
-	 * external Discord role changes automatically.
-	 */
-	@PostConstruct
-	private void registerListener() {
-		jda.addEventListener(this);
-		log.info("RoleSyncScheduler registered as JDA listener - sync system is self-contained");
-	}
 
 	/**
 	 * Handles external role additions from Discord.
