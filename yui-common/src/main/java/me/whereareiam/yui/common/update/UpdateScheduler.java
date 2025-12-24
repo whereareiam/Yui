@@ -215,32 +215,34 @@ public class UpdateScheduler implements Reloadable {
         if ("dev".equalsIgnoreCase(current)) {
             if (cfg.isWarnAboutLocalBuilds()) {
                 log.warn("[Updater] You are running a local dev build of {}.", name);
-
-                eventPublisher.publishEvent(new UpdateLocalNotificationEvent(
-                        componentId,
-                        name,
-                        current
-                ));
             }
+
+            eventPublisher.publishEvent(new UpdateLocalNotificationEvent(
+                    componentId,
+                    name,
+                    current
+            ));
             return;
         }
 
         // 2) branch/CI build (anything not matching release-pattern)
         if (!isReleaseVersion(current)) {
-            if (cfg.isWarnAboutDevBuilds() && spec.getDev() != null) {
+            if (spec.getDev() != null) {
                 UpdateSource devSpec = spec.getDev();
+                boolean warnAboutDevBuilds = cfg.isWarnAboutDevBuilds();
                 providerRegistry.by(devSpec).ifPresent(provider ->
-                        warnAheadBehindBranches(componentId, current, name, provider, devSpec)
+                        warnAheadBehindBranches(componentId, current, name, provider, devSpec, warnAboutDevBuilds)
                 );
             }
             return;
         }
 
         // 3) release build
-        if (cfg.isWarnAboutUpdates() && spec.getRelease() != null) {
+        if (spec.getRelease() != null) {
             UpdateSource relSpec = spec.getRelease();
+            boolean warnAboutUpdates = cfg.isWarnAboutUpdates();
             providerRegistry.by(relSpec).ifPresent(provider ->
-                    checkReleaseUpdate(componentId, name, current, provider, relSpec)
+                    checkReleaseUpdate(componentId, name, current, provider, relSpec, warnAboutUpdates)
             );
         }
     }
@@ -250,7 +252,8 @@ public class UpdateScheduler implements Reloadable {
             String name,
             String current,
             UpdateProvider provider,
-            UpdateSource source
+            UpdateSource source,
+            boolean warnAboutUpdates
     ) {
         try {
             Optional<String> latestOpt = provider.fetchLatest(source);
@@ -271,8 +274,10 @@ public class UpdateScheduler implements Reloadable {
             }
 
             if (compareSemver(latest, current) > 0) {
-                log.warn("[Updater] The version of {} you are using is outdated. Current: {}, Latest: {}",
-                        name, current, latest);
+                if (warnAboutUpdates) {
+                    log.warn("[Updater] The version of {} you are using is outdated. Current: {}, Latest: {}",
+                            name, current, latest);
+                }
 
                 eventPublisher.publishEvent(new UpdateAvailableEvent(
                         componentId,
@@ -296,7 +301,8 @@ public class UpdateScheduler implements Reloadable {
             String version,
             String name,
             UpdateProvider provider,
-            UpdateSource source
+            UpdateSource source,
+            boolean warnAboutDevBuilds
     ) {
         String prefix = version.substring(version.lastIndexOf('-') + 1).toLowerCase();
 
@@ -313,8 +319,10 @@ public class UpdateScheduler implements Reloadable {
                 return;
             }
 
-	        log.warn("[Updater] You are {} commit{} behind the latest dev build of {}.",
-                    behind, behind == 1 ? "" : "s", name);
+            if (warnAboutDevBuilds) {
+                log.warn("[Updater] You are {} commit{} behind the latest dev build of {}.",
+                        behind, behind == 1 ? "" : "s", name);
+            }
 
             eventPublisher.publishEvent(new UpdateAvailableEvent(
                     componentId,
