@@ -9,12 +9,14 @@ import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Loads runtime dependencies via Attache before beans that rely on them are created.
  */
 @Configuration
 public class RuntimeDependencies implements BeanFactoryPostProcessor, PriorityOrdered {
+	private static final AtomicBoolean LOADED = new AtomicBoolean(false);
 	private static final List<String> REPOSITORIES = List.of(
 			"https://maven.whereareiam.me/release",
 			"https://maven.whereareiam.me/development"
@@ -82,17 +84,25 @@ public class RuntimeDependencies implements BeanFactoryPostProcessor, PriorityOr
 		if (manager == null)
 			return;
 
-		manager.addMavenCentral();
+		loadWith(manager, true);
+	}
+
+	static void loadWith(StandaloneLibraryManager manager, boolean addMavenCentral) {
+		if (!LOADED.compareAndSet(false, true))
+			return;
+
+		if (addMavenCentral)
+			manager.addMavenCentral();
 		registerDefaultRepositories(manager);
 		loadLibraries(manager);
 	}
 
-	private void registerDefaultRepositories(StandaloneLibraryManager manager) {
+	private static void registerDefaultRepositories(StandaloneLibraryManager manager) {
 		for (String repo : REPOSITORIES)
 			manager.addRepository(repo);
 	}
 
-	private void loadLibraries(StandaloneLibraryManager manager) {
+	private static void loadLibraries(StandaloneLibraryManager manager) {
 		for (Library library : RuntimeDependencies.LIBRARIES)
 			manager.loadLibrary(library);
 	}

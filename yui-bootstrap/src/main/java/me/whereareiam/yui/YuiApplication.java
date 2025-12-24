@@ -16,7 +16,9 @@ import java.nio.file.Paths;
 @SpringBootApplication
 public class YuiApplication {
 	public static void main(String[] args) {
-		SpringApplication.run(YuiApplication.class, args);
+		SpringApplication application = new SpringApplication(YuiApplication.class);
+		application.addInitializers(new RuntimeDependenciesInitializer());
+		application.run(args);
 	}
 
 	@Bean
