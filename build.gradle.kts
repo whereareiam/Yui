@@ -9,7 +9,6 @@ allprojects {
     tasks.withType<JavaCompile> {
         sourceCompatibility = JavaVersion.VERSION_25.toString()
         targetCompatibility = JavaVersion.VERSION_25.toString()
-        options.compilerArgs.add("--enable-preview")
     }
 }
 

@@ -287,13 +287,13 @@ public class StatusCommand {
 		final long mb = kb * 1024;
 		final long gb = mb * 1024;
 
-		return switch (bytes) {
-			case long l when l >= gb -> String.format("%.2f GB", bytes / (double) gb);
-			case long l when l >= mb -> String.format("%.2f MB", bytes / (double) mb);
-			case long l when l >= kb -> String.format("%.2f KB", bytes / (double) kb);
-			default -> bytes + " B";
-		};
+		if (bytes >= gb) return String.format("%.2f GB", bytes / (double) gb);
+		if (bytes >= mb) return String.format("%.2f MB", bytes / (double) mb);
+		if (bytes >= kb) return String.format("%.2f KB", bytes / (double) kb);
+
+		return bytes + " B";
 	}
+
 
 	private String joinNonBlank(String primary, String secondary, String fallback) {
 		String value = joinNonBlank(primary, secondary);
