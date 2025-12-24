@@ -9,5 +9,6 @@ public class LanguageEntry {
 	private boolean enabled = true;
 	private Long role;
 	private String displayName;
+	private String emoji;
 }
 

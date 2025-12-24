@@ -6,12 +6,14 @@ import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.model.PayloadButton;
+import me.whereareiam.yui.model.config.languages.LanguageEntry;
+import me.whereareiam.yui.model.config.languages.Languages;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.persistence.LanguagePersistence;
 import me.whereareiam.yui.util.style.StyleKit;
 import me.whereareiam.yui.util.translation.Translatable;
 import me.whereareiam.yui.util.Components;
-import me.whereareiam.yui.util.EmojiUtil;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -20,6 +22,7 @@ import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -28,6 +31,7 @@ import java.util.*;
 @AllArgsConstructor
 public class LanguageCommand {
 	private final LanguagePersistence languagePersistence;
+	private final ObjectProvider<Languages> languagesProvider;
 
 	private static final String SELECT_PRIMARY_LISTENER = "command_language_select_primary";
 	private static final String SELECT_ADDITIONAL_LISTENER = "command_language_select_additional";
@@ -185,17 +189,49 @@ public class LanguageCommand {
 	private List<Button> buildLanguageButtons(Collection<DiscordLocale> all, Set<DiscordLocale> excluded, String listenerId) {
 		if (all == null || all.isEmpty()) return Collections.emptyList();
 
+		Map<DiscordLocale, LanguageEntry> languageConfig = languagesProvider.getObject().toLocaleMap();
+
 		return all.stream()
 				.filter(Objects::nonNull)
 				.filter(lang -> excluded == null || !excluded.contains(lang))
-				.map(lang -> Components.button(
-						ButtonStyle.SECONDARY,
-						listenerId,
-						EmojiUtil.of(lang),
-						lang.getLocale()
-				))
+				.map(lang -> buildLanguageButton(lang, listenerId, languageConfig))
 				.map(PayloadButton::getButton)
 				.toList();
+	}
+
+	private PayloadButton buildLanguageButton(DiscordLocale lang, String listenerId, Map<DiscordLocale, LanguageEntry> languageConfig) {
+		LanguageEntry entry = languageConfig.get(lang);
+		String emoji = entry != null ? entry.getEmoji() : null;
+		String displayName = entry != null ? entry.getDisplayName() : null;
+
+		if (emoji != null && !emoji.isBlank()) {
+			try {
+				return Components.button(
+						ButtonStyle.SECONDARY,
+						listenerId,
+						Emoji.fromFormatted(emoji),
+						lang.getLocale()
+				);
+			} catch (IllegalArgumentException ignored) {
+				// Fall back to label when emoji is invalid.
+			}
+		}
+
+		String label = (displayName != null && !displayName.isBlank()) ? displayName : fallbackLabel(lang);
+		return Components.button(
+				ButtonStyle.SECONDARY,
+				listenerId,
+				label,
+				lang.getLocale()
+		);
+	}
+
+	private String fallbackLabel(DiscordLocale locale) {
+		String nativeName = locale.getNativeName();
+		if (!nativeName.isBlank())
+			return nativeName;
+
+		return locale.getLocale();
 	}
 
 	private List<ActionRow> toActionRows(List<Button> mainButtons, List<Button> footerButtons) {
