@@ -59,41 +59,31 @@ public class DefaultFluctlightService implements FluctlightService {
 
 	@Override
 	public Optional<Fluctlight> get(long userId) {
-		// First, check registry
 		Optional<Fluctlight> cached = fluctlightRegistry.getFluctlight(userId);
 		if (cached.isPresent())
 			return cached;
 
-		// Get JDA User
 		User jdaUser = jda.getUserById(userId);
 		if (jdaUser == null) {
 			log.debug("User {} not found in JDA cache", userId);
 			return Optional.empty();
 		}
 
-		// Eager loading: load custom data from database
 		Fluctlight fluctlight = new Fluctlight(jdaUser);
 		Optional<FluctlightData> customDataOpt = fluctlightPersistence.loadData(fluctlight);
+		boolean isNew = customDataOpt.isEmpty();
 
-		if (customDataOpt.isPresent()) {
-			// Apply custom data from database
-			FluctlightData customData = customDataOpt.get();
-			FluctlightStateUpdater.updatePrimaryLanguage(fluctlight, customData.getPrimaryLanguage());
-			FluctlightStateUpdater.updateAdditionalLanguages(fluctlight, customData.getAdditionalLanguages());
-			FluctlightStateUpdater.updateAllowedRoles(fluctlight, customData.getAllowedRoles());
+		if (isNew) {
+			initializeNewFluctlight(fluctlight, userId);
 		} else {
-			// Create new entry in database with bot's default language
-			DiscordLocale defaultLocale = settings.getObject().getLocale();
-			FluctlightData initialData = new FluctlightData(defaultLocale, new DiscordLocale[0], null);
-			fluctlightPersistence.saveData(fluctlight, initialData);
-			log.debug("Created new Fluctlight entry for fluctlight {} with default language {}", userId, defaultLocale);
-			
-			// Publish creation event - listener will load data and update in-memory state
-			eventPublisher.publishEvent(new FluctlightCreatedEvent(fluctlight));
+			applyPersistedData(fluctlight, customDataOpt.get());
 		}
 
-		// Store in registry
 		fluctlightRegistry.putFluctlight(userId, fluctlight);
+
+		if (isNew)
+			eventPublisher.publishEvent(new FluctlightCreatedEvent(fluctlight));
+
 		return Optional.of(fluctlight);
 	}
 
@@ -445,4 +435,16 @@ public class DefaultFluctlightService implements FluctlightService {
 		return result;
 	}
 
+	private void applyPersistedData(Fluctlight fluctlight, FluctlightData customData) {
+		FluctlightStateUpdater.updatePrimaryLanguage(fluctlight, customData.getPrimaryLanguage());
+		FluctlightStateUpdater.updateAdditionalLanguages(fluctlight, customData.getAdditionalLanguages());
+		FluctlightStateUpdater.updateAllowedRoles(fluctlight, customData.getAllowedRoles());
+	}
+
+	private void initializeNewFluctlight(Fluctlight fluctlight, long userId) {
+		DiscordLocale defaultLocale = settings.getObject().getLocale();
+		FluctlightData initialData = new FluctlightData(defaultLocale, new DiscordLocale[0], null);
+		fluctlightPersistence.saveData(fluctlight, initialData);
+		log.debug("Created new Fluctlight entry for fluctlight {} with default language {}", userId, defaultLocale);
+	}
 }
