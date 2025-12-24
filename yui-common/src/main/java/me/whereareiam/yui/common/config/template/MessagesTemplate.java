@@ -29,6 +29,7 @@ public class MessagesTemplate implements LocalizationProvider<Messages> {
 	private final ClearCommandMessagesTemplate clearTemplate;
 	private final ReloadCommandMessagesTemplate reloadTemplate;
 	private final PluginCommandMessagesTemplate pluginTemplate;
+	private final StatusCommandMessagesTemplate statusTemplate;
 	private final LanguageCommandMessagesTemplate languageTemplate;
 	private final UpdateCheckCommandMessagesTemplate updateCheckTemplate;
 
@@ -59,6 +60,7 @@ public class MessagesTemplate implements LocalizationProvider<Messages> {
 		commandMessages.setClear(supply(clearTemplate, ClearCommandMessages::new));
 		commandMessages.setReload(supply(reloadTemplate, ReloadCommandMessages::new));
 		commandMessages.setPlugin(supply(pluginTemplate, PluginCommandMessages::new));
+		commandMessages.setStatus(supply(statusTemplate, StatusCommandMessages::new));
 		commandMessages.setLanguage(supply(languageTemplate, LanguageCommandMessages::new));
 		commandMessages.setUpdateCheck(supply(updateCheckTemplate, UpdateCheckCommandMessages::new));
 		messages.setCommands(commandMessages);

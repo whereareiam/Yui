@@ -13,6 +13,7 @@ public class CommandMessages {
 	private ClearCommandMessages clear;
 	private ReloadCommandMessages reload;
 	private PluginCommandMessages plugin;
+	private StatusCommandMessages status;
 	private LanguageCommandMessages language;
 	private UpdateCheckCommandMessages updateCheck;
 

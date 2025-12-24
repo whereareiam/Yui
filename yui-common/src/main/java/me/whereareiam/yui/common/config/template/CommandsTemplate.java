@@ -104,6 +104,18 @@ public class CommandsTemplate implements TemplateProvider<Commands> {
 				reloadRequirements
 		);
 
+		CommandDefinition status = new CommandDefinition(
+				true,
+				List.of("status"),
+				"translate(commands.status.description)",
+				"translate(commands.status.example)",
+				"{command} {alias}",
+				Map.of(),
+				CommandCategory.ADMINISTRATION,
+				new CommandCooldown(false, 5, ""),
+				reloadRequirements
+		);
+
 		// Create requirements for language command
 		Requirements languageRequirements = new Requirements();
 		languageRequirements.setOperator(RequirementOperator.AND);
@@ -155,6 +167,7 @@ public class CommandsTemplate implements TemplateProvider<Commands> {
 		commands.getCommands().put("clear", clear);
 		commands.getCommands().put("reload", reload);
 		commands.getCommands().put("plugin", plugin);
+		commands.getCommands().put("status", status);
 		commands.getCommands().put("language", language);
 		commands.getCommands().put("update-check", updateCheck);
 
