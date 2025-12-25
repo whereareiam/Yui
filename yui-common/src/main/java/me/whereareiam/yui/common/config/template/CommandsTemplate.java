@@ -11,6 +11,7 @@ import me.whereareiam.yui.type.requirement.RequirementCondition;
 import me.whereareiam.yui.type.requirement.RequirementOperator;
 import org.springframework.stereotype.Component;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,6 +49,7 @@ public class CommandsTemplate implements TemplateProvider<Commands> {
 		// Create requirements for clear command
 		Requirements clearRequirements = new Requirements();
 		clearRequirements.setOperator(RequirementOperator.AND);
+		clearRequirements.setGroups(new LinkedHashMap<>());
 
 		RoleRequirement roleRequirement = new RoleRequirement();
 		roleRequirement.setRoles(List.of("EXAMPLE"));
@@ -71,6 +73,7 @@ public class CommandsTemplate implements TemplateProvider<Commands> {
 		// Create requirements for reload command
 		Requirements reloadRequirements = new Requirements();
 		reloadRequirements.setOperator(RequirementOperator.AND);
+		reloadRequirements.setGroups(new LinkedHashMap<>());
 
 		RoleRequirement reloadRoleRequirement = new RoleRequirement();
 		reloadRoleRequirement.setRoles(List.of("EXAMPLE"));
@@ -89,6 +92,16 @@ public class CommandsTemplate implements TemplateProvider<Commands> {
 				reloadRequirements
 		);
 
+		// Create requirements for plugin command
+		Requirements pluginRequirements = new Requirements();
+		pluginRequirements.setOperator(RequirementOperator.AND);
+		pluginRequirements.setGroups(new LinkedHashMap<>());
+
+		RoleRequirement pluginRoleRequirement = new RoleRequirement();
+		pluginRoleRequirement.setRoles(List.of("EXAMPLE"));
+		pluginRoleRequirement.setRoleMatchBy("NAME");
+		pluginRequirements.getGroups().put("ROLE", pluginRoleRequirement);
+
 		CommandDefinition plugin = new CommandDefinition(
 				true,
 				List.of("plugin", "plugins"),
@@ -101,8 +114,18 @@ public class CommandsTemplate implements TemplateProvider<Commands> {
 				),
 				CommandCategory.ADMINISTRATION,
 				new CommandCooldown(false, 5, ""),
-				reloadRequirements
+				pluginRequirements
 		);
+
+		// Create requirements for status command
+		Requirements statusRequirements = new Requirements();
+		statusRequirements.setOperator(RequirementOperator.AND);
+		statusRequirements.setGroups(new LinkedHashMap<>());
+
+		RoleRequirement statusRoleRequirement = new RoleRequirement();
+		statusRoleRequirement.setRoles(List.of("EXAMPLE"));
+		statusRoleRequirement.setRoleMatchBy("NAME");
+		statusRequirements.getGroups().put("ROLE", statusRoleRequirement);
 
 		CommandDefinition status = new CommandDefinition(
 				true,
@@ -113,12 +136,13 @@ public class CommandsTemplate implements TemplateProvider<Commands> {
 				Map.of(),
 				CommandCategory.ADMINISTRATION,
 				new CommandCooldown(false, 5, ""),
-				reloadRequirements
+				statusRequirements
 		);
 
 		// Create requirements for language command
 		Requirements languageRequirements = new Requirements();
 		languageRequirements.setOperator(RequirementOperator.AND);
+		languageRequirements.setGroups(new LinkedHashMap<>());
 
 		RoleRequirement languageRoleRequirement = new RoleRequirement();
 		languageRoleRequirement.setCondition(RequirementCondition.HAS);
@@ -142,6 +166,7 @@ public class CommandsTemplate implements TemplateProvider<Commands> {
 		// Create requirements for update-check command
 		Requirements updateCheckRequirements = new Requirements();
 		updateCheckRequirements.setOperator(RequirementOperator.AND);
+		updateCheckRequirements.setGroups(new LinkedHashMap<>());
 
 		RoleRequirement updateCheckRoleRequirement = new RoleRequirement();
 		updateCheckRoleRequirement.setRoles(List.of("EXAMPLE"));

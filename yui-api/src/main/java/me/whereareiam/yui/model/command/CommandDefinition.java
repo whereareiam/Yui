@@ -3,6 +3,7 @@ package me.whereareiam.yui.model.command;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import me.whereareiam.configura.annotation.Field;
 import me.whereareiam.yui.model.requirement.Requirements;
 import me.whereareiam.yui.type.CommandCategory;
 
@@ -24,6 +25,6 @@ public class CommandDefinition {
 	private CommandCategory category;
 	private CommandCooldown cooldown;
 
-	// Optional requirements block; if null, the command is considered unrestricted
+	@Field(optional = true)
 	private Requirements requirements;
 }

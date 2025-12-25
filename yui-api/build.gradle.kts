@@ -11,6 +11,7 @@ dependencies {
     "api"(rootProject.libs.attache.common)
     "api"(rootProject.libs.annotations)
     "api"(rootProject.libs.spring.boot)
+    "api"(rootProject.libs.spring.boot.webflux)
 }
 
 buildConfig {
