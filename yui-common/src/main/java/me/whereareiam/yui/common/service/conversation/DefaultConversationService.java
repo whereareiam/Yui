@@ -7,7 +7,7 @@ import me.whereareiam.yui.common.service.conversation.type.pm.PrivateMessageConv
 import me.whereareiam.yui.common.service.conversation.type.channel.TempChannelConversationCreator;
 import me.whereareiam.yui.conversation.Conversation;
 import me.whereareiam.yui.model.ConversationConfig;
-import me.whereareiam.yui.model.ConversationMode;
+import me.whereareiam.yui.type.ConversationType;
 import me.whereareiam.yui.conversation.ConversationService;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberRemoveEvent;
@@ -72,7 +72,7 @@ public class DefaultConversationService extends ListenerAdapter implements Conve
 		if (existing.isPresent() && existing.get().isActive())
 			return CompletableFuture.completedFuture(existing.get());
 
-		List<ConversationMode> modes = resolveConversationModes(config, userIds.size());
+		List<ConversationType> modes = resolveConversationTypes(config, userIds.size());
 		return tryModesInOrder(userIds, context, config, modes, 0);
 	}
 
@@ -80,15 +80,15 @@ public class DefaultConversationService extends ListenerAdapter implements Conve
 	 * Resolves the conversation modes to try based on configuration.
 	 * Filters out modes that are incompatible with the number of users.
 	 */
-	private List<ConversationMode> resolveConversationModes(ConversationConfig config, int userCount) {
+	private List<ConversationType> resolveConversationTypes(ConversationConfig config, int userCount) {
 		if (config.getPreferredModes() == null || config.getPreferredModes().isEmpty()) {
-			return new ArrayList<>(List.of(ConversationMode.TEMPORARY_CHANNEL));
+			return new ArrayList<>(List.of(ConversationType.TEMPORARY_CHANNEL));
 		}
 
 		// Filter out PRIVATE_MESSAGE if multiple users (PM only supports single user)
 		if (userCount > 1) {
 			return config.getPreferredModes().stream()
-					.filter(mode -> mode != ConversationMode.PRIVATE_MESSAGE)
+					.filter(mode -> mode != ConversationType.PRIVATE_MESSAGE)
 					.collect(Collectors.toList());
 		}
 
@@ -102,7 +102,7 @@ public class DefaultConversationService extends ListenerAdapter implements Conve
 			Collection<Long> userIds,
 			String context,
 			ConversationConfig config,
-			List<ConversationMode> modes,
+			List<ConversationType> modes,
 			int modeIndex) {
 
 		if (modeIndex >= modes.size()) {
@@ -110,7 +110,7 @@ public class DefaultConversationService extends ListenerAdapter implements Conve
 					new IllegalStateException("Cannot create conversation: all modes failed or unavailable"));
 		}
 
-		ConversationMode mode = modes.get(modeIndex);
+		ConversationType mode = modes.get(modeIndex);
 
 		return tryMode(mode, userIds, context, config)
 				.handle((conv, ex) -> {
@@ -128,7 +128,7 @@ public class DefaultConversationService extends ListenerAdapter implements Conve
 	 * Attempts to create a conversation using the specified mode.
 	 */
 	private CompletableFuture<Conversation> tryMode(
-			ConversationMode mode,
+			ConversationType mode,
 			Collection<Long> userIds,
 			String context,
 			ConversationConfig config) {
