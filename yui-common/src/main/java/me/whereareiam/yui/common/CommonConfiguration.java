@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.semantica.Semantica;
 import me.whereareiam.semantica.SemanticaConfiguration;
 import me.whereareiam.semantica.locale.LocaleParser;
-import me.whereareiam.semantica.model.SemanticLocale;
 import me.whereareiam.semantica.translation.TranslationService;
 import me.whereareiam.yui.common.localization.DiscordLocaleAdapter;
 import me.whereareiam.yui.common.localization.YuiSemanticaLogger;
@@ -116,7 +115,7 @@ public class CommonConfiguration {
 		TranslationSettings translationSettings = languagesProvider.getObject().getSettings();
 
 		return SemanticaConfiguration.<DiscordLocale>builder()
-				.defaultLocale(SemanticLocale.wrap(settings.getLocale().toLocale()))
+				.defaultLocale(DiscordLocaleAdapter.wrap(settings.getLocale()))
 				.performance(SemanticaConfiguration.PerformanceSettings.builder()
 						.cache(SemanticaConfiguration.PerformanceSettings.CacheSettings.builder()
 								.enabled(translationSettings.isCacheEnabled())
