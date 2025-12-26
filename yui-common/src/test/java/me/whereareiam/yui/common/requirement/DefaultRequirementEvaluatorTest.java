@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -46,7 +47,7 @@ class DefaultRequirementEvaluatorTest {
         
         Requirements requirements = new Requirements();
         requirements.setOperator(RequirementOperator.AND);
-        requirements.getGroups().put("user", userReq);
+        requirements.setGroups(Map.of("user", userReq));
         
         // When expected=true, requirement should pass when fluctlight is in the list
         assertTrue(evaluator.evaluate(context, requirements));
@@ -62,7 +63,7 @@ class DefaultRequirementEvaluatorTest {
         
         Requirements requirements = new Requirements();
         requirements.setOperator(RequirementOperator.AND);
-        requirements.getGroups().put("user", userReq);
+        requirements.setGroups(Map.of("user", userReq));
         
         // When expected=false, requirement should pass when fluctlight is NOT in the list
         // Since fluctlight IS in the list, requirement should fail
@@ -79,7 +80,7 @@ class DefaultRequirementEvaluatorTest {
         
         Requirements requirements = new Requirements();
         requirements.setOperator(RequirementOperator.AND);
-        requirements.getGroups().put("user", userReq);
+        requirements.setGroups(Map.of("user", userReq));
         
         // When expected=false, requirement should pass when fluctlight is NOT in the list
         // Since fluctlight is NOT in the list, requirement should pass
@@ -97,7 +98,7 @@ class DefaultRequirementEvaluatorTest {
         
         Requirements requirements = new Requirements();
         requirements.setOperator(RequirementOperator.AND);
-        requirements.getGroups().put("user", userReq);
+        requirements.setGroups(Map.of("user", userReq));
         
         // The logic should be:
         // 1. UserRequirementEvaluator.evaluate() returns true (fluctlight is in list)
