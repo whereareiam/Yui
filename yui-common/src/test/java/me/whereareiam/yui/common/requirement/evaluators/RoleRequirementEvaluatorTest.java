@@ -17,6 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.beans.factory.ObjectProvider;
 
 import java.util.Arrays;
@@ -27,30 +29,31 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class RoleRequirementEvaluatorTest {
 	private RoleRequirementEvaluator evaluator;
 	private Fluctlight fluctlight;
 	private RequirementContext context;
 
-	@Mock(strictness = Mock.Strictness.LENIENT)
+	@Mock
 	private SlashCommandInteractionEvent mockEvent;
-	@Mock(strictness = Mock.Strictness.LENIENT)
+	@Mock
 	private Guild mockGuild;
-	@Mock(strictness = Mock.Strictness.LENIENT)
+	@Mock
 	private User mockUser;
-	@Mock(strictness = Mock.Strictness.LENIENT)
+	@Mock
 	private Member mockMember;
-	@Mock(strictness = Mock.Strictness.LENIENT)
+	@Mock
 	private Role role100;
-	@Mock(strictness = Mock.Strictness.LENIENT)
+	@Mock
 	private Role role200;
-	@Mock(strictness = Mock.Strictness.LENIENT)
+	@Mock
 	private Role role300;
-	@Mock(strictness = Mock.Strictness.LENIENT)
+	@Mock
 	private User jdaUser;
-	@Mock(strictness = Mock.Strictness.LENIENT)
+	@Mock
 	private JDA mockJda;
-	@Mock(strictness = Mock.Strictness.LENIENT)
+	@Mock
 	private ObjectProvider<Settings> mockSettingsProvider;
 
 	@BeforeEach

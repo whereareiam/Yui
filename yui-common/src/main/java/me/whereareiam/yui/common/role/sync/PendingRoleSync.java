@@ -26,20 +26,15 @@ public class PendingRoleSync {
 
 	/**
 	 * Adds a role to the pending add set.
-	 * If the role is in the remove set, it's removed from there (cancellation).
+	 * If the role is in the remove set, it's removed from there and added to add set.
 	 *
 	 * @param roleId The role ID to add
 	 */
 	public synchronized void addRole(long roleId) {
-		// If previously marked for removal, cancel that instead
-		if (rolesToRemove.remove(roleId)) {
-			// Just cancelled a remove, don't add to add set (unless it wasn't there)
-			// Add to add set to show final intent
-			rolesToAdd.add(roleId);
-		} else {
-			// Not in remove set, just add
-			rolesToAdd.add(roleId);
-		}
+		// If previously marked for removal, cancel that and add to add set
+		rolesToRemove.remove(roleId);
+		// Always add to add set (final intent is to have the role)
+		rolesToAdd.add(roleId);
 		lastModified = Instant.now();
 	}
 
