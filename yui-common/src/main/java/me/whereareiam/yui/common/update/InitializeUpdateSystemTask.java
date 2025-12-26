@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.LifecycleTask;
 import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.common.update.provider.GitHubProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -18,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
  */
 @Slf4j
 @Component
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@RequiredArgsConstructor
 public class InitializeUpdateSystemTask implements LifecycleTask {
     private final Registry<LifecycleTask> lifecycleRegistry;
     private final UpdateProviderRegistry providerRegistry;

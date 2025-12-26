@@ -1,10 +1,14 @@
 package me.whereareiam.yui.model.fluctlight;
 
 import lombok.Getter;
+import me.whereareiam.yui.fluctlight.FluctlightExtension;
 import me.whereareiam.yui.fluctlight.FluctlightService;
 import me.whereareiam.yui.persistence.FluctlightPersistence;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Fluctlight represents a unified fluctlight model that combines JDA User data
@@ -17,6 +21,9 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
  * <p>
  * Fluctlight provides convenience methods that update both the in-memory state
  * and persist changes to the database automatically.
+ * <p>
+ * Fluctlight also supports extensions - modules can attach custom data that is
+ * stored in-memory only and not persisted to the database.
  */
 @Getter
 @SuppressWarnings("unused")
@@ -26,6 +33,9 @@ public class Fluctlight {
 	DiscordLocale primaryLanguage;
 	DiscordLocale[] additionalLanguages;
 	long[] allowedRoles;
+	
+	// In-memory extensions - not persisted
+	private final Map<String, Object> extensions = new ConcurrentHashMap<>();
 
 	private static FluctlightService managementService;
 
@@ -202,6 +212,78 @@ public class Fluctlight {
 	public void removeAllowedRole(long roleId) {
 		ensureServicesInitialized();
 		managementService.removeAllowedRole(this, roleId);
+	}
+	
+	/**
+	 * Gets extension data by namespace.
+	 * <p>
+	 * Returns the extension data if it exists, or null if not present.
+	 * Extension data is stored in-memory only and is not persisted.
+	 *
+	 * @param namespace The extension namespace
+	 * @param type The expected data type class
+	 * @param <T> The data type
+	 * @return The extension data, or null if not present
+	 */
+	public <T> T getExtension(String namespace, Class<T> type) {
+		return type.cast(extensions.get(namespace));
+	}
+	
+	/**
+	 * Gets extension data or creates it with default values if not present.
+	 * <p>
+	 * This is the recommended way to access extension data as it ensures
+	 * the data is always initialized. Extension data is stored in-memory only.
+	 *
+	 * @param extension The extension definition
+	 * @param <T> The data type
+	 * @return The extension data (existing or newly created)
+	 */
+	public <T> T getOrCreateExtension(FluctlightExtension<T> extension) {
+		return extension.getDataType().cast(
+			extensions.computeIfAbsent(
+				extension.getNamespace(),
+				k -> extension.createDefault()
+			)
+		);
+	}
+	
+	/**
+	 * Sets extension data for a namespace.
+	 * <p>
+	 * If data is null, the extension is removed.
+	 * Extension data is stored in-memory only and is not persisted.
+	 *
+	 * @param namespace The extension namespace
+	 * @param data The data to store, or null to remove
+	 * @param <T> The data type
+	 */
+	public <T> void setExtension(String namespace, T data) {
+		if (data == null) {
+			extensions.remove(namespace);
+			return;
+		}
+
+		extensions.put(namespace, data);
+	}
+	
+	/**
+	 * Checks if extension data exists for a namespace.
+	 *
+	 * @param namespace The extension namespace
+	 * @return true if extension data exists, false otherwise
+	 */
+	public boolean hasExtension(String namespace) {
+		return extensions.containsKey(namespace);
+	}
+	
+	/**
+	 * Removes extension data for a namespace.
+	 *
+	 * @param namespace The extension namespace
+	 */
+	public void removeExtension(String namespace) {
+		extensions.remove(namespace);
 	}
 
 	/**

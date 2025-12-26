@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.LifecycleTask;
 import me.whereareiam.yui.common.scanner.ComponentListenerScanner;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@RequiredArgsConstructor
 public class ScanComponentListenersTask implements LifecycleTask {
 	private final ComponentListenerScanner scanner;
 	private final ApplicationContext ctx;

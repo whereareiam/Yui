@@ -8,14 +8,13 @@ import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.Registry;
 import net.dv8tion.jda.api.JDA;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@RequiredArgsConstructor
 public class LeaveUnwantedGuildsTask implements LifecycleTask {
 	private final ObjectProvider<Settings> settingsProvider;
 	private final Registry<LifecycleTask> lifecycleRegistry;

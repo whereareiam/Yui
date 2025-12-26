@@ -13,13 +13,12 @@ import me.whereareiam.yui.config.ConfigurationTypeResolver;
 import me.whereareiam.yui.model.type.Duration;
 import me.whereareiam.yui.type.ConfigurationType;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
 
 @Component
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@RequiredArgsConstructor
 public class ConfiguraBootstrap {
 	private final ConfigurationTypeResolver resolver;
 

@@ -5,14 +5,13 @@ import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.LifecycleTask;
 import me.whereareiam.yui.plugin.PluginManager;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Component
-@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@RequiredArgsConstructor
 public class InitializePluginsTask implements LifecycleTask {
 	private final PluginManager pluginManager;
 	private final Registry<LifecycleTask> lifecycleRegistry;
