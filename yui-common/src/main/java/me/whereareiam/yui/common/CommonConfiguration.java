@@ -27,6 +27,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -80,6 +81,17 @@ public class CommonConfiguration {
 				Math.max(2, Runtime.getRuntime().availableProcessors()),
 				Thread.ofVirtual().name("yui-scheduled", 0).factory()
 		);
+	}
+
+	@Bean
+	public ThreadPoolTaskScheduler journeyTimeoutScheduler() {
+		ThreadPoolTaskScheduler scheduler = new ThreadPoolTaskScheduler();
+		scheduler.setPoolSize(1);
+		scheduler.setThreadNamePrefix("yui-journey-timeout-");
+		scheduler.setRemoveOnCancelPolicy(true);
+		scheduler.initialize();
+
+		return scheduler;
 	}
 
 	@Bean
