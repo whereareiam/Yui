@@ -13,7 +13,7 @@ import me.whereareiam.yui.event.journey.session.JourneySessionTimeoutEvent;
 import me.whereareiam.yui.model.journey.definition.JourneyDefinition;
 import me.whereareiam.yui.model.journey.session.JourneyAttributes;
 import me.whereareiam.yui.model.journey.session.JourneySession;
-import me.whereareiam.yui.journey.timeout.JourneyTimeoutAttributes;
+import me.whereareiam.yui.journey.JourneyKeys;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -111,7 +111,7 @@ class JourneyTimeoutLifecycleTest {
 
 	private static JourneySession<Object> sessionWithTimeout(String sessionId) {
 		JourneyAttributes attributes = JourneyAttributes.builder()
-				.put(JourneyTimeoutAttributes.TIMEOUT_SECONDS, 1L)
+				.put(JourneyKeys.TIMEOUT_SECONDS, 1L)
 				.build();
 		return new JourneySession<>(sessionId, "verification", 1L, Object.class, new Object(), attributes, "in-memory");
 	}

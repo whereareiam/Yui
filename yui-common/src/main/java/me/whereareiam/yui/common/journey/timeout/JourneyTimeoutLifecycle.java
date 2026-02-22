@@ -9,7 +9,7 @@ import me.whereareiam.yui.event.journey.JourneyCancelledEvent;
 import me.whereareiam.yui.event.journey.JourneyCompletedEvent;
 import me.whereareiam.yui.event.journey.JourneyFailedEvent;
 import me.whereareiam.yui.journey.session.JourneySessionService;
-import me.whereareiam.yui.journey.timeout.JourneyTimeoutAttributes;
+import me.whereareiam.yui.journey.JourneyKeys;
 import me.whereareiam.yui.model.journey.definition.JourneyDefinition;
 import me.whereareiam.yui.model.journey.session.JourneySession;
 import me.whereareiam.yui.type.journey.JourneyStatus;
@@ -55,7 +55,7 @@ public class JourneyTimeoutLifecycle {
 	@EventListener
 	public void onSessionStarted(@NotNull JourneySessionStartedEvent event) {
 		Long timeoutSeconds = event.getSession().getPayload().getAttributes()
-				.get(JourneyTimeoutAttributes.TIMEOUT_SECONDS)
+				.get(JourneyKeys.TIMEOUT_SECONDS)
 				.orElse(null);
 		if (timeoutSeconds == null || timeoutSeconds <= 0)
 			return;
@@ -126,5 +126,4 @@ public class JourneyTimeoutLifecycle {
 		if (previous != null)
 			previous.cancel(false);
 	}
-
 }

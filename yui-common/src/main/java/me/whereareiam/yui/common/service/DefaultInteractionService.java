@@ -3,7 +3,9 @@ package me.whereareiam.yui.common.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.Constants;
+import me.whereareiam.yui.model.Key;
 import me.whereareiam.yui.model.PayloadButton;
+import me.whereareiam.yui.model.component.ComponentAttributes;
 import me.whereareiam.yui.plugin.PluginManager;
 import me.whereareiam.yui.service.InteractionService;
 import net.dv8tion.jda.api.JDA;
@@ -15,6 +17,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.EntitySelectMenu;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Component;
 
@@ -33,6 +36,7 @@ public class DefaultInteractionService implements InteractionService, Initializi
 	private final PluginManager pluginManager;
 	private final Map<String, Registered<?>> handlers = new ConcurrentHashMap<>();
 	private final Map<String, String> payloadStore = new ConcurrentHashMap<>();
+	private final Map<String, ComponentAttributes> attributesByComponentId = new ConcurrentHashMap<>();
 
 	@Override
 	@SuppressWarnings({"unchecked", "rawtypes"})
@@ -62,17 +66,30 @@ public class DefaultInteractionService implements InteractionService, Initializi
 	}
 
 	@Override
-	public Button createButton(ButtonStyle style, String path, String label) {
+	public @NotNull Button createButton(
+			@NotNull ButtonStyle style,
+			@NotNull String path,
+			@NotNull String label
+	) {
 		return applyStyle(full(path), label, style);
 	}
 
 	@Override
-	public Button createButton(ButtonStyle style, String path, Emoji emoji) {
+	public @NotNull Button createButton(
+			@NotNull ButtonStyle style,
+			@NotNull String path,
+			@NotNull Emoji emoji
+	) {
 		return applyStyle(full(path), emoji, style);
 	}
 
 	@Override
-	public PayloadButton createButton(ButtonStyle style, String path, String label, String payload) {
+	public @NotNull PayloadButton createButton(
+			@NotNull ButtonStyle style,
+			@NotNull String path,
+			@NotNull String label,
+			@NotNull String payload
+	) {
 		if (style == ButtonStyle.LINK)
 			throw new IllegalArgumentException("Link buttons cannot carry a payload");
 
@@ -84,7 +101,12 @@ public class DefaultInteractionService implements InteractionService, Initializi
 	}
 
 	@Override
-	public PayloadButton createButton(ButtonStyle style, String path, Emoji emoji, String payload) {
+	public @NotNull PayloadButton createButton(
+			@NotNull ButtonStyle style,
+			@NotNull String path,
+			@NotNull Emoji emoji,
+			@NotNull String payload
+	) {
 		if (style == ButtonStyle.LINK)
 			throw new IllegalArgumentException("Link buttons cannot carry a payload");
 
@@ -96,22 +118,147 @@ public class DefaultInteractionService implements InteractionService, Initializi
 	}
 
 	@Override
-	public StringSelectMenu.Builder createStringSelectMenu(String path) {
+	public @NotNull Button createButton(
+			@NotNull ButtonStyle style,
+			@NotNull String path,
+			@NotNull String label,
+			@NotNull ComponentAttributes attributes
+	) {
+		if (style == ButtonStyle.LINK)
+			throw new IllegalArgumentException("Link buttons cannot carry attributes");
+
+		String customId = customId(path);
+		Button btn = applyStyle(customId, label, style);
+		bindAttributes(customId, attributes);
+		return btn;
+	}
+
+	@Override
+	public @NotNull Button createButton(
+			@NotNull ButtonStyle style,
+			@NotNull String path,
+			@NotNull Emoji emoji,
+			@NotNull ComponentAttributes attributes
+	) {
+		if (style == ButtonStyle.LINK)
+			throw new IllegalArgumentException("Link buttons cannot carry attributes");
+
+		String customId = customId(path);
+		Button btn = applyStyle(customId, emoji, style);
+		bindAttributes(customId, attributes);
+		return btn;
+	}
+
+	@Override
+	public @NotNull PayloadButton createButton(
+			@NotNull ButtonStyle style,
+			@NotNull String path,
+			@NotNull String label,
+			@NotNull String payload,
+			@NotNull ComponentAttributes attributes
+	) {
+		if (style == ButtonStyle.LINK)
+			throw new IllegalArgumentException("Link buttons cannot carry a payload");
+
+		String customId = customId(path);
+		Button btn = applyStyle(customId, label, style);
+
+		payloadStore.put(customId, payload);
+		bindAttributes(customId, attributes);
+		return new PayloadButton(btn, payload);
+	}
+
+	@Override
+	public @NotNull PayloadButton createButton(
+			@NotNull ButtonStyle style,
+			@NotNull String path,
+			@NotNull Emoji emoji,
+			@NotNull String payload,
+			@NotNull ComponentAttributes attributes
+	) {
+		if (style == ButtonStyle.LINK)
+			throw new IllegalArgumentException("Link buttons cannot carry a payload");
+
+		String customId = customId(path);
+		Button btn = applyStyle(customId, emoji, style);
+
+		payloadStore.put(customId, payload);
+		bindAttributes(customId, attributes);
+		return new PayloadButton(btn, payload);
+	}
+
+	@Override
+	public @NotNull StringSelectMenu.Builder createStringSelectMenu(@NotNull String path) {
 		return StringSelectMenu.create(full(path));
 	}
 
 	@Override
-	public EntitySelectMenu.Builder createEntitySelectMenu(String path, EntitySelectMenu.SelectTarget t) {
+	public @NotNull StringSelectMenu.Builder createStringSelectMenu(
+			@NotNull String path,
+			@NotNull ComponentAttributes attributes
+	) {
+		String customId = customId(path);
+		bindAttributes(customId, attributes);
+		return StringSelectMenu.create(customId);
+	}
+
+	@Override
+	public @NotNull EntitySelectMenu.Builder createEntitySelectMenu(
+			@NotNull String path,
+			@NotNull EntitySelectMenu.SelectTarget t
+	) {
 		return EntitySelectMenu.create(full(path), t);
 	}
 
 	@Override
-	public String getPayload(GenericComponentInteractionCreateEvent event) {
+	public @NotNull EntitySelectMenu.Builder createEntitySelectMenu(
+			@NotNull String path,
+			@NotNull EntitySelectMenu.SelectTarget t,
+			@NotNull ComponentAttributes attributes
+	) {
+		String customId = customId(path);
+		bindAttributes(customId, attributes);
+		return EntitySelectMenu.create(customId, t);
+	}
+
+	@Override
+	public @Nullable String getPayload(@NotNull GenericComponentInteractionCreateEvent event) {
 		return payloadStore.get(event.getComponentId());
 	}
 
 	@Override
-	public <E extends GenericComponentInteractionCreateEvent> void registerHandler(String path, Class<E> type, Consumer<E> h) {
+	public @NotNull ComponentAttributes getAttributes(@NotNull GenericComponentInteractionCreateEvent event) {
+		ComponentAttributes attributes = attributesByComponentId.get(event.getComponentId());
+		return attributes == null ? ComponentAttributes.empty() : attributes;
+	}
+
+	@Override
+	public void bindAttributes(@NotNull String componentId, @NotNull ComponentAttributes attributes) {
+		if (attributes.isEmpty()) {
+			attributesByComponentId.remove(componentId);
+			return;
+		}
+
+		attributesByComponentId.put(componentId, attributes);
+	}
+
+	@Override
+	public void unbindAttributes(@NotNull String componentId) {
+		attributesByComponentId.remove(componentId);
+	}
+
+	@Override
+	public <T> void unbindAllByAttribute(@NotNull Key<T> key, @NotNull T value) {
+		attributesByComponentId.entrySet()
+				.removeIf(entry -> entry.getValue().get(key).filter(value::equals).isPresent());
+	}
+
+	@Override
+	public <E extends GenericComponentInteractionCreateEvent> void registerHandler(
+			@NotNull String path,
+			@NotNull Class<E> type,
+			@NotNull Consumer<E> h
+	) {
 		String key = full(path);
 		Registered<?> previous = handlers.put(key, new Registered<>(type, h));
 		if (previous != null) {
@@ -123,7 +270,7 @@ public class DefaultInteractionService implements InteractionService, Initializi
 	}
 
 	@Override
-	public void unregister(String pluginId) {
+	public void unregister(@Nullable String pluginId) {
 		if (pluginId == null || pluginId.isBlank()) return;
 
 		String prefix = pluginId + ":";
@@ -138,15 +285,25 @@ public class DefaultInteractionService implements InteractionService, Initializi
 		long payloadsAfter = payloadStore.size();
 		long removedPayloads = payloadsBefore - payloadsAfter;
 
-		log.debug("Unregistered {} interaction handler(s) and {} payload(s) for plugin: {}", removedHandlers, removedPayloads, pluginId);
+		long attributesBefore = attributesByComponentId.size();
+		attributesByComponentId.keySet().removeIf(k -> k.startsWith(prefix));
+		long attributesAfter = attributesByComponentId.size();
+		long removedAttributes = attributesBefore - attributesAfter;
+
+		log.debug("Unregistered {} interaction handler(s), {} payload(s) and {} attribute binding(s) for plugin: {}",
+				removedHandlers, removedPayloads, removedAttributes, pluginId);
 	}
 
-	private Button applyStyle(String path, String label, ButtonStyle style) {
+	private @NotNull Button applyStyle(@NotNull String path, @NotNull String label, @NotNull ButtonStyle style) {
 		return Button.of(style, path, label);
 	}
 
-	private Button applyStyle(String path, Emoji emoji, ButtonStyle style) {
+	private @NotNull Button applyStyle(@NotNull String path, @NotNull Emoji emoji, @NotNull ButtonStyle style) {
 		return Button.of(style, path, emoji);
+	}
+
+	private @NotNull String customId(@NotNull String path) {
+		return full(path) + '|' + UUID.randomUUID();
 	}
 
 	private String pluginId() {
