@@ -1,11 +1,13 @@
 package me.whereareiam.yui.journey.session.store;
 
 import me.whereareiam.yui.model.journey.session.JourneySession;
+import me.whereareiam.yui.type.journey.JourneyStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Storage contract for journey sessions.
@@ -25,13 +27,30 @@ public interface JourneySessionStore {
 	@NotNull Optional<JourneySession<?>> get(@Nullable String sessionId);
 
 	/**
-	 * Finds active session for journey participant pair.
+	 * Finds a session for a journey participant pair in the given statuses.
 	 *
 	 * @param journeyId journey id
 	 * @param participantId participant id
-	 * @return optional active session
+	 * @param statuses acceptable statuses
+	 * @return optional session
 	 */
-	@NotNull Optional<JourneySession<?>> findActive(@Nullable String journeyId, long participantId);
+	@NotNull Optional<JourneySession<?>> find(
+			@NotNull String journeyId,
+			long participantId,
+			@NotNull Set<JourneyStatus> statuses
+	);
+
+	/**
+	 * Finds sessions for a journey in the given statuses.
+	 *
+	 * @param journeyId journey id
+	 * @param statuses acceptable statuses
+	 * @return session collection
+	 */
+	@NotNull Collection<JourneySession<?>> findAll(
+			@NotNull String journeyId,
+			@NotNull Set<JourneyStatus> statuses
+	);
 
 	/**
 	 * Persists a session.

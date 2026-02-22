@@ -3,10 +3,13 @@ package me.whereareiam.yui.journey;
 import me.whereareiam.yui.model.journey.JourneySignal;
 import me.whereareiam.yui.model.journey.session.JourneySession;
 import me.whereareiam.yui.model.journey.session.JourneySessionRequest;
+import me.whereareiam.yui.type.journey.JourneyStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * High-level orchestration service for journey lifecycle operations.
@@ -51,18 +54,32 @@ public interface JourneyService {
 	);
 
 	/**
-	 * Finds an active session for the given journey and participant.
+	 * Finds a session for the given journey and participant in the given statuses.
 	 *
 	 * @param journeyId journey id
 	 * @param participantId participant id
+	 * @param statuses acceptable statuses
 	 * @param stateType requested state type
 	 * @param <S> journey state type
-	 * @return optional active session
+	 * @return optional session
 	 */
-	<S> @NotNull Optional<JourneySession<S>> findActive(
+	<S> @NotNull Optional<JourneySession<S>> find(
 			@NotNull String journeyId,
 			long participantId,
+			@NotNull Set<JourneyStatus> statuses,
 			@NotNull Class<S> stateType
+	);
+
+	/**
+	 * Finds sessions for the given journey in the given statuses.
+	 *
+	 * @param journeyId journey id
+	 * @param statuses acceptable statuses
+	 * @return session collection
+	 */
+	@NotNull Collection<JourneySession<?>> findAll(
+			@NotNull String journeyId,
+			@NotNull Set<JourneyStatus> statuses
 	);
 
 	/**

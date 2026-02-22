@@ -8,11 +8,15 @@ import me.whereareiam.yui.model.journey.JourneySignal;
 import me.whereareiam.yui.model.journey.definition.JourneyDefinition;
 import me.whereareiam.yui.model.journey.session.JourneySession;
 import me.whereareiam.yui.model.journey.session.JourneySessionRequest;
+import me.whereareiam.yui.type.journey.JourneyStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -25,9 +29,10 @@ public class DefaultJourneyService implements JourneyService {
 	public <S> @NotNull JourneySession<S> start(@NotNull JourneySessionRequest<S> request) {
 		JourneyDefinition<Object> definition = requireDefinition(request.getJourneyId());
 
-		Optional<JourneySession<S>> existing = sessionService.findActive(
+		Optional<JourneySession<S>> existing = sessionService.find(
 				request.getJourneyId(),
 				request.getParticipantId(),
+				EnumSet.of(JourneyStatus.RUNNING, JourneyStatus.WAITING),
 				request.getStateType()
 		);
 		if (existing.isPresent()) return existing.get();
@@ -63,12 +68,21 @@ public class DefaultJourneyService implements JourneyService {
 	}
 
 	@Override
-	public <S> @NotNull Optional<JourneySession<S>> findActive(
+	public <S> @NotNull Optional<JourneySession<S>> find(
 			@NotNull String journeyId,
 			long participantId,
+			@NotNull Set<JourneyStatus> statuses,
 			@NotNull Class<S> stateType
 	) {
-		return sessionService.findActive(journeyId, participantId, stateType);
+		return sessionService.find(journeyId, participantId, statuses, stateType);
+	}
+
+	@Override
+	public @NotNull Collection<JourneySession<?>> findAll(
+			@NotNull String journeyId,
+			@NotNull Set<JourneyStatus> statuses
+	) {
+		return sessionService.findAll(journeyId, statuses);
 	}
 
 	@Override

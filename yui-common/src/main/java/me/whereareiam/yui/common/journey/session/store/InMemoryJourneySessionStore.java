@@ -3,12 +3,14 @@ package me.whereareiam.yui.common.journey.session.store;
 import me.whereareiam.yui.journey.session.store.JourneySessionStore;
 import me.whereareiam.yui.model.journey.session.JourneySession;
 import me.whereareiam.yui.type.journey.JourneyStatus;
-import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
@@ -17,17 +19,23 @@ public class InMemoryJourneySessionStore implements JourneySessionStore {
 	private final Map<String, String> journeyParticipantIndex = new ConcurrentHashMap<>();
 
 	@Override
-	public @NonNull String getId() {
+	public @NotNull String getId() {
 		return "in-memory";
 	}
 
 	@Override
-	public @NonNull Optional<JourneySession<?>> get(String sessionId) {
+	public @NotNull Optional<JourneySession<?>> get(String sessionId) {
 		return Optional.ofNullable(sessions.get(sessionId));
 	}
 
 	@Override
-	public @NonNull Optional<JourneySession<?>> findActive(String journeyId, long participantId) {
+	public @NotNull Optional<JourneySession<?>> find(
+			@NotNull String journeyId,
+			long participantId,
+			@NotNull Set<JourneyStatus> statuses
+	) {
+		if (statuses.isEmpty()) return Optional.empty();
+
 		String indexKey = indexKey(journeyId, participantId);
 		String sessionId = journeyParticipantIndex.get(indexKey);
 		if (sessionId == null) return Optional.empty();
@@ -39,16 +47,30 @@ public class InMemoryJourneySessionStore implements JourneySessionStore {
 		}
 
 		JourneyStatus status = session.getLifecycle().getStatus();
-		if (status != JourneyStatus.RUNNING && status != JourneyStatus.WAITING) {
-			journeyParticipantIndex.remove(indexKey);
-			return Optional.empty();
-		}
+		if (!statuses.contains(status)) return Optional.empty();
 
 		return Optional.of(session);
 	}
 
 	@Override
-	public void save(@NonNull JourneySession<?> session) {
+	public @NotNull Collection<JourneySession<?>> findAll(
+			@NotNull String journeyId,
+			@NotNull Set<JourneyStatus> statuses
+	) {
+		if (statuses.isEmpty()) return java.util.List.of();
+
+		Collection<JourneySession<?>> found = new ArrayList<>();
+		for (JourneySession<?> session : sessions.values()) {
+			if (!journeyId.equals(session.getJourneyId())) continue;
+			if (!statuses.contains(session.getLifecycle().getStatus())) continue;
+			found.add(session);
+		}
+
+		return found;
+	}
+
+	@Override
+	public void save(@NotNull JourneySession<?> session) {
 		sessions.put(session.getId(), session);
 		journeyParticipantIndex.put(indexKey(session.getJourneyId(), session.getParticipantId()), session.getId());
 	}
@@ -61,7 +83,7 @@ public class InMemoryJourneySessionStore implements JourneySessionStore {
 	}
 
 	@Override
-	public @NonNull Collection<JourneySession<?>> all() {
+	public @NotNull Collection<JourneySession<?>> all() {
 		return sessions.values();
 	}
 

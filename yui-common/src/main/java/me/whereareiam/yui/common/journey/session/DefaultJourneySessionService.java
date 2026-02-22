@@ -9,13 +9,17 @@ import me.whereareiam.yui.journey.session.store.JourneySessionStoreRegistry;
 import me.whereareiam.yui.model.journey.definition.JourneyDefinition;
 import me.whereareiam.yui.model.journey.session.JourneySession;
 import me.whereareiam.yui.model.journey.session.JourneySessionRequest;
+import me.whereareiam.yui.type.journey.JourneyStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -61,13 +65,16 @@ public class DefaultJourneySessionService implements JourneySessionService {
 	}
 
 	@Override
-	public <S> @NotNull Optional<JourneySession<S>> findActive(
+	public <S> @NotNull Optional<JourneySession<S>> find(
 			@NotNull String journeyId,
 			long participantId,
+			@NotNull Set<JourneyStatus> statuses,
 			@NotNull Class<S> stateType
 	) {
+		if (statuses.isEmpty()) return Optional.empty();
+
 		for (JourneySessionStore store : storeRegistry.all()) {
-			Optional<JourneySession<?>> found = store.findActive(journeyId, participantId);
+			Optional<JourneySession<?>> found = store.find(journeyId, participantId, statuses);
 			if (found.isPresent()) {
 				JourneySession<?> session = found.get();
 				storeRouting.bind(session.getId(), store.getId());
@@ -76,6 +83,25 @@ public class DefaultJourneySessionService implements JourneySessionService {
 		}
 
 		return Optional.empty();
+	}
+
+	@Override
+	public @NotNull Collection<JourneySession<?>> findAll(
+			@NotNull String journeyId,
+			@NotNull Set<JourneyStatus> statuses
+	) {
+		if (statuses.isEmpty()) return java.util.List.of();
+
+		Collection<JourneySession<?>> sessions = new ArrayList<>();
+		for (JourneySessionStore store : storeRegistry.all()) {
+			Collection<JourneySession<?>> storeSessions = store.findAll(journeyId, statuses);
+			for (JourneySession<?> session : storeSessions)
+				storeRouting.bind(session.getId(), store.getId());
+
+			sessions.addAll(storeSessions);
+		}
+
+		return sessions;
 	}
 
 	@Override
