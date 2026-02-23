@@ -30,6 +30,7 @@ public class VocabularyTemplate implements LocalizationProvider<Vocabulary> {
         vocabulary.setCancel(new Vocabulary.LocaleMap().with(locale, "Cancel"));
         vocabulary.setProceed(new Vocabulary.LocaleMap().with(locale, "Continue"));
         vocabulary.setConfirm(new Vocabulary.LocaleMap().with(locale, "Confirm"));
+        vocabulary.setEdit(new Vocabulary.LocaleMap().with(locale, "Edit"));
         vocabulary.setBack(new Vocabulary.LocaleMap().with(locale, "Back"));
         vocabulary.setNext(new Vocabulary.LocaleMap().with(locale, "Next"));
         vocabulary.setYes(new Vocabulary.LocaleMap().with(locale, "Yes"));

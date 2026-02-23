@@ -16,6 +16,7 @@ public class Vocabulary {
     private LocaleMap cancel;
     private LocaleMap proceed;
     private LocaleMap confirm;
+    private LocaleMap edit;
     private LocaleMap back;
     private LocaleMap next;
     private LocaleMap yes;
@@ -43,4 +44,3 @@ public class Vocabulary {
         }
     }
 }
-
