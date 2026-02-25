@@ -54,7 +54,8 @@ public class YuiTranslationLoader implements TranslationProvider<DiscordLocale> 
         }
 
         // If any provider has applyOnce=false, merge defaults into existing files as well.
-        generateDefaultsFromProviders(languagesDir);
+        Map<Path, String> prefixOverrides = new HashMap<>();
+        generateDefaultsFromProviders(languagesDir, prefixOverrides);
 
         if (!Files.isDirectory(languagesDir)) {
             log.warn("[Localization] Languages directory not found: {}", languagesDir);
@@ -69,30 +70,38 @@ public class YuiTranslationLoader implements TranslationProvider<DiscordLocale> 
                 languagesDir,
                 handlerRegistry,
                 // LOCALE processor
-                (_, locale, translations) -> {
+                (file, locale, translations) -> {
+                    String prefix = resolvePrefix(languagesDir, file, prefixOverrides);
                     // Merge locale translations instead of replacing so multi-locale files (e.g., vocabulary.yml)
                     // are not lost when a per-locale file (e.g., en-US.yml) is loaded afterward.
                     Map<String, TranslationSource> sources = localized.computeIfAbsent(locale, _ -> new HashMap<>());
-                    translations.forEach((key, textValue) -> sources.put(key, new TranslationSource(textValue)));
+                    translations.forEach((key, textValue) -> {
+                        String fullKey = LocalizationLoaderBase.joinKey(prefix, key);
+                        sources.put(fullKey, new TranslationSource(textValue));
+                    });
                 },
                 // MULTI_LOCALE processor
                 (file, multiLocaleData) -> {
+                    String prefix = resolvePrefix(languagesDir, file, prefixOverrides);
                     log.debug("[Localization] Found {} multi-locale entries in '{}'",
                             multiLocaleData.size(), file.getFileName());
 
                     multiLocaleData.forEach((key, localeMap) -> {
+                        String fullKey = LocalizationLoaderBase.joinKey(prefix, key);
                         localeMap.forEach((locale, textValue) -> {
                             localized.computeIfAbsent(locale, _ -> new HashMap<>())
-                                    .put(key, new TranslationSource(textValue));
+                                    .put(fullKey, new TranslationSource(textValue));
                         });
                     });
                 },
                 // TEMPLATE processor
                 (file, templateData) -> {
+                    String prefix = resolvePrefix(languagesDir, file, prefixOverrides);
                     log.debug("[Localization] Found {} templates in '{}'",
                             templateData.size(), file.getFileName());
                     templateData.forEach((key, textValue) -> {
-                        templates.put(key, new TemplateEntry(textValue.asString()));
+                        String fullKey = LocalizationLoaderBase.joinKey(prefix, key);
+                        templates.put(fullKey, new TemplateEntry(textValue.asString()));
                     });
                 }
         );
@@ -109,7 +118,7 @@ public class YuiTranslationLoader implements TranslationProvider<DiscordLocale> 
      * Generate default localization files from discovered LocalizationProvider beans.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void generateDefaultsFromProviders(Path languagesDir) {
+    private void generateDefaultsFromProviders(Path languagesDir, Map<Path, String> prefixOverrides) {
         try {
             Map<String, ?> providerBeans = 
                     applicationContext.getBeansOfType(LocalizationProvider.class);
@@ -127,11 +136,14 @@ public class YuiTranslationLoader implements TranslationProvider<DiscordLocale> 
                 LocalizationProvider p = (LocalizationProvider) bean;
                 
                 try {
-                    String target = p.getTargetFilename();
-                    if (target == null) target = p.getDefaultLocale().getLocale();
+                    Path out = LocalizationLoaderBase.resolveTargetPath(languagesDir, p);
+                    Path configPath = LocalizationLoaderBase.resolveConfigPath(out, configurationType);
+                    boolean exists = Files.exists(configPath);
 
-                    Path out = languagesDir.resolve(target);
-                    boolean exists = Files.exists(resolveConfigPath(out, configurationType));
+                    registerPrefixOverride(prefixOverrides, configPath, p.getKeyPrefix());
+
+                    if (configPath.getParent() != null)
+                        Files.createDirectories(configPath.getParent());
 
                     // Skip if file exists and provider should only apply once
                     if (p.applyOnce() && exists) {
@@ -160,13 +172,24 @@ public class YuiTranslationLoader implements TranslationProvider<DiscordLocale> 
         }
     }
 
-    private static Path resolveConfigPath(Path pathWithoutExtension, ConfigurationType configurationType) {
-        String raw = pathWithoutExtension.toString();
-        String lower = raw.toLowerCase();
-        for (ConfigurationType type : ConfigurationType.values())
-            if (lower.endsWith(type.getExtension().toLowerCase()))
-                return pathWithoutExtension;
+    private static String resolvePrefix(Path languagesDir, Path file, Map<Path, String> prefixOverrides) {
+        Path normalized = file.toAbsolutePath().normalize();
+        if (prefixOverrides.containsKey(normalized)) {
+            return LocalizationLoaderBase.normalizePrefix(prefixOverrides.get(normalized));
+        }
 
-        return Path.of(raw + configurationType.getExtension());
+        return LocalizationLoaderBase.derivePrefix(languagesDir, file);
+    }
+
+    private static void registerPrefixOverride(
+            Map<Path, String> prefixOverrides,
+            Path configPath,
+            String prefix
+    ) {
+        if (prefix == null) return;
+
+        String normalized = LocalizationLoaderBase.normalizePrefix(prefix);
+        Path normalizedPath = configPath.toAbsolutePath().normalize();
+        prefixOverrides.put(normalizedPath, normalized);
     }
 }

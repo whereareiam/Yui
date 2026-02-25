@@ -68,14 +68,15 @@ public class PluginTranslationLoader {
         if (empty) log.info("[Localization] No translations found for plugin '{}', generating defaults", pluginName);
 
         // Always apply provider defaults so applyOnce=false providers can merge updates into existing files.
-        generateDefaultsFromProviders(plugin, languagesDir);
+        Map<Path, String> prefixOverrides = new HashMap<>();
+        generateDefaultsFromProviders(plugin, languagesDir, prefixOverrides);
 
         if (!Files.isDirectory(languagesDir)) {
             log.debug("[Localization] No translations for plugin: {}", pluginName);
             return;
         }
 
-        String prefix = "plugin." + pluginId.toLowerCase() + ".";
+        String pluginPrefix = "plugin." + pluginId.toLowerCase();
         Map<String, Map<TranslationLocale, String>> accumulator = new HashMap<>();
         AtomicInteger templateCount = new AtomicInteger(0);
 
@@ -84,18 +85,20 @@ public class PluginTranslationLoader {
                 languagesDir,
                 handlerRegistry,
                 // LOCALE processor
-                (_, locale, translations) -> {
+                (file, locale, translations) -> {
+                    String prefix = resolvePrefix(languagesDir, file, prefixOverrides);
                     TranslationLocale translationLocale = localeParser.parse(locale);
                     translations.forEach((key, textValue) -> {
-                        String fullKey = prefix + key;
+                        String fullKey = LocalizationLoaderBase.joinKey(pluginPrefix, prefix, key);
                         accumulator.computeIfAbsent(fullKey, _ -> new HashMap<>())
                                 .put(translationLocale, textValue.asString());
                     });
                 },
                 // MULTI_LOCALE processor
                 (file, multiLocaleData) -> {
+                    String prefix = resolvePrefix(languagesDir, file, prefixOverrides);
                     multiLocaleData.forEach((key, localeMap) -> {
-                        String fullKey = prefix + key;
+                        String fullKey = LocalizationLoaderBase.joinKey(pluginPrefix, prefix, key);
                         Map<TranslationLocale, String> translations = new HashMap<>();
                         localeMap.forEach((locale, textValue) -> {
                             translations.put(localeParser.parse(locale), textValue.asString());
@@ -107,8 +110,9 @@ public class PluginTranslationLoader {
                 },
                 // TEMPLATE processor
                 (file, templates) -> {
+                    String prefix = resolvePrefix(languagesDir, file, prefixOverrides);
                     templates.forEach((key, textValue) -> {
-                        String fullKey = prefix + key;
+                        String fullKey = LocalizationLoaderBase.joinKey(pluginPrefix, prefix, key);
                         translationService.register(fullKey, new TemplateEntry(textValue.asString()));
                         templateCount.incrementAndGet();
                     });
@@ -130,7 +134,11 @@ public class PluginTranslationLoader {
      * Generate default localization files from discovered LocalizationProvider beans.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void generateDefaultsFromProviders(InternalPlugin plugin, Path languagesDir) {
+    private void generateDefaultsFromProviders(
+            InternalPlugin plugin,
+            Path languagesDir,
+            Map<Path, String> prefixOverrides
+    ) {
         String pluginName = plugin.getPlugin().getName();
 
         try {
@@ -150,11 +158,14 @@ public class PluginTranslationLoader {
                 LocalizationProvider p = (LocalizationProvider) bean;
                 
                 try {
-                    String target = p.getTargetFilename();
-                    if (target == null) target = p.getDefaultLocale().getLocale();
+                    Path out = LocalizationLoaderBase.resolveTargetPath(languagesDir, p);
+                    Path configPath = LocalizationLoaderBase.resolveConfigPath(out, configurationType);
+                    boolean exists = Files.exists(configPath);
 
-                    Path out = languagesDir.resolve(target);
-                    boolean exists = Files.exists(resolveConfigPath(out, configurationType));
+                    registerPrefixOverride(prefixOverrides, configPath, p.getKeyPrefix());
+
+                    if (configPath.getParent() != null)
+                        Files.createDirectories(configPath.getParent());
 
                     // Skip if file exists and provider should only apply once
                     if (p.applyOnce() && exists) {
@@ -183,14 +194,25 @@ public class PluginTranslationLoader {
         }
     }
 
-    private static Path resolveConfigPath(Path pathWithoutExtension, ConfigurationType configurationType) {
-        String raw = pathWithoutExtension.toString();
-        String lower = raw.toLowerCase();
-        for (ConfigurationType type : ConfigurationType.values())
-            if (lower.endsWith(type.getExtension().toLowerCase()))
-                return pathWithoutExtension;
+    private static String resolvePrefix(Path languagesDir, Path file, Map<Path, String> prefixOverrides) {
+        Path normalized = file.toAbsolutePath().normalize();
+        if (prefixOverrides.containsKey(normalized)) {
+            return LocalizationLoaderBase.normalizePrefix(prefixOverrides.get(normalized));
+        }
 
-        return Path.of(raw + configurationType.getExtension());
+        return LocalizationLoaderBase.derivePrefix(languagesDir, file);
+    }
+
+    private static void registerPrefixOverride(
+            Map<Path, String> prefixOverrides,
+            Path configPath,
+            String prefix
+    ) {
+        if (prefix == null) return;
+
+        String normalized = LocalizationLoaderBase.normalizePrefix(prefix);
+        Path normalizedPath = configPath.toAbsolutePath().normalize();
+        prefixOverrides.put(normalizedPath, normalized);
     }
 
     public void unloadPlugin(InternalPlugin plugin) {

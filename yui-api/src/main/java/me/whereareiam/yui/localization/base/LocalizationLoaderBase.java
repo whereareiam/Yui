@@ -6,12 +6,16 @@ import me.whereareiam.yui.localization.format.FileFormat;
 import me.whereareiam.yui.localization.format.FileFormats;
 import me.whereareiam.yui.localization.loader.FileTypeHandler;
 import me.whereareiam.yui.localization.loader.FileTypeHandlerRegistry;
+import me.whereareiam.yui.localization.provider.LocalizationProvider;
+import me.whereareiam.yui.type.ConfigurationType;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import java.util.stream.Stream;
 
 /**
@@ -23,8 +27,8 @@ public final class LocalizationLoaderBase {
      * Check if a directory is empty.
      */
     public static boolean isEmpty(Path dir) {
-        try (Stream<Path> entries = Files.list(dir)) {
-            return entries.findAny().isEmpty();
+        try (Stream<Path> entries = Files.walk(dir)) {
+            return entries.filter(Files::isRegularFile).findAny().isEmpty();
         } catch (Exception e) {
             return true;
         }
@@ -77,7 +81,7 @@ public final class LocalizationLoaderBase {
         if (!Files.isDirectory(languagesDir))
             return;
 
-        try (Stream<Path> files = Files.list(languagesDir)) {
+        try (Stream<Path> files = Files.walk(languagesDir)) {
             files.filter(Files::isRegularFile)
                     .forEach(file -> {
                         FileFormat format = detectFileFormat(file);
@@ -93,6 +97,127 @@ public final class LocalizationLoaderBase {
         } catch (Exception e) {
             log.error("[TranslationLoader] Failed to load from directory: {}", languagesDir, e);
         }
+    }
+
+    /**
+     * Resolve the target output path (without extension unless already present).
+     */
+    public static Path resolveTargetPath(
+            Path languagesDir,
+            LocalizationProvider<?> provider
+    ) {
+        String targetPath = provider.getTargetPath();
+        String targetName = provider.getTargetFilename();
+        if (targetName == null || targetName.isBlank())
+            targetName = provider.getDefaultLocale().getLocale();
+        else if (targetName.contains("/") || targetName.contains("\\")) {
+            String normalized = targetName.replace('\\', '/');
+            Path namePath = Path.of(normalized).getFileName();
+            if (namePath != null) {
+                targetName = namePath.toString();
+                log.warn("[Localization] getTargetFilename should not include a path. Using filename '{}'.", targetName);
+            } else {
+                targetName = provider.getDefaultLocale().getLocale();
+                log.warn("[Localization] getTargetFilename returned a path without a filename. Using default locale '{}'.", targetName);
+            }
+        }
+
+        Path out = languagesDir;
+        if (targetPath != null && !targetPath.isBlank())
+            out = out.resolve(targetPath);
+        out = out.resolve(targetName);
+
+        return out;
+    }
+
+    /**
+     * Resolve config path, adding extension if needed.
+     */
+    public static Path resolveConfigPath(Path pathWithoutExtension, ConfigurationType configurationType) {
+        String raw = pathWithoutExtension.toString();
+        String lower = raw.toLowerCase();
+        for (ConfigurationType type : ConfigurationType.values())
+            if (lower.endsWith(type.getExtension().toLowerCase()))
+                return pathWithoutExtension;
+
+        return Path.of(raw + configurationType.getExtension());
+    }
+
+    /**
+     * Derive key prefix from the parent path relative to the languages directory.
+     */
+    public static String derivePrefix(Path languagesDir, Path file) {
+        if (languagesDir == null || file == null) return "";
+
+        Path normalizedLanguages = languagesDir.toAbsolutePath().normalize();
+        Path parent = file.toAbsolutePath().normalize().getParent();
+        if (parent == null) return "";
+
+        Path relative;
+        try {
+            relative = normalizedLanguages.relativize(parent);
+        } catch (IllegalArgumentException e) {
+            return "";
+        }
+
+        if (relative.getNameCount() == 0) return "";
+
+        return StreamSupport.stream(relative.spliterator(), false)
+                .map(Path::toString)
+                .collect(Collectors.joining("."));
+    }
+
+    /**
+     * Normalize a prefix by trimming whitespace, converting separators to dots, and
+     * removing leading/trailing dots.
+     */
+    public static String normalizePrefix(String prefix) {
+        if (prefix == null)
+            return null;
+
+        String trimmed = prefix.trim();
+        if (trimmed.isEmpty()) return "";
+
+        trimmed = trimmed.replace('\\', '/');
+        while (trimmed.startsWith("/"))
+            trimmed = trimmed.substring(1);
+        while (trimmed.endsWith("/"))
+            trimmed = trimmed.substring(0, trimmed.length() - 1);
+
+        trimmed = trimmed.replace('/', '.');
+        while (trimmed.startsWith("."))
+            trimmed = trimmed.substring(1);
+        while (trimmed.endsWith("."))
+            trimmed = trimmed.substring(0, trimmed.length() - 1);
+
+        return trimmed;
+    }
+
+    /**
+     * Join key parts with dots, ignoring null/blank segments.
+     */
+    public static String joinKey(String... parts) {
+        StringBuilder result = new StringBuilder();
+        for (String part : parts) {
+            if (part == null) continue;
+
+            String trimmed = part.trim();
+            if (trimmed.isEmpty()) continue;
+
+            int start = 0;
+            int end = trimmed.length();
+            while (start < end && trimmed.charAt(start) == '.')
+                start++;
+            while (end > start && trimmed.charAt(end - 1) == '.')
+                end--;
+
+            if (end <= start) continue;
+
+            if (!result.isEmpty()) result.append('.');
+            result.append(trimmed, start, end);
+        }
+
+        return result.toString();
     }
 
     /**

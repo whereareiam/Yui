@@ -134,6 +134,48 @@ class YuiTranslationLoaderIntegrationTest {
     }
 
     @Test
+    void provide_nestedLocaleFile_appliesDerivedPrefix() throws Exception {
+        Path languagesDir = tempDir.resolve("languages").resolve("features").resolve("xy").resolve("messages");
+        Files.createDirectories(languagesDir);
+
+        Path localeFile = languagesDir.resolve("en-US.yml");
+        Files.writeString(localeFile, "welcome: Welcome\n");
+
+        when(applicationContext.getBeansOfType(LocalizationProvider.class))
+                .thenReturn(Map.of());
+
+        ProviderResult<DiscordLocale> result = loader.provide();
+
+        assertTrue(result.getLocalized().containsKey(DiscordLocale.ENGLISH_US));
+        assertTrue(result.getLocalized().get(DiscordLocale.ENGLISH_US)
+                .containsKey("features.xy.messages.welcome"));
+        assertFalse(result.getLocalized().get(DiscordLocale.ENGLISH_US).containsKey("welcome"));
+    }
+
+    @Test
+    void provide_providerTargetPath_createsNestedFile() {
+        LocalizationProvider<TestModel> provider = new TestLocalizationProvider() {
+            @Override
+            public String getTargetPath() {
+                return "features/xy/messages";
+            }
+        };
+
+        when(applicationContext.getBeansOfType(LocalizationProvider.class))
+                .thenReturn(Map.of("provider", provider));
+
+        loader.provide();
+
+        Path expected = tempDir.resolve("languages")
+                .resolve("features")
+                .resolve("xy")
+                .resolve("messages")
+                .resolve("en-US.yml");
+
+        assertTrue(Files.exists(expected));
+    }
+
+    @Test
     void provide_multipleProvidersSameTarget_applyOnceTrue_firstOneWins() {
         TestLocalizationProvider provider1 = new TestLocalizationProvider("field1", "value1");
         TestLocalizationProvider provider2 = new TestLocalizationProvider("field2", "value2");
