@@ -1,18 +1,21 @@
+import me.whereareiam.attache.plugin.gradle.extension.AttacheMetadataExtension
 import org.gradle.api.artifacts.VersionCatalogsExtension
 
 plugins {
     id("yui.java-common")
+    id("yui.provided-api")
     alias(libs.plugins.buildconfig)
+    alias(libs.plugins.attache)
 }
 
 dependencies {
-    api(libs.jda)
-    api(libs.configura)
-    api(libs.semantica)
+    providedApi(libs.jda)
+    providedApi(libs.configura)
+    providedApi(libs.semantica)
+    providedApi(libs.spring.boot)
+    providedApi(libs.spring.boot.webflux)
     api(libs.attache.common)
     api(libs.annotations)
-    api(libs.spring.boot)
-    api(libs.spring.boot.webflux)
 }
 
 buildConfig {
@@ -32,6 +35,31 @@ buildConfig {
 java {
     withSourcesJar()
     withJavadocJar()
+}
+
+extensions.configure<AttacheMetadataExtension>("attacheMetadata") {
+    repository("https://maven.whereareiam.me/release")
+    repository("https://maven.whereareiam.me/development")
+
+    library(libs.jda) {
+        transitive.set(true)
+    }
+
+    library(libs.configura) {
+        transitive.set(true)
+    }
+
+    library(libs.semantica) {
+        transitive.set(true)
+    }
+
+    library(libs.spring.boot) {
+        transitive.set(true)
+    }
+
+    library(libs.spring.boot.webflux) {
+        transitive.set(true)
+    }
 }
 
 publishing {

@@ -1,7 +1,9 @@
 *.iml
 .idea
 .gradle
+.libraries
 build
+build-logic/.kotlin
 bin
 demo
 .env

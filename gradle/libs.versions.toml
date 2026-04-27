@@ -10,7 +10,7 @@ jda = "5.6.1"
 postgres = "42.7.7"
 configura = "dev-3526c23"
 semantica = "dev-ffdb76d"
-attache = "dev-d4e1e5f"
+attache = "dev-4c06bae"
 
 # testing
 junit-platform = "6.0.1"
@@ -63,17 +63,7 @@ attache-common = { group = "me.whereareiam", name = "attache-common", version.re
 buildconfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildconfig" }
 attache = { id = "me.whereareiam.attache", version.ref = "attache" }
 
-# spring
-spring-boot = { id = "org.springframework.boot", version.ref = "spring" }
-spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
-
 [bundles]
-
-spring = [
-    "spring-boot",
-    "spring-boot-data-jpa",
-    "spring-boot-webflux"
-]
 
 cloud = [
     "cloud-core",

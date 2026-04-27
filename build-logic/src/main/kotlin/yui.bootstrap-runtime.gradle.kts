@@ -10,7 +10,6 @@ plugins {
 val libs = extensions.getByType<VersionCatalogsExtension>().named("libs")
 
 dependencies {
-    add("implementation", libs.findBundle("spring").get())
     add("implementation", libs.findLibrary("attache-spring").get())
     add("implementation", libs.findLibrary("attache-common").get())
 
@@ -22,6 +21,7 @@ dependencies {
 }
 
 tasks.named<BootJar>("bootJar").configure {
+    mainClass.set("me.whereareiam.yui.YuiLauncher")
     archiveFileName.set("Yui.jar")
     destinationDirectory.set(rootProject.layout.buildDirectory.dir("libs"))
 }

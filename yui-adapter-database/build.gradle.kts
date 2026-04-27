@@ -7,6 +7,7 @@ plugins {
 
 dependencies {
     compileOnly(libs.spring.boot.data.jpa)
+    attache(libs.spring.boot.data.jpa)
     attache(libs.postgres)
 
     testImplementation(libs.postgres)
@@ -16,6 +17,10 @@ dependencies {
 }
 
 extensions.configure<AttacheMetadataExtension>("attacheMetadata") {
+    library(libs.spring.boot.data.jpa) {
+        transitive.set(true)
+    }
+
     library(libs.postgres) {
         transitive.set(true)
     }
