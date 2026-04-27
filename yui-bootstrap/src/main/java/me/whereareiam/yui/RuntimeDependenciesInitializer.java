@@ -25,7 +25,9 @@ public class RuntimeDependenciesInitializer implements ApplicationContextInitial
 		StandaloneLibraryManager manager = new StandaloneLibraryManager(
 				new SpringLoggingHelper(),
 				Paths.get(properties.getLibraryPath()),
-				"."
+				".",
+				RuntimeDependenciesInitializer.class.getClassLoader(),
+				false
 		);
 
 		manager.setLogLevel(properties.getLogLevel());
@@ -33,7 +35,7 @@ public class RuntimeDependenciesInitializer implements ApplicationContextInitial
 		manager.setVerbosityMode(properties.getVerbosityMode());
 
 		properties.getRepositories().forEach(manager::addRepository);
-		RuntimeDependencies.loadWith(manager, properties.isAddMavenCentral());
+		manager.loadClasspathDescriptors();
 
 		applicationContext.getBeanFactory().registerSingleton("attacheLibraryManager", manager);
 	}

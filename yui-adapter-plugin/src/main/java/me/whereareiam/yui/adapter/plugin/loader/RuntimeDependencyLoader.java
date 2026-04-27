@@ -3,7 +3,7 @@ package me.whereareiam.yui.adapter.plugin.loader;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.attache.common.BaseLibraryManager;
-import me.whereareiam.attache.model.Library;
+import me.whereareiam.attache.model.LibraryRequest;
 import me.whereareiam.yui.model.plugin.Plugin;
 import me.whereareiam.yui.plugin.YuiPlugin;
 import org.springframework.stereotype.Component;
@@ -31,13 +31,13 @@ public class RuntimeDependencyLoader {
 		load(descriptor.getId(), plugin.repositories(), plugin.dependencies());
 	}
 
-	private void load(String pluginId, List<String> repositories, List<Library> dependencies) {
+	private void load(String pluginId, List<String> repositories, List<LibraryRequest> dependencies) {
 		if (dependencies == null || dependencies.isEmpty())
 			return;
 
 		registerRepositories(repositories);
 
-		for (Library library : dependencies) {
+		for (LibraryRequest library : dependencies) {
 			if (library == null) {
 				log.warn("[PluginManager]: Skipping invalid runtime dependency for plugin '{}'", pluginId);
 				continue;
@@ -66,7 +66,7 @@ public class RuntimeDependencyLoader {
 		}
 	}
 
-	private String dependencyKey(Library library) {
+	private String dependencyKey(LibraryRequest library) {
 		String classifier = library.getClassifier() == null ? "" : library.getClassifier();
 		return library.getGroupId() + ":" + library.getArtifactId() + ":" + library.getVersion() + ":" + classifier;
 	}

@@ -1,7 +1,7 @@
 package me.whereareiam.yui.model.plugin;
 
 import lombok.Getter;
-import me.whereareiam.attache.model.Library;
+import me.whereareiam.attache.model.LibraryRequest;
 import me.whereareiam.yui.model.update.UpdateConfiguration;
 
 import java.util.List;
@@ -21,6 +21,6 @@ public class Plugin {
 	@Getter
 	public static class Runtime {
 		private List<String> repositories;
-		private List<Library> dependencies;
+		private List<LibraryRequest> dependencies;
 	}
 }

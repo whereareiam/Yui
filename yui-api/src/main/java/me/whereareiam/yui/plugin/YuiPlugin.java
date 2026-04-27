@@ -1,6 +1,6 @@
 package me.whereareiam.yui.plugin;
 
-import me.whereareiam.attache.model.Library;
+import me.whereareiam.attache.model.LibraryRequest;
 
 import java.util.List;
 
@@ -21,7 +21,7 @@ public interface YuiPlugin {
 		return List.of();
 	}
 
-	default List<Library> dependencies() {
+	default List<LibraryRequest> dependencies() {
 		return List.of();
 	}
 }
