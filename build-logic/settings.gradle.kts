@@ -11,6 +11,7 @@ dependencyResolutionManagement {
     repositories {
         gradlePluginPortal()
         mavenCentral()
+        maven("https://registry.whereareiam.me/maven/packages")
     }
 
     versionCatalogs {

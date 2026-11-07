@@ -19,16 +19,15 @@ public final class YuiLauncher {
 	private static void preloadRuntimeDependencies() {
 		if (libraryManager != null) return;
 
-		BootstrapAttacheConfiguration configuration = BootstrapAttacheConfiguration.load();
+		LauncherAttacheConfiguration configuration = LauncherAttacheConfiguration.load();
 		StandaloneLibraryManager manager = new StandaloneLibraryManager(
 				new JDKLoggingHelper(Logger.getLogger("Attache")),
 				Paths.get(configuration.getLibraryPath()),
 				".",
 				YuiLauncher.class.getClassLoader(),
-				false
+				configuration.getVerbosityMode()
 		);
-		manager.setVerbosityMode(configuration.getVerbosityMode());
-		manager.loadClasspathDescriptors();
+		manager.loadDescriptors();
 		libraryManager = manager;
 	}
 

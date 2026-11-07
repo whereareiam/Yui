@@ -8,27 +8,28 @@ pluginManagement {
 
     repositories {
         gradlePluginPortal()
-        mavenLocal()
         mavenCentral()
-        maven("https://maven.whereareiam.me/release")
-        maven("https://maven.whereareiam.me/development")
+        maven("https://registry.whereareiam.me/maven/packages")
     }
+}
+
+plugins {
+    // Downloads the Java toolchain the conventions ask for when the machine has none.
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
 
     repositories {
-        mavenLocal()
         mavenCentral()
-        maven("https://maven.whereareiam.me/release")
-        maven("https://maven.whereareiam.me/development")
+        maven("https://registry.whereareiam.me/maven/packages")
     }
 }
 
-include(":yui-adapter-database")
-include(":yui-adapter-command")
-include(":yui-adapter-plugin")
-include(":yui-bootstrap")
-include(":yui-common")
 include(":yui-api")
+include(":yui-common")
+include(":yui-adapter-command")
+include(":yui-adapter-database")
+include(":yui-adapter-plugin")
+include(":yui-launcher")

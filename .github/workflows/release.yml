@@ -44,8 +44,7 @@ jobs:
           PUBLISH_USER: ${{ secrets.PUBLISH_USER }}
           PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
           VERSION: ${{ needs.prepare.outputs.version }}
-          PUBLISH_REALM: release
-        run: ./gradlew --no-daemon test build bootJar :yui-api:jar publish
+        run: ./gradlew --no-daemon build publish
 
       - name: Upload test results
         if: always()

@@ -39,7 +39,7 @@ public class YuiApplication {
 					Paths.get(properties.getLibraryPath()),
 					".",
 					YuiApplication.class.getClassLoader(),
-					false
+					resolveVerbosityMode(environment, properties)
 			);
 
 			if (properties.isAddMavenCentral())
@@ -48,7 +48,7 @@ public class YuiApplication {
 			properties.getRepositories().forEach(manager::addRepository);
 
 			if (properties.isEnabled())
-				manager.loadClasspathDescriptors();
+				manager.loadDescriptors();
 		}
 
 		if (properties.isAddMavenCentral())

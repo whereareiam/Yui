@@ -4,12 +4,12 @@ import me.whereareiam.attache.type.VerbosityMode;
 
 import java.util.function.Consumer;
 
-final class BootstrapAttacheConfiguration {
+final class LauncherAttacheConfiguration {
 	private String libraryPath = ".libraries";
 	private VerbosityMode verbosityMode = VerbosityMode.SUMMARY;
 
-	static BootstrapAttacheConfiguration load() {
-		BootstrapAttacheConfiguration configuration = new BootstrapAttacheConfiguration();
+	static LauncherAttacheConfiguration load() {
+		LauncherAttacheConfiguration configuration = new LauncherAttacheConfiguration();
 		configuration.applySystemProperties();
 		return configuration;
 	}

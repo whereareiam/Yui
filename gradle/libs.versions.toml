@@ -1,46 +1,48 @@
 [versions]
 
-# plugins
-buildconfig = "5.7.1"
+# language
+java = "25"
 
-# general
-lombok = "1.18.38"
-annotations = "26.0.2-1"
-jda = "5.6.1"
-postgres = "42.7.7"
-configura = "dev-3526c23"
-semantica = "dev-ffdb76d"
-attache = "dev-4c06bae"
-
-# testing
-junit-platform = "6.0.1"
-testcontainers = "2.0.3"
-
-# spring
-spring = "4.0.1"
+# build
+toolkit = "0.3.0"
+freefair = "9.8.3"
+buildconfig = "6.1.2"
 spring-dependency-management = "1.1.7"
 
+# general
+lombok = "1.18.48"
+annotations = "26.1.0"
+jda = "5.6.1"
+postgres = "42.7.14"
+configura = "dev-3526c23"
+semantica = "dev-ffdb76d"
+attache = "1.3.0"
+
+# spring
+spring = "4.1.2"
+
 # cloud
-cloud = "2.0.0"
+cloud = "2.1.0"
 cloud-discord = "1.0.0-beta.4"
 cloud-cooldown = "1.0.0-rc.1"
 
+# testing
+junit = "6.1.3"
+testcontainers = "2.0.5"
+
 [libraries]
 
+# build
+toolkit-architecture = { group = "me.whereareiam.toolkit", name = "architecture", version.ref = "toolkit" }
+toolkit-publish-maven = { group = "me.whereareiam.toolkit", name = "publish-maven", version.ref = "toolkit" }
+lombok-plugin = { group = "io.freefair.gradle", name = "lombok-plugin", version.ref = "freefair" }
+
 # general
-lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
 jda = { group = "net.dv8tion", name = "JDA", version.ref = "jda" }
 postgres = { group = "org.postgresql", name = "postgresql", version.ref = "postgres" }
 configura = { group = "me.whereareiam", name = "configura", version.ref = "configura" }
 semantica = { group = "me.whereareiam", name = "semantica", version.ref = "semantica" }
-spring-boot-gradle-plugin = { group = "org.springframework.boot", name = "spring-boot-gradle-plugin", version.ref = "spring" }
-spring-dependency-management-gradle-plugin = { group = "io.spring.gradle", name = "dependency-management-plugin", version.ref = "spring-dependency-management" }
-
-# testing
-junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junit-platform" }
-testcontainers-junit = { group = "org.testcontainers", name = "testcontainers-junit-jupiter", version.ref = "testcontainers" }
-testcontainers-postgres = { group = "org.testcontainers", name = "testcontainers-postgresql", version.ref = "testcontainers" }
 
 # spring
 spring-boot = { group = "org.springframework.boot", name = "spring-boot-starter", version.ref = "spring" }
@@ -58,10 +60,18 @@ cloud-discord = { group = "org.incendo", name = "cloud-jda6", version.ref = "clo
 attache-spring = { group = "me.whereareiam", name = "attache-spring", version.ref = "attache" }
 attache-common = { group = "me.whereareiam", name = "attache-common", version.ref = "attache" }
 
+# testing
+junit-platform = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junit" }
+testcontainers-junit = { group = "org.testcontainers", name = "testcontainers-junit-jupiter", version.ref = "testcontainers" }
+testcontainers-postgres = { group = "org.testcontainers", name = "testcontainers-postgresql", version.ref = "testcontainers" }
 
 [plugins]
+toolkit-architecture = { id = "me.whereareiam.toolkit.architecture", version.ref = "toolkit" }
+toolkit-versioning = { id = "me.whereareiam.toolkit.versioning", version.ref = "toolkit" }
 buildconfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildconfig" }
 attache = { id = "me.whereareiam.attache", version.ref = "attache" }
+spring-boot = { id = "org.springframework.boot", version.ref = "spring" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
 
 [bundles]
 
