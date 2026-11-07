@@ -177,7 +177,8 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
 7. Plugin runtime with hot reload.
 8. JDA 6 and cloud.
 9. Verification into `plugins/`, `examples/plugin`.
-10. Docs, AGENTS.md, CI; publishing the distribution.
+10. Docs and the rest of AGENTS.md; publishing the distribution. The repository setup after Identica (release
+    drafting, labels, templates, Dependabot, workflows) came with step 1.
 11. `arcadeya/yui`: rename, split into `plugins/plugin-products`, Dockerfile, `Deliver`.
 12. `arcadeya/yui-deploy`, namespace policy in `arcadeya-cluster`, OpenBao paths, Argo CD following it.
 13. Cutover into the cluster with a way back.

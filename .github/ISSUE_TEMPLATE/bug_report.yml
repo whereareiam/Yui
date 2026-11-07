@@ -1,0 +1,76 @@
+name: Bug report
+description: Something in Yui does not work as documented.
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Report vulnerabilities privately through the [security policy](https://github.com/whereareiam/Yui/security/policy).
+
+  - type: input
+    id: version
+    attributes:
+      label: Yui version
+      description: The version Yui logs at startup, for example `1.0.0` or `dev-1a2b3c4`.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: build
+    attributes:
+      label: Build
+      options:
+        - Release
+        - Development build
+    validations:
+      required: true
+
+  - type: dropdown
+    id: database
+    attributes:
+      label: Database
+      options:
+        - H2
+        - PostgreSQL
+        - MariaDB
+    validations:
+      required: true
+
+  - type: input
+    id: plugins
+    attributes:
+      label: Plugins
+      description: Names and versions of the plugins in the `plugins` folder.
+      placeholder: Verification 1.0.0
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run /language in a server channel
+        2. Pick ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Yui's log of the problem. Remove tokens and ids you do not want to share.
+      render: text
+
+  - type: textarea
+    id: configuration
+    attributes:
+      label: Configuration
+      description: Relevant parts of the configuration. Remove passwords and tokens.
+      render: yaml
