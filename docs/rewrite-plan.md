@@ -16,7 +16,7 @@ Breaking changes are allowed wherever they remove a workaround or give a clearer
 | Database | Hibernate stays; H2 (default), PostgreSQL or MariaDB chosen in config. Flyway migrations, one history table per owner. `ddl-auto=validate`. |
 | Servers | One Discord server. |
 | Configuration | Configura 2.1, one provider per file, no global state. Old files in `app/` are upgraded on first start. |
-| Libraries | Attache 1.2 loads them at runtime; a plugin's libraries go into its own classloader. |
+| Libraries | Attache 1.3 loads them at runtime; a plugin's libraries go into its own classloader. |
 | Commands | Incendo cloud with `cloud-jda6`. Commandant is Minecraft-only. |
 | Dependencies | Latest majors: JDA 6, Spring Boot 4.1, Gradle 9.9 and the rest of the catalog. |
 
@@ -52,7 +52,26 @@ Yui/
 - Events reach plugins through one ordered bus that Yui owns, not a bridge between multicasters.
 - Errors are logged with the plugin's id, never swallowed.
 
-Needs in Attache: resolve libraries into a classloader the caller provides.
+Attache 1.3.0 already loads a plugin's libraries into the plugin's classloader; no change to Attache is needed.
+A plugin's loader exposes a public `addURL`, and Yui gives it its own manager:
+
+```java
+StandaloneLibraryManager libraries = new StandaloneLibraryManager(logging, librariesPath, ".", pluginLoader, mode);
+libraries.setDescriptorSources(List.of(pluginJar.toUri().toURL())); // the jar, not the descriptor inside it
+libraries.loadDescriptors();
+```
+
+- Only the plugin's own descriptor is read; without `setDescriptorSources` the manager would also read Yui's
+  through the parent loader.
+- A library a parent loader already has is skipped (`skip-if-present`, the default), so plugins do not load a second
+  JDA or Spring.
+- A library only the plugin declares lands in its loader, invisible to Yui and other plugins. After the manager and
+  the loader are closed, the loader is garbage-collected.
+- A plugin asking for another version of a library a parent already has gets that version loaded into its own
+  loader, but parent-first delegation still serves the parent's classes. Yui warns about such a mismatch.
+
+Checked on 7 November 2026 with a plugin jar built by Attache's Gradle plugin: commons-lang3 loaded into the
+plugin's loader only, `annotations` skipped as present in the parent, the loader collected after closing.
 
 ## Users
 
@@ -169,7 +188,7 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
 ## Order of work
 
 1. Build: conventions, toolkit plugins, catalog on latest majors, `yui-launcher` rename.
-2. Attache addition for caller-provided classloaders, released.
+2. Attache loading into a plugin's own classloader: already in Attache 1.3.0, checked (see Plugin runtime).
 3. Database: Flyway baseline from the live schema, H2/PostgreSQL/MariaDB, `validate`.
 4. Users and events.
 5. Permissions and role sync.
