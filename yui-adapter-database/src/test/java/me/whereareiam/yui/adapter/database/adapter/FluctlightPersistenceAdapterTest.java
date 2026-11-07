@@ -10,17 +10,13 @@ import me.whereareiam.yui.adapter.database.repository.FluctlightRepository;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.fluctlight.FluctlightData;
 import net.dv8tion.jda.api.entities.User;
+import org.flywaydb.core.Flyway;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.util.HashSet;
 import java.util.Optional;
@@ -30,27 +26,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Integration tests for FluctlightPersistenceAdapter using Testcontainers.
- * Tests database operations with a real PostgreSQL database.
+ * Tests {@link FluctlightPersistenceAdapter} on a real database, with the tables Yui's migrations create. Each
+ * database Yui supports runs these tests through a subclass that names it.
  */
 @Transactional
-@Testcontainers(disabledWithoutDocker = true)
 @SpringBootTest(classes = TestDatabaseConfiguration.class)
-class FluctlightPersistenceAdapterTest {
-	@Container
-	static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:18.1")
-			.withDatabaseName("testdb")
-			.withUsername("test")
-			.withPassword("test");
-
-	@DynamicPropertySource
-	static void configureProperties(DynamicPropertyRegistry registry) {
-		registry.add("spring.datasource.url", postgres::getJdbcUrl);
-		registry.add("spring.datasource.username", postgres::getUsername);
-		registry.add("spring.datasource.password", postgres::getPassword);
-		registry.add("spring.jpa.hibernate.ddl-auto", () -> "create-drop");
-	}
-
+abstract class FluctlightPersistenceAdapterTest {
 	@PersistenceContext
 	private EntityManager entityManager;
 
@@ -59,6 +40,9 @@ class FluctlightPersistenceAdapterTest {
 
 	@Autowired
 	private FluctlightPersistenceAdapter adapter;
+
+	@Autowired
+	private Flyway flyway;
 
 	private LanguageEntity englishLanguage;
 	private LanguageEntity germanLanguage;
@@ -102,6 +86,13 @@ class FluctlightPersistenceAdapterTest {
 	}
 
 	// Basic CRUD operations
+
+	@Test
+	void migrations_AreAppliedAndRecordedInYuisHistoryTable() {
+		assertEquals("yui_schema_history", flyway.getConfiguration().getTable());
+		assertTrue(flyway.info().applied().length >= 1);
+		assertEquals(0, flyway.info().pending().length);
+	}
 
 	@Test
 	void loadData_WhenEntityDoesNotExist_ReturnsEmpty() {

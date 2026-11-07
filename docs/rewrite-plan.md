@@ -82,8 +82,24 @@ plugin's loader only, `annotations` skipped as present in the parent, the loader
   not rejected.
 - Plugins keep their own per-user data in their own tables, through their own migrations. In-memory
   extensions on the user go away.
-- The first migration fixes `additionalLanguages` (`@ManyToMany`), stops creating `yui_roles` rows as a side
-  effect, and drops `@Data` on entities.
+- Stop creating `yui_roles` rows as a side effect, and drop `@Data` on entities. (`additionalLanguages` is
+  `@ManyToMany` since the database step.)
+
+## Database
+
+- `settings.yml` chooses `database.type`: `H2` (the default, a file at `database.file` in the data folder), or
+  `POSTGRESQL` or `MARIADB` with host, port, database name and credentials. The pool takes `database.hikari`.
+- `DatabaseConfiguration` connects to it; `PersistenceConfiguration` runs Flyway, then Hibernate with
+  `hbm2ddl.auto=validate`, so Hibernate never changes the tables.
+- Migrations live in `db/migration/yui/common` when they read the same on every database, otherwise once per
+  database in `db/migration/yui/{h2,postgresql,mariadb}`. Yui's history table is `yui_schema_history`; a plugin's
+  is its own.
+- `V1__baseline` creates the tables of 1.0.0 cleanly. It is not a copy of the live schema, which Hibernate grew over
+  time (a join table with its own id, names left from `yui_profiles`): there is one installation, and its data
+  moves into a fresh database at the cutover anyway, so no existing database is patched in place.
+- A settings file from before 1.0.0 has no `database.type`; Configura fills in `H2`. An installation that keeps
+  its PostgreSQL server must set `POSTGRESQL` before starting 1.0.0 (in the release notes).
+- Tests run every persistence test on H2, PostgreSQL and MariaDB, with the real migrations and validation.
 
 ## Events
 
@@ -177,8 +193,9 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
 `/home/cluster/_edge/node-worker-1/yui/` on node-1), a March build. The cluster still holds the old
 `yui/postgres-yui` from before 29 October.
 
-- Read the live schema from `yui-postgres` (read-only) to write the Flyway baseline.
-- Cutover: stop the Compose bot, copy its data (5 tables, about 8 MB) into H2, start the cluster
+- The live schema of `yui-postgres` was read on 7 November 2026: 283 users, 90 additional languages, 771 role
+  assignments, 3 languages, 8 roles.
+- Cutover: stop the Compose bot, copy its rows into a freshly migrated H2 database, start the cluster
   deployment. Two bots on one token push each other off the gateway, so never both at once.
 - Way back: scale the deployment to 0, start the Compose bot again.
 - Afterwards, at the owner's word: retire the Compose setup and its backup timer, and delete the old
@@ -189,7 +206,7 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
 
 1. Build: conventions, toolkit plugins, catalog on latest majors, `yui-launcher` rename.
 2. Attache loading into a plugin's own classloader: already in Attache 1.3.0, checked (see Plugin runtime).
-3. Database: Flyway baseline from the live schema, H2/PostgreSQL/MariaDB, `validate`.
+3. Database: Flyway with a clean baseline, H2/PostgreSQL/MariaDB, `validate` (see Database).
 4. Users and events.
 5. Permissions and role sync.
 6. Configuration on Configura 2.1 with file upgrades.

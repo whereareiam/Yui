@@ -8,6 +8,7 @@ import me.whereareiam.yui.model.config.settings.UpdaterSettings;
 import me.whereareiam.yui.model.config.settings.database.DatabaseSettings;
 import me.whereareiam.yui.model.config.settings.database.HikariSettings;
 import me.whereareiam.yui.model.type.Duration;
+import me.whereareiam.yui.type.DatabaseType;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.springframework.stereotype.Component;
@@ -58,11 +59,13 @@ public class SettingsTemplate implements TemplateProvider<Settings> {
 
 	private DatabaseSettings getDatabaseSettings() {
 		DatabaseSettings databaseSettings = new DatabaseSettings();
+		databaseSettings.setType(DatabaseType.H2);
+		databaseSettings.setFile("database/yui");
 		databaseSettings.setHostname("127.0.0.1");
 		databaseSettings.setPort(5432);
-		databaseSettings.setUsername("postgres");
-		databaseSettings.setPassword("postgres");
 		databaseSettings.setDatabase("yui");
+		databaseSettings.setUsername("yui");
+		databaseSettings.setPassword("");
 
 		HikariSettings hikariSettings = new HikariSettings();
 		hikariSettings.setConnectionTimeout(30000);

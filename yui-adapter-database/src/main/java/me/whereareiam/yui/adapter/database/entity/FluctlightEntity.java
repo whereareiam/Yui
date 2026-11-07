@@ -26,7 +26,7 @@ public class FluctlightEntity {
 	@JoinColumn(name = "language_id")
 	private LanguageEntity primaryLanguage;
 
-	@OneToMany
+	@ManyToMany
 	@JoinTable(
 			name = "yui_fluctlights_languages",
 			joinColumns = @JoinColumn(name = "fluctlight_id"),

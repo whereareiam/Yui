@@ -2,63 +2,59 @@ package me.whereareiam.yui.adapter.database;
 
 import com.zaxxer.hikari.HikariDataSource;
 import me.whereareiam.yui.model.config.settings.Settings;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
-import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
-import org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration;
+import me.whereareiam.yui.model.config.settings.database.DatabaseSettings;
+import me.whereareiam.yui.model.config.settings.database.HikariSettings;
+import me.whereareiam.yui.type.DatabaseType;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 
 import javax.sql.DataSource;
+import java.nio.file.Path;
 
+/**
+ * Connects to the database the settings choose. {@link PersistenceConfiguration} migrates and maps it.
+ */
 @Configuration
-@EnableJpaRepositories
-@EnableAutoConfiguration(exclude = {
-		DataSourceAutoConfiguration.class,
-		HibernateJpaAutoConfiguration.class,
-		DataSourceTransactionManagerAutoConfiguration.class
-})
 public class DatabaseConfiguration {
 	@Bean
-	public DataSource dataSource(Settings settings) {
+	public DatabaseType databaseType(Settings settings) {
+		return settings.getDatabase().getType();
+	}
+
+	@Bean(destroyMethod = "close")
+	public DataSource dataSource(Settings settings, @Qualifier("dataPath") Path dataPath) {
+		DatabaseSettings database = settings.getDatabase();
+		HikariSettings hikari = database.getHikari();
+
 		HikariDataSource dataSource = new HikariDataSource();
+		dataSource.setJdbcUrl(jdbcUrl(database, dataPath));
+		dataSource.setMinimumIdle(hikari.getMinimumIdle());
+		dataSource.setMaximumPoolSize(hikari.getMaximumPoolSize());
+		dataSource.setConnectionTimeout(hikari.getConnectionTimeout());
+		dataSource.setIdleTimeout(hikari.getIdleTimeout());
+		dataSource.setMaxLifetime(hikari.getMaxLifetime());
 
-		String url = "jdbc:postgresql://" + settings.getDatabase().getHostname() + ":" +
-				settings.getDatabase().getPort() + "/" + settings.getDatabase().getDatabase();
-
-		dataSource.setJdbcUrl(url);
-		dataSource.setUsername(settings.getDatabase().getUsername());
-		dataSource.setPassword(settings.getDatabase().getPassword());
-
-		dataSource.setMaximumPoolSize(10);
-		dataSource.setMinimumIdle(2);
+		// An H2 file belongs to Yui alone; its user is fixed when the file is created.
+		if (database.getType() == DatabaseType.H2) {
+			dataSource.setUsername("sa");
+			dataSource.setPassword("");
+		} else {
+			dataSource.setUsername(database.getUsername());
+			dataSource.setPassword(database.getPassword());
+		}
 
 		return dataSource;
 	}
 
-	@Bean
-	public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
-		LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-		em.setDataSource(dataSource);
-		em.setPackagesToScan(getClass().getPackage().getName() + ".entity");
-
-		HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-		vendorAdapter.setGenerateDdl(true);
-
-		em.setJpaVendorAdapter(vendorAdapter);
-
-		return em;
-	}
-
-	@Bean(name = "transactionManager")
-	public JpaTransactionManager transactionManager(LocalContainerEntityManagerFactoryBean entityManagerFactory) {
-		JpaTransactionManager txManager = new JpaTransactionManager();
-		txManager.setEntityManagerFactory(entityManagerFactory.getObject());
-
-		return txManager;
+	static @NotNull String jdbcUrl(@NotNull DatabaseSettings database, @NotNull Path dataPath) {
+		return switch (database.getType()) {
+			case H2 -> "jdbc:h2:file:" + dataPath.resolve(database.getFile()).toAbsolutePath();
+			case POSTGRESQL -> "jdbc:postgresql://" + database.getHostname() + ":" + database.getPort() + "/"
+					+ database.getDatabase();
+			case MARIADB -> "jdbc:mariadb://" + database.getHostname() + ":" + database.getPort() + "/"
+					+ database.getDatabase();
+		};
 	}
 }

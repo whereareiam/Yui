@@ -10,9 +10,7 @@ import java.util.Objects;
 
 @Data
 @Entity
-@Table(name = "yui_languages", indexes = {
-		@Index(name = "idx_language_locale", columnList = "locale")
-})
+@Table(name = "yui_languages")
 @SuperBuilder
 @NoArgsConstructor
 public class LanguageEntity {
