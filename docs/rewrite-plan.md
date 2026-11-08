@@ -82,8 +82,13 @@ plugin's loader only, `annotations` skipped as present in the parent, the loader
   not rejected.
 - Plugins keep their own per-user data in their own tables, through their own migrations. In-memory
   extensions on the user go away.
-- Stop creating `yui_roles` rows as a side effect, and drop `@Data` on entities. (`additionalLanguages` is
-  `@ManyToMany` since the database step.)
+- A user holds facts, not roles: the languages they speak, that they finished a journey, what a plugin records
+  in its own tables. The stored role list (`yui_fluctlights_roles`, `yui_roles`) goes away; Discord's member
+  roles are the only record of roles.
+- Roles follow facts one way: the owner of a fact grants or removes its role when the fact changes (core for
+  languages, Verification for `verified`, a products plugin for its products), through one core service that
+  also logs it. Yui grants them again when a member rejoins. A role removed by hand stays removed.
+- Drop `@Data` on entities. (`additionalLanguages` is `@ManyToMany` since the database step.)
 
 ## Database
 
@@ -115,8 +120,8 @@ plugin's loader only, `annotations` skipped as present in the parent, the loader
 - One requirement evaluator for commands, components and journeys, covering every interaction type.
 - Plugins can add requirement types; they are removed on unload.
 - Scope and channel type become one requirement; ids are compared for equality only.
-- Role sync states per role which side wins (Yui or Discord), runs once at startup, and does not trigger
-  itself. The startup order fails on an unknown task name instead of ignoring it.
+- No role sync and no `roles.yml`: roles follow facts (see Users). The startup order fails on an unknown task
+  name instead of ignoring it.
 
 ## Configuration
 
@@ -128,6 +133,25 @@ plugin's loader only, `annotations` skipped as present in the parent, the loader
 - Values can name environment variables (`${DISCORD_TOKEN}`), so secrets stay out of the files.
 - Old files are upgraded by a command (`yui config upgrade <dir>`), run on the repository that holds them.
 - Configs reload from their folder without a restart.
+
+The folder, agreed file by file (each file's content is shown before it is built):
+
+```text
+app/
+  settings.yml          token, intents, locale, updater
+  persistence.yml       the database (open)
+  languages.yml         the languages members declare: name, emoji, role
+  interaction/          commands.yml, conversations.yml, appearance.yml (open)
+  messages/
+    <locale>/           words.yml (was vocabulary.yml), commands.yml, general.yml, ...
+  plugins/<id>/         the same shape: settings.yml, interaction/, messages/<locale>/
+```
+
+- Yui speaks a language when `messages/<locale>/` exists; there is no list of them. The code says "messages"
+  as well (today `localization`), so one thing has one name.
+- `languages.yml` is not about translations: members may speak a language Yui has no texts for.
+- `roles.yml` and `audit.yml` go away. A role id lives with the owner of the fact behind it.
+- Open: whether `guild.yml` stays (guild id, shared names) or its parts move to `settings.yml` and permissions.
 
 ## Build
 
