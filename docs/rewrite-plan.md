@@ -169,8 +169,8 @@ is settled in its own round before code is written.
 
 ```text
 Conditia/
-  conditia-api/                Condition, ConditionType<S>, Conditions, Rule, context/ (ContextKey, Context,
-                               Supply), result/Verdict, exception/
+  conditia-api/                Condition, ConditionType<T, S>, Conditions, Rule, context/ (ContextKey, Context,
+                               Supply), result/ (Outcome, Reason, Verdict), exception/
   conditia-common/             engine: registry, evaluation, startup checks; any/not/rule; time, date, chance
   conditia-adapter-configura/  conditions read through Configura 2.1 polymorphic types
   conditia-adapter-chassis/    registrations tied to a Chassis extension
@@ -183,11 +183,19 @@ Conditia/
 - Nothing in `api` assumes a Discord member or a Minecraft player; hosts bring their own types as context keys.
 - A check is about one subject plus typed context (agreed). A type is `ConditionType<T, S>`: a name, its settings
   class `S`, the context keys it needs beyond the subject, and `holds(T subject, Context context, S settings)`
-  returning a `CompletionStage<Boolean>`. Each host picks its subject type once (`Member` in Yui,
+  returning a `CompletionStage<Outcome>`. Each host picks its subject type once (`Member` in Yui,
   `SocialismusPlayer` in Socialismus). Checking for another participant is a check with them as subject, so
   Socialismus keeps one `permission` type for sender and recipient. Extras such as the interaction or the chat
   message are context keys, replacing Yui's `originalContext` and Socialismus's last message kept as player data.
   Startup fails with the config path when a place does not supply a needed key or a type's subject does not match.
+- A check returns the first failure (agreed). `Conditions.check(requires, subject, context)` runs the list in order,
+  stops at the first failure and returns a sealed `Verdict`: `Passed`, `Failed(condition, path, Optional<Reason>)`
+  or `Broken(condition, path, error)` when a type threw. A failed `any` reports the `any` itself. The kinds stay
+  closed so `any` and `not` mean the same in every host; the variety lives in reasons.
+- `holds` returns an `Outcome`: `pass()`, `fail()` or `fail(reason)`. A reason is a record of its type
+  implementing `Reason` (`OwnsCondition.Missing(List<String> products)`); its name comes from the type and the
+  record (`owns.missing`), its values are the record's components. A type declares its `reasons()`, so startup
+  checks that each has a text in every locale. Without a reason Yui uses the command's `denied` text.
 - No Minecraft family yet: when two hosts on one server software share types, add
   `conditia-platform/platform-paper` or `platform-velocity`, as Chassis has `platform-neoforge`.
 
