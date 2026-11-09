@@ -8,6 +8,7 @@ Breaking changes are allowed wherever they remove a workaround or give a clearer
 | Topic | Decision |
 | --- | --- |
 | Wiring | Spring Boot stays. No feature model. |
+| Plugin runtime base | Chassis (`whereareiam/chassis`); its gaps for Yui are closed in Chassis. |
 | Plugins | Live in this repository under `plugins/`. Only Verification moves in; Synapse and Blabber are dropped. YuiArcadeya stays separate on `repository.arcadeya.com`, in a repository renamed to `arcadeya/yui`. |
 | Deployment | In the cluster, code and deployment in separate repositories, as `arcadeya/stalwart` and `arcadeya/stalwart-deploy`: `arcadeya/yui` builds the image, `arcadeya/yui-deploy` records it and holds the configs. Plugins are built into the image. |
 | Organisation | Both Arcadeya repositories stay in the Forgejo organisation `arcadeya`, beside the other tools it runs (`stalwart`, `oneuptime`). |
@@ -39,7 +40,7 @@ Yui/
 
 ## Plugin runtime
 
-Proposed, not yet confirmed: build it on **Chassis** (`whereareiam/chassis`), which already does discovery, a
+Decided: build it on **Chassis** (`whereareiam/chassis`), which already does discovery, a
 class loader per extension over an export layer, dependencies and order, `reload(id)` with dependents, a selection
 file for enable and disable, services, cleanup on stop and leak checks. Missing for Yui, to be added in Chassis
 rather than worked around: a `chassis-adapter-spring` (child Spring context per plugin), a hook to load Attache
@@ -164,7 +165,7 @@ Discord hides it; otherwise Yui checks on use and replies with the command's `de
 
 Conditia gets its own repository now, set up like Chassis, and is designed against Yui and Socialismus from the
 start: Socialismus already has a near copy, so the second user exists. Yui uses a published version from its
-permissions step on. `conditia-adapter-chassis` waits for the decision on Chassis as Yui's plugin runtime. The API
+permissions step on. Yui runs its plugins on Chassis, so `conditia-adapter-chassis` is built with the rest. The API
 is settled in its own round before code is written.
 
 ```text
@@ -376,7 +377,7 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
 4. Users and events.
 5. Permissions on Conditia; role sync removed (roles follow facts).
 6. Configuration on Configura 2.1 with file upgrades.
-7. Plugin runtime with hot reload (on Chassis, if confirmed).
+7. Plugin runtime with hot reload, on Chassis.
 8. JDA 6 and cloud.
 9. Verification into `plugins/`, `examples/plugin`.
 10. Docs and the rest of AGENTS.md; publishing the distribution. The repository setup after Identica (release
