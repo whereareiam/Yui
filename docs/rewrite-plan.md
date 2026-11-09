@@ -47,6 +47,14 @@ rather than worked around: a `chassis-adapter-spring` (child Spring context per 
 libraries before the main class, and either per-plugin exported packages or accepting that a dependent sees the
 whole jar. `plugin.json` would become Chassis's YAML descriptor. Most of `yui-adapter-plugin` would go away.
 
+- Exports (agreed): a plugin lists its exported packages in its Chassis descriptor (`exports:`). A dependent's
+  loader gets only classes from those packages from a dependency, never its other classes or its libraries; the
+  Spring adapter hands over only beans whose types are exported. A plugin that exports nothing cannot be depended
+  on. Built in Chassis, so Socialismus's modules get it too.
+- The Spring adapter needs no change to Chassis's core: an `ExtensionFactory` opens a child context with Yui's as
+  parent and hands it to `ExtensionContext.onClose`. The Attache step needs a hook in Chassis between creating
+  the loader and loading the main class, and a way to add jars to the loader (today `addURL` is protected).
+
 The design below predates that proposal.
 
 - `plugin.json` holds id, version, dependencies, exported packages and libraries.
