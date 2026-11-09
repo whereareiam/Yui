@@ -181,6 +181,13 @@ Conditia/
 
 - Java 21, so Paper and Velocity plugins can use it. Published as `me.whereareiam.conditia:api`, `:common`, ...
 - Nothing in `api` assumes a Discord member or a Minecraft player; hosts bring their own types as context keys.
+- A check is about one subject plus typed context (agreed). A type is `ConditionType<T, S>`: a name, its settings
+  class `S`, the context keys it needs beyond the subject, and `test(T subject, Context context, S settings)`
+  returning a `CompletionStage<Boolean>`. Each host picks its subject type once (`Member` in Yui,
+  `SocialismusPlayer` in Socialismus). Checking for another participant is a check with them as subject, so
+  Socialismus keeps one `permission` type for sender and recipient. Extras such as the interaction or the chat
+  message are context keys, replacing Yui's `originalContext` and Socialismus's last message kept as player data.
+  Startup fails with the config path when a place does not supply a needed key or a type's subject does not match.
 - No Minecraft family yet: when two hosts on one server software share types, add
   `conditia-platform/platform-paper` or `platform-velocity`, as Chassis has `platform-neoforge`.
 
