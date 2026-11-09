@@ -54,6 +54,10 @@ whole jar. `plugin.json` would become Chassis's YAML descriptor. Most of `yui-ad
 - The Spring adapter needs no change to Chassis's core: an `ExtensionFactory` opens a child context with Yui's as
   parent and hands it to `ExtensionContext.onClose`. The Attache step needs a hook in Chassis between creating
   the loader and loading the main class, and a way to add jars to the loader (today `addURL` is protected).
+- Attache (agreed): Chassis gets a general `prepare` step in `HostOptions` that runs on each new loader before the
+  main class loads, may add jars to it and returns an `AutoCloseable` closed when the extension stops. A new module
+  `chassis-adapter-attache` implements it with Attache (`AttacheLibraries.of(...)`): it reads only the extension
+  jar's own library descriptor and adds the libraries to its loader. Yui uses that module; libraries stay private.
 
 The design below predates that proposal.
 
