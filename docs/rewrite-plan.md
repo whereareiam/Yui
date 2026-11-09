@@ -139,6 +139,11 @@ plugin's loader only, `annotations` skipped as present in the parent, the loader
   has no `database.type`, so the upgrade writes `H2`; an installation that keeps its PostgreSQL server must set
   `POSTGRESQL` before starting 1.0.0 (in the release notes).
 - Tests run every persistence test on H2, PostgreSQL and MariaDB, with the real migrations and validation.
+- `yui-adapter-database` stays one module, no family (agreed). A plugin's tables get their own Flyway run (its own
+  history table), their own Hibernate unit over Yui's pool and their repositories in the plugin's context. The
+  contract a plugin declares them with is declarative (a migrations location, an entity package, no JPA types) and
+  lives in `yui-api`'s `persistence` package beside Yui's own persistence contracts; it moves into a module of its
+  own only when a second kind of storage needs one.
 
 ## Events
 
@@ -344,7 +349,7 @@ pool:
 
 `pool` replaces `hikari` and takes Yui's `Duration` instead of milliseconds; the upgrade maps the old flat keys.
 
-Still open, one file at a time: whether the database adapter becomes a family, `interaction/conversations.yml`, `interaction/appearance.yml` (palette and embed
+Still open, one file at a time: `interaction/conversations.yml`, `interaction/appearance.yml` (palette and embed
 styles per kind), `languages.yml` in detail, `audiences.yml` in detail, the message files, Verification's files.
 
 ## Build
