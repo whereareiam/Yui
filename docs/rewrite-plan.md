@@ -160,7 +160,12 @@ No `boosting`: Discord's managed "Server Booster" role covers it.
 A command whose audience reduces to one Discord permission is registered with it as default permission, so
 Discord hides it; otherwise Yui checks on use and replies with the command's `denied` text.
 
-### Conditia (proposed, structure not yet confirmed)
+### Conditia
+
+Conditia gets its own repository now, set up like Chassis, and is designed against Yui and Socialismus from the
+start: Socialismus already has a near copy, so the second user exists. Yui uses a published version from its
+permissions step on. `conditia-adapter-chassis` waits for the decision on Chassis as Yui's plugin runtime. The API
+is settled in its own round before code is written.
 
 ```text
 Conditia/
