@@ -39,6 +39,15 @@ Yui/
 
 ## Plugin runtime
 
+Proposed, not yet confirmed: build it on **Chassis** (`whereareiam/chassis`), which already does discovery, a
+class loader per extension over an export layer, dependencies and order, `reload(id)` with dependents, a selection
+file for enable and disable, services, cleanup on stop and leak checks. Missing for Yui, to be added in Chassis
+rather than worked around: a `chassis-adapter-spring` (child Spring context per plugin), a hook to load Attache
+libraries before the main class, and either per-plugin exported packages or accepting that a dependent sees the
+whole jar. `plugin.json` would become Chassis's YAML descriptor. Most of `yui-adapter-plugin` would go away.
+
+The design below predates that proposal.
+
 - `plugin.json` holds id, version, dependencies, exported packages and libraries.
 - Load order: read descriptors, resolve dependencies, create the classloader (Yui plus the exported
   packages of declared dependencies), load libraries into it with Attache, then refresh the child context.
@@ -117,11 +126,58 @@ plugin's loader only, `annotations` skipped as present in the parent, the loader
 
 ## Permissions
 
-- One requirement evaluator for commands, components and journeys, covering every interaction type.
-- Plugins can add requirement types; they are removed on unload.
-- Scope and channel type become one requirement; ids are compared for equality only.
-- No role sync and no `roles.yml`: roles follow facts (see Users). The startup order fails on an unknown task
-  name instead of ignoring it.
+Requirements come from **Conditia**, a new library (`whereareiam/conditia`, folder `Conditia`) that Yui and
+Socialismus share; Socialismus has a near copy of today's Yui system (`RequirementGroup` with six operators).
+
+- One language everywhere: commands, buttons, journey steps, role grants. `requires:` is a list of conditions;
+  a list means all, `any` and `not` combine. Cooldown is not a condition but its own block.
+- **Audiences** are named lists of conditions (`audiences.yml`); `audience: moderator` reuses one. A plugin's
+  audiences carry its id as prefix (`verification:verified`).
+- Plugins add condition types in Java (a name, a settings record, what it needs, an async `test`); they and the
+  plugin's audiences are removed on unload.
+- Every condition type states what it needs (member, interaction), every place states what it supplies; a
+  mismatch or an unknown type stops startup with the config path.
+- Core's defaults never name a plugin type. An installation tightens them in its own config
+  (`/language` requires `audience: verification:verified` on Arcadeya's guild).
+
+| Condition type | From |
+| --- | --- |
+| `any`, `not`, `audience` | core (Conditia) |
+| `permission` (Discord permission), `role`, `user`, `language`, `joined`, `account` | core, about the member |
+| `scope` (guild or DM), `channels`, `channel-type` | core, about the interaction |
+| `verified` | Verification |
+| `owns` | the Arcadeya products plugin |
+
+No `boosting`: Discord's managed "Server Booster" role covers it.
+
+| Audience | Means | From |
+| --- | --- | --- |
+| `operator` | `permission: MANAGE_SERVER` | core |
+| `moderator` | `permission: MODERATE_MEMBERS` | core |
+| `verification:verified` | `verified: true` | Verification |
+| `products:customer` | verified and owns a product | Arcadeya products |
+
+A command whose audience reduces to one Discord permission is registered with it as default permission, so
+Discord hides it; otherwise Yui checks on use and replies with the command's `denied` text.
+
+### Conditia (proposed, structure not yet confirmed)
+
+```text
+Conditia/
+  conditia-api/                Condition, ConditionType<S>, Conditions, Rule, context/ (ContextKey, Context,
+                               Supply), result/Verdict, exception/
+  conditia-common/             engine: registry, evaluation, startup checks; any/not/rule; time, date, chance
+  conditia-adapter-configura/  conditions read through Configura 2.1 polymorphic types
+  conditia-adapter-chassis/    registrations tied to a Chassis extension
+  conditia-testing/
+  examples/host/
+  docs/content/
+```
+
+- Java 21, so Paper and Velocity plugins can use it. Published as `me.whereareiam.conditia:api`, `:common`, ...
+- Nothing in `api` assumes a Discord member or a Minecraft player; hosts bring their own types as context keys.
+- No Minecraft family yet: when two hosts on one server software share types, add
+  `conditia-platform/platform-paper` or `platform-velocity`, as Chassis has `platform-neoforge`.
 
 ## Configuration
 
@@ -134,24 +190,81 @@ plugin's loader only, `annotations` skipped as present in the parent, the loader
 - Old files are upgraded by a command (`yui config upgrade <dir>`), run on the repository that holds them.
 - Configs reload from their folder without a restart.
 
-The folder, agreed file by file (each file's content is shown before it is built):
+The folder, agreed file by file (each file's content is shown to the owner before it is built):
 
 ```text
 app/
-  settings.yml          token, intents, locale, updater
+  settings.yml          token, guild (id), intents, locale, updater
   persistence.yml       the database (open)
   languages.yml         the languages members declare: name, emoji, role
-  interaction/          commands.yml, conversations.yml, appearance.yml (open)
+  audiences.yml         named condition lists
+  audit.yml             what is kept, and where each category is posted
+  interaction/          commands.yml, conversations.yml, appearance.yml
   messages/
-    <locale>/           words.yml (was vocabulary.yml), commands.yml, general.yml, ...
-  plugins/<id>/         the same shape: settings.yml, interaction/, messages/<locale>/
+    <locale>/           words.yml (was vocabulary.yml), commands.yml, general.yml, log.yml, ...
+  plugins/<id>/         the same shape: settings.yml, audiences.yml, interaction/, messages/<locale>/
 ```
 
 - Yui speaks a language when `messages/<locale>/` exists; there is no list of them. The code says "messages"
   as well (today `localization`), so one thing has one name.
 - `languages.yml` is not about translations: members may speak a language Yui has no texts for.
-- `roles.yml` and `audit.yml` go away. A role id lives with the owner of the fact behind it.
-- Open: whether `guild.yml` stays (guild id, shared names) or its parts move to `settings.yml` and permissions.
+- `roles.yml` and `guild.yml` go away. A role or channel id lives with its only user and moves up only when a
+  second appears (Verification keeps `rules` and the welcome channels per locale in its settings).
+
+`settings.yml`, approved:
+
+```yaml
+_version: 1
+token: "${DISCORD_TOKEN}"
+guild: "856839365938118698"
+intents: [...]
+locale: "en-US"
+updater:
+  interval: "1d"
+  check: { yui, plugins }
+  warn: { updates, localBuilds, devBuilds }   # posted as audit entries of category system
+```
+
+`interaction/commands.yml`, in Identica's shape; descriptions, usage, arguments and `denied` are texts in
+`messages/<locale>/commands.yml`, because Discord gets them per locale:
+
+```yaml
+_version: 1
+commands:
+  clear:
+    enabled: true
+    aliases: [clear, purge]
+    category: moderation
+    requires:
+      - audience: moderator
+      - scope: guild
+      - channel-type: [text, thread]
+    cooldown: { enabled: true, duration: 10s, group: moderation }
+    hide: false
+```
+
+Buttons are configured inside the view that shows them (`buttons: { claim: { requires: [...], cooldown: ... } }`).
+In a reply only one member sees, an unusable button is hidden or disabled (`unavailable: hide | disable`); on a
+public panel everyone sees it, and a click that fails its requirements gets a private reply.
+
+`audit.yml`: an entry is one line of the trail (who did what to whom, when). Whoever writes an entry files it
+under a category in code; plugins need no audit file.
+
+```yaml
+_version: 1
+store: { enabled: true, keep: 90d }      # saved in the database, searchable with /audit
+categories:
+  members:    { channel: "..." }
+  moderation: { channel: "..." }
+  system:     { channel: "1452800701833936906" }
+entries:                                 # exceptions only
+  member.leave: off
+  verification.failed: system
+```
+
+Still open, one file at a time: `persistence.yml` (Identica-like `persistence:` block, and whether the database
+adapter becomes a family), `interaction/conversations.yml`, `interaction/appearance.yml` (palette and embed
+styles per kind), `languages.yml` in detail, `audiences.yml` in detail, the message files, Verification's files.
 
 ## Build
 
@@ -232,9 +345,9 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
 2. Attache loading into a plugin's own classloader: already in Attache 1.3.0, checked (see Plugin runtime).
 3. Database: Flyway with a clean baseline, H2/PostgreSQL/MariaDB, `validate` (see Database).
 4. Users and events.
-5. Permissions and role sync.
+5. Permissions on Conditia; role sync removed (roles follow facts).
 6. Configuration on Configura 2.1 with file upgrades.
-7. Plugin runtime with hot reload.
+7. Plugin runtime with hot reload (on Chassis, if confirmed).
 8. JDA 6 and cloud.
 9. Verification into `plugins/`, `examples/plugin`.
 10. Docs and the rest of AGENTS.md; publishing the distribution. The repository setup after Identica (release
