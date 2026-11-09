@@ -58,6 +58,12 @@ whole jar. `plugin.json` would become Chassis's YAML descriptor. Most of `yui-ad
   main class loads, may add jars to it and returns an `AutoCloseable` closed when the extension stops. A new module
   `chassis-adapter-attache` implements it with Attache (`AttacheLibraries.of(...)`): it reads only the extension
   jar's own library descriptor and adds the libraries to its loader. Yui uses that module; libraries stay private.
+- Spring (agreed): `chassis-adapter-spring` provides an `ExtensionFactory` that opens a child context with Yui's as
+  parent, adds the exported beans of the plugin's dependencies, registers the main class and refreshes. It only
+  checks that the main class is a Spring `@Configuration`. Yui's own annotation `@Plugin` in `yui-api` is that
+  configuration: it composes `@Configuration` and `@ComponentScan` (`scan` narrows or widens it; empty is the main
+  class's package). A main class without it fails to load with the plugin id. Plugins see only Yui's API types,
+  through Chassis's export layer, so Yui's internal beans stay out of reach.
 
 The design below predates that proposal.
 
