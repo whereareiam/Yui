@@ -144,6 +144,13 @@ plugin's loader only, `annotations` skipped as present in the parent, the loader
   contract a plugin declares them with is declarative (a migrations location, an entity package, no JPA types) and
   lives in `yui-api`'s `persistence` package beside Yui's own persistence contracts; it moves into a module of its
   own only when a second kind of storage needs one.
+- A plugin declares its tables with its own annotation `@Tables` on the main class, beside `@Plugin` (agreed); the
+  plugin runtime knows nothing of it. Defaults: migrations in `db/migration/<plugin id>/` (`common/` plus `h2`,
+  `postgresql`, `mariadb`, as Yui's), entities in `<main class package>.entity`, history table
+  `<plugin id>_schema_history` with hyphens as underscores. Both locations can be overridden
+  (`@Tables(migrations = ..., entities = ...)`). Without `@Tables` a plugin gets no Flyway run and no Hibernate unit;
+  with it, a missing migrations folder or entity package stops startup with the plugin id. A plugin's tables carry its
+  id as prefix (`verification_journeys`), checked at startup against Hibernate's mapped table names.
 
 ## Events
 
