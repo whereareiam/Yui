@@ -169,7 +169,7 @@ is settled in its own round before code is written.
 
 ```text
 Conditia/
-  conditia-api/                Condition, ConditionType<T, S>, Conditions, NamedConditions, context/ (ContextKey, Context,
+  conditia-api/                Condition, ConditionType<T, S>, Conditions, ConditionScope, NamedConditions, context/ (ContextKey, Context,
                                Supply), result/ (Outcome, Reason, Verdict), exception/
   conditia-common/             engine: registry, evaluation, startup checks; any/not; the named-list type; time, date, chance
   conditia-adapter-configura/  conditions read through Configura 2.1 polymorphic types
@@ -198,8 +198,13 @@ Conditia/
   checks that each has a text in every locale. Without a reason Yui uses the command's `denied` text.
 - Named lists are optional and named by the host (agreed). Conditia offers `NamedConditions`, a registry of named
   condition lists, and a type that refers to one; a host that wants them registers that type under its own key.
-  Yui calls them audiences (`audiences.yml`, `audience: moderator`, plugin ones prefixed `verification:verified`);
+  Yui calls them audiences (`audiences.yml`, `audience: moderator`, a plugin's prefixed by its scope);
   Socialismus may call them otherwise or not use them. Conditia itself never says "audience".
+- Registrations live in a scope per owner (agreed). The host opens `conditions.scope("<owner id>")` when a plugin
+  or module loads; types and named lists registered through it carry the owner's prefix (`verification:verified`)
+  and all go when the host closes the scope on unload. A plugin cannot forget one. After a scope closes, every place
+  is checked again: a condition that refers to a removed type or list denies everyone and is logged with its path
+  until the owner loads again. `conditia-adapter-chassis` only opens and closes a scope per extension.
 - No Minecraft family yet: when two hosts on one server software share types, add
   `conditia-platform/platform-paper` or `platform-velocity`, as Chassis has `platform-neoforge`.
 
