@@ -65,6 +65,11 @@ whole jar. `plugin.json` would become Chassis's YAML descriptor. Most of `yui-ad
   class's package). A main class without it fails to load with the plugin id. Plugins see only Yui's API types,
   through Chassis's export layer, so Yui's internal beans stay out of reach.
 
+Built in Chassis on 9 November 2026 as four stacked draft pull requests, merged into `dev` in order:
+whereareiam/chassis#7 (preparation step), #8 (exports), #9 (`chassis-adapter-attache`), #10 (`chassis-adapter-spring`).
+Yui's export layer must include `org.springframework`, since Spring's generated configuration classes live in a
+plugin's loader.
+
 The design below predates that proposal.
 
 - `plugin.json` holds id, version, dependencies, exported packages and libraries.
