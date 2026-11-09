@@ -125,8 +125,8 @@ plugin's loader only, `annotations` skipped as present in the parent, the loader
 
 ## Database
 
-- `settings.yml` chooses `database.type`: `H2` (the default, a file at `database.file` in the data folder), or
-  `POSTGRESQL` or `MARIADB` with host, port, database name and credentials. The pool takes `database.hikari`.
+- `persistence.yml` chooses `type`: `H2` (the default, a file at `file` in the data folder), or `POSTGRESQL` or
+  `MARIADB` with host, port, database name and credentials. The pool takes `pool`.
 - `DatabaseConfiguration` connects to it; `PersistenceConfiguration` runs Flyway, then Hibernate with
   `hbm2ddl.auto=validate`, so Hibernate never changes the tables.
 - Migrations live in `db/migration/yui/common` when they read the same on every database, otherwise once per
@@ -135,8 +135,9 @@ plugin's loader only, `annotations` skipped as present in the parent, the loader
 - `V1__baseline` creates the tables of 1.0.0 cleanly. It is not a copy of the live schema, which Hibernate grew over
   time (a join table with its own id, names left from `yui_profiles`): there is one installation, and its data
   moves into a fresh database at the cutover anyway, so no existing database is patched in place.
-- A settings file from before 1.0.0 has no `database.type`; Configura fills in `H2`. An installation that keeps
-  its PostgreSQL server must set `POSTGRESQL` before starting 1.0.0 (in the release notes).
+- The upgrade moves `database` from an old `settings.yml` into `persistence.yml`. A settings file from before 1.0.0
+  has no `database.type`, so the upgrade writes `H2`; an installation that keeps its PostgreSQL server must set
+  `POSTGRESQL` before starting 1.0.0 (in the release notes).
 - Tests run every persistence test on H2, PostgreSQL and MariaDB, with the real migrations and validation.
 
 ## Events
@@ -248,7 +249,7 @@ The folder, agreed file by file (each file's content is shown to the owner befor
 ```text
 app/
   settings.yml          token, guild (id), intents, locale, updater
-  persistence.yml       the database (open)
+  persistence.yml       the database: type, its connection, pool
   languages.yml         the languages members declare: name, emoji, role
   audiences.yml         named condition lists
   audit.yml             what is kept, and where each category is posted
@@ -315,8 +316,35 @@ entries:                                 # exceptions only
   verification.failed: system
 ```
 
-Still open, one file at a time: `persistence.yml` (Identica-like `persistence:` block, and whether the database
-adapter becomes a family), `interaction/conversations.yml`, `interaction/appearance.yml` (palette and embed
+`persistence.yml`, approved: one shape per database type, as Identica's, picked by `type` through Configura's
+polymorphic types, so a file holds only the fields its database uses. The `database` block leaves `settings.yml`.
+
+```yaml
+# H2, the default
+_version: 1
+type: H2
+file: "database/yui"           # in Yui's data folder
+pool:
+  size: { min: 2, max: 10 }
+  timeouts: { connect: 30s, idle: 10m, lifetime: 30m }
+```
+```yaml
+# POSTGRESQL or MARIADB
+_version: 1
+type: POSTGRESQL
+host: "postgres.yui.svc"
+port: 5432                     # default per type: 5432, or 3306 for MariaDB
+database: "yui"
+username: "yui"
+password: "${DATABASE_PASSWORD}"
+pool:
+  size: { min: 2, max: 10 }
+  timeouts: { connect: 30s, idle: 10m, lifetime: 30m }
+```
+
+`pool` replaces `hikari` and takes Yui's `Duration` instead of milliseconds; the upgrade maps the old flat keys.
+
+Still open, one file at a time: whether the database adapter becomes a family, `interaction/conversations.yml`, `interaction/appearance.yml` (palette and embed
 styles per kind), `languages.yml` in detail, `audiences.yml` in detail, the message files, Verification's files.
 
 ## Build
