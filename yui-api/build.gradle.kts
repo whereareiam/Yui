@@ -27,6 +27,7 @@ dependencies {
     providedApi(libs.semantica)
     providedApi(libs.spring.boot)
     providedApi(libs.spring.boot.webflux)
+    providedApi(libs.spring.tx)
 }
 
 buildConfig {
