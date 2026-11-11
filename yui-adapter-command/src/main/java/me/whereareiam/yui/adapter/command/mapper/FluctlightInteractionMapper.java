@@ -21,7 +21,7 @@ public class FluctlightInteractionMapper implements JDAInteraction.InteractionMa
 	@Override
 	public @NonNull Interaction map(@NonNull JDAInteraction cloudInteraction) {
 		long userId = cloudInteraction.user().getIdLong();
-		var fluctlight = fluctlightService.getOrCreate(userId);
+		var fluctlight = fluctlightService.get(userId).orElseThrow();
 
 		return new Interaction(
 				fluctlight,

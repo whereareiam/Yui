@@ -83,7 +83,7 @@ public class ComponentListenerScanner extends BaseContextScanner {
 			try {
 				GenericComponentInteractionCreateEvent event = (GenericComponentInteractionCreateEvent) e;
 				long userId = event.getUser().getIdLong();
-				Fluctlight fluctlight = fluctlightService.getOrCreate(userId);
+				Fluctlight fluctlight = fluctlightService.get(userId).orElseThrow();
 				method.invoke(bean, fluctlight, e);
 			} catch (Exception ignored) {
 			}

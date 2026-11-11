@@ -81,7 +81,7 @@ public class ClearCommand {
 
 		long targetUserId = Long.parseLong(payload);
 
-		var result = fluctlightService.clear(targetUserId);
+		var result = fluctlightService.get(targetUserId).map(fluctlightService::clear);
 
 		if (result.isPresent()) {
 			Fluctlight target = result.get();

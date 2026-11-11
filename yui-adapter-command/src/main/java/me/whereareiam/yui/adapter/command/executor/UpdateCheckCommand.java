@@ -51,7 +51,7 @@ public class UpdateCheckCommand {
     }
 
     private void checkYui(Interaction interaction, Fluctlight fluctlight) {
-        log.debug("Checking core updates (triggered by {})", fluctlight.getJdaUser().getAsTag());
+        log.debug("Checking core updates (triggered by {})", fluctlight.getUser().getAsTag());
 
         try {
             updateService.checkUpdates();
@@ -68,7 +68,7 @@ public class UpdateCheckCommand {
     }
 
     private void checkAllPlugins(Interaction interaction, Fluctlight fluctlight) {
-        log.debug("Checking all plugin updates (triggered by {})", fluctlight.getJdaUser().getAsTag());
+        log.debug("Checking all plugin updates (triggered by {})", fluctlight.getUser().getAsTag());
 
         try {
             updateService.checkAllPluginUpdates();
@@ -127,7 +127,7 @@ public class UpdateCheckCommand {
 
         try {
             log.debug("Checking updates for plugin '{}' (triggered by {})",
-                    pluginId, fluctlight.getJdaUser().getAsTag());
+                    pluginId, fluctlight.getUser().getAsTag());
             updateService.checkPluginUpdates(pluginId);
 
             EmbedBuilder embed = StyleKit.embeds().success();

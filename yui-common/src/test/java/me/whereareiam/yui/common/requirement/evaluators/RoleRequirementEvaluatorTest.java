@@ -2,11 +2,11 @@ package me.whereareiam.yui.common.requirement.evaluators;
 
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
-import me.whereareiam.yui.model.fluctlight.FluctlightStateUpdater;
 import me.whereareiam.yui.model.requirement.RequirementContext;
 import me.whereareiam.yui.model.requirement.type.RoleRequirement;
 import me.whereareiam.yui.type.requirement.RequirementCondition;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
@@ -65,8 +65,7 @@ class RoleRequirementEvaluatorTest {
 
 		// Setup mock fluctlight
 		when(jdaUser.getIdLong()).thenReturn(12345L);
-		fluctlight = new Fluctlight(jdaUser);
-		FluctlightStateUpdater.updateAllowedRoles(fluctlight, new long[]{100L, 200L, 300L});
+		fluctlight = Fluctlight.builder().user(jdaUser).primaryLanguage(DiscordLocale.ENGLISH_US).build();
 
 		// Setup mock Discord event with roles
 		setupMockDiscordEvent();
@@ -144,9 +143,8 @@ class RoleRequirementEvaluatorTest {
 	}
 
 	@Test
-	void testEvaluateWithFluctlightNoRoles() {
-		Fluctlight noRolesFluctlight = new Fluctlight(jdaUser);
-		FluctlightStateUpdater.updateAllowedRoles(noRolesFluctlight, null);
+	void testEvaluateWithoutDiscordMember() {
+		Fluctlight noRolesFluctlight = Fluctlight.builder().user(jdaUser).primaryLanguage(DiscordLocale.ENGLISH_US).build();
 		RequirementContext noRolesContext = new RequirementContext("test", noRolesFluctlight);
 
 		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.HAS, true, Arrays.asList("100", "200", "300"), "ID");
@@ -221,30 +219,18 @@ class RoleRequirementEvaluatorTest {
 
 	@Test
 	void testEvaluateWithNoDiscordContext() {
-		// Create context without Discord event (fallback to fluctlight)
+		// Without a member there are no roles to check: Discord's member roles are the only record of roles.
 		RequirementContext noDiscordContext = new RequirementContext("test", fluctlight);
 
 		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.HAS, true, Arrays.asList("100", "200"), "ID");
-		// When there's no Discord context, it falls back to fluctlight
-		// Our fluctlight has roles [100, 200, 300]
-		// Required roles are ["100", "200"] 
-		// HAS condition: fluctlight must have ALL required roles
-		// Result: fluctlight has both 100 and 200, so result = true
-		assertTrue(evaluator.evaluate(noDiscordContext, roleReq));
+		assertFalse(evaluator.evaluate(noDiscordContext, roleReq));
 	}
 
 	@Test
 	void testEvaluateWithNoDiscordContextNameMatching() {
-		// Create context without Discord event (fallback to fluctlight)
 		RequirementContext noDiscordContext = new RequirementContext("test", fluctlight);
 
 		RoleRequirement roleReq = new RoleRequirement(RequirementCondition.HAS, true, Arrays.asList("100", "200"), "NAME");
-		// When matching by NAME with no Discord context, it falls back to fluctlight
-		// Note: This will actually match by ID since fluctlight only stores IDs
-		// Our fluctlight has roles [100, 200, 300]
-		// Required roles are ["100", "200"] 
-		// HAS condition: fluctlight must have ALL required roles
-		// Result: fluctlight has both 100 and 200, so result = true
-		assertTrue(evaluator.evaluate(noDiscordContext, roleReq));
+		assertFalse(evaluator.evaluate(noDiscordContext, roleReq));
 	}
 }

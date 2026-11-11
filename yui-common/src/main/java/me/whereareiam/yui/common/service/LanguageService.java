@@ -6,7 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.Reloadable;
 import me.whereareiam.yui.common.config.provider.LanguagesProvider;
-import me.whereareiam.yui.service.RoleService;
 import me.whereareiam.yui.model.config.languages.LanguageEntry;
 import me.whereareiam.yui.model.config.languages.Languages;
 import me.whereareiam.yui.model.config.settings.Settings;
@@ -26,7 +25,6 @@ import java.util.Set;
 public class LanguageService implements Reloadable {
 	private final LanguagesProvider languagesProvider;
 	private final LanguagePersistence languagePersistence;
-	private final RoleService roleService;
 	private final ObjectProvider<Settings> settings;
 	private final Registry<Reloadable> reloadableRegistry;
 
@@ -80,14 +78,6 @@ public class LanguageService implements Reloadable {
 				if (!languageEntry.isEnabled()) {
 					log.debug("[LanguageService] Skipping disabled language: {}", locale);
 					continue;
-				}
-
-				// Validate role if specified
-				if (languageEntry.getRole() != null) {
-					if (!roleService.isRoleAllowed(languageEntry.getRole())) {
-						log.warn("[LanguageService] Language {} has role {} which is not in allowed roles. Skipping language.", locale, languageEntry.getRole());
-						continue;
-					}
 				}
 
 				// Add to database if not exists

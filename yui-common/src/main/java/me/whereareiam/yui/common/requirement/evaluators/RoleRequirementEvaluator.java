@@ -16,7 +16,6 @@ import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionE
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -95,23 +94,7 @@ public class RoleRequirementEvaluator extends BaseRequirementEvaluator {
 		if (member != null)
 			return extractRolesFromMember(member);
 
-		// Fallback to fluctlight profile if no Discord context is available
-		return extractRoleNamesFromUserProfile(context);
-	}
-
-	/**
-	 * Extracts role names from Fluctlight as fallback when Discord context is not available.
-	 * Note: This will return role IDs as strings since Fluctlight only stores allowed role IDs.
-	 */
-	private List<String> extractRoleNamesFromUserProfile(RequirementContext context) {
-		if (context.getFluctlight().getAllowedRoles() == null)
-			return List.of();
-		
-		// Fluctlight only stores allowed role IDs, so we return them as strings
-		// This maintains backward compatibility but may not be ideal for name-based matching
-		return Arrays.stream(context.getFluctlight().getAllowedRoles())
-				.mapToObj(String::valueOf)
-				.collect(Collectors.toList());
+		return List.of();
 	}
 
 	/**
@@ -125,20 +108,7 @@ public class RoleRequirementEvaluator extends BaseRequirementEvaluator {
 		if (member != null)
 			return extractRoleIdsFromMember(member);
 
-		// Fallback to fluctlight profile if no Discord context is available
-		return extractRoleIdsFromUserProfile(context);
-	}
-
-	/**
-	 * Extracts role IDs from Fluctlight as fallback when Discord context is not available.
-	 */
-	private List<String> extractRoleIdsFromUserProfile(RequirementContext context) {
-		if (context.getFluctlight().getAllowedRoles() == null)
-			return List.of();
-		
-		return Arrays.stream(context.getFluctlight().getAllowedRoles())
-				.mapToObj(String::valueOf)
-				.collect(Collectors.toList());
+		return List.of();
 	}
 
 	/**

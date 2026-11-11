@@ -5,6 +5,7 @@ import me.whereareiam.yui.annotation.ComponentListener;
 import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.command.Interaction;
+import me.whereareiam.yui.fluctlight.FluctlightService;
 import me.whereareiam.yui.model.PayloadButton;
 import me.whereareiam.yui.model.config.languages.LanguageEntry;
 import me.whereareiam.yui.model.config.languages.Languages;
@@ -30,6 +31,7 @@ import java.util.*;
 @Component
 @AllArgsConstructor
 public class LanguageCommand {
+	private final FluctlightService fluctlightService;
 	private final LanguagePersistence languagePersistence;
 	private final ObjectProvider<Languages> languagesProvider;
 
@@ -55,16 +57,16 @@ public class LanguageCommand {
 
 		DiscordLocale selectedLanguage = DiscordLocale.from(payload);
 
-		// Remove all additional languages before changing primary so we don't drop the new primary role
-		DiscordLocale[] additionals = fluctlight.getAdditionalLanguages();
-		if (additionals != null)
-			for (DiscordLocale lang : additionals)
-				if (lang != null)
-					fluctlight.removeAdditionalLanguage(lang);
+		// Picking a primary language starts the choice over. The new primary leaves the additional languages with the
+		// change itself, so its role is never taken away in between.
+		Fluctlight changed = fluctlight;
+		for (DiscordLocale language : fluctlight.getAdditionalLanguages())
+			if (language != selectedLanguage)
+				changed = fluctlightService.removeAdditionalLanguage(changed, language);
 
-		fluctlight.setPrimaryLanguage(selectedLanguage);
+		changed = fluctlightService.changePrimaryLanguage(changed, selectedLanguage);
 
-		showPrimaryLanguageSelection(event, fluctlight, true);
+		showPrimaryLanguageSelection(event, changed, true);
 	}
 
 	@ComponentListener(CONTINUE_LISTENER)
@@ -81,9 +83,9 @@ public class LanguageCommand {
 		}
 
 		DiscordLocale selectedLanguage = DiscordLocale.from(payload);
-		fluctlight.addAdditionalLanguage(selectedLanguage);
+		Fluctlight changed = fluctlightService.addAdditionalLanguage(fluctlight, selectedLanguage);
 
-		showAdditionalLanguageSelection(event, fluctlight);
+		showAdditionalLanguageSelection(event, changed);
 	}
 
 	@ComponentListener(CONFIRM_LISTENER)
@@ -110,8 +112,7 @@ public class LanguageCommand {
 
 		// Exclude ONLY the current primary (ignore additional languages here)
 		Set<DiscordLocale> excluded = new HashSet<>();
-		if (fluctlight.getPrimaryLanguage() != null)
-			excluded.add(fluctlight.getPrimaryLanguage());
+		excluded.add(fluctlight.getPrimaryLanguage());
 
 		List<Button> languageButtons = buildLanguageButtons(
 				languagePersistence.getAvailableLanguages(),
@@ -150,14 +151,11 @@ public class LanguageCommand {
 				.setTitle(Translatable.text("commands.language.additional.title").resolve(fluctlight))
 				.setDescription(Translatable.text("commands.language.additional.description").resolve(fluctlight));
 
-		Set<DiscordLocale> currentAdditionals = fluctlight.getAdditionalLanguages() != null
-				? new HashSet<>(Arrays.asList(fluctlight.getAdditionalLanguages()))
-				: new HashSet<>();
+		Set<DiscordLocale> currentAdditionals = fluctlight.getAdditionalLanguages();
 
 		// Exclude primary + already-selected additionals
 		Set<DiscordLocale> excluded = new HashSet<>(currentAdditionals);
-		if (fluctlight.getPrimaryLanguage() != null)
-			excluded.add(fluctlight.getPrimaryLanguage());
+		excluded.add(fluctlight.getPrimaryLanguage());
 
 		List<Button> languageButtons = buildLanguageButtons(
 				languagePersistence.getAvailableLanguages(),

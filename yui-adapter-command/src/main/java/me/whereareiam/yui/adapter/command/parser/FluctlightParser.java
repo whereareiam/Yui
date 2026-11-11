@@ -38,7 +38,7 @@ public class FluctlightParser extends NullableParser<Interaction, Fluctlight> {
 		ArgumentParseResult<Fluctlight> result = jdaInteraction.getOptionMapping(optionName)
 				.map(mapping -> {
 					try {
-						Fluctlight fluctlight = fluctlightService.getOrCreate(mapping.getAsUser().getIdLong());
+						Fluctlight fluctlight = fluctlightService.get(mapping.getAsUser().getIdLong()).orElseThrow();
 						return ArgumentParseResult.success(fluctlight);
 					} catch (final Exception e) {
 						return ArgumentParseResult.<Fluctlight>failure(e);

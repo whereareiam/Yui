@@ -7,7 +7,6 @@ import me.whereareiam.yui.model.config.languages.LanguageEntry;
 import me.whereareiam.yui.model.config.languages.Languages;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.persistence.LanguagePersistence;
-import me.whereareiam.yui.service.RoleService;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,8 +30,6 @@ class LanguageServiceTest {
 	@Mock
 	private LanguagePersistence languagePersistence;
 	
-	@Mock
-	private RoleService roleService;
 	
 	@Mock
 	private ObjectProvider<Settings> settingsProvider;
@@ -48,7 +45,7 @@ class LanguageServiceTest {
 	@BeforeEach
 	void setUp() {
 		languageService = new LanguageService(
-				languagesProvider, languagePersistence, roleService, settingsProvider, reloadableRegistry
+				languagesProvider, languagePersistence, settingsProvider, reloadableRegistry
 		);
 		
 		when(settingsProvider.getObject()).thenReturn(settings);

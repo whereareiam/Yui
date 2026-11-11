@@ -1,6 +1,7 @@
 package me.whereareiam.yui.common.requirement.evaluators;
 
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
+import net.dv8tion.jda.api.interactions.DiscordLocale;
 import me.whereareiam.yui.model.requirement.RequirementContext;
 import me.whereareiam.yui.model.requirement.type.UserRequirement;
 import me.whereareiam.yui.type.requirement.RequirementCondition;
@@ -30,7 +31,7 @@ class UserRequirementEvaluatorTest {
 	void setUp() {
 		evaluator = new UserRequirementEvaluator();
 		when(jdaUser.getIdLong()).thenReturn(12345L);
-		Fluctlight fluctlight = new Fluctlight(jdaUser);
+		Fluctlight fluctlight = Fluctlight.builder().user(jdaUser).primaryLanguage(DiscordLocale.ENGLISH_US).build();
 		context = new RequirementContext("test", fluctlight);
 	}
 
