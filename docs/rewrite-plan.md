@@ -108,7 +108,7 @@ plugin's loader only, `annotations` skipped as present in the parent, the loader
 
 ## Users
 
-- `Fluctlight` becomes an immutable snapshot (`record`). No static services, no `FluctlightStateUpdater`.
+- `Fluctlight` becomes an immutable snapshot. No static services, no `FluctlightStateUpdater`.
 - `FluctlightService` changes a user in one transaction: load, change, save. Defaults (primary language) are set
   on creation.
 - A bounded cache, invalidated when a change is saved. Users unknown to JDA's cache are loaded from Discord,
@@ -122,6 +122,25 @@ plugin's loader only, `annotations` skipped as present in the parent, the loader
   languages, Verification for `verified`, a products plugin for its products), through one core service that
   also logs it. Yui grants them again when a member rejoins. A role removed by hand stays removed.
 - Drop `@Data` on entities. (`additionalLanguages` is `@ManyToMany` since the database step.)
+
+Built on 11 November 2026 (step 4):
+
+- `Fluctlight` is a final class with final fields and a builder (`toBuilder`), not a `record`: the Java conventions
+  keep top-level models as classes and records for small inner carriers. It holds the JDA `User`, the primary
+  language and a set of additional languages; `speaks(language)` asks both.
+- `FluctlightService`: `get(id)` (cache, then the database, then Discord through `retrieveUserById`; a new user is
+  stored with the default language and announced with `FluctlightCreatedEvent`), `changePrimaryLanguage`,
+  `addAdditionalLanguage`, `removeAdditionalLanguage` and `clear`. Each change loads the stored facts again, so a
+  stale snapshot changes nothing it did not ask for, and returns the new snapshot. `getOrCreate`, `exists`, `save`,
+  `FluctlightRegistry`, `FluctlightData`, `FluctlightExtension` and the queued persistence are gone.
+- `FluctlightPersistence` stores `Facts(primaryLanguage, additionalLanguages)` with `load` and `save`, in the
+  caller's transaction.
+- The cache keeps the 10 000 users read last and drops a changed user when the change commits, or when the member
+  leaves.
+- The stored role list is gone (tables, entity, `RoleService`, `ManagedRole`, `roles.yml`), and with it the role
+  sync, ahead of step 5. Language roles follow the languages through `LanguageRoleRule`, a transactional listener
+  that gives or takes the role `languages.yml` assigns; a member who joins gets the roles of the languages they
+  speak. The one core service that grants roles for every fact and logs them comes with step 5.
 
 ## Database
 
@@ -160,6 +179,12 @@ plugin's loader only, `annotations` skipped as present in the parent, the loader
 - A failing after listener is logged and does not undo the change.
 - Plugin lifecycle events: a plugin's commands and listeners are registered after its context started and
   the enable event was not cancelled; unregistered after the disable event was not cancelled.
+
+Built on 11 November 2026 for users (step 4): a before event is named in the present (`FluctlightLanguageChangeEvent`,
+`FluctlightAdditionalLanguageAddEvent`, `...RemoveEvent`, `FluctlightClearEvent`) and an after event in the past
+(`...ChangedEvent`, `...AddedEvent`, `...RemovedEvent`, `FluctlightClearedEvent`, `FluctlightCreatedEvent`). A change
+that changes nothing publishes neither. The role events and `FluctlightUpdatedEvent` are gone. `spring-tx` is part of
+`yui-api`, so plugins can listen with `@TransactionalEventListener`.
 
 ## Permissions
 
@@ -391,7 +416,7 @@ arcadeya/yui                   code; today arcadeya/yuiarcadeya
 arcadeya/yui-deploy            what runs, and how
   overlay/prod/
     workload.yaml              Deployment (replicas 1, strategy Recreate, priority class), PVC yui-data, ExternalSecret
-    config/                    settings.yml, commands.yml, roles.yml, languages.yml, plugins/<id>/...
+    config/                    settings.yml, commands.yml, languages.yml, plugins/<id>/...
     kustomization.yaml         configMapGenerator from config/
   version/prod/                the image digest and the commit of arcadeya/yui it was built from
 
@@ -437,8 +462,9 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
 1. Build: conventions, toolkit plugins, catalog on latest majors, `yui-launcher` rename.
 2. Attache loading into a plugin's own classloader: already in Attache 1.3.0, checked (see Plugin runtime).
 3. Database: Flyway with a clean baseline, H2/PostgreSQL/MariaDB, `validate` (see Database).
-4. Users and events.
-5. Permissions on Conditia; role sync removed (roles follow facts).
+4. Users and events. Built on 11 November 2026 (see Users).
+5. Permissions on Conditia; one core service that grants roles for facts and logs them (the role sync went with
+   step 4).
 6. Configuration on Configura 2.1 with file upgrades.
 7. Plugin runtime with hot reload, on Chassis.
 8. JDA 6 and cloud.
