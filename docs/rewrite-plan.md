@@ -242,7 +242,8 @@ Conditia/
   docs/content/
 ```
 
-- Java 21, so Paper and Velocity plugins can use it. Published as `me.whereareiam.conditia:api`, `:common`, ...
+- Java 21, so Paper and Velocity plugins can use it. Published as `me.whereareiam.conditia:conditia-api`,
+  `conditia-common`, ..., like Chassis's artifacts.
 - Nothing in `api` assumes a Discord member or a Minecraft player; hosts bring their own types.
 - **Typed parts (agreed).** A place names its parts, each typed: `Part<SocialismusPlayer> SENDER`,
   `Part<Member> TARGET`, `Part<Interaction> INTERACTION`; the first is the main participant. A check gets a
@@ -299,6 +300,19 @@ Conditia/
   stops startup. `conditia-adapter-chassis` only opens and closes a scope per extension.
 - No Minecraft family yet: when two hosts on one server software share types, add
   `conditia-platform/platform-paper` or `platform-velocity`, as Chassis has `platform-neoforge`.
+
+**Built on 12 November 2026** (`whereareiam/conditia`, `dev`, 51 tests): the API above, the engine, both adapters,
+`conditia-testing` and the docs. Details settled while building:
+
+- Registering is `ConditionRegistrar` (`register`, `name`, `forget`), shared by `Conditions` (plain names) and
+  `ConditionScope` (prefixed, closeable). `forget` lets Yui reload `audiences.yml`.
+- A type without settings returns `NoSettings.class`; its value names its parts (`above: [actor, target]`).
+- A single value fills a list setting (`permission: chat.global`), through Jackson's single-value-as-array.
+- `Verdict.Failed.key()` gives the reason's text key; `Reason.values()` its placeholder values (no reflection).
+- A failed named list reports its reference (`audience moderator`) with the inner condition's reason.
+- `Place` is closeable, so a host closes the places of a config it reloads.
+- Not yet published: the first dev build is started by hand (Development build), after which Yui's step 5 can
+  depend on it.
 
 ## Configuration
 
