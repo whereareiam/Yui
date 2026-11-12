@@ -311,8 +311,8 @@ Conditia/
 - `Verdict.Failed.key()` gives the reason's text key; `Reason.values()` its placeholder values (no reflection).
 - A failed named list reports its reference (`audience moderator`) with the inner condition's reason.
 - `Place` is closeable, so a host closes the places of a config it reloads.
-- Not yet published: the first dev build is started by hand (Development build), after which Yui's step 5 can
-  depend on it.
+- Published as `dev-e42587f` (12 November 2026); the registry rule `whereareiam-conditia-github` lets its
+  GitHub jobs publish, as Chassis's. Yui's step 5 depends on that version.
 
 ## Configuration
 
