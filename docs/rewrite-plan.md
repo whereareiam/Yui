@@ -191,8 +191,8 @@ that changes nothing publishes neither. The role events and `FluctlightUpdatedEv
 Requirements come from **Conditia**, a new library (`whereareiam/conditia`, folder `Conditia`) that Yui and
 Socialismus share; Socialismus has a near copy of today's Yui system (`RequirementGroup` with six operators).
 
-- One language everywhere: commands, buttons, journey steps, role grants. `requires:` is a list of conditions;
-  a list means all, `any` and `not` combine. Cooldown is not a condition but its own block.
+- One language everywhere: commands, buttons, journey steps, role grants. `requires:` is a list of conditions in
+  Conditia's form (below). Cooldown is not a condition but its own block.
 - **Audiences** are named lists of conditions (`audiences.yml`); `audience: moderator` reuses one. A plugin's
   audiences carry its id as prefix (`verification:verified`).
 - Plugins add condition types in Java (a name, a settings record, what it needs, an async `test`); they and the
@@ -224,49 +224,79 @@ Discord hides it; otherwise Yui checks on use and replies with the command's `de
 
 ### Conditia
 
-Conditia gets its own repository now, set up like Chassis, and is designed against Yui and Socialismus from the
-start: Socialismus already has a near copy, so the second user exists. Yui uses a published version from its
-permissions step on. Yui runs its plugins on Chassis, so `conditia-adapter-chassis` is built with the rest. The API
-is settled in its own round before code is written.
+Conditia has its own repository (`whereareiam/conditia`, folder `Conditia`, MIT like Chassis, because both should
+spread), set up like Chassis and designed against Yui and Socialismus from the start: Socialismus already has a near
+copy, so the second user exists. Yui uses a published version from its permissions step on. Yui runs its plugins on
+Chassis, so `conditia-adapter-chassis` is built with the rest. The API was settled on 12 November 2026.
 
 ```text
 Conditia/
-  conditia-api/                Condition, ConditionType<T, S>, Conditions, ConditionScope, NamedConditions, context/ (ContextKey, Context,
-                               Supply), result/ (Outcome, Reason, Verdict), exception/
-  conditia-common/             engine: registry, evaluation, startup checks; any/not; the named-list type; time, date, chance
-  conditia-adapter-configura/  conditions read through Configura 2.1 polymorphic types
-  conditia-adapter-chassis/    registrations tied to a Chassis extension
+  conditia-api/                ConditionType (Plain, Single, Pair), Conditions, ConditionScope, Place, Part,
+                               Situation, Requirements, Node, SettingsReader, result/ (Outcome, Reason, Verdict),
+                               exception/
+  conditia-common/             the engine: registrations, binding with startup checks, evaluation; any, not,
+                               participant blocks, named lists; time, date, chance
+  conditia-adapter-configura/  reads `requires:` and settings through Configura 2.1 (Jackson)
+  conditia-adapter-chassis/    a scope per Chassis extension
   conditia-testing/
-  examples/host/
   docs/content/
 ```
 
 - Java 21, so Paper and Velocity plugins can use it. Published as `me.whereareiam.conditia:api`, `:common`, ...
-- Nothing in `api` assumes a Discord member or a Minecraft player; hosts bring their own types as context keys.
-- A check is about one subject plus typed context (agreed). A type is `ConditionType<T, S>`: a name, its settings
-  class `S`, the context keys it needs beyond the subject, and `holds(T subject, Context context, S settings)`
-  returning a `CompletionStage<Outcome>`. Each host picks its subject type once (`Member` in Yui,
-  `SocialismusPlayer` in Socialismus). Checking for another participant is a check with them as subject, so
-  Socialismus keeps one `permission` type for sender and recipient. Extras such as the interaction or the chat
-  message are context keys, replacing Yui's `originalContext` and Socialismus's last message kept as player data.
-  Startup fails with the config path when a place does not supply a needed key or a type's subject does not match.
-- A check returns the first failure (agreed). `Conditions.check(requires, subject, context)` runs the list in order,
-  stops at the first failure and returns a sealed `Verdict`: `Passed`, `Failed(condition, path, Optional<Reason>)`
-  or `Broken(condition, path, error)` when a type threw. A failed `any` reports the `any` itself. The kinds stay
-  closed so `any` and `not` mean the same in every host; the variety lives in reasons.
-- `holds` returns an `Outcome`: `pass()`, `fail()` or `fail(reason)`. A reason is a record of its type
-  implementing `Reason` (`OwnsCondition.Missing(List<String> products)`); its name comes from the type and the
-  record (`owns.missing`), its values are the record's components. A type declares its `reasons()`, so startup
-  checks that each has a text in every locale. Without a reason Yui uses the command's `denied` text.
-- Named lists are optional and named by the host (agreed). Conditia offers `NamedConditions`, a registry of named
-  condition lists, and a type that refers to one; a host that wants them registers that type under its own key.
-  Yui calls them audiences (`audiences.yml`, `audience: moderator`, a plugin's prefixed by its scope);
-  Socialismus may call them otherwise or not use them. Conditia itself never says "audience".
+- Nothing in `api` assumes a Discord member or a Minecraft player; hosts bring their own types.
+- **Typed parts (agreed).** A place names its parts, each typed: `Part<SocialismusPlayer> SENDER`,
+  `Part<Member> TARGET`, `Part<Interaction> INTERACTION`; the first is the main participant. A check gets a
+  `Situation` with a value for each part. A condition type is a class implementing one of three shapes, so its
+  code gets plain typed parameters and never looks anything up:
+  - `ConditionType.Plain<S>`: `holds(S settings)`, about no part (`time`, `date`, `chance`);
+  - `ConditionType.Single<T, S>`: `holds(T subject, S settings)` (`permission`, `role`, `channel-type`);
+  - `ConditionType.Pair<A, B, S>`: `holds(A first, B second, S settings)` (`nearby`, `above`).
+
+  A type has a name, its settings class (a record), optionally its `main()` setting and the `reasons()` it gives.
+  Several participants are just several parts: one `permission` type serves sender and recipient.
+  This replaces Yui's `originalContext` and Socialismus's last message kept as player data.
+- **Which part a condition is about.** A `Single` takes the main part when its type fits, else the only part of
+  its type; a `Pair` takes the first fitting part and the next fitting one. Inside a participant block the block's
+  part comes first. `of: recipient` (or `of: [sender, recipient]`) names them where that is ambiguous. Binding
+  fails with the config path when no part fits, `of` names an unknown part, a part's type does not match or a
+  part's name is also a type's name.
+- **Config, Form C (agreed).** A list means all; `any` and `not` combine; a bare value fills the type's one
+  setting (or its `main()`); a part's name opens a block whose conditions are about that part:
+
+  ```yaml
+  requires:
+    - permission: chat.global
+    - recipient:
+        - permission: chat.receive
+        - not: { permission: chat.deaf }
+    - nearby: 50
+  ```
+
+  ```yaml
+  # Yui, /clear
+  requires:
+    - audience: moderator
+    - target:
+        - not: { audience: moderator }
+    - above: [actor, target]
+  ```
+- A check returns the first failure (agreed). `place.check(situation)` runs the list in order, stops at the first
+  failure and completes with a sealed `Verdict`: `Passed`, `Failed(path, condition, Optional<Reason>)` or
+  `Broken(path, condition, error)` when a type threw. A failed `any` reports the `any` itself. The kinds stay closed
+  so `any` and `not` mean the same in every host; the variety lives in reasons.
+- `holds` completes with an `Outcome`: `pass()`, `fail()` or `fail(reason)`. A reason is a record of its type
+  implementing `Reason` (`OwnsCondition.Missing(List<String> products)`); its key comes from the type and the
+  record (`owns.missing`) and it gives its placeholder values. A type declares its `reasons()`, so a host checks at
+  startup that each has a text in every locale. Without a reason Yui uses the command's `denied` text.
+- Named lists are optional and named by the host (agreed). The host gives the word that refers to one
+  (`audience` in Yui); Conditia itself never says "audience". A list refers to the place's parts like any other
+  conditions, so `target: [audience: moderator]` asks it of the target.
 - Registrations live in a scope per owner (agreed). The host opens `conditions.scope("<owner id>")` when a plugin
   or module loads; types and named lists registered through it carry the owner's prefix (`verification:verified`)
-  and all go when the host closes the scope on unload. A plugin cannot forget one. After a scope closes, every place
-  is checked again: a condition that refers to a removed type or list denies everyone and is logged with its path
-  until the owner loads again. `conditia-adapter-chassis` only opens and closes a scope per extension.
+  and all go when the host closes the scope on unload. A plugin cannot forget one. After any change every place is
+  bound again: a condition that refers to a removed type or list denies everyone and is logged with its path until
+  the owner loads again. A host creates its places after its plugins have started, so a place that cannot be bound
+  stops startup. `conditia-adapter-chassis` only opens and closes a scope per extension.
 - No Minecraft family yet: when two hosts on one server software share types, add
   `conditia-platform/platform-paper` or `platform-velocity`, as Chassis has `platform-neoforge`.
 
