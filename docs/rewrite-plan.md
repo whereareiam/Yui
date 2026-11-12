@@ -335,7 +335,8 @@ app/
   audiences.yml         named condition lists
   audit.yml             what is kept, and where each category is posted
   commands.yml          which commands are on and who may use them
-  interaction/          conversations.yml, appearance.yml (placement still open)
+  conversations.yml     where temporary channels go, and how each purpose talks to members
+  appearance/           palette.yml, embeds.yml; later emojis.yml, components.yml, one file each
   messages/
     <locale>/           words.yml (was vocabulary.yml), commands.yml, general.yml, log.yml, ...
   plugins/<id>/         the same shape: settings.yml, audiences.yml, commands.yml, messages/<locale>/
@@ -344,6 +345,9 @@ app/
 - Yui speaks a language when `messages/<locale>/` exists; there is no list of them. The code says "messages"
   as well (today `localization`), so one thing has one name.
 - `languages.yml` is not about translations: members may speak a language Yui has no texts for.
+- Yui serves one guild, forever (owner, 12 November 2026), so the folder stays flat: no `guild/` or
+  `guilds/<name>/`, and no guild key on services, facts or events. `interaction/` is gone as well; a folder
+  exists only where its files share a subject (`appearance/`, `messages/`, `plugins/`).
 - `roles.yml` and `guild.yml` go away. A role or channel id lives with its only user and moves up only when a
   second appears (Verification keeps `rules` and the welcome channels per locale in its settings).
 
@@ -426,7 +430,7 @@ pool:
 
 `pool` replaces `hikari` and takes Yui's `Duration` instead of milliseconds; the upgrade maps the old flat keys.
 
-Still open, one file at a time: `interaction/conversations.yml`, `interaction/appearance.yml` (palette and embed
+Still open, one file at a time: `conversations.yml`, `appearance/` (palette and embed
 styles per kind), `languages.yml` in detail, `audiences.yml` in detail, the message files, Verification's files.
 
 ## Build
