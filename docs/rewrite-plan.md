@@ -334,10 +334,11 @@ app/
   languages.yml         the languages members declare: name, emoji, role
   audiences.yml         named condition lists
   audit.yml             what is kept, and where each category is posted
-  interaction/          commands.yml, conversations.yml, appearance.yml
+  commands.yml          which commands are on and who may use them
+  interaction/          conversations.yml, appearance.yml (placement still open)
   messages/
     <locale>/           words.yml (was vocabulary.yml), commands.yml, general.yml, log.yml, ...
-  plugins/<id>/         the same shape: settings.yml, audiences.yml, interaction/, messages/<locale>/
+  plugins/<id>/         the same shape: settings.yml, audiences.yml, commands.yml, messages/<locale>/
 ```
 
 - Yui speaks a language when `messages/<locale>/` exists; there is no list of them. The code says "messages"
@@ -360,7 +361,7 @@ updater:
   warn: { updates, localBuilds, devBuilds }   # posted as audit entries of category system
 ```
 
-`interaction/commands.yml`, in Identica's shape; descriptions, usage, arguments and `denied` are texts in
+`commands.yml` (top level, owner 12 November 2026), in Identica's shape; descriptions, usage, arguments and `denied` are texts in
 `messages/<locale>/commands.yml`, because Discord gets them per locale:
 
 ```yaml
