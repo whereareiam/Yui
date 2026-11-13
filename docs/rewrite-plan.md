@@ -77,7 +77,8 @@ selection file and leak checks. Yui builds on it as it is:
 - Descriptor `yui-plugin.yml` in the jar (Chassis's fields plus Yui's own: `updater`); `plugin.json` goes.
 - Folder `plugins/`, data `plugins/<id>/`, selection file `plugins.yml`; texts in `plugins/<id>/messages/<locale>/`.
 - The export layer is Yui's API and what it hands plugins: `me.whereareiam.yui.api`, `me.whereareiam.chassis`,
-  `me.whereareiam.conditia`, `me.whereareiam.semantica`, `org.springframework`, `net.dv8tion.jda`.
+  `me.whereareiam.conditia`, `me.whereareiam.semantica`, `org.springframework`, `net.dv8tion.jda`, and for a
+  plugin's tables and models `jakarta.persistence`, `jakarta.annotation` and Jackson's annotations.
 - `/plugin` follows Chassis's states and actions: enabled, disabled, waiting, failed; enable, disable, reload,
   rescan. Yui's own loader (`yui-adapter-plugin`'s manager, scanner, class loaders, bean bridge) and its plugin
   events go.
@@ -720,6 +721,18 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
    Built on 13 November 2026: JDA 6.7.0 with `cloud-jda6` 1.0.0-beta.4; components come from JDA 6's packages and
    rows (`addComponents(ActionRow.of(...))`); `spring-boot-webflux` and JDA's voice libraries (Opus, Tink) are gone.
 9. Verification into `plugins/`, `examples/plugin`.
+   Built on 13 November 2026: `plugins/plugin-verification` (with `verification-api`) replaces
+   `whereareiam/YuiVerification`, and `examples/plugin` the `YuiPlugin` template; `module-plugin` builds a plugin's
+   jar with its own -api and `yui-plugin.yml`. Verification runs the welcome, languages and end steps in a
+   conversation that stays open until the journey ends, keeps `verified` in `verification_members` with the role
+   following it through `FactRoles` (a rejoining member gets it back), registers `verified` and
+   `verification:verified`, posts `verification.started`, `.completed`, `.failed`, `.abandoned` and `.timeout`, and
+   kicks after the deadline when `action: kick`. What the plugin runtime lacked came with it: `ConfigReader` and
+   `PluginConfigProvider` (a plugin's files, reread on `/reload`), `AudienceDefaults`, `@Tables` with
+   `PluginDatabase` (Flyway baselines a plugin's history below its V1, since Yui's tables are there first), Yui's
+   events reaching plugins' listeners (Spring hands events up, never down), `ConversationOpenedEvent` and
+   `ConversationClosedEvent`, and camel case for every enum of a config file. `yui-api` provides Spring Data JPA to
+   plugins. Not tried yet: a plugin jar's entities in its own class loader, against Discord.
 10. Docs and the rest of AGENTS.md; publishing the distribution. The repository setup after Identica (release
     drafting, labels, templates, Dependabot, workflows) came with step 1.
 11. `arcadeya/yui` (today YuiArcadeya): a rewrite to the same standards, not only a move. Rename, split into
