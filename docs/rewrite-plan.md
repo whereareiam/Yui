@@ -430,7 +430,19 @@ pool:
 
 `pool` replaces `hikari` and takes Yui's `Duration` instead of milliseconds; the upgrade maps the old flat keys.
 
-Still open, one file at a time: `conversations.yml`, `style/` (palette and embed
+Conversations, decided 13 November 2026 (the file's wording is still open):
+
+- A conversation is Yui talking privately with members for a purpose (`"verification"`). It happens in a DM or
+  a **private thread**; temporary channels go, with their categories, the 50-per-category juggling and the purge
+  on start. Discord archives an idle thread itself and keeps it readable; a server holds 1000 active threads.
+- Core says where threads are made; each owner describes its purposes in its own `conversations.yml` (variant 2):
+  `via` (tried in order), `staff`, `mention`, `close` (idle, after, warn), `limit` (open, cooldown),
+  `transcript`. Members opening a purpose themselves (command, panel, `requires`) can be added later as an
+  `open:` block without reshaping the file.
+- A thread has no permissions of its own: staff see private threads through Manage Threads on the parent
+  channel, or Yui adds them by name.
+
+Still open, one file at a time: `conversations.yml`'s wording, `style/` (palette and embed
 styles per kind), `languages.yml` in detail, `audiences.yml` in detail, the message files, Verification's files.
 
 ## Build
@@ -502,6 +514,9 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
 - Cutover: stop the Compose bot, copy its rows into a freshly migrated H2 database, start the cluster
   deployment. Two bots on one token push each other off the gateway, so never both at once.
 - Way back: scale the deployment to 0, start the Compose bot again.
+- Before the cutover, **remind the owner** that conversations move from temporary channels to private threads:
+  pick the parent channel (the one unverified members already see), give staff Manage Threads on it, and
+  delete the old temporary-channel categories once nothing is open in them.
 - Afterwards, at the owner's word: retire the Compose setup and its backup timer, and delete the old
   `yui` namespace (`arcadeya-cluster/unmanaged/yui`). The new deployment carries a priority class, so it does
   not hold back `pod-priority.yaml`.
