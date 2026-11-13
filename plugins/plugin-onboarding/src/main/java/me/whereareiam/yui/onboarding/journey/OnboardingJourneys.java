@@ -18,6 +18,9 @@ import me.whereareiam.yui.api.model.journey.session.JourneySession;
 import me.whereareiam.yui.api.model.journey.session.JourneySessionRequest;
 import me.whereareiam.yui.api.type.journey.JourneyStatus;
 import me.whereareiam.yui.onboarding.model.OnboardingSettings;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.event.EventListener;
@@ -53,6 +56,26 @@ public class OnboardingJourneys implements JourneyConfigurationDefinition {
 
 	public boolean isRunning(long member) {
 		return session(member).isPresent();
+	}
+
+	/**
+	 * Puts a step's content on the member's onboarding message, sending it first when no step has.
+	 *
+	 * @return false when the member is not in onboarding
+	 */
+	public CompletableFuture<Boolean> show(long member, MessageEmbed content, List<ActionRow> components) {
+		OnboardingState state = session(member).map(JourneySession::getState).orElse(null);
+		if (state == null) return CompletableFuture.completedFuture(false);
+
+		Message message = state.getMessage();
+		CompletableFuture<Message> shown = message == null
+				? state.getConversation().getChannel().sendMessageEmbeds(content).setComponents(components).submit()
+				: message.editMessageEmbeds(content).setComponents(components).submit();
+
+		return shown.thenApply(sent -> {
+			state.setMessage(sent);
+			return true;
+		});
 	}
 
 	/**

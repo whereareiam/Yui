@@ -735,6 +735,13 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
    plugins. Not tried yet: a plugin jar's entities in its own class loader, against Discord.
    Renamed on 13 November 2026 (owner): the plugin is `onboarding`, what a member has at its end stays `verified`
    (`verified: true`, `onboarding:verified`, `/verify`, `verified-role`, `MemberVerifiedEvent`).
+   `plugins/plugin-interests` (14 November 2026, owner's rounds): members pick the topics they are here for, as a
+   step of onboarding after the languages and later with `/topics` (default `audience: onboarding:verified`), and
+   hold each topic's role. Not Discord's own Onboarding: the owner wants it in Yui's conversation.
+   `plugins/interests/topics.yml` maps a topic to `{ role }`; its name and description are texts of
+   `messages/<locale>/topics.yml`. Picks live in `interests_picks`, and roles follow them through `FactRoles`. Every
+   step edits the one onboarding message through `OnboardingService.show`; a file whose top level is a map is read
+   with `ConfigReader.readMap`.
 10. Docs and the rest of AGENTS.md; publishing the distribution. The repository setup after Identica (release
     drafting, labels, templates, Dependabot, workflows) came with step 1.
 11. `arcadeya/yui` (today YuiArcadeya): a rewrite to the same standards, not only a move. Rename, split into

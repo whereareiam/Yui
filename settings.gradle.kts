@@ -36,5 +36,6 @@ include(":yui-launcher")
 
 include(":plugins:plugin-onboarding")
 include(":plugins:plugin-onboarding:onboarding-api")
+include(":plugins:plugin-interests")
 
 include(":examples:plugin")

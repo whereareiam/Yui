@@ -1,0 +1,7 @@
+id: interests
+version: ${version}
+main: me.whereareiam.yui.interests.Interests
+dependencies:
+  - id: onboarding
+updater:
+  release: { provider: GITHUB, id: whereareiam/Yui }

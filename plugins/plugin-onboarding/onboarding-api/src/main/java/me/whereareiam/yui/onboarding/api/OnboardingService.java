@@ -1,8 +1,11 @@
 package me.whereareiam.yui.onboarding.api;
 
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -30,6 +33,21 @@ public interface OnboardingService {
 	 * @return what happened
 	 */
 	@NotNull CompletableFuture<Start> start(long member, @Nullable Long initiator);
+
+	/**
+	 * Shows a step's content on the member's onboarding message, the one message every step of the journey edits,
+	 * whichever plugin the step comes from.
+	 *
+	 * <pre>{@code
+	 * onboarding.show(member, embed, List.of(ActionRow.of(menu), ActionRow.of(next)));
+	 * }</pre>
+	 *
+	 * @param member     the member's user id
+	 * @param content    what the step says
+	 * @param components its menus and buttons, or none
+	 * @return false when the member is not in onboarding
+	 */
+	@NotNull CompletableFuture<Boolean> show(long member, @NotNull MessageEmbed content, @NotNull List<ActionRow> components);
 
 	/**
 	 * What {@link #start} did.

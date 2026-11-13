@@ -6,13 +6,16 @@ import me.whereareiam.yui.api.model.config.settings.Settings;
 import me.whereareiam.yui.onboarding.api.OnboardingService;
 import me.whereareiam.yui.onboarding.journey.OnboardingJourneys;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -42,6 +45,11 @@ public class DefaultOnboardingService implements OnboardingService {
 		return guild.retrieveMemberById(member).submit()
 				.thenCompose(found -> start(found, initiator))
 				.exceptionally(error -> Start.REFUSED);
+	}
+
+	@Override
+	public @NotNull CompletableFuture<Boolean> show(long member, @NotNull MessageEmbed content, @NotNull List<ActionRow> components) {
+		return journeys.show(member, content, components);
 	}
 
 	/**
