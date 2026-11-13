@@ -134,6 +134,42 @@ class ConfigUpgradeTest {
 	}
 
 	@Test
+	void run_TurnsRequirementsIntoRequiresWithoutOpeningACommand() throws IOException {
+		Files.writeString(folder.resolve("commands.yml"), """
+				commands:
+				  clear:
+				    cooldown: { enabled: true, cooldown: 10, group: "" }
+				    requirements:
+				      operator: AND
+				      groups:
+				        roles: { roles: ["1", "2"], roleMatchBy: ID }
+				        place: { scopes: [GUILD], expected: true }
+				        kinds: { types: [TEXT, GUILD_PUBLIC_THREAD] }
+				  plugin:
+				    requirements:
+				      operator: AND
+				      groups:
+				        roles: { roles: [EXAMPLE], roleMatchBy: NAME }
+				  ban:
+				    requirements:
+				      operator: OR
+				      groups:
+				        a: { userIds: [5] }
+				        b: { roles: ["3"], condition: CONTAINS }
+				""");
+
+		new ConfigUpgrade(configura, folder).run();
+		JsonNode commands = configura.readNode(folder.resolve("commands.yml")).path("commands");
+
+		assertEquals("[{\"role\":[\"1\",\"2\"]},{\"scope\":\"guild\"},{\"channel-type\":[\"text\",\"thread\"]}]",
+				commands.path("clear").path("requires").toString());
+		assertEquals("10s", commands.path("clear").path("cooldown").path("duration").asText());
+		assertFalse(commands.path("clear").has("requirements"));
+		assertEquals("[{\"audience\":\"operator\"}]", commands.path("plugin").path("requires").toString());
+		assertEquals("[{\"any\":[{\"user\":[\"5\"]},{\"any\":[{\"role\":\"3\"}]}]}]", commands.path("ban").path("requires").toString());
+	}
+
+	@Test
 	void run_KeepsOnlyTheFileOfAnH2Database() throws IOException {
 		writeOldSettings("H2");
 

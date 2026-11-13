@@ -24,9 +24,11 @@ dependencies {
 
     providedApi(libs.jda)
     providedApi(libs.configura)
-    providedApi(libs.configura.polymorphic)
     providedApi(libs.strata)
     providedApi(libs.strata.configura)
+    providedApi(libs.conditia.api)
+    providedApi(libs.conditia.common)
+    providedApi(libs.conditia.configura)
     providedApi(libs.semantica.api)
     providedApi(libs.semantica.common)
     providedApi(libs.semantica.icu)

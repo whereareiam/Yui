@@ -8,14 +8,9 @@ import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguage
 import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguageRemovedEvent;
 import me.whereareiam.yui.event.fluctlight.language.FluctlightLanguageChangedEvent;
 import me.whereareiam.yui.model.config.languages.Language;
-import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
-import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.UserSnowflake;
+import me.whereareiam.yui.role.FactRoles;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -34,9 +29,8 @@ import java.util.Set;
 @Component
 @RequiredArgsConstructor
 public class LanguageRoleRule {
-	private final JDA jda;
+	private final FactRoles roles;
 	private final LanguagesProvider languagesProvider;
-	private final ObjectProvider<Settings> settings;
 
 	@TransactionalEventListener
 	public void onLanguageChanged(FluctlightLanguageChangedEvent event) {
@@ -79,35 +73,13 @@ public class LanguageRoleRule {
 	 * Makes the member hold the role of each given language exactly when they speak it.
 	 */
 	void apply(Fluctlight fluctlight, Collection<DiscordLocale> languages) {
-		Optional<Guild> guild = guild();
-		if (guild.isEmpty()) return;
-
 		for (DiscordLocale language : languages)
-			role(guild.get(), language).ifPresent(role -> assign(guild.get(), fluctlight, role, fluctlight.speaks(language)));
+			role(language).ifPresent(role -> roles.hold(fluctlight.getId(), role, fluctlight.speaks(language), "language " + language.getLocale()));
 	}
 
-	private void assign(Guild guild, Fluctlight fluctlight, Role role, boolean speaks) {
-		UserSnowflake member = UserSnowflake.fromId(fluctlight.getId());
-		var action = speaks ? guild.addRoleToMember(member, role) : guild.removeRoleFromMember(member, role);
-
-		action.reason("Languages of the member changed").queue(
-				_ -> log.info("{} role {} for user {}", speaks ? "Gave" : "Took", role.getName(), fluctlight.getId()),
-				error -> log.warn("Could not change role {} of user {}: {}", role.getName(), fluctlight.getId(), error.getMessage())
-		);
-	}
-
-	private Optional<Role> role(Guild guild, DiscordLocale language) {
+	private Optional<String> role(DiscordLocale language) {
 		return languagesProvider.get().get(language)
 				.map(Language::getRole)
-				.filter(role -> !role.isBlank())
-				.map(guild::getRoleById);
-	}
-
-	private Optional<Guild> guild() {
-		Settings current = settings.getIfAvailable();
-		if (current == null || current.getGuild() == null)
-			return Optional.empty();
-
-		return Optional.ofNullable(jda.getGuildById(current.getGuild()));
+				.filter(role -> !role.isBlank());
 	}
 }

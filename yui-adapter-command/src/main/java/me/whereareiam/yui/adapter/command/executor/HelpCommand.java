@@ -105,6 +105,7 @@ public class HelpCommand {
 		// Get commands for this category, showing only primary command names (first alias)
 		for (Map.Entry<String, CommandDefinition> entry : commandService.getDefinitions().entrySet().stream()
 				.filter(e -> e.getValue().getCategory() == category)
+				.filter(e -> !e.getValue().isHide())
 				.sorted(Comparator.comparing(e -> {
 					List<String> aliases = e.getValue().getAliases();
 					return (aliases == null || aliases.isEmpty()) ? "" : aliases.getFirst();

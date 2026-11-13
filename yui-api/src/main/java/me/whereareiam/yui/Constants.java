@@ -17,6 +17,7 @@ public final class Constants {
 		public static final String MEMBER_JOIN = "member.join";
 		public static final String MEMBER_LEAVE = "member.leave";
 		public static final String MEMBER_KICK = "member.kick";
+		public static final String MEMBER_ROLE = "member.role";
 		public static final String UPDATE_AVAILABLE = "update.available";
 		public static final String UPDATE_LOCAL_BUILD = "update.local-build";
 	}

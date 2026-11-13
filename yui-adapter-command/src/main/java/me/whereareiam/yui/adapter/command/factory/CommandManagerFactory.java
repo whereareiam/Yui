@@ -3,10 +3,11 @@ package me.whereareiam.yui.adapter.command.factory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.adapter.command.YuiCommandManager;
+import me.whereareiam.yui.adapter.command.cooldown.CommandCooldownPostprocessor;
 import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
 import me.whereareiam.yui.adapter.command.mapper.FluctlightInteractionMapper;
 import me.whereareiam.yui.adapter.command.parser.FluctlightParser;
-import me.whereareiam.yui.adapter.command.requirements.CommandRequirementsPostprocessor;
+import me.whereareiam.yui.adapter.command.permission.CommandPermissionPostprocessor;
 import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import net.dv8tion.jda.api.JDA;
@@ -30,7 +31,8 @@ import java.util.concurrent.ScheduledExecutorService;
 @Component
 @RequiredArgsConstructor
 public class CommandManagerFactory implements FactoryBean<JDA6CommandManager<Interaction>> {
-	private final CommandRequirementsPostprocessor requirementsPostprocessor;
+	private final CommandPermissionPostprocessor permissionPostprocessor;
+	private final CommandCooldownPostprocessor cooldownPostprocessor;
 	private final FluctlightInteractionMapper fluctlightInteractionMapper;
 	private final ScheduledExecutorService scheduledExecutorService;
 	private final CommandDefinitionRegistry definitionRegistry;
@@ -61,7 +63,8 @@ public class CommandManagerFactory implements FactoryBean<JDA6CommandManager<Int
 			commandManager.parserRegistry().registerParser(ParserDescriptor.of(fluctlightParser, Fluctlight.class));
 
 			// Register global command postprocessors (runs after parsing, can access command meta)
-			commandManager.registerCommandPostProcessor(requirementsPostprocessor);
+			commandManager.registerCommandPostProcessor(permissionPostprocessor);
+			commandManager.registerCommandPostProcessor(cooldownPostprocessor);
 
 			// Wire the command listener into JDA
 			log.debug("Registering command listener with JDA");

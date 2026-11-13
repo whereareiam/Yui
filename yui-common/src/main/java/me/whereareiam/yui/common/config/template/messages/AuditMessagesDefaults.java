@@ -31,6 +31,11 @@ public class AuditMessagesDefaults implements MessageDefaults<AuditMessages> {
 		join.setFields(joinFields);
 		user.setJoin(join);
 
+		AuditMessages.User.RoleChange role = new AuditMessages.User.RoleChange();
+		role.setGiven("{mention} got {role} ({fact})");
+		role.setTaken("{mention} lost {role} ({fact})");
+		user.setRole(role);
+
 		AuditMessages.User.Leave leave = new AuditMessages.User.Leave();
 		leave.setTitle("👋 User Left");
 		leave.setDescription(List.of("{mention} left the server"));

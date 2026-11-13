@@ -5,6 +5,7 @@ import me.whereareiam.configura.exception.ConfigException;
 import me.whereareiam.yui.common.config.template.SettingsTemplate;
 import me.whereareiam.yui.common.config.template.style.EmbedsTemplate;
 import me.whereareiam.yui.common.config.template.style.PaletteTemplate;
+import me.whereareiam.yui.model.command.CommandDefinition;
 import me.whereareiam.yui.model.config.Commands;
 import me.whereareiam.yui.model.config.audit.AuditTrail;
 import me.whereareiam.yui.model.config.languages.Languages;
@@ -12,9 +13,6 @@ import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.config.style.Palette;
 import me.whereareiam.yui.model.config.style.StyleColor;
 import me.whereareiam.yui.model.config.style.embed.EmbedStyle;
-import me.whereareiam.yui.model.requirement.RequirementEntry;
-import me.whereareiam.yui.model.requirement.type.RoleRequirement;
-import me.whereareiam.yui.model.requirement.type.ScopeRequirement;
 import me.whereareiam.yui.type.ConfigurationType;
 import me.whereareiam.yui.type.audit.AuditCategory;
 import me.whereareiam.yui.type.update.UpdateCheck;
@@ -75,25 +73,24 @@ class ConfiguraConfigurationTest {
 	}
 
 	@Test
-	void requirementEntries_AreToldApartByTheirFields() throws IOException {
+	void commands_ReadTheirRequiresInConditiasForm() throws IOException {
 		write("commands.yml", """
 				commands:
 				  clear:
 				    enabled: true
-				    requirements:
-				      operator: AND
-				      groups:
-				        moderators:
-				          roles: ["1", "2"]
-				        place:
-				          scopes: [GUILD]
+				    requires:
+				      - audience: moderator
+				      - channel-type: [text, thread]
+				    cooldown:
+				      enabled: true
+				      duration: 10s
 				""");
 
 		Commands commands = configura.merge(file("commands"), new Commands());
-		Map<String, RequirementEntry> groups = commands.getCommands().get("clear").getRequirements().getGroups();
+		CommandDefinition clear = commands.getCommands().get("clear");
 
-		assertEquals(List.of("1", "2"), assertInstanceOf(RoleRequirement.class, groups.get("moderators")).getRoles());
-		assertInstanceOf(ScopeRequirement.class, groups.get("place"));
+		assertEquals(2, clear.getRequires().getConditions().items().size());
+		assertEquals(10, clear.getCooldown().getDuration().getSeconds());
 	}
 
 	@Test

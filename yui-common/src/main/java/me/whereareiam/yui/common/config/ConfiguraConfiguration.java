@@ -1,19 +1,13 @@
 package me.whereareiam.yui.common.config;
 
+import me.whereareiam.conditia.adapter.configura.ConditiaFeature;
 import me.whereareiam.configura.Config;
 import me.whereareiam.configura.Configura;
-import me.whereareiam.configura.feature.polymorphic.PolymorphicFeature;
 import me.whereareiam.configura.type.Format;
 import me.whereareiam.strata.adapter.configura.StrataFeature;
 import me.whereareiam.yui.common.config.jackson.ConfigModule;
 import me.whereareiam.yui.common.config.upgrade.ConfigUpgrade;
 import me.whereareiam.yui.config.ConfigurationTypeResolver;
-import me.whereareiam.yui.model.requirement.RequirementEntry;
-import me.whereareiam.yui.model.requirement.type.ChannelTypeRequirement;
-import me.whereareiam.yui.model.requirement.type.GuildRequirement;
-import me.whereareiam.yui.model.requirement.type.RoleRequirement;
-import me.whereareiam.yui.model.requirement.type.ScopeRequirement;
-import me.whereareiam.yui.model.requirement.type.UserRequirement;
 import me.whereareiam.yui.type.ConfigurationType;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -24,8 +18,8 @@ import java.util.List;
 
 /**
  * The Configura instance Yui reads its configuration files with: YAML or JSON as the installation chooses, Yui's
- * own value types, the requirement entries told apart by the fields they hold, and the {@code _version} Strata
- * keeps in a file left out of the models.
+ * own value types, Conditia's {@code requires:} lists, and the {@code _version} Strata keeps in a file left out of
+ * the models.
  */
 @Configuration
 public class ConfiguraConfiguration {
@@ -60,21 +54,8 @@ public class ConfiguraConfiguration {
 		return Configura.builder()
 				.format(type == ConfigurationType.JSON ? Format.JSON : Format.YAML)
 				.module(new ConfigModule())
-				.feature(requirements())
 				.feature(new StrataFeature())
+				.feature(new ConditiaFeature())
 				.build();
-	}
-
-	private static PolymorphicFeature requirements() {
-		PolymorphicFeature feature = PolymorphicFeature.defaults();
-		feature.register(RequirementEntry.class)
-				.inferByField("roles", RoleRequirement.class)
-				.inferByField("userIds", UserRequirement.class)
-				.inferByField("guildIds", GuildRequirement.class)
-				.inferByField("types", ChannelTypeRequirement.class)
-				.inferByField("scopes", ScopeRequirement.class)
-				.build();
-
-		return feature;
 	}
 }

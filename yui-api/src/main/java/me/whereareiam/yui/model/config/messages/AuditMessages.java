@@ -17,6 +17,7 @@ public class AuditMessages {
 		private Join join;
 		private Leave leave;
 		private Kick kick;
+		private RoleChange role;
 
 		@Getter
 		@Setter
@@ -61,6 +62,16 @@ public class AuditMessages {
 				private String reason;
 				private String moderator;
 			}
+		}
+
+		/**
+		 * A role Yui gave or took for a fact about the member; {@code {mention}}, {@code {role}} and {@code {fact}}.
+		 */
+		@Getter
+		@Setter
+		public static class RoleChange {
+			private String given;
+			private String taken;
 		}
 	}
 

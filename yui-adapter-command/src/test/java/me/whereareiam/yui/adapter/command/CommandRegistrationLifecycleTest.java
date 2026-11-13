@@ -1,5 +1,6 @@
 package me.whereareiam.yui.adapter.command;
 
+import me.whereareiam.conditia.model.Requirements;
 import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
 import me.whereareiam.yui.adapter.command.definition.DefinitionProviderRegistry;
 import me.whereareiam.yui.adapter.command.parsing.definition.CommandDefinitionParser;
@@ -8,6 +9,7 @@ import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.command.DefinitionProvider;
 import me.whereareiam.yui.model.command.CommandDefinition;
+import me.whereareiam.yui.model.type.Duration;
 import me.whereareiam.yui.type.CommandCategory;
 import me.whereareiam.yui.type.Source;
 import org.incendo.cloud.CommandManager;
@@ -160,8 +162,9 @@ class CommandRegistrationLifecycleTest {
 				"{alias}",
 				Map.of(),
 				CommandCategory.NONE,
-				new me.whereareiam.yui.model.command.CommandCooldown(false, 0, ""),
-				null
+				new me.whereareiam.yui.model.command.CommandCooldown(false, Duration.ofSeconds(0), null),
+				Requirements.none(),
+				false
 		);
 	}
 

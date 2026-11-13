@@ -3,9 +3,7 @@ package me.whereareiam.yui.model.command;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import me.whereareiam.configura.annotation.merge.Merge;
-import me.whereareiam.configura.type.merge.WhenAbsent;
-import me.whereareiam.yui.model.requirement.Requirements;
+import me.whereareiam.conditia.model.Requirements;
 import me.whereareiam.yui.type.CommandCategory;
 
 import java.util.List;
@@ -26,6 +24,13 @@ public class CommandDefinition {
 	private CommandCategory category;
 	private CommandCooldown cooldown;
 
-	@Merge(absent = WhenAbsent.LEAVE_ABSENT)
-	private Requirements requirements;
+	/**
+	 * Who may use the command, in Conditia's form; an absent list lets everyone.
+	 */
+	private Requirements requires = Requirements.none();
+
+	/**
+	 * Whether {@code /help} leaves the command out.
+	 */
+	private boolean hide;
 }

@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdKeySerializers;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
+import me.whereareiam.conditia.model.Requirements;
+import me.whereareiam.yui.model.config.audience.Audiences;
 import me.whereareiam.yui.model.config.audit.AuditRoute;
 import me.whereareiam.yui.model.config.languages.Language;
 import me.whereareiam.yui.model.config.languages.Languages;
@@ -58,6 +60,15 @@ public final class ConfigModule extends SimpleModule {
 				.writeKey(DiscordLocale::getLocale)
 				.create(Languages::new)
 				.entries(Languages::all)
+				.build()
+				.register(this);
+		MapDocumentBinding.<Audiences, String, Requirements>builder()
+				.document(Audiences.class)
+				.value(Requirements.class)
+				.readKey(ConfigModule::audienceName)
+				.writeKey(Function.identity())
+				.create(Audiences::new)
+				.entries(Audiences::all)
 				.build()
 				.register(this);
 		MapDocumentBinding.<Palette, String, Color>builder()
@@ -137,6 +148,13 @@ public final class ConfigModule extends SimpleModule {
 			throw new IllegalArgumentException("'" + tag + "' is no Discord locale, such as en-US or de");
 
 		return locale;
+	}
+
+	private static String audienceName(String name) {
+		if (!StyleColor.NAME.matcher(name).matches())
+			throw new IllegalArgumentException("'" + name + "' is no audience name; write lowercase letters, digits and -");
+
+		return name;
 	}
 
 	private static String paletteName(String name) {

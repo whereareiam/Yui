@@ -1,11 +1,13 @@
 package me.whereareiam.yui.adapter.command.registration;
 
+import me.whereareiam.conditia.model.Requirements;
 import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
 import me.whereareiam.yui.adapter.command.parsing.definition.CommandDefinitionParser;
 import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.model.command.CommandCooldown;
 import me.whereareiam.yui.model.command.CommandDefinition;
+import me.whereareiam.yui.model.type.Duration;
 import me.whereareiam.yui.type.CommandCategory;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.component.CommandComponent;
@@ -90,8 +92,9 @@ class AnnotationCommandRegistrarIntegrationTest {
 				"",
 				Map.of(),
 				CommandCategory.NONE,
-				new CommandCooldown(false, 0, ""),
-				null
+				new CommandCooldown(false, Duration.ofSeconds(0), null),
+				Requirements.none(),
+				false
 		);
 
 		Map<String, CommandDefinition> defs = new HashMap<>();
@@ -122,8 +125,9 @@ class AnnotationCommandRegistrarIntegrationTest {
 				"{command} reload",
 				Map.of(),
 				CommandCategory.NONE,
-				new CommandCooldown(false, 0, ""),
-				null
+				new CommandCooldown(false, Duration.ofSeconds(0), null),
+				Requirements.none(),
+				false
 		);
 
 		Map<String, CommandDefinition> defs = Map.of("reload-def", enabled);

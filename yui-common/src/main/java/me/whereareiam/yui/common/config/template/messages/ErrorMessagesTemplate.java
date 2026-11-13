@@ -55,35 +55,12 @@ public class ErrorMessagesTemplate implements DefaultsProvider<ErrorMessages> {
 		RequirementErrorMessages requirement = new RequirementErrorMessages();
 		requirement.setTitle("Seems like you don't have the rights");
 		requirement.setDescription("Unfortunately, you do not meet the requirements to use this command.");
-		requirement.setUnknown("You do not meet the requirements for this command. We could not determine the exact reason, if you think this is an error, please contact the server administrator.");
-
-		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields requirementFields = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields();
-		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.RoleField role = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.RoleField();
-		role.setName("**Required Role(s):**");
-		role.setValue("{roles}");
-		requirementFields.setRole(role);
-
-		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.ScopeField scope = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.ScopeField();
-		scope.setName("**Required Scope(s):**");
-		scope.setValue("{scopes}");
-		requirementFields.setScope(scope);
-
-		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.ChannelField channel = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.ChannelField();
-		channel.setName("**Required Channel Type(s):**");
-		channel.setValue("{channelTypes}");
-		requirementFields.setChannel(channel);
-
-		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.UserField user = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.UserField();
-		user.setName("**User Restriction:**");
-		user.setValue("{userIds}");
-		requirementFields.setUser(user);
-
-		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.GuildField guild = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.GuildField();
-		guild.setName("**Guild Restriction:**");
-		guild.setValue("{guildIds}");
-		requirementFields.setGuild(guild);
-		requirement.setFields(requirementFields);
 		error.setRequirement(requirement);
+
+		CommandMessages.ErrorMessages.CooldownErrorMessages cooldown = new CommandMessages.ErrorMessages.CooldownErrorMessages();
+		cooldown.setTitle("Not so fast");
+		cooldown.setDescription("You can use this command again in {seconds, plural, one {# second} other {# seconds}}.");
+		error.setCooldown(cooldown);
 
 		ValidationErrorMessages validation = new ValidationErrorMessages();
 		validation.setSameUser("You cannot use this command on yourself!");

@@ -28,6 +28,7 @@ public class CommandMessages {
 		private SenderErrorMessages sender;
 		private UnexpectedErrorMessages unexpected;
 		private RequirementErrorMessages requirement;
+		private CooldownErrorMessages cooldown;
 		private ValidationErrorMessages validation;
 
 		@Getter
@@ -93,58 +94,24 @@ public class CommandMessages {
 			private String description;
 		}
 
+		/**
+		 * The reply when a command's requirements do not hold, unless the command has its own {@code denied}.
+		 */
 		@Getter
 		@Setter
 		public static class RequirementErrorMessages {
 			private String title;
 			private String description;
-			private String unknown;
-			private Fields fields;
+		}
 
-			@Getter
-			@Setter
-			public static class Fields {
-				private RoleField role;
-				private ScopeField scope;
-				private ChannelField channel;
-				private UserField user;
-				private GuildField guild;
-
-				@Getter
-				@Setter
-				public static class RoleField {
-					private String name;
-					private String value;
-				}
-
-				@Getter
-				@Setter
-				public static class ScopeField {
-					private String name;
-					private String value;
-				}
-
-				@Getter
-				@Setter
-				public static class ChannelField {
-					private String name;
-					private String value;
-				}
-
-				@Getter
-				@Setter
-				public static class UserField {
-					private String name;
-					private String value;
-				}
-
-				@Getter
-				@Setter
-				public static class GuildField {
-					private String name;
-					private String value;
-				}
-			}
+		/**
+		 * The reply when a member uses a command again before its cooldown ended; {@code {seconds}} is the wait left.
+		 */
+		@Getter
+		@Setter
+		public static class CooldownErrorMessages {
+			private String title;
+			private String description;
 		}
 
 		@Getter

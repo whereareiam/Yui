@@ -26,6 +26,7 @@ public final class ConfigUpgrade {
 	private static final Map<String, List<String>> NAMES = Map.of(
 			"settings", List.of("agreed-shape", "audit-into-its-file", "conversations-into-their-file"),
 			"languages", List.of("agreed-shape"),
+			"commands", List.of("requires-and-cooldown"),
 			"style/palette", List.of("agreed-shape"),
 			"style/embeds", List.of("agreed-shape"),
 			"messages", List.of("a-folder-per-locale")
@@ -37,6 +38,7 @@ public final class ConfigUpgrade {
 		this.strata = new Strata(List.of(
 				stream(configura, folder, "settings", "settings.yml", "settings.yml", SettingsMigration::apply, AuditMigration::apply, ConversationsMigration::apply),
 				stream(configura, folder, "languages", "languages.yml", "languages.yml", LanguagesMigration::apply),
+				stream(configura, folder, "commands", "commands.yml", "commands.yml", CommandsMigration::apply),
 				stream(configura, folder, "style/palette", "style/palette.yml", StyleMigration.OLD_PALETTE, StyleMigration::palette),
 				stream(configura, folder, "style/embeds", "style/embeds.yml", StyleMigration.OLD_EMBEDS, StyleMigration::embeds),
 				stream(configura, folder, "messages", "messages/version.yml", "languages/en-US.yml", new MessagesMigration(folder)::apply)

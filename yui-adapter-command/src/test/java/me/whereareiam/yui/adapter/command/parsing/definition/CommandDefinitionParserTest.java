@@ -1,5 +1,6 @@
 package me.whereareiam.yui.adapter.command.parsing.definition;
 
+import me.whereareiam.conditia.model.Requirements;
 import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
 import me.whereareiam.yui.adapter.command.parsing.annotation.YuiAnnotationParser;
 import me.whereareiam.yui.annotation.command.Argument;
@@ -61,7 +62,8 @@ class CommandDefinitionParserTest {
 				Map.of(),
 				null,
 				null,
-				null
+				Requirements.none(),
+				false
 		);
 
 		org.incendo.cloud.Command<Object> parsedCommand = annotationParser.parse(new TestCommands()).iterator().next();
@@ -109,7 +111,8 @@ class CommandDefinitionParserTest {
 				Map.of(),
 				null,
 				null,
-				null
+				Requirements.none(),
+				false
 		);
 
 		// when
@@ -219,7 +222,8 @@ class CommandDefinitionParserTest {
 				Map.of(),
 				null,
 				null,
-				null
+				Requirements.none(),
+				false
 		);
 
 		org.incendo.cloud.Command<Object> parsedCommand = annotationParser.parse(new TestCommands()).iterator().next();
@@ -268,7 +272,8 @@ class CommandDefinitionParserTest {
 				Map.of(),
 				null,
 				null,
-				null
+				Requirements.none(),
+				false
 		);
 
 		org.incendo.cloud.Command<Object> parsedCommand = annotationParser.parse(new TestCommands()).iterator().next();
@@ -315,7 +320,8 @@ class CommandDefinitionParserTest {
 				Map.of(),
 				null,
 				null,
-				null
+				Requirements.none(),
+				false
 		);
 
 		var builders = parser.applyOverrides(
@@ -363,7 +369,8 @@ class CommandDefinitionParserTest {
 				Map.of(),
 				null,
 				null,
-				null
+				Requirements.none(),
+				false
 		);
 
 		var builders = parser.applyOverrides(
@@ -415,7 +422,8 @@ class CommandDefinitionParserTest {
 				Map.of(),
 				null,
 				null,
-				null
+				Requirements.none(),
+				false
 		);
 
 		var builders = parser.applyOverrides(
