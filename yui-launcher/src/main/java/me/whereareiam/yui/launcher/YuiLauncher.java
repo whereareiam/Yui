@@ -13,11 +13,6 @@ public final class YuiLauncher {
 
 	static void main(String[] args) {
 		preloadRuntimeDependencies();
-		if (ConfigUpgradeCommand.matches(args)) {
-			System.exit(ConfigUpgradeCommand.run(args));
-			return;
-		}
-
 		YuiApplication.main(args);
 	}
 

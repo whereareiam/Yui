@@ -95,7 +95,7 @@ class CommandRegistrationLifecycleTest {
 	@Test
 	void providersMergeAndReloadLifecycle() {
 		// initial internal provider
-		CommandDefinition internalDef = def(true, List.of("internal"), "Internal v1");
+		CommandDefinition internalDef = def(true, List.of("internal"));
 		TestDefinitionProvider internalProvider = new TestDefinitionProvider("internal", Source.INTERNAL, Map.of("internal-cmd", internalDef));
 
 		DefinitionProviderRegistry registry = simpleProvider(internalProvider);
@@ -105,11 +105,11 @@ class CommandRegistrationLifecycleTest {
 		var manager = registerAll(registry, defRegistry, List.of(new InternalCmd()));
 		assertEquals(1, manager.commands().size());
 		assertTrue(defRegistry.get("internal-cmd").isPresent(), "Internal def present");
-		assertDescription(manager, "internal", "Internal v1");
+		assertDescription(manager, "internal", "commands.internalCmd.description");
 
 		// add plugin provider (one enabled, one disabled)
-		CommandDefinition pluginEnabledV1 = def(true, List.of("plugA"), "Plugin v1");
-		CommandDefinition pluginDisabled = def(false, List.of("plugB"), "Disabled");
+		CommandDefinition pluginEnabledV1 = def(true, List.of("plugA"));
+		CommandDefinition pluginDisabled = def(false, List.of("plugB"));
 		TestDefinitionProvider pluginProviderV1 = new TestDefinitionProvider("plugin:demo", Source.EXTERNAL,
 				Map.of("plugin-enabled", pluginEnabledV1, "plugin-disabled", pluginDisabled));
 		registry.addExternalProvider(pluginProviderV1);
@@ -119,18 +119,18 @@ class CommandRegistrationLifecycleTest {
 		assertTrue(defRegistry.get("plugin-enabled").isPresent());
 		assertTrue(defRegistry.get("plugin-disabled").isPresent());
 		assertTrue(defRegistry.get("internal-cmd").isPresent());
-		assertDescription(manager, "plugA", "Plugin v1");
-		assertDescription(manager, "internal", "Internal v1");
+		assertDescription(manager, "plugA", "commands.pluginEnabled.description");
+		assertDescription(manager, "internal", "commands.internalCmd.description");
 
-		// update plugin provider with changed description
-		CommandDefinition pluginEnabledV2 = def(true, List.of("plugA"), "Plugin v2");
+		// the plugin provider again, with a new definition
+		CommandDefinition pluginEnabledV2 = def(true, List.of("plugA"));
 		TestDefinitionProvider pluginProviderV2 = new TestDefinitionProvider("plugin:demo", Source.EXTERNAL,
 				Map.of("plugin-enabled", pluginEnabledV2, "plugin-disabled", pluginDisabled));
 		registry.addExternalProvider(pluginProviderV2);
 
 		manager = registerAll(registry, defRegistry, List.of(new InternalCmd(), new PluginCmdEnabled(), new PluginCmdDisabled()));
 		assertEquals(2, manager.commands().size(), "Internal + updated plugin");
-		assertDescription(manager, "plugA", "Plugin v2");
+		assertDescription(manager, "plugA", "commands.pluginEnabled.description");
 
 		// remove plugin provider (simulate unload)
 		registry.removeExternalProvider("plugin:demo");
@@ -140,9 +140,9 @@ class CommandRegistrationLifecycleTest {
 		assertFalse(defRegistry.get("plugin-enabled").isPresent());
 
 		// reload plugin with updated defs: disable previous, enable new command
-		CommandDefinition pluginUpdated = def(true, List.of("plugC"), "Plugin v3");
+		CommandDefinition pluginUpdated = def(true, List.of("plugC"));
 		TestDefinitionProvider pluginProviderV3 = new TestDefinitionProvider("plugin:demo", Source.EXTERNAL,
-				Map.of("plugin-enabled", def(false, List.of("plugA"), "Plugin disabled"),
+				Map.of("plugin-enabled", def(false, List.of("plugA")),
 						"plugin-updated", pluginUpdated));
 		registry.addExternalProvider(pluginProviderV3);
 		manager = registerAll(registry, defRegistry, List.of(new InternalCmd(), new PluginCmdEnabled(), new PluginCmdUpdated()));
@@ -150,17 +150,14 @@ class CommandRegistrationLifecycleTest {
 		assertEquals(2, manager.commands().size(), "Internal + updated plugin command only");
 		assertFalse(manager.commands().stream().anyMatch(c -> c.rootComponent().name().equals("plugA")), "Disabled command should not be registered");
 		assertTrue(manager.commands().stream().anyMatch(c -> c.rootComponent().name().equals("plugC")));
-		assertDescription(manager, "plugC", "Plugin v3");
+		assertDescription(manager, "plugC", "commands.pluginUpdated.description");
 	}
 
-	private CommandDefinition def(boolean enabled, List<String> aliases, String description) {
+	private CommandDefinition def(boolean enabled, List<String> aliases) {
 		return new CommandDefinition(
 				enabled,
 				aliases,
-				description,
-				null,
 				"{alias}",
-				Map.of(),
 				CommandCategory.NONE,
 				new me.whereareiam.yui.model.command.CommandCooldown(false, Duration.ofSeconds(0), null),
 				Requirements.none(),

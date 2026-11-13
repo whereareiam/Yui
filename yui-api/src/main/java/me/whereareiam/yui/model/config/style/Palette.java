@@ -14,7 +14,6 @@ import java.util.Optional;
  * name, so a colour is changed in one place.
  *
  * <pre>{@code
- * _version: 1
  * brand: "#B57E3F"
  * red: "#FF4C4C"
  * }</pre>

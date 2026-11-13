@@ -87,10 +87,7 @@ class AnnotationCommandRegistrarIntegrationTest {
 		CommandDefinition disabled = new CommandDefinition(
 				false,
 				java.util.List.of("offcmd"),
-				null,
-				null,
 				"",
-				Map.of(),
 				CommandCategory.NONE,
 				new CommandCooldown(false, Duration.ofSeconds(0), null),
 				Requirements.none(),
@@ -120,10 +117,7 @@ class AnnotationCommandRegistrarIntegrationTest {
 		CommandDefinition enabled = new CommandDefinition(
 				true,
 				java.util.List.of("reload"),
-				null,
-				null,
 				"{command} reload",
-				Map.of(),
 				CommandCategory.NONE,
 				new CommandCooldown(false, Duration.ofSeconds(0), null),
 				Requirements.none(),

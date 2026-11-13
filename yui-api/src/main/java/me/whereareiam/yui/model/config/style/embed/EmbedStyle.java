@@ -8,7 +8,6 @@ import lombok.Setter;
  * and gets an embed in its colour and decoration.
  *
  * <pre>{@code
- * _version: 1
  * primary:
  *   color: brand
  *   timestamp: true

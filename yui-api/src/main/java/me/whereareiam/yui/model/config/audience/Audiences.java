@@ -12,7 +12,6 @@ import java.util.Map;
  * {@code audiences.yml}: named lists of conditions that {@code requires:} reuses with {@code audience: <name>}.
  *
  * <pre>{@code
- * _version: 1
  * operator:
  *   - permission: MANAGE_SERVER
  * moderator:

@@ -14,7 +14,6 @@ import java.util.Optional;
  * is listed.
  *
  * <pre>{@code
- * _version: 1
  * en-US:
  *   emoji: "🇺🇸"
  *   role: "123456789012345678"

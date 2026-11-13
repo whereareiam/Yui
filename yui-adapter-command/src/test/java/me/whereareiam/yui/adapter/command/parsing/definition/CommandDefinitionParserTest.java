@@ -56,10 +56,7 @@ class CommandDefinitionParserTest {
 		CommandDefinition definition = new CommandDefinition(
 				true,
 				List.of("cfgmain", "cfgm"),
-				"Test description",
-				null,
 				"<name>",
-				Map.of(),
 				null,
 				null,
 				Requirements.none(),
@@ -105,10 +102,7 @@ class CommandDefinitionParserTest {
 		CommandDefinition definition = new CommandDefinition(
 				true,
 				List.of("config reload", "config save"),
-				null,
-				null,
 				"",
-				Map.of(),
 				null,
 				null,
 				Requirements.none(),
@@ -216,10 +210,7 @@ class CommandDefinitionParserTest {
 		CommandDefinition definition = new CommandDefinition(
 				true,
 				List.of("test"),
-				"Test description",
-				null,
 				"",
-				Map.of(),
 				null,
 				null,
 				Requirements.none(),
@@ -243,14 +234,9 @@ class CommandDefinitionParserTest {
 		String definitionId = command.commandMeta().optional(key).orElse(null);
 		assertEquals("test-main", definitionId, "Definition ID should be set in metadata");
 
-		// Description should be set from definition
-		// Note: Cloud might return empty description if not properly set
+		// The description is the key of the command's text
 		String description = command.commandDescription().description().textDescription();
-		assertNotNull(description, "Description should not be null");
-		// The description should match, but Cloud might handle empty descriptions differently
-		if (!description.isEmpty()) {
-			assertEquals("Test description", description, "Description should be set from definition");
-		}
+		assertEquals("commands.testMain.description", description);
 	}
 
 	@Test
@@ -266,10 +252,7 @@ class CommandDefinitionParserTest {
 		CommandDefinition disabled = new CommandDefinition(
 				false, // disabled
 				List.of("disabled"),
-				null,
-				null,
 				"",
-				Map.of(),
 				null,
 				null,
 				Requirements.none(),
@@ -314,10 +297,7 @@ class CommandDefinitionParserTest {
 		CommandDefinition definition = new CommandDefinition(
 				true,
 				List.of("help", "h"),
-				null,
-				null,
 				"",
-				Map.of(),
 				null,
 				null,
 				Requirements.none(),
@@ -363,10 +343,7 @@ class CommandDefinitionParserTest {
 		CommandDefinition definition = new CommandDefinition(
 				true,
 				List.of("reload"), // Single word alias
-				null,
-				null,
 				"",
-				Map.of(),
 				null,
 				null,
 				Requirements.none(),
@@ -416,10 +393,7 @@ class CommandDefinitionParserTest {
 		CommandDefinition definition = new CommandDefinition(
 				true,
 				List.of("test"),
-				null,
-				null,
 				"<name>",
-				Map.of(),
 				null,
 				null,
 				Requirements.none(),

@@ -10,6 +10,7 @@ import me.whereareiam.yui.adapter.command.registration.AnnotationCommandRegistra
 import me.whereareiam.yui.adapter.command.registration.CommandScanner;
 import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.command.CommandService;
+import me.whereareiam.yui.command.CommandTexts;
 import me.whereareiam.yui.command.DefinitionProvider;
 import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.command.exception.ExceptionResponse;
@@ -42,7 +43,7 @@ public class DefaultCommandService implements CommandService, ApplicationListene
 
 	private AnnotationCommandRegistrar<Interaction> registrar() {
 		if (registrar == null) {
-			CommandDefinitionParser<Interaction> definitionParser = new CommandDefinitionParser<>(commandManager);
+			CommandDefinitionParser<Interaction> definitionParser = new CommandDefinitionParser<>(commandManager, definitionRegistry::texts);
 			this.registrar = new AnnotationCommandRegistrar<>(definitionParser, Interaction.class, _ -> null);
 		}
 
@@ -277,5 +278,10 @@ public class DefaultCommandService implements CommandService, ApplicationListene
 			current = current.getParent();
 		}
 		return false;
+	}
+
+	@Override
+	public @NotNull CommandTexts texts(@NotNull String id) {
+		return definitionRegistry.texts(id);
 	}
 }

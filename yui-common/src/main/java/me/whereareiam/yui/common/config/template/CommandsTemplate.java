@@ -12,9 +12,7 @@ import me.whereareiam.yui.model.type.Duration;
 import me.whereareiam.yui.type.CommandCategory;
 import org.springframework.stereotype.Component;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Yui's commands as {@code commands.yml} has them unless the file changes them. Server commands need an operator,
@@ -32,10 +30,8 @@ public class CommandsTemplate implements DefaultsProvider<Commands> {
 	public Commands supply(Commands commands) {
 		command("main", List.of("yui"), "{alias}", CommandCategory.NONE, 5).into(commands);
 		command("help", List.of("help"), "{alias} [category]", CommandCategory.UTILITY, 5)
-				.variable("category", "translate(commands.help.variables.category)")
 				.into(commands);
 		command("clear", List.of("clear"), "{command} {alias} <user>", CommandCategory.ADMINISTRATION, 10)
-				.variable("user", "translate(commands.clear.variables.user)")
 				.requires("""
 						- audience: moderator
 						- scope: guild
@@ -44,14 +40,11 @@ public class CommandsTemplate implements DefaultsProvider<Commands> {
 				.into(commands);
 		command("reload", List.of("reload"), "{command} {alias}", CommandCategory.ADMINISTRATION, 30).requires(OPERATOR).into(commands);
 		command("plugin", List.of("plugin", "plugins"), "{command} {alias} [action] [plugin]", CommandCategory.ADMINISTRATION, 5)
-				.variable("action", "translate(commands.plugin.variables.action)")
-				.variable("plugin", "translate(commands.plugin.variables.plugin)")
 				.requires(OPERATOR)
 				.into(commands);
 		command("status", List.of("status"), "{command} {alias}", CommandCategory.ADMINISTRATION, 5).requires(OPERATOR).into(commands);
 		command("language", List.of("language", "lang"), "{alias}", CommandCategory.UTILITY, 5).into(commands);
 		command("update-check", List.of("update", "check-update"), "{command} {alias} <target>", CommandCategory.ADMINISTRATION, 10)
-				.variable("target", "translate(commands.update_check.variables.target)")
 				.requires(OPERATOR)
 				.into(commands);
 
@@ -69,7 +62,6 @@ public class CommandsTemplate implements DefaultsProvider<Commands> {
 		private final String usage;
 		private final CommandCategory category;
 		private final int cooldown;
-		private final Map<String, String> variables = new LinkedHashMap<>();
 		private Requirements requires = Requirements.none();
 
 		private Draft(String id, List<String> aliases, String usage, CommandCategory category, int cooldown) {
@@ -78,11 +70,6 @@ public class CommandsTemplate implements DefaultsProvider<Commands> {
 			this.usage = usage;
 			this.category = category;
 			this.cooldown = cooldown;
-		}
-
-		Draft variable(String name, String description) {
-			variables.put(name, description);
-			return this;
 		}
 
 		Draft requires(String yaml) {
@@ -96,14 +83,10 @@ public class CommandsTemplate implements DefaultsProvider<Commands> {
 		}
 
 		void into(Commands commands) {
-			String texts = id.replace('-', '_');
 			commands.getCommands().put(id, new CommandDefinition(
 					true,
 					aliases,
-					"translate(commands." + texts + ".description)",
-					"translate(commands." + texts + ".example)",
 					usage,
-					Map.copyOf(variables),
 					category,
 					new CommandCooldown(false, Duration.ofSeconds(cooldown), null),
 					requires,

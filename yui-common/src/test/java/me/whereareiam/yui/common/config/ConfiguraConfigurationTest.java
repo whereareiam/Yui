@@ -54,7 +54,6 @@ class ConfiguraConfigurationTest {
 	@Test
 	void settings_KeepWhatTheFileSaysAndTakeDefaultsForTheRest() throws IOException {
 		write("settings.yml", """
-				_version: 1
 				guild: "856839365938118698"
 				locale: de
 				updater:
@@ -96,7 +95,6 @@ class ConfiguraConfigurationTest {
 	@Test
 	void languages_AreKeyedByLocaleInTheFilesOrder() throws IOException {
 		write("languages.yml", """
-				_version: 2
 				de:
 				  emoji: "🇩🇪"
 				en-US:
@@ -121,7 +119,6 @@ class ConfiguraConfigurationTest {
 	@Test
 	void audit_PostsCategoriesAndSendsEntriesElsewhereOrNowhere() throws IOException {
 		write("audit.yml", """
-				_version: 1
 				categories:
 				  members:
 				    channel: "100"
@@ -142,7 +139,7 @@ class ConfiguraConfigurationTest {
 
 	@Test
 	void palette_NamesItsColoursAndKeepsYuisOwn() throws IOException {
-		write("palette.yml", "_version: 2\nviolet: \"#8A5CF6\"\nred: \"#E03131\"\n");
+		write("palette.yml", "violet: \"#8A5CF6\"\nred: \"#E03131\"\n");
 
 		Palette palette = configura.merge(file("palette"), new PaletteTemplate().supply(new Palette()));
 

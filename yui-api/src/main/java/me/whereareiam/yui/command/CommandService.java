@@ -108,4 +108,10 @@ public interface CommandService {
 	 * registered programmatically through this service.
 	 */
 	@NotNull Map<String, CommandDefinition> getDefinitions();
+
+	/**
+	 * @param id a command's id
+	 * @return the keys of its texts: description, example and arguments, under its provider's id
+	 */
+	@NotNull CommandTexts texts(@NotNull String id);
 }

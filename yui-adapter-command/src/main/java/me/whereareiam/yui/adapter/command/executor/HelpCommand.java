@@ -9,7 +9,7 @@ import me.whereareiam.yui.annotation.command.Optional;
 import me.whereareiam.yui.command.CommandService;
 import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.message.Translatable;
-import me.whereareiam.yui.message.TranslationResolver;
+import me.whereareiam.yui.command.CommandTexts;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.type.CommandCategory;
@@ -118,12 +118,11 @@ public class HelpCommand {
 				continue;
 
 			String primaryName = aliases.getFirst();
-			String example = def.getExample();
-			String description = def.getDescription();
+			CommandTexts texts = commandService.texts(entry.getKey());
 
 			String commandName = Translatable.text(primaryName).resolve(fluctlight);
-			String exampleText = TranslationResolver.text(example).resolve(fluctlight);
-			String descriptionText = TranslationResolver.text(description).resolve(fluctlight);
+			String exampleText = Translatable.text(texts.example()).resolve(fluctlight);
+			String descriptionText = Translatable.text(texts.description()).resolve(fluctlight);
 
 			embed.addField(
 				Translatable.text("commands.help.information.specific.headFormat")

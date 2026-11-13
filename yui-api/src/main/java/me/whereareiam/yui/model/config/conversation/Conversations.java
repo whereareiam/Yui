@@ -13,7 +13,6 @@ import java.util.List;
  * conversation behaves when the code that opens it does not say otherwise.
  *
  * <pre>{@code
- * _version: 1
  * types:
  *   thread:
  *     parent: "789..."

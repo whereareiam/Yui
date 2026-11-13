@@ -1,5 +1,6 @@
 package me.whereareiam.yui.adapter.command.definition;
 
+import me.whereareiam.yui.command.CommandTexts;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import me.whereareiam.yui.type.Source;
 import org.jetbrains.annotations.NotNull;
@@ -19,6 +20,16 @@ public class CommandDefinitionRegistry {
 
 	private final Map<String, Entry> definitions = new ConcurrentHashMap<>();
 	private final Map<ApplicationContext, Set<String>> definitionIdsByContext = new ConcurrentHashMap<>();
+
+	/**
+	 * @param id a command's id
+	 * @return the keys of its texts, under its provider's id
+	 */
+	public @NotNull CommandTexts texts(@NotNull String id) {
+		Entry entry = definitions.get(id);
+
+		return CommandTexts.of(entry == null ? CommandTexts.CORE : entry.id(), id);
+	}
 
 	public @NotNull Optional<CommandDefinition> get(@NotNull String id) {
 		return Optional.ofNullable(definitions.get(id)).map(Entry::definition);

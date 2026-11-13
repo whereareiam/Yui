@@ -4,6 +4,7 @@ import me.whereareiam.semantica.Text;
 import me.whereareiam.semantica.catalog.Layer;
 import me.whereareiam.semantica.common.Semantica;
 import me.whereareiam.semantica.issue.Issue;
+import me.whereareiam.yui.command.CommandTexts;
 import me.whereareiam.yui.common.config.template.messages.AuditMessagesDefaults;
 import me.whereareiam.yui.common.config.template.messages.CommandMessagesDefaults;
 import me.whereareiam.yui.common.config.template.messages.ConversationMessagesDefaults;
@@ -32,6 +33,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -63,6 +65,16 @@ class MessagesTest {
 		List<Issue> issues = semantica.getCatalog().getIssues();
 
 		assertTrue(issues.isEmpty(), () -> "Issues: " + issues);
+	}
+
+	@Test
+	void everyCoreCommand_HasItsDescriptionAndExample() {
+		for (String id : List.of("main", "help", "clear", "reload", "plugin", "status", "language", "update-check")) {
+			CommandTexts keys = CommandTexts.of(CommandTexts.CORE, id);
+
+			assertNotEquals(keys.description(), texts.resolve(Text.of(keys.description()), DiscordLocale.ENGLISH_US), id);
+			assertNotEquals(keys.example(), texts.resolve(Text.of(keys.example()), DiscordLocale.ENGLISH_US), id);
+		}
 	}
 
 	@Test

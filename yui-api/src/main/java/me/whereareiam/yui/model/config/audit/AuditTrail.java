@@ -16,7 +16,6 @@ import java.util.Optional;
  * nowhere. An entry is one line of the trail (who did what to whom, when), such as {@code member.leave}.
  *
  * <pre>{@code
- * _version: 1
  * categories:
  *   members:
  *     channel: "123456789012345678"

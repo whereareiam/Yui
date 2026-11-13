@@ -24,8 +24,6 @@ dependencies {
 
     providedApi(libs.jda)
     providedApi(libs.configura)
-    providedApi(libs.strata)
-    providedApi(libs.strata.configura)
     providedApi(libs.conditia.api)
     providedApi(libs.conditia.common)
     providedApi(libs.conditia.configura)

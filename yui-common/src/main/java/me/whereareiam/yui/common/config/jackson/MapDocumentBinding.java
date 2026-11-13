@@ -19,8 +19,7 @@ import java.util.function.Function;
 
 /**
  * Binds a file whose top level is a map, such as {@code languages.yml} (locale to language) or
- * {@code style/palette.yml} (name to colour). Keys starting with {@code _}, such as Strata's {@code _version}, are
- * left out.
+ * {@code style/palette.yml} (name to colour).
  *
  * @param <D> the document
  * @param <K> its keys
@@ -51,8 +50,6 @@ final class MapDocumentBinding<D, K, V> {
 			Map<K, V> map = new LinkedHashMap<>();
 			for (Iterator<Map.Entry<String, JsonNode>> fields = tree.fields(); fields.hasNext(); ) {
 				Map.Entry<String, JsonNode> field = fields.next();
-				if (field.getKey().startsWith("_")) continue;
-
 				K key;
 				try {
 					key = readKey.apply(field.getKey());

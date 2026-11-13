@@ -16,7 +16,7 @@ Breaking changes are allowed wherever they remove a workaround or give a clearer
 | Plugin runtime | One classloader and one child Spring context per plugin, with hot reload. A plugin declares its exported packages in `plugin.json`; reloading a plugin reloads its dependents in dependency order. |
 | Database | Hibernate stays; H2 (default), PostgreSQL or MariaDB chosen in config. Flyway migrations, one history table per owner. `ddl-auto=validate`. |
 | Servers | One Discord server. |
-| Configuration | Configura 2.1, one provider per file, no global state. Old files in `app/` are upgraded on first start. |
+| Configuration | Configura 2.1, one provider per file, no global state. No migrations and no compatibility bridges (owner, 13 November 2026): the one installation's files are written anew in the new shape. |
 | Libraries | Attache 1.3 loads them at runtime; a plugin's libraries go into its own classloader. |
 | Commands | Incendo cloud with `cloud-jda6`. Commandant is Minecraft-only. |
 | Dependencies | Latest majors: JDA 6, Spring Boot 4.1, Gradle 9.9 and the rest of the catalog. |
@@ -154,9 +154,8 @@ Built on 11 November 2026 (step 4):
 - `V1__baseline` creates the tables of 1.0.0 cleanly. It is not a copy of the live schema, which Hibernate grew over
   time (a join table with its own id, names left from `yui_profiles`): there is one installation, and its data
   moves into a fresh database at the cutover anyway, so no existing database is patched in place.
-- The upgrade moves `database` from an old `settings.yml` into `persistence.yml`. A settings file from before 1.0.0
-  has no `database.type`, so the upgrade writes `H2`; an installation that keeps its PostgreSQL server must set
-  `POSTGRESQL` before starting 1.0.0 (in the release notes).
+- `persistence.yml` replaces the old `database` block of `settings.yml`; nothing reads the old block. An installation
+  that keeps its PostgreSQL server writes `type: POSTGRESQL` there (in the release notes).
 - Tests run every persistence test on H2, PostgreSQL and MariaDB, with the real migrations and validation.
 - `yui-adapter-database` stays one module, no family (agreed). A plugin's tables get their own Flyway run (its own
   history table), their own Hibernate unit over Yui's pool and their repositories in the plugin's context. The
@@ -322,7 +321,8 @@ Conditia/
 - Config files may be read-only (a ConfigMap): Yui never writes them. A missing value takes its default,
   an invalid file stops startup.
 - Values can name environment variables (`${DISCORD_TOKEN}`), so secrets stay out of the files.
-- Old files are upgraded by a command (`yui config upgrade <dir>`), run on the repository that holds them.
+- Nothing upgrades old files and nothing reads an old shape (owner, 13 November 2026): files carry no `_version`, and
+  the one installation's files are written anew in `arcadeya/yui-deploy`.
 - Configs reload from their folder without a restart.
 
 The folder, agreed file by file (each file's content is shown to the owner before it is built):
@@ -354,7 +354,6 @@ app/
 `settings.yml`, approved:
 
 ```yaml
-_version: 1
 token: "${DISCORD_TOKEN}"
 guild: "856839365938118698"
 intents: [...]
@@ -369,7 +368,6 @@ updater:
 `messages/<locale>/commands.yml`, because Discord gets them per locale:
 
 ```yaml
-_version: 1
 commands:
   clear:
     enabled: true
@@ -391,7 +389,6 @@ public panel everyone sees it, and a click that fails its requirements gets a pr
 under a category in code; plugins need no audit file.
 
 ```yaml
-_version: 1
 store: { enabled: true, keep: 90d }      # saved in the database, searchable with /audit
 categories:
   members:    { channel: "..." }
@@ -407,7 +404,6 @@ polymorphic types, so a file holds only the fields its database uses. The `datab
 
 ```yaml
 # H2, the default
-_version: 1
 type: H2
 file: "database/yui"           # in Yui's data folder
 pool:
@@ -416,7 +412,6 @@ pool:
 ```
 ```yaml
 # POSTGRESQL or MARIADB
-_version: 1
 type: POSTGRESQL
 host: "postgres.yui.svc"
 port: 5432                     # default per type: 5432, or 3306 for MariaDB
@@ -428,7 +423,7 @@ pool:
   timeouts: { connect: 30s, idle: 10m, lifetime: 30m }
 ```
 
-`pool` replaces `hikari` and takes Yui's `Duration` instead of milliseconds; the upgrade maps the old flat keys.
+`pool` replaces `hikari` and takes Yui's `Duration` instead of milliseconds.
 
 Conversations, decided 13 November 2026:
 
@@ -450,7 +445,6 @@ enabled types are tried; a call whose types are all disabled fails with a clear 
 Discord's durations (1h, 24h, 3d, 1w); `thread.invitable` is Discord's flag for members adding others.
 
 ```yaml
-_version: 1
 types:
   direct:
     enabled: true
@@ -490,7 +484,6 @@ name and the footer text are words, so they move to `messages/<locale>/`. Plugin
 
 ```yaml
 # style/palette.yml
-_version: 1
 brand: "#B57E3F"
 sand: "#E6CBA8"
 green: "#00FF00"
@@ -501,7 +494,6 @@ blue: "#00AAFF"
 
 ```yaml
 # style/embeds.yml
-_version: 1
 primary:
   color: brand
   footer:
@@ -527,7 +519,6 @@ language from `messages/<locale>/languages.yml`; where a locale has no name for 
 
 ```yaml
 # languages.yml
-_version: 1
 en-US:
   emoji: "🇺🇸"
   role: "123…"
@@ -549,7 +540,6 @@ claim another's name. An installation tightens a plugin's audience in that plugi
 
 ```yaml
 # audiences.yml
-_version: 1
 operator:
   - permission: MANAGE_SERVER
 moderator:
@@ -560,7 +550,6 @@ moderator:
 
 ```yaml
 # plugins/verification/audiences.yml
-_version: 1
 verified:
   - verified: true
 ```
@@ -581,7 +570,7 @@ messages/all/          texts that are the same in every language
 ```
 
 - ICU MessageFormat replaces `<p:name>`: `{count}`, plurals per language, references such as `{@words.cancel}`.
-- Message files hold only strings, so they have no `_version`; `yui config upgrade` rewrites old texts.
+- Message files hold only strings.
 - `general.yml` and `log.yml` go: the close warning belongs to conversations, and log was a second name for audit.
 - The folder stays `messages/`: in Yui `languages.yml` means the languages members speak.
 - Each plugin's texts are an owned layer (`Layer.owned("<id>", ...)`), removed with the plugin. Its keys carry
@@ -609,7 +598,6 @@ member gets `verified-role` for the fact `verified`, through core's role service
 
 ```yaml
 # plugins/verification/settings.yml
-_version: 1
 triggers:
   member-join: true
   startup: true
@@ -721,15 +709,12 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
 2. Attache loading into a plugin's own classloader: already in Attache 1.3.0, checked (see Plugin runtime).
 3. Database: Flyway with a clean baseline, H2/PostgreSQL/MariaDB, `validate` (see Database).
 4. Users and events. Built on 11 November 2026 (see Users).
-5. Configuration on Configura 2.1 with file upgrades; texts on Semantica 0.1.0, after its `FileSource` key prefix
+5. Configuration on Configura 2.1; texts on Semantica 0.1.0, after its `FileSource` key prefix
    and with a Discord format (see Messages). Done before permissions (owner, 13 November 2026): the old
    Configura's adapters read single strings only, so `requires:` lists need Configura 2.1 first.
    Built on 13 November 2026: Configura 2.1 with Yui's value types as a Jackson module; `settings.yml`,
    `persistence.yml`, `languages.yml`, `style/`, `audit.yml` and `conversations.yml` in their agreed shape. Yui
-   writes none of its files, values may name environment variables, and files older than this version stop
-   startup until `yui config upgrade <dir>` runs Strata on them: one stream per file, each with its own `_version`
-   (`messages/` keeps its own in `messages/version.yml`, which Semantica does not read); a file gets a stream with
-   its first migration. Audit entries are filed under a category in code; channels per locale and wildcard types
+   writes none of its files and values may name environment variables. Audit entries are filed under a category in code; channels per locale and wildcard types
    went. Conversations open in direct messages, private threads or temporary channels with staff, idle and
    lifetime closes, limits and transcripts. Texts come from Semantica 0.1.0: English defaults in code, one
    `MessageDefaults` per file, served from memory, with `messages/<locale>/` over them; plugins' texts are owned
@@ -742,10 +727,10 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
    Built on 13 November 2026 on Conditia `dev-3090ccb`: commands bind their `requires:` as deferred places with
    the parts `actor` (`Actor`: user, membership, fluctlight) and `interaction` (JDA's); core's types and
    `audiences.yml` as agreed; cooldowns and `hide` work; `FactRoles` gives and takes roles for facts and posts
-   `member.role`; `yui config upgrade` turns old `requirements` into `requires` and falls back to
-   `audience: operator` where it cannot say a rule. Left for later: registering a command whose audience reduces
-   to one Discord permission with it as default permission; a command's description, example and arguments
-   becoming texts by key (they still name `translate(...)` in `commands.yml`); plugins' audiences (step 7).
+   `member.role`. Left for later: registering a command whose audience reduces
+   to one Discord permission with it as default permission; plugins' audiences (step 7). A command's description,
+   example and arguments are texts by key (`commands.<id>.description`, `.example`, `.variables.<argument>`, under a
+   plugin's id for its commands); `commands.yml` holds no text and nothing reads `translate(...)`.
 7. Plugin runtime with hot reload, on Chassis.
 8. JDA 6 and cloud.
 9. Verification into `plugins/`, `examples/plugin`.

@@ -7,7 +7,6 @@ import me.whereareiam.conditia.model.Requirements;
 import me.whereareiam.yui.type.CommandCategory;
 
 import java.util.List;
-import java.util.Map;
 
 @Getter
 @NoArgsConstructor
@@ -15,12 +14,12 @@ import java.util.Map;
 public class CommandDefinition {
 	private boolean enabled;
 	private List<String> aliases;
-	private String description;
-	private String example;
+
+	/**
+	 * The command's arguments ({@code {alias} <user> [reason]}); their descriptions, like the command's, are texts
+	 * ({@link me.whereareiam.yui.command.CommandTexts}).
+	 */
 	private String usage;
-
-	private Map<String, String> variables;
-
 	private CommandCategory category;
 	private CommandCooldown cooldown;
 
