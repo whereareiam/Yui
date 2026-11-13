@@ -1,16 +1,16 @@
 package me.whereareiam.yui.adapter.command.executor;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.annotation.command.Argument;
-import me.whereareiam.yui.annotation.command.Command;
-import me.whereareiam.yui.annotation.command.Definition;
-import me.whereareiam.yui.annotation.command.Optional;
-import me.whereareiam.yui.command.Interaction;
-import me.whereareiam.yui.message.Translatable;
-import me.whereareiam.yui.model.config.audit.AuditTrail;
-import me.whereareiam.yui.model.fluctlight.Fluctlight;
-import me.whereareiam.yui.persistence.AuditPersistence;
-import me.whereareiam.yui.util.style.StyleKit;
+import me.whereareiam.yui.api.annotation.command.Argument;
+import me.whereareiam.yui.api.annotation.command.Command;
+import me.whereareiam.yui.api.annotation.command.Definition;
+import me.whereareiam.yui.api.annotation.command.Optional;
+import me.whereareiam.yui.api.command.Interaction;
+import me.whereareiam.yui.api.message.Translatable;
+import me.whereareiam.yui.api.model.config.audit.AuditTrail;
+import me.whereareiam.yui.api.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.api.persistence.AuditPersistence;
+import me.whereareiam.yui.api.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.utils.TimeFormat;
 import org.springframework.beans.factory.ObjectProvider;

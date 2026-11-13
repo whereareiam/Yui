@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.config.template.style;
 
 import me.whereareiam.configura.merge.defaults.DefaultsProvider;
-import me.whereareiam.yui.model.config.style.Palette;
+import me.whereareiam.yui.api.model.config.style.Palette;
 import org.springframework.stereotype.Component;
 
 import java.awt.Color;

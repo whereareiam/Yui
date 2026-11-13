@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.config.provider;
 
+import me.whereareiam.yui.api.model.config.audience.Audiences;
 import me.whereareiam.yui.common.config.template.AudiencesTemplate;
-import me.whereareiam.yui.model.config.audience.Audiences;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

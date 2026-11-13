@@ -6,7 +6,7 @@ import me.whereareiam.semantica.catalog.Layer;
 import me.whereareiam.semantica.common.Semantica;
 import me.whereareiam.semantica.source.file.FileSource;
 import me.whereareiam.semantica.syntax.icu.IcuSyntax;
-import me.whereareiam.yui.message.MessageDefaults;
+import me.whereareiam.yui.api.message.MessageDefaults;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

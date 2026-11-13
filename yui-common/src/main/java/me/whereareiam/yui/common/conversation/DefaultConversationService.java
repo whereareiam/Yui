@@ -1,14 +1,14 @@
 package me.whereareiam.yui.common.conversation;
 
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.yui.api.conversation.Conversation;
+import me.whereareiam.yui.api.conversation.ConversationOptions;
+import me.whereareiam.yui.api.conversation.ConversationService;
+import me.whereareiam.yui.api.exception.ConversationRefusedException.Reason;
+import me.whereareiam.yui.api.exception.ConversationRefusedException;
+import me.whereareiam.yui.api.model.config.conversation.Conversations;
+import me.whereareiam.yui.api.type.ConversationType;
 import me.whereareiam.yui.common.conversation.open.ConversationOpener;
-import me.whereareiam.yui.conversation.Conversation;
-import me.whereareiam.yui.conversation.ConversationOptions;
-import me.whereareiam.yui.conversation.ConversationService;
-import me.whereareiam.yui.exception.ConversationRefusedException.Reason;
-import me.whereareiam.yui.exception.ConversationRefusedException;
-import me.whereareiam.yui.model.config.conversation.Conversations;
-import me.whereareiam.yui.type.ConversationType;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Service;

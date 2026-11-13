@@ -2,9 +2,9 @@ package me.whereareiam.yui.common.plugin.part;
 
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.chassis.ExtensionContext;
+import me.whereareiam.yui.api.service.InteractionService;
 import me.whereareiam.yui.common.scanner.ComponentListenerScanner;
 import me.whereareiam.yui.common.scanner.ListenerScanner;
-import me.whereareiam.yui.service.InteractionService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.context.ApplicationContext;

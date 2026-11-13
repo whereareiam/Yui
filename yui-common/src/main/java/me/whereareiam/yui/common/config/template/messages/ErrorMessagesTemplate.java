@@ -1,10 +1,10 @@
 package me.whereareiam.yui.common.config.template.messages;
 
 import me.whereareiam.configura.merge.defaults.DefaultsProvider;
-import me.whereareiam.yui.model.config.messages.CommandMessages.ErrorMessages.RequirementErrorMessages;
-import me.whereareiam.yui.model.config.messages.CommandMessages.ErrorMessages.ValidationErrorMessages;
-import me.whereareiam.yui.model.config.messages.CommandMessages.ErrorMessages;
-import me.whereareiam.yui.model.config.messages.CommandMessages;
+import me.whereareiam.yui.api.model.config.messages.CommandMessages.ErrorMessages.RequirementErrorMessages;
+import me.whereareiam.yui.api.model.config.messages.CommandMessages.ErrorMessages.ValidationErrorMessages;
+import me.whereareiam.yui.api.model.config.messages.CommandMessages.ErrorMessages;
+import me.whereareiam.yui.api.model.config.messages.CommandMessages;
 import org.springframework.stereotype.Component;
 
 @Component

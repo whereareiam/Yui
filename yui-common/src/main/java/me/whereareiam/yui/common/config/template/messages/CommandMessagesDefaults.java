@@ -1,6 +1,17 @@
 package me.whereareiam.yui.common.config.template.messages;
 
 import lombok.RequiredArgsConstructor;
+import me.whereareiam.yui.api.message.MessageDefaults;
+import me.whereareiam.yui.api.model.config.messages.CommandMessages;
+import me.whereareiam.yui.api.model.config.messages.command.AuditCommandMessages;
+import me.whereareiam.yui.api.model.config.messages.command.ClearCommandMessages;
+import me.whereareiam.yui.api.model.config.messages.command.HelpCommandMessages;
+import me.whereareiam.yui.api.model.config.messages.command.LanguageCommandMessages;
+import me.whereareiam.yui.api.model.config.messages.command.MainCommandMessages;
+import me.whereareiam.yui.api.model.config.messages.command.PluginCommandMessages;
+import me.whereareiam.yui.api.model.config.messages.command.ReloadCommandMessages;
+import me.whereareiam.yui.api.model.config.messages.command.StatusCommandMessages;
+import me.whereareiam.yui.api.model.config.messages.command.UpdateCheckCommandMessages;
 import me.whereareiam.yui.common.config.template.messages.command.AuditCommandMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.command.ClearCommandMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.command.HelpCommandMessagesTemplate;
@@ -10,17 +21,6 @@ import me.whereareiam.yui.common.config.template.messages.command.PluginCommandM
 import me.whereareiam.yui.common.config.template.messages.command.ReloadCommandMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.command.StatusCommandMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.command.UpdateCheckCommandMessagesTemplate;
-import me.whereareiam.yui.message.MessageDefaults;
-import me.whereareiam.yui.model.config.messages.CommandMessages;
-import me.whereareiam.yui.model.config.messages.command.AuditCommandMessages;
-import me.whereareiam.yui.model.config.messages.command.ClearCommandMessages;
-import me.whereareiam.yui.model.config.messages.command.HelpCommandMessages;
-import me.whereareiam.yui.model.config.messages.command.LanguageCommandMessages;
-import me.whereareiam.yui.model.config.messages.command.MainCommandMessages;
-import me.whereareiam.yui.model.config.messages.command.PluginCommandMessages;
-import me.whereareiam.yui.model.config.messages.command.ReloadCommandMessages;
-import me.whereareiam.yui.model.config.messages.command.StatusCommandMessages;
-import me.whereareiam.yui.model.config.messages.command.UpdateCheckCommandMessages;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 

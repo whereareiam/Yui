@@ -1,10 +1,10 @@
 package me.whereareiam.yui.common.conversation;
 
+import me.whereareiam.yui.api.conversation.ConversationOptions;
+import me.whereareiam.yui.api.exception.ConversationRefusedException.Reason;
+import me.whereareiam.yui.api.model.config.conversation.Conversations;
+import me.whereareiam.yui.api.type.ConversationType;
 import me.whereareiam.yui.common.config.template.ConversationsTemplate;
-import me.whereareiam.yui.conversation.ConversationOptions;
-import me.whereareiam.yui.exception.ConversationRefusedException.Reason;
-import me.whereareiam.yui.model.config.conversation.Conversations;
-import me.whereareiam.yui.type.ConversationType;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import org.junit.jupiter.api.Test;
 

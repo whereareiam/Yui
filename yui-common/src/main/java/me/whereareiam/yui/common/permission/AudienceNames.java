@@ -3,9 +3,9 @@ package me.whereareiam.yui.common.permission;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.conditia.Conditions;
-import me.whereareiam.yui.Registry;
-import me.whereareiam.yui.Reloadable;
-import me.whereareiam.yui.model.config.audience.Audiences;
+import me.whereareiam.yui.api.Registry;
+import me.whereareiam.yui.api.Reloadable;
+import me.whereareiam.yui.api.model.config.audience.Audiences;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 

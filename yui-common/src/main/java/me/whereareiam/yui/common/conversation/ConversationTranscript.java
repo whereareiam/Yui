@@ -2,9 +2,9 @@ package me.whereareiam.yui.common.conversation;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.message.Translatable;
-import me.whereareiam.yui.service.AuditService;
-import me.whereareiam.yui.type.audit.AuditCategory;
+import me.whereareiam.yui.api.message.Translatable;
+import me.whereareiam.yui.api.service.AuditService;
+import me.whereareiam.yui.api.type.audit.AuditCategory;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.utils.FileUpload;

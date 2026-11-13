@@ -2,8 +2,8 @@ package me.whereareiam.yui.common.audit;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.model.config.audit.AuditTrail;
-import me.whereareiam.yui.persistence.AuditPersistence;
+import me.whereareiam.yui.api.model.config.audit.AuditTrail;
+import me.whereareiam.yui.api.persistence.AuditPersistence;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

@@ -2,14 +2,14 @@ package me.whereareiam.yui.adapter.command.parsing.definition;
 
 import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
 import me.whereareiam.yui.adapter.command.parsing.annotation.YuiAnnotationParser;
-import me.whereareiam.yui.model.command.CommandDefinition;
+import me.whereareiam.yui.api.command.CommandTexts;
+import me.whereareiam.yui.api.model.command.CommandDefinition;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.component.CommandComponent;
 import org.incendo.cloud.description.Description;
 import org.incendo.cloud.parser.ArgumentParser;
 import org.incendo.cloud.parser.ParserDescriptor;
-import me.whereareiam.yui.command.CommandTexts;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

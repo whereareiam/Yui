@@ -1,9 +1,9 @@
 package me.whereareiam.yui.common.conversation.open;
 
 import lombok.RequiredArgsConstructor;
+import me.whereareiam.yui.api.type.ConversationType;
 import me.whereareiam.yui.common.conversation.ConversationSetup;
 import me.whereareiam.yui.common.conversation.OpenConversation;
-import me.whereareiam.yui.type.ConversationType;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.channel.concrete.PrivateChannel;
 import org.springframework.stereotype.Component;

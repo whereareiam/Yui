@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.service;
 
-import me.whereareiam.yui.model.Key;
-import me.whereareiam.yui.model.component.ComponentAttributes;
+import me.whereareiam.yui.api.model.Key;
+import me.whereareiam.yui.api.model.component.ComponentAttributes;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.components.buttons.ButtonStyle;

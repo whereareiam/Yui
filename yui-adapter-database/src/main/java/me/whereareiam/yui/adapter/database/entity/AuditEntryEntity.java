@@ -12,7 +12,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
-import me.whereareiam.yui.type.audit.AuditCategory;
+import me.whereareiam.yui.api.type.audit.AuditCategory;
 
 import java.time.Instant;
 

@@ -11,10 +11,10 @@ import me.whereareiam.chassis.common.loading.ExportLayer;
 import me.whereareiam.chassis.exception.ExtensionException;
 import me.whereareiam.chassis.model.InstalledExtension;
 import me.whereareiam.chassis.model.Version;
-import me.whereareiam.yui.BuildConfig;
-import me.whereareiam.yui.model.update.UpdateConfiguration;
-import me.whereareiam.yui.plugin.PluginManager;
-import me.whereareiam.yui.plugin.YuiPlugin;
+import me.whereareiam.yui.api.BuildConfig;
+import me.whereareiam.yui.api.model.update.UpdateConfiguration;
+import me.whereareiam.yui.api.plugin.PluginManager;
+import me.whereareiam.yui.api.plugin.YuiPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -37,7 +37,7 @@ import java.util.Optional;
 public class PluginHost implements PluginManager {
 	// What plugins see of Yui: its API and the libraries it hands them.
 	private static final List<String> EXPORTS = List.of(
-			"me.whereareiam.yui", "me.whereareiam.chassis", "me.whereareiam.conditia", "me.whereareiam.semantica",
+			"me.whereareiam.yui.api", "me.whereareiam.chassis", "me.whereareiam.conditia", "me.whereareiam.semantica",
 			"org.springframework", "net.dv8tion.jda", "org.jetbrains.annotations"
 	);
 

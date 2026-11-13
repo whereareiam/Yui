@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.config.resolver;
 
-import me.whereareiam.yui.config.ConfigurationTypeResolver;
-import me.whereareiam.yui.type.ConfigurationType;
+import me.whereareiam.yui.api.config.ConfigurationTypeResolver;
+import me.whereareiam.yui.api.type.ConfigurationType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;

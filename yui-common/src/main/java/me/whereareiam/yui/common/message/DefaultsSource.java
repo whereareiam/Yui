@@ -3,7 +3,7 @@ package me.whereareiam.yui.common.message;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import me.whereareiam.semantica.source.Source;
-import me.whereareiam.yui.message.MessageDefaults;
+import me.whereareiam.yui.api.message.MessageDefaults;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Iterator;

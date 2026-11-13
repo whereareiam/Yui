@@ -2,11 +2,11 @@ package me.whereareiam.yui.adapter.command.exception;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.command.Interaction;
-import me.whereareiam.yui.command.exception.ExceptionResponse;
-import me.whereareiam.yui.exception.command.base.CommandException;
-import me.whereareiam.yui.message.Translatable;
-import me.whereareiam.yui.util.style.StyleKit;
+import me.whereareiam.yui.api.command.Interaction;
+import me.whereareiam.yui.api.command.exception.ExceptionResponse;
+import me.whereareiam.yui.api.exception.command.base.CommandException;
+import me.whereareiam.yui.api.message.Translatable;
+import me.whereareiam.yui.api.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
 import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.discord.jda6.JDA6CommandManager;

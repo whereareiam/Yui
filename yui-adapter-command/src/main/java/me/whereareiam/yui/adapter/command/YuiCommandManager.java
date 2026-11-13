@@ -6,7 +6,7 @@ import me.whereareiam.yui.adapter.command.factory.YuiJDACommandFactory;
 import me.whereareiam.yui.adapter.command.parser.FluctlightParser;
 import me.whereareiam.yui.adapter.command.permission.CommandDefaultPermissions;
 import me.whereareiam.yui.adapter.command.registration.JDARegistrationHandler;
-import me.whereareiam.yui.command.Interaction;
+import me.whereareiam.yui.api.command.Interaction;
 import net.dv8tion.jda.api.JDA;
 import org.incendo.cloud.CloudCapability;
 import org.incendo.cloud.discord.jda6.JDA6CommandManager;

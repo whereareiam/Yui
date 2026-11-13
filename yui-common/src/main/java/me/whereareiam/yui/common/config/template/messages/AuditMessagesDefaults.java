@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.config.template.messages;
 
-import me.whereareiam.yui.message.MessageDefaults;
-import me.whereareiam.yui.model.config.messages.AuditMessages;
+import me.whereareiam.yui.api.message.MessageDefaults;
+import me.whereareiam.yui.api.model.config.messages.AuditMessages;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 

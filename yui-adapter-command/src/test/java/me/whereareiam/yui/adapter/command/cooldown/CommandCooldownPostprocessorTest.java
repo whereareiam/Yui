@@ -1,9 +1,9 @@
 package me.whereareiam.yui.adapter.command.cooldown;
 
 import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
-import me.whereareiam.yui.exception.command.CooldownActiveException;
-import me.whereareiam.yui.model.command.CommandCooldown;
-import me.whereareiam.yui.model.type.Duration;
+import me.whereareiam.yui.api.exception.command.CooldownActiveException;
+import me.whereareiam.yui.api.model.command.CommandCooldown;
+import me.whereareiam.yui.api.model.type.Duration;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;

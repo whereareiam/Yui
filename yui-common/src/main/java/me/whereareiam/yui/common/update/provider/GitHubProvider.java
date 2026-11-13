@@ -3,8 +3,8 @@ package me.whereareiam.yui.common.update.provider;
 import lombok.Data;
 import me.whereareiam.configura.Config;
 import me.whereareiam.configura.Configura;
-import me.whereareiam.yui.model.update.UpdateSource;
-import me.whereareiam.yui.update.UpdateProvider;
+import me.whereareiam.yui.api.model.update.UpdateSource;
+import me.whereareiam.yui.api.update.UpdateProvider;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;

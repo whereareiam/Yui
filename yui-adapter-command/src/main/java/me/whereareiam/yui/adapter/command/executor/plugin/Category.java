@@ -4,8 +4,8 @@ import lombok.Getter;
 import me.whereareiam.chassis.model.ExtensionDescriptor;
 import me.whereareiam.chassis.model.InstalledExtension;
 import me.whereareiam.chassis.type.ExtensionState;
-import me.whereareiam.yui.message.Translatable;
-import me.whereareiam.yui.plugin.PluginManager;
+import me.whereareiam.yui.api.message.Translatable;
+import me.whereareiam.yui.api.plugin.PluginManager;
 
 import java.util.ArrayList;
 import java.util.Comparator;

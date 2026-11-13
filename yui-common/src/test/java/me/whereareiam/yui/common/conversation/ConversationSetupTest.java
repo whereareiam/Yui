@@ -1,10 +1,10 @@
 package me.whereareiam.yui.common.conversation;
 
+import me.whereareiam.yui.api.conversation.ConversationOptions;
+import me.whereareiam.yui.api.model.config.conversation.Conversations;
+import me.whereareiam.yui.api.model.type.Duration;
+import me.whereareiam.yui.api.type.ConversationType;
 import me.whereareiam.yui.common.config.template.ConversationsTemplate;
-import me.whereareiam.yui.conversation.ConversationOptions;
-import me.whereareiam.yui.model.config.conversation.Conversations;
-import me.whereareiam.yui.model.type.Duration;
-import me.whereareiam.yui.type.ConversationType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

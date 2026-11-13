@@ -4,9 +4,9 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.chassis.type.ExtensionState;
-import me.whereareiam.yui.LifecycleTask;
-import me.whereareiam.yui.Registry;
-import me.whereareiam.yui.plugin.PluginManager;
+import me.whereareiam.yui.api.LifecycleTask;
+import me.whereareiam.yui.api.Registry;
+import me.whereareiam.yui.api.plugin.PluginManager;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

@@ -4,6 +4,7 @@ import me.whereareiam.attache.platform.spring.config.AttacheProperties;
 import me.whereareiam.attache.platform.spring.logging.SpringLoggingHelper;
 import me.whereareiam.attache.platform.standalone.StandaloneLibraryManager;
 import me.whereareiam.attache.type.VerbosityMode;
+import me.whereareiam.yui.api.Constants;
 import me.whereareiam.yui.launcher.YuiLauncher;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;

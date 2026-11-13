@@ -2,12 +2,12 @@ package me.whereareiam.yui.common.role;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.Constants;
-import me.whereareiam.yui.message.Translatable;
-import me.whereareiam.yui.model.config.settings.Settings;
-import me.whereareiam.yui.role.FactRoles;
-import me.whereareiam.yui.type.audit.AuditCategory;
-import me.whereareiam.yui.util.Audit;
+import me.whereareiam.yui.api.Constants;
+import me.whereareiam.yui.api.message.Translatable;
+import me.whereareiam.yui.api.model.config.settings.Settings;
+import me.whereareiam.yui.api.role.FactRoles;
+import me.whereareiam.yui.api.type.audit.AuditCategory;
+import me.whereareiam.yui.api.util.Audit;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;

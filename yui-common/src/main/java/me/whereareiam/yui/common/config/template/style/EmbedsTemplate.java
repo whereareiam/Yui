@@ -1,9 +1,9 @@
 package me.whereareiam.yui.common.config.template.style;
 
 import me.whereareiam.configura.merge.defaults.DefaultsProvider;
-import me.whereareiam.yui.model.config.style.StyleColor;
-import me.whereareiam.yui.model.config.style.embed.Embed;
-import me.whereareiam.yui.model.config.style.embed.EmbedStyle;
+import me.whereareiam.yui.api.model.config.style.StyleColor;
+import me.whereareiam.yui.api.model.config.style.embed.Embed;
+import me.whereareiam.yui.api.model.config.style.embed.EmbedStyle;
 import org.springframework.stereotype.Component;
 
 /**

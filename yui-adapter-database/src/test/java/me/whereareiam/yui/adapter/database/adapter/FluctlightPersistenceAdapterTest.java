@@ -4,7 +4,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import me.whereareiam.yui.adapter.database.TestDatabaseConfiguration;
 import me.whereareiam.yui.adapter.database.entity.LanguageEntity;
-import me.whereareiam.yui.persistence.FluctlightPersistence.Facts;
+import me.whereareiam.yui.api.persistence.FluctlightPersistence.Facts;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeEach;

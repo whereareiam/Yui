@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.config.provider;
 
+import me.whereareiam.yui.api.model.config.settings.Settings;
 import me.whereareiam.yui.common.config.template.SettingsTemplate;
-import me.whereareiam.yui.model.config.settings.Settings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

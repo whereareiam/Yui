@@ -1,7 +1,7 @@
 package me.whereareiam.yui.adapter.database;
 
 import com.zaxxer.hikari.HikariDataSource;
-import me.whereareiam.yui.type.DatabaseType;
+import me.whereareiam.yui.api.type.DatabaseType;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;

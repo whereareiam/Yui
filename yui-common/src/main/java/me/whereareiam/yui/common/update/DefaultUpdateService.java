@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.update;
 
-import me.whereareiam.yui.update.UpdateProvider;
-import me.whereareiam.yui.update.UpdateService;
+import me.whereareiam.yui.api.update.UpdateProvider;
+import me.whereareiam.yui.api.update.UpdateService;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 

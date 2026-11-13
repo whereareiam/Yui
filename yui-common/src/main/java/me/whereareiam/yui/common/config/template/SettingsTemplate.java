@@ -1,11 +1,11 @@
 package me.whereareiam.yui.common.config.template;
 
 import me.whereareiam.configura.merge.defaults.DefaultsProvider;
-import me.whereareiam.yui.model.config.settings.Settings;
-import me.whereareiam.yui.model.config.settings.UpdaterSettings;
-import me.whereareiam.yui.model.type.Duration;
-import me.whereareiam.yui.type.update.UpdateCheck;
-import me.whereareiam.yui.type.update.UpdateWarning;
+import me.whereareiam.yui.api.model.config.settings.Settings;
+import me.whereareiam.yui.api.model.config.settings.UpdaterSettings;
+import me.whereareiam.yui.api.model.type.Duration;
+import me.whereareiam.yui.api.type.update.UpdateCheck;
+import me.whereareiam.yui.api.type.update.UpdateWarning;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.springframework.stereotype.Component;

@@ -5,8 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.semantica.catalog.Layer;
 import me.whereareiam.semantica.common.Semantica;
 import me.whereareiam.semantica.source.file.FileSource;
-import me.whereareiam.yui.message.MessageDefaults;
-import me.whereareiam.yui.message.MessageLayers;
+import me.whereareiam.yui.api.message.MessageDefaults;
+import me.whereareiam.yui.api.message.MessageLayers;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 

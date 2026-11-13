@@ -1,9 +1,9 @@
 package me.whereareiam.yui.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.annotation.command.Command;
-import me.whereareiam.yui.annotation.command.Definition;
-import me.whereareiam.yui.command.Interaction;
+import me.whereareiam.yui.api.annotation.command.Command;
+import me.whereareiam.yui.api.annotation.command.Definition;
+import me.whereareiam.yui.api.command.Interaction;
 import org.springframework.stereotype.Component;
 
 @Component

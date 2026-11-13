@@ -1,10 +1,10 @@
 package me.whereareiam.yui.common.config.provider;
 
-import me.whereareiam.yui.command.DefinitionProvider;
+import me.whereareiam.yui.api.command.DefinitionProvider;
+import me.whereareiam.yui.api.model.command.CommandDefinition;
+import me.whereareiam.yui.api.model.config.Commands;
+import me.whereareiam.yui.api.type.Source;
 import me.whereareiam.yui.common.config.template.CommandsTemplate;
-import me.whereareiam.yui.model.command.CommandDefinition;
-import me.whereareiam.yui.model.config.Commands;
-import me.whereareiam.yui.type.Source;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

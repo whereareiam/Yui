@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.journey.registry;
 
+import me.whereareiam.yui.api.model.journey.JourneyInstruction;
 import me.whereareiam.yui.common.journey.JourneyDefinitionRegistry;
-import me.whereareiam.yui.model.journey.JourneyInstruction;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;

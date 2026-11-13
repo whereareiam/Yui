@@ -1,18 +1,18 @@
 package me.whereareiam.yui.adapter.database;
 
 import com.zaxxer.hikari.HikariDataSource;
-import me.whereareiam.yui.model.config.persistence.EmbeddedPersistence;
-import me.whereareiam.yui.model.config.persistence.Persistence;
-import me.whereareiam.yui.model.config.persistence.Pool;
-import me.whereareiam.yui.model.config.persistence.ServerPersistence;
-import me.whereareiam.yui.type.DatabaseType;
+import me.whereareiam.yui.api.model.config.persistence.EmbeddedPersistence;
+import me.whereareiam.yui.api.model.config.persistence.Persistence;
+import me.whereareiam.yui.api.model.config.persistence.Pool;
+import me.whereareiam.yui.api.model.config.persistence.ServerPersistence;
+import me.whereareiam.yui.api.type.DatabaseType;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.sql.DataSource;
 import java.nio.file.Path;
+import javax.sql.DataSource;
 
 /**
  * Connects to the database {@code persistence.yml} chooses. {@link PersistenceConfiguration} migrates and maps it.

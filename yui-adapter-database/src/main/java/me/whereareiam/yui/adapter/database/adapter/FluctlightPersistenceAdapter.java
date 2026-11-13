@@ -5,7 +5,7 @@ import me.whereareiam.yui.adapter.database.entity.FluctlightEntity;
 import me.whereareiam.yui.adapter.database.entity.LanguageEntity;
 import me.whereareiam.yui.adapter.database.repository.FluctlightRepository;
 import me.whereareiam.yui.adapter.database.repository.LanguageRepository;
-import me.whereareiam.yui.persistence.FluctlightPersistence;
+import me.whereareiam.yui.api.persistence.FluctlightPersistence;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;

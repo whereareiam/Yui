@@ -1,6 +1,6 @@
 package me.whereareiam.yui.common.fluctlight;
 
-import me.whereareiam.yui.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.api.model.fluctlight.Fluctlight;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionSynchronization;

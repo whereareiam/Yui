@@ -2,10 +2,10 @@ package me.whereareiam.yui.adapter.command.cooldown;
 
 import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
 import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
-import me.whereareiam.yui.command.Interaction;
-import me.whereareiam.yui.exception.command.CooldownActiveException;
-import me.whereareiam.yui.model.command.CommandCooldown;
-import me.whereareiam.yui.model.command.CommandDefinition;
+import me.whereareiam.yui.api.command.Interaction;
+import me.whereareiam.yui.api.exception.command.CooldownActiveException;
+import me.whereareiam.yui.api.model.command.CommandCooldown;
+import me.whereareiam.yui.api.model.command.CommandDefinition;
 import org.incendo.cloud.execution.postprocessor.CommandPostprocessingContext;
 import org.incendo.cloud.execution.postprocessor.CommandPostprocessor;
 import org.jetbrains.annotations.NotNull;

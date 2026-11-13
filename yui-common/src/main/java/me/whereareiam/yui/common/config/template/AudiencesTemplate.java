@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import me.whereareiam.conditia.model.Requirements;
 import me.whereareiam.configura.Configura;
 import me.whereareiam.configura.merge.defaults.DefaultsProvider;
-import me.whereareiam.yui.model.config.audience.Audiences;
+import me.whereareiam.yui.api.model.config.audience.Audiences;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedHashMap;

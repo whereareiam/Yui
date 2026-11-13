@@ -2,7 +2,7 @@ package me.whereareiam.yui.common.permission.type.member;
 
 import me.whereareiam.conditia.ConditionType;
 import me.whereareiam.conditia.result.Outcome;
-import me.whereareiam.yui.permission.Actor;
+import me.whereareiam.yui.api.permission.Actor;
 
 import java.util.List;
 import org.jetbrains.annotations.NotNull;

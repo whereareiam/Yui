@@ -2,10 +2,10 @@ package me.whereareiam.yui.common.audit;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.model.config.audit.AuditTrail;
-import me.whereareiam.yui.persistence.AuditPersistence;
-import me.whereareiam.yui.service.AuditService;
-import me.whereareiam.yui.type.audit.AuditCategory;
+import me.whereareiam.yui.api.model.config.audit.AuditTrail;
+import me.whereareiam.yui.api.persistence.AuditPersistence;
+import me.whereareiam.yui.api.service.AuditService;
+import me.whereareiam.yui.api.type.audit.AuditCategory;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;

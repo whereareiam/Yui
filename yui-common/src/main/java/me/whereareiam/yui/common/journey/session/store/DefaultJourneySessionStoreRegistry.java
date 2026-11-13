@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.journey.session.store;
 
-import me.whereareiam.yui.journey.session.store.JourneySessionStore;
-import me.whereareiam.yui.journey.session.store.JourneySessionStoreRegistry;
+import me.whereareiam.yui.api.journey.session.store.JourneySessionStore;
+import me.whereareiam.yui.api.journey.session.store.JourneySessionStoreRegistry;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;

@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.conversation;
 
-import me.whereareiam.yui.exception.ConversationRefusedException.Reason;
-import me.whereareiam.yui.model.config.conversation.Conversations;
+import me.whereareiam.yui.api.exception.ConversationRefusedException.Reason;
+import me.whereareiam.yui.api.model.config.conversation.Conversations;
 import org.springframework.stereotype.Component;
 
 import java.time.Clock;

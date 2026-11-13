@@ -1,6 +1,6 @@
 package me.whereareiam.yui.adapter.database;
 
-import me.whereareiam.yui.type.DatabaseType;
+import me.whereareiam.yui.api.type.DatabaseType;
 import org.flywaydb.core.Flyway;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
@@ -13,9 +13,9 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 
-import javax.sql.DataSource;
 import java.util.Locale;
 import java.util.Map;
+import javax.sql.DataSource;
 
 /**
  * Brings the database's tables up to date with Flyway, then maps them with Hibernate, which only checks that they

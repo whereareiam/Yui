@@ -1,8 +1,8 @@
 package me.whereareiam.yui.adapter.database;
 
-import me.whereareiam.yui.model.config.persistence.EmbeddedPersistence;
-import me.whereareiam.yui.model.config.persistence.ServerPersistence;
-import me.whereareiam.yui.type.DatabaseType;
+import me.whereareiam.yui.api.model.config.persistence.EmbeddedPersistence;
+import me.whereareiam.yui.api.model.config.persistence.ServerPersistence;
+import me.whereareiam.yui.api.type.DatabaseType;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;

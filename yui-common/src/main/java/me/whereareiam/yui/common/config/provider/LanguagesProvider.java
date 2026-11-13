@@ -1,6 +1,6 @@
 package me.whereareiam.yui.common.config.provider;
 
-import me.whereareiam.yui.model.config.languages.Languages;
+import me.whereareiam.yui.api.model.config.languages.Languages;
 import org.springframework.stereotype.Component;
 
 /**

@@ -1,8 +1,8 @@
 package me.whereareiam.yui.common.config.provider.style;
 
+import me.whereareiam.yui.api.model.config.style.Palette;
 import me.whereareiam.yui.common.config.provider.DefaultConfigProvider;
 import me.whereareiam.yui.common.config.template.style.PaletteTemplate;
-import me.whereareiam.yui.model.config.style.Palette;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;

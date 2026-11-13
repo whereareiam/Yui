@@ -2,10 +2,10 @@ package me.whereareiam.yui.common.conversation;
 
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.message.Translatable;
-import me.whereareiam.yui.model.config.conversation.Conversations;
-import me.whereareiam.yui.model.type.Duration;
-import me.whereareiam.yui.util.style.StyleKit;
+import me.whereareiam.yui.api.message.Translatable;
+import me.whereareiam.yui.api.model.config.conversation.Conversations;
+import me.whereareiam.yui.api.model.type.Duration;
+import me.whereareiam.yui.api.util.style.StyleKit;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;

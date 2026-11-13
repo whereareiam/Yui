@@ -2,12 +2,12 @@ package me.whereareiam.yui.common.fluctlight;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.event.Cancellable;
-import me.whereareiam.yui.event.fluctlight.FluctlightCreatedEvent;
-import me.whereareiam.yui.model.config.settings.Settings;
-import me.whereareiam.yui.model.fluctlight.Fluctlight;
-import me.whereareiam.yui.persistence.FluctlightPersistence;
-import me.whereareiam.yui.persistence.FluctlightPersistence.Facts;
+import me.whereareiam.yui.api.event.Cancellable;
+import me.whereareiam.yui.api.event.fluctlight.FluctlightCreatedEvent;
+import me.whereareiam.yui.api.model.config.settings.Settings;
+import me.whereareiam.yui.api.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.api.persistence.FluctlightPersistence.Facts;
+import me.whereareiam.yui.api.persistence.FluctlightPersistence;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.springframework.beans.factory.ObjectProvider;

@@ -2,9 +2,9 @@ package me.whereareiam.yui.common.plugin.part;
 
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.chassis.ExtensionContext;
-import me.whereareiam.yui.Constants;
-import me.whereareiam.yui.message.MessageDefaults;
-import me.whereareiam.yui.message.MessageLayers;
+import me.whereareiam.yui.api.Constants;
+import me.whereareiam.yui.api.message.MessageDefaults;
+import me.whereareiam.yui.api.message.MessageLayers;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;

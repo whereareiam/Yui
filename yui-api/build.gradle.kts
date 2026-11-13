@@ -41,7 +41,7 @@ dependencies {
 }
 
 buildConfig {
-    packageName("me.whereareiam.yui")
+    packageName("me.whereareiam.yui.api")
 
     buildConfigField("String", "NAME", "\"${rootProject.name}\"")
     buildConfigField("String", "VERSION", "\"${project.version}\"")

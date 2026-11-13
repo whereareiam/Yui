@@ -1,12 +1,12 @@
 package me.whereareiam.yui.common.service;
 
-import me.whereareiam.yui.Registry;
-import me.whereareiam.yui.Reloadable;
+import me.whereareiam.yui.api.Registry;
+import me.whereareiam.yui.api.Reloadable;
+import me.whereareiam.yui.api.model.config.languages.Language;
+import me.whereareiam.yui.api.model.config.languages.Languages;
+import me.whereareiam.yui.api.model.config.settings.Settings;
+import me.whereareiam.yui.api.persistence.LanguagePersistence;
 import me.whereareiam.yui.common.config.provider.LanguagesProvider;
-import me.whereareiam.yui.model.config.languages.Language;
-import me.whereareiam.yui.model.config.languages.Languages;
-import me.whereareiam.yui.model.config.settings.Settings;
-import me.whereareiam.yui.persistence.LanguagePersistence;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

@@ -1,12 +1,12 @@
 package me.whereareiam.yui.common.audit.type.update;
 
-import me.whereareiam.yui.Constants;
-import me.whereareiam.yui.event.update.UpdateAvailableEvent;
-import me.whereareiam.yui.message.Translatable;
-import me.whereareiam.yui.type.audit.AuditCategory;
-import me.whereareiam.yui.type.audit.AuditSeverity;
-import me.whereareiam.yui.util.Audit;
-import me.whereareiam.yui.util.style.StyleKit;
+import me.whereareiam.yui.api.Constants;
+import me.whereareiam.yui.api.event.update.UpdateAvailableEvent;
+import me.whereareiam.yui.api.message.Translatable;
+import me.whereareiam.yui.api.type.audit.AuditCategory;
+import me.whereareiam.yui.api.type.audit.AuditSeverity;
+import me.whereareiam.yui.api.util.Audit;
+import me.whereareiam.yui.api.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;

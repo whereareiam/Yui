@@ -1,9 +1,9 @@
 package me.whereareiam.yui.common.config.template;
 
 import me.whereareiam.configura.merge.defaults.DefaultsProvider;
-import me.whereareiam.yui.model.config.conversation.Conversations;
-import me.whereareiam.yui.model.type.Duration;
-import me.whereareiam.yui.type.ConversationType;
+import me.whereareiam.yui.api.model.config.conversation.Conversations;
+import me.whereareiam.yui.api.model.type.Duration;
+import me.whereareiam.yui.api.type.ConversationType;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

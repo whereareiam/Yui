@@ -1,14 +1,14 @@
 package me.whereareiam.yui.common.journey;
 
 import lombok.RequiredArgsConstructor;
+import me.whereareiam.yui.api.journey.JourneyService;
+import me.whereareiam.yui.api.journey.session.JourneySessionService;
+import me.whereareiam.yui.api.model.journey.JourneySignal;
+import me.whereareiam.yui.api.model.journey.definition.JourneyDefinition;
+import me.whereareiam.yui.api.model.journey.session.JourneySession;
+import me.whereareiam.yui.api.model.journey.session.JourneySessionRequest;
+import me.whereareiam.yui.api.type.journey.JourneyStatus;
 import me.whereareiam.yui.common.journey.engine.JourneyEngine;
-import me.whereareiam.yui.journey.JourneyService;
-import me.whereareiam.yui.journey.session.JourneySessionService;
-import me.whereareiam.yui.model.journey.JourneySignal;
-import me.whereareiam.yui.model.journey.definition.JourneyDefinition;
-import me.whereareiam.yui.model.journey.session.JourneySession;
-import me.whereareiam.yui.model.journey.session.JourneySessionRequest;
-import me.whereareiam.yui.type.journey.JourneyStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;

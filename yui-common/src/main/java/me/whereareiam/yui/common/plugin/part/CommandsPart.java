@@ -2,8 +2,8 @@ package me.whereareiam.yui.common.plugin.part;
 
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.chassis.ExtensionContext;
-import me.whereareiam.yui.command.CommandService;
-import me.whereareiam.yui.command.DefinitionProvider;
+import me.whereareiam.yui.api.command.CommandService;
+import me.whereareiam.yui.api.command.DefinitionProvider;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;

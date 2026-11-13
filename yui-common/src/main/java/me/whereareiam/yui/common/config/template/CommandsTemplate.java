@@ -5,11 +5,11 @@ import lombok.RequiredArgsConstructor;
 import me.whereareiam.conditia.model.Requirements;
 import me.whereareiam.configura.Configura;
 import me.whereareiam.configura.merge.defaults.DefaultsProvider;
-import me.whereareiam.yui.model.command.CommandCooldown;
-import me.whereareiam.yui.model.command.CommandDefinition;
-import me.whereareiam.yui.model.config.Commands;
-import me.whereareiam.yui.model.type.Duration;
-import me.whereareiam.yui.type.CommandCategory;
+import me.whereareiam.yui.api.model.command.CommandCooldown;
+import me.whereareiam.yui.api.model.command.CommandDefinition;
+import me.whereareiam.yui.api.model.config.Commands;
+import me.whereareiam.yui.api.model.type.Duration;
+import me.whereareiam.yui.api.type.CommandCategory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

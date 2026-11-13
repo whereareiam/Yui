@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.config.template.messages.command;
 
 import me.whereareiam.configura.merge.defaults.DefaultsProvider;
-import me.whereareiam.yui.model.config.messages.command.UpdateCheckCommandMessages;
+import me.whereareiam.yui.api.model.config.messages.command.UpdateCheckCommandMessages;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

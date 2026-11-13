@@ -2,7 +2,7 @@ package me.whereareiam.yui.common.service.lifecycle;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.LifecycleTask;
+import me.whereareiam.yui.api.LifecycleTask;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.EventListener;

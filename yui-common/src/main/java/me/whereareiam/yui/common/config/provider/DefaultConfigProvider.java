@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.MissingNode;
 import jakarta.annotation.PostConstruct;
 import me.whereareiam.configura.Configura;
-import me.whereareiam.yui.Reloadable;
-import me.whereareiam.yui.Registry;
-import me.whereareiam.yui.config.ConfigProvider;
+import me.whereareiam.yui.api.Registry;
+import me.whereareiam.yui.api.Reloadable;
+import me.whereareiam.yui.api.config.ConfigProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 

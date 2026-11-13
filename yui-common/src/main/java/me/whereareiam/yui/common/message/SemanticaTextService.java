@@ -3,7 +3,7 @@ package me.whereareiam.yui.common.message;
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.semantica.Text;
 import me.whereareiam.semantica.common.Semantica;
-import me.whereareiam.yui.message.TextService;
+import me.whereareiam.yui.api.message.TextService;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;

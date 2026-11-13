@@ -4,8 +4,9 @@ import me.whereareiam.chassis.ExtensionContext;
 import me.whereareiam.chassis.testing.ExtensionJar;
 import me.whereareiam.chassis.testing.LeakCheck;
 import me.whereareiam.chassis.type.ExtensionState;
-import me.whereareiam.yui.plugin.PluginRegistrations;
-import me.whereareiam.yui.service.InteractionService;
+import me.whereareiam.yui.api.plugin.PluginRegistrations;
+import me.whereareiam.yui.api.plugin.YuiPlugin;
+import me.whereareiam.yui.api.service.InteractionService;
 import org.example.greeting.Greeter;
 import org.example.greeting.GreetingPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -24,12 +25,14 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 /**
  * Yui's plugin runtime on a real Chassis host: a plugin jar with {@code @Plugin} starts in a Spring context of its own,
- * is attached to Yui while it starts, detached when it stops, and leaves no class loader behind.
+ * is attached to Yui while it starts, detached when it stops, and leaves no class loader behind. It sees Yui's API
+ * and none of Yui's implementation.
  */
 class PluginHostTest {
 	@TempDir
@@ -85,6 +88,15 @@ class PluginHostTest {
 		assertEquals(ExtensionState.DISABLED, host.find("greeting").orElseThrow().getState());
 		assertEquals(List.of("attach greeting", "detach greeting"), registrations.events);
 		assertTrue(LeakCheck.collected(loader, Duration.ofSeconds(10)), "The plugin's class loader is still reachable");
+	}
+
+	@Test
+	void aPlugin_SeesYuisApiButNotItsImplementation() throws Exception {
+		host.start();
+		ClassLoader plugin = registrations.loader;
+
+		assertEquals(YuiPlugin.class, plugin.loadClass(YuiPlugin.class.getName()));
+		assertThrows(ClassNotFoundException.class, () -> plugin.loadClass(PluginHost.class.getName()));
 	}
 
 	// Records what Yui is told, as DefaultPluginRegistrations would act on it.

@@ -1,6 +1,6 @@
 package me.whereareiam.yui.common.fluctlight;
 
-import me.whereareiam.yui.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.api.model.fluctlight.Fluctlight;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.Test;

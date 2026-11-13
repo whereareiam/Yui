@@ -1,9 +1,9 @@
 package me.whereareiam.yui.common.config.provider;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import me.whereareiam.yui.api.model.config.persistence.Persistence;
+import me.whereareiam.yui.api.type.DatabaseType;
 import me.whereareiam.yui.common.config.template.PersistenceTemplate;
-import me.whereareiam.yui.model.config.persistence.Persistence;
-import me.whereareiam.yui.type.DatabaseType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

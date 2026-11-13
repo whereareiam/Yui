@@ -1,6 +1,6 @@
 package me.whereareiam.yui.common.config.provider;
 
-import me.whereareiam.yui.model.config.audit.AuditTrail;
+import me.whereareiam.yui.api.model.config.audit.AuditTrail;
 import org.springframework.stereotype.Component;
 
 /**

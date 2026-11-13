@@ -6,7 +6,7 @@ import me.whereareiam.conditia.ConditionScope;
 import me.whereareiam.conditia.ConditionType;
 import me.whereareiam.conditia.Conditions;
 import me.whereareiam.configura.Configura;
-import me.whereareiam.yui.model.config.audience.Audiences;
+import me.whereareiam.yui.api.model.config.audience.Audiences;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;

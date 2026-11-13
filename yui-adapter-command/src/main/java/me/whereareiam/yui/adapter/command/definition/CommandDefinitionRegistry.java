@@ -1,8 +1,8 @@
 package me.whereareiam.yui.adapter.command.definition;
 
-import me.whereareiam.yui.command.CommandTexts;
-import me.whereareiam.yui.model.command.CommandDefinition;
-import me.whereareiam.yui.type.Source;
+import me.whereareiam.yui.api.command.CommandTexts;
+import me.whereareiam.yui.api.model.command.CommandDefinition;
+import me.whereareiam.yui.api.type.Source;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;

@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.config.template.messages;
 
-import me.whereareiam.yui.message.MessageDefaults;
-import me.whereareiam.yui.model.config.messages.EmbedMessages;
+import me.whereareiam.yui.api.message.MessageDefaults;
+import me.whereareiam.yui.api.model.config.messages.EmbedMessages;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 

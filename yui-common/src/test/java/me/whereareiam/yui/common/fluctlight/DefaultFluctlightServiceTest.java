@@ -1,14 +1,14 @@
 package me.whereareiam.yui.common.fluctlight;
 
-import me.whereareiam.yui.event.fluctlight.FluctlightClearedEvent;
-import me.whereareiam.yui.event.fluctlight.FluctlightCreatedEvent;
-import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguageAddedEvent;
-import me.whereareiam.yui.event.fluctlight.language.FluctlightLanguageChangeEvent;
-import me.whereareiam.yui.event.fluctlight.language.FluctlightLanguageChangedEvent;
-import me.whereareiam.yui.fluctlight.FluctlightService;
-import me.whereareiam.yui.model.config.settings.Settings;
-import me.whereareiam.yui.model.fluctlight.Fluctlight;
-import me.whereareiam.yui.persistence.FluctlightPersistence;
+import me.whereareiam.yui.api.event.fluctlight.FluctlightClearedEvent;
+import me.whereareiam.yui.api.event.fluctlight.FluctlightCreatedEvent;
+import me.whereareiam.yui.api.event.fluctlight.language.FluctlightAdditionalLanguageAddedEvent;
+import me.whereareiam.yui.api.event.fluctlight.language.FluctlightLanguageChangeEvent;
+import me.whereareiam.yui.api.event.fluctlight.language.FluctlightLanguageChangedEvent;
+import me.whereareiam.yui.api.fluctlight.FluctlightService;
+import me.whereareiam.yui.api.model.config.settings.Settings;
+import me.whereareiam.yui.api.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.api.persistence.FluctlightPersistence;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.exceptions.ErrorResponseException;

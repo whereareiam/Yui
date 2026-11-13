@@ -3,9 +3,9 @@ package me.whereareiam.yui.common.config;
 import me.whereareiam.conditia.adapter.configura.ConditiaFeature;
 import me.whereareiam.configura.Configura;
 import me.whereareiam.configura.type.Format;
+import me.whereareiam.yui.api.config.ConfigurationTypeResolver;
+import me.whereareiam.yui.api.type.ConfigurationType;
 import me.whereareiam.yui.common.config.jackson.ConfigModule;
-import me.whereareiam.yui.config.ConfigurationTypeResolver;
-import me.whereareiam.yui.type.ConfigurationType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

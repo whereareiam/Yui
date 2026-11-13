@@ -1,8 +1,8 @@
 package me.whereareiam.yui.common.config.provider;
 
+import me.whereareiam.yui.api.model.config.conversation.Conversations;
+import me.whereareiam.yui.api.model.type.Duration;
 import me.whereareiam.yui.common.config.template.ConversationsTemplate;
-import me.whereareiam.yui.model.config.conversation.Conversations;
-import me.whereareiam.yui.model.type.Duration;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

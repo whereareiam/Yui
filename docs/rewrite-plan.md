@@ -76,7 +76,7 @@ selection file and leak checks. Yui builds on it as it is:
   undoing to `ExtensionContext.onClose`, which Chassis runs before the plugin's Spring context closes.
 - Descriptor `yui-plugin.yml` in the jar (Chassis's fields plus Yui's own: `updater`); `plugin.json` goes.
 - Folder `plugins/`, data `plugins/<id>/`, selection file `plugins.yml`; texts in `plugins/<id>/messages/<locale>/`.
-- The export layer is Yui's API and what it hands plugins: `me.whereareiam.yui`, `me.whereareiam.chassis`,
+- The export layer is Yui's API and what it hands plugins: `me.whereareiam.yui.api`, `me.whereareiam.chassis`,
   `me.whereareiam.conditia`, `me.whereareiam.semantica`, `org.springframework`, `net.dv8tion.jda`.
 - `/plugin` follows Chassis's states and actions: enabled, disabled, waiting, failed; enable, disable, reload,
   rescan. Yui's own loader (`yui-adapter-plugin`'s manager, scanner, class loaders, bean bridge) and its plugin
@@ -713,9 +713,9 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
    `PluginBeans` (an `InteractionService` qualified with the plugin's id, so the call-stack lookup went) and
    `PluginAttachment`, which hands the context to `DefaultPluginRegistrations`: texts, condition types, listeners,
    commands and journeys, each undone on stop. `/plugin`, `/status` and `/update` follow Chassis's states. A test
-   starts a real plugin jar, attaches, detaches and checks that its class loader is collected. Left: the
-   export layer exports all of `me.whereareiam.yui`, implementation packages included, since Yui's root package
-   holds API classes (`Constants`, `Registry`, `Reloadable`, `LifecycleTask`); where they move is the owner's pick.
+   starts a real plugin jar, attaches, detaches and checks that its class loader is collected. Since done: all of
+   `yui-api` lives under `me.whereareiam.yui.api` (owner's pick, 13 November 2026), so the export layer names that
+   one package and a test checks that a plugin cannot load Yui's implementation.
 8. JDA 6 and cloud.
    Built on 13 November 2026: JDA 6.7.0 with `cloud-jda6` 1.0.0-beta.4; components come from JDA 6's packages and
    rows (`addComponents(ActionRow.of(...))`); `spring-boot-webflux` and JDA's voice libraries (Opus, Tink) are gone.

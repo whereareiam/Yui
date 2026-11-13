@@ -1,8 +1,8 @@
 package me.whereareiam.yui.common.config.provider.style;
 
+import me.whereareiam.yui.api.model.config.style.embed.EmbedStyle;
 import me.whereareiam.yui.common.config.provider.DefaultConfigProvider;
 import me.whereareiam.yui.common.config.template.style.EmbedsTemplate;
-import me.whereareiam.yui.model.config.style.embed.EmbedStyle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;

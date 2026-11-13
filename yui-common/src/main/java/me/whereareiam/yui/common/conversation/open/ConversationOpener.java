@@ -1,8 +1,8 @@
 package me.whereareiam.yui.common.conversation.open;
 
+import me.whereareiam.yui.api.type.ConversationType;
 import me.whereareiam.yui.common.conversation.ConversationSetup;
 import me.whereareiam.yui.common.conversation.OpenConversation;
-import me.whereareiam.yui.type.ConversationType;
 
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
