@@ -724,18 +724,19 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
 5. Configuration on Configura 2.1 with file upgrades; texts on Semantica 0.1.0, after its `FileSource` key prefix
    and with a Discord format (see Messages). Done before permissions (owner, 13 November 2026): the old
    Configura's adapters read single strings only, so `requires:` lists need Configura 2.1 first.
-   Built so far (13 November 2026): Configura 2.1 with Yui's value types as a Jackson module; `settings.yml`,
-   `persistence.yml`, `languages.yml`, `style/`, `audit.yml` and `conversations.yml` in their agreed shape. Yui no
-   longer writes its files, values may name environment variables, and files older than this version stop startup
-   until `yui config upgrade <dir>` runs Strata on them: one stream per file (`yui/config/settings`,
-   `.../languages`, `.../style/palette`, `.../style/embeds`), each with its own `_version`; a file gets a stream, and
-   so a `_version`, with its first migration (`persistence.yml`, `audit.yml` and `conversations.yml` have none yet).
-   Audit entries are filed under a category in code (members, moderation, system); channels per locale and
-   wildcard types went. `audit.yml`'s `store` (entries in the database, `/audit`) is not built yet and not in the
-   file. Conversations open in direct messages, private threads or temporary channels with staff, idle and lifetime
-   closes, limits and transcripts; nothing has been tried against Discord yet. Still to come: the texts on Semantica
-   0.1.0 (its key prefix is in `dev-0d7e717`); language names, the embeds' author and footer text, the close warning
-   and the transcript line move into texts then. `commands.yml` takes its final shape with step 6.
+   Built on 13 November 2026: Configura 2.1 with Yui's value types as a Jackson module; `settings.yml`,
+   `persistence.yml`, `languages.yml`, `style/`, `audit.yml` and `conversations.yml` in their agreed shape. Yui
+   writes none of its files, values may name environment variables, and files older than this version stop
+   startup until `yui config upgrade <dir>` runs Strata on them: one stream per file, each with its own `_version`
+   (`messages/` keeps its own in `messages/version.yml`, which Semantica does not read); a file gets a stream with
+   its first migration. Audit entries are filed under a category in code; channels per locale and wildcard types
+   went. Conversations open in direct messages, private threads or temporary channels with staff, idle and
+   lifetime closes, limits and transcripts. Texts come from Semantica 0.1.0: English defaults in code, one
+   `MessageDefaults` per file, served from memory, with `messages/<locale>/` over them; plugins' texts are owned
+   layers prefixed with their id. Nothing has been tried against Discord yet.
+   Left for later: `audit.yml`'s `store` (entries in the database, `/audit`); the embeds' author and footer text
+   and the transcript line becoming texts; the audit texts still say `audit.user.*` where the entries say
+   `member.*`. `commands.yml` takes its final shape with step 6.
 6. Permissions on Conditia; one core service that grants roles for facts and logs them (the role sync went with
    step 4).
 7. Plugin runtime with hot reload, on Chassis.
