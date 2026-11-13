@@ -16,7 +16,7 @@ public class PluginDescriptorReader {
 	public Plugin read(Path jar) throws Exception {
 		try (FileSystem fs = FileSystems.newFileSystem(jar);
 		     InputStream in = Files.newInputStream(fs.getPath("/plugin.json"))) {
-			Plugin plugin = Config.load(in, Plugin.class);
+			Plugin plugin = Config.configured().read(in, Plugin.class);
 			if (plugin.getId() == null || plugin.getName() == null || plugin.getEntrypoint() == null) {
 				throw new PluginLoadException("Plugin missing required fields: id=" + plugin.getId() +
 						", name=" + plugin.getName() + ", entrypoint=" + plugin.getEntrypoint());

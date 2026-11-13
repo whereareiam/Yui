@@ -1,6 +1,6 @@
 package me.whereareiam.yui.common.config.template.messages.command;
 
-import me.whereareiam.configura.TemplateProvider;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
 import me.whereareiam.yui.model.config.messages.command.PluginCommandMessages;
 import org.springframework.stereotype.Component;
 
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class PluginCommandMessagesTemplate implements TemplateProvider<PluginCommandMessages> {
+public class PluginCommandMessagesTemplate implements DefaultsProvider<PluginCommandMessages> {
 	@Override
 	public PluginCommandMessages supply(PluginCommandMessages plugins) {
 		plugins.setDescription("Manage bot plugins");

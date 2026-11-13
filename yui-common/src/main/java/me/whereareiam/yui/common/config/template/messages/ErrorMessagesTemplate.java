@@ -1,6 +1,6 @@
 package me.whereareiam.yui.common.config.template.messages;
 
-import me.whereareiam.configura.TemplateProvider;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
 import me.whereareiam.yui.model.config.messages.CommandMessages;
 import me.whereareiam.yui.model.config.messages.CommandMessages.ErrorMessages;
 import me.whereareiam.yui.model.config.messages.CommandMessages.ErrorMessages.RequirementErrorMessages;
@@ -8,7 +8,7 @@ import me.whereareiam.yui.model.config.messages.CommandMessages.ErrorMessages.Va
 import org.springframework.stereotype.Component;
 
 @Component
-public class ErrorMessagesTemplate implements TemplateProvider<ErrorMessages> {
+public class ErrorMessagesTemplate implements DefaultsProvider<ErrorMessages> {
 	@Override
 	public ErrorMessages supply(ErrorMessages error) {
 		error.setException("An unexpected error occurred. Please try again later.");

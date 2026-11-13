@@ -1,7 +1,6 @@
 package me.whereareiam.yui.common.config.template;
 
-import me.whereareiam.configura.TemplateProvider;
-import me.whereareiam.configura.type.MultiValue;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
 import me.whereareiam.yui.model.config.settings.DiscordSettings;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.config.settings.UpdaterSettings;
@@ -17,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class SettingsTemplate implements TemplateProvider<Settings> {
+public class SettingsTemplate implements DefaultsProvider<Settings> {
 	@Override
 	public Settings supply(Settings settings) {
 		// Default values
@@ -39,10 +38,10 @@ public class SettingsTemplate implements TemplateProvider<Settings> {
 		DiscordSettings.Channels channels = new DiscordSettings.Channels();
 		channels.setTempChannelCategories(List.of("SET_YOUR_TEMP_CHANNEL_CATEGORY_ID"));
 		channels.setAudit(Map.of(
-				"user_join", MultiValue.of("SET_YOUR_AUDIT_CHANNEL_ID"),
-				"user_leave", MultiValue.of("SET_YOUR_AUDIT_CHANNEL_ID"),
-				"user_kick", MultiValue.of("SET_YOUR_AUDIT_CHANNEL_ID"),
-				"update_*_available", MultiValue.of("SET_YOUR_AUDIT_CHANNEL_ID")
+				"user_join", List.of("SET_YOUR_AUDIT_CHANNEL_ID"),
+				"user_leave", List.of("SET_YOUR_AUDIT_CHANNEL_ID"),
+				"user_kick", List.of("SET_YOUR_AUDIT_CHANNEL_ID"),
+				"update_*_available", List.of("SET_YOUR_AUDIT_CHANNEL_ID")
 		));
 		discordSettings.setChannels(channels);
 

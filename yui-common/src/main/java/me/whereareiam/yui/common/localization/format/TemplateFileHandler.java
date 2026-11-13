@@ -32,7 +32,7 @@ public class TemplateFileHandler implements FileTypeHandler {
     ) {
         try {
             @SuppressWarnings("unchecked")
-            Map<String, Object> content = Config.load(file, Map.class);
+            Map<String, Object> content = Config.configured().read(file, Map.class);
             Map<String, TextValue> templates = convertToFlatMap(content);
             
             templateProcessor.process(file, templates);

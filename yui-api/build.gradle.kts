@@ -24,6 +24,7 @@ dependencies {
 
     providedApi(libs.jda)
     providedApi(libs.configura)
+    providedApi(libs.configura.polymorphic)
     providedApi(libs.semantica)
     providedApi(libs.spring.boot)
     providedApi(libs.spring.boot.webflux)

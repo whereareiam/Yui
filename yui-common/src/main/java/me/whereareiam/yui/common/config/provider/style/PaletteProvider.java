@@ -1,6 +1,5 @@
 package me.whereareiam.yui.common.config.provider.style;
 
-import me.whereareiam.configura.Config;
 import me.whereareiam.yui.common.config.provider.DefaultConfigProvider;
 import me.whereareiam.yui.common.config.template.style.PaletteTemplate;
 import me.whereareiam.yui.model.config.style.Palette;
@@ -13,6 +12,9 @@ import java.nio.file.Path;
 @Component
 public class PaletteProvider extends DefaultConfigProvider<Palette> {
 	@Autowired
+	private PaletteTemplate template;
+
+	@Autowired
 	@Qualifier("stylesPath")
 	private Path stylesPath;
 
@@ -23,12 +25,7 @@ public class PaletteProvider extends DefaultConfigProvider<Palette> {
 
 	@Override
 	protected Palette load() {
-		return Config.update(getBasePath().resolve("palette"), Palette.class);
-	}
-
-	@Override
-	protected void registerTemplate() {
-		Config.registerTemplate(PaletteTemplate.class);
+		return update("palette", template.supply(new Palette()));
 	}
 
 	@Override

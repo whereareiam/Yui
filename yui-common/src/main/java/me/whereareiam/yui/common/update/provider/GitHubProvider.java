@@ -2,8 +2,7 @@ package me.whereareiam.yui.common.update.provider;
 
 import lombok.Data;
 import me.whereareiam.configura.Config;
-import me.whereareiam.configura.reader.ConfigReader;
-import me.whereareiam.configura.type.Format;
+import me.whereareiam.configura.Configura;
 import me.whereareiam.yui.model.update.UpdateSource;
 import me.whereareiam.yui.update.UpdateProvider;
 import org.springframework.stereotype.Component;
@@ -24,7 +23,7 @@ import java.util.stream.Collectors;
  */
 @Component
 public class GitHubProvider implements UpdateProvider {
-    private static final ConfigReader JSON_READER = Config.reader(Format.JSON);
+    private static final Configura JSON = Config.json();
     private static final String PROVIDER_ID = "github";
     private static final String DEFAULT_API_BASE = "https://api.github.com";
     private static final String API_BASE_PROPERTY = "yui.update.github.base-url";
@@ -39,7 +38,7 @@ public class GitHubProvider implements UpdateProvider {
         String api = apiBase() + "/repos/" + source.getId() + "/releases/latest";
 
         try (InputStream in = request(api)) {
-            GitHubRelease release = JSON_READER.decode(in, GitHubRelease.class);
+            GitHubRelease release = JSON.read(in, GitHubRelease.class);
             return Optional.ofNullable(release.tag_name);
         } catch (IOException e) {
             // If no releases exist, GitHub returns 404
@@ -55,7 +54,7 @@ public class GitHubProvider implements UpdateProvider {
         String api = apiBase() + "/repos/" + source.getId() + "/commits?per_page=" + limit;
 
         try (InputStream in = request(api)) {
-            GitHubCommit[] commits = JSON_READER.decode(in, GitHubCommit[].class);
+            GitHubCommit[] commits = JSON.read(in, GitHubCommit[].class);
             return Arrays.stream(commits)
                     .map(c -> c.sha)
                     .collect(Collectors.toList());

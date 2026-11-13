@@ -1,13 +1,13 @@
 package me.whereareiam.yui.common.config.template.messages.command;
 
-import me.whereareiam.configura.TemplateProvider;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
 import me.whereareiam.yui.model.config.messages.command.ClearCommandMessages;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class ClearCommandMessagesTemplate implements TemplateProvider<ClearCommandMessages> {
+public class ClearCommandMessagesTemplate implements DefaultsProvider<ClearCommandMessages> {
 	@Override
 	public ClearCommandMessages supply(ClearCommandMessages clearCommand) {
 		clearCommand.setDescription("Clears a user's profile data and reinitializes it. This action cannot be undone.");

@@ -1,13 +1,13 @@
 package me.whereareiam.yui.common.config.template.messages.command;
 
-import me.whereareiam.configura.TemplateProvider;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
 import me.whereareiam.yui.model.config.messages.command.LanguageCommandMessages;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class LanguageCommandMessagesTemplate implements TemplateProvider<LanguageCommandMessages> {
+public class LanguageCommandMessagesTemplate implements DefaultsProvider<LanguageCommandMessages> {
 	@Override
 	public LanguageCommandMessages supply(LanguageCommandMessages language) {
 		language.setDescription("Change your language preferences");

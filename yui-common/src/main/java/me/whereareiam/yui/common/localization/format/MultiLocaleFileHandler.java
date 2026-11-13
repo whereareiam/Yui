@@ -26,7 +26,7 @@ public class MultiLocaleFileHandler implements FileTypeHandler {
         // Load and check structure
         try {
             @SuppressWarnings("unchecked")
-            Map<String, Object> content = Config.load(file, Map.class);
+            Map<String, Object> content = Config.configured().read(file, Map.class);
 
             return isMultiLocaleStructure(content);
         } catch (Exception e) {
@@ -43,7 +43,7 @@ public class MultiLocaleFileHandler implements FileTypeHandler {
     ) {
         try {
             @SuppressWarnings("unchecked")
-            Map<String, Object> content = Config.load(file, Map.class);
+            Map<String, Object> content = Config.configured().read(file, Map.class);
             
             // Extract filename without extension to use as prefix
             String filename = file.getFileName().toString();

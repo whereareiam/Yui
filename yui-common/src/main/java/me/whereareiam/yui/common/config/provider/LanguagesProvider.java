@@ -1,20 +1,18 @@
 package me.whereareiam.yui.common.config.provider;
 
-import me.whereareiam.configura.Config;
 import me.whereareiam.yui.common.config.template.LanguagesTemplate;
 import me.whereareiam.yui.model.config.languages.Languages;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class LanguagesProvider extends DefaultConfigProvider<Languages> {
-	@Override
-	protected Languages load() {
-		return Config.update(getBasePath().resolve("languages"), Languages.class);
-	}
+	@Autowired
+	private LanguagesTemplate template;
 
 	@Override
-	protected void registerTemplate() {
-		Config.registerTemplate(LanguagesTemplate.class);
+	protected Languages load() {
+		return update("languages", template.supply(new Languages()));
 	}
 
 	@Override

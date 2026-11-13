@@ -4,8 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import me.whereareiam.configura.annotation.Field;
-import me.whereareiam.configura.annotation.MergeStrategy;
+import me.whereareiam.configura.annotation.merge.Merge;
+import me.whereareiam.configura.type.merge.WhenPresent;
 import me.whereareiam.yui.type.requirement.RequirementOperator;
 
 import java.util.Map;
@@ -24,7 +24,7 @@ public class Requirements {
      * Uses SHALLOW merge strategy so users can permanently delete requirement groups
      * without them reappearing from templates.
      */
-    @Field(merge = MergeStrategy.SHALLOW)
+    @Merge(present = WhenPresent.KEEP_AS_WRITTEN)
     private Map<String, RequirementEntry> groups;
 }
 

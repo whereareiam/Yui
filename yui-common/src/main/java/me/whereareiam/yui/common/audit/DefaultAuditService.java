@@ -2,7 +2,6 @@ package me.whereareiam.yui.common.audit;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.configura.type.MultiValue;
 import me.whereareiam.yui.util.translation.LocaleScopedValues;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.service.AuditService;
@@ -67,19 +66,19 @@ public class DefaultAuditService implements AuditService {
 	public Optional<List<String>> getChannelIds(String auditType, DiscordLocale locale) {
 		Settings settings = settingsProvider.getObject();
 
-		Map<String, MultiValue<String>> auditConfig = settings.getDiscord().getChannels().getAudit();
+		Map<String, List<String>> auditConfig = settings.getDiscord().getChannels().getAudit();
 		if (auditConfig == null)
 			return Optional.empty();
 
 		// Try exact match first
-		MultiValue<String> exactMatch = auditConfig.get(auditType);
+		List<String> exactMatch = auditConfig.get(auditType);
 		if (exactMatch != null) {
 			return Optional.of(LocaleScopedValues.resolve(exactMatch, locale));
 		}
 
 		// Try wildcard patterns
 		// Patterns like "update_plugin_*_available" should match "update_plugin_yuiverification_available"
-		for (Map.Entry<String, MultiValue<String>> entry : auditConfig.entrySet()) {
+		for (Map.Entry<String, List<String>> entry : auditConfig.entrySet()) {
 			String pattern = entry.getKey();
 			if (pattern.contains("*") && matchesWildcard(auditType, pattern)) {
 				return Optional.of(LocaleScopedValues.resolve(entry.getValue(), locale));
@@ -123,15 +122,15 @@ public class DefaultAuditService implements AuditService {
 	@Override
 	public List<DiscordLocale> getConfiguredLocales(String auditType) {
 		Settings settings = settingsProvider.getObject();
-		Map<String, MultiValue<String>> auditConfig = settings.getDiscord().getChannels().getAudit();
+		Map<String, List<String>> auditConfig = settings.getDiscord().getChannels().getAudit();
 		if (auditConfig == null)
 			return List.of();
 
-		MultiValue<String> mv = auditConfig.get(auditType);
+		List<String> mv = auditConfig.get(auditType);
 		if (mv == null)
 			return List.of();
 
-		return LocaleScopedValues.extractLocales(mv.asList());
+		return LocaleScopedValues.extractLocales(mv);
 	}
 
 	private CompletableFuture<Void> sendToChannel(TextChannel channel, String auditType, MessageCreateData message) {

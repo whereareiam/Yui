@@ -1,6 +1,6 @@
 package me.whereareiam.yui.common.config.template;
 
-import me.whereareiam.configura.TemplateProvider;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
 import me.whereareiam.yui.model.config.languages.LanguageEntry;
 import me.whereareiam.yui.model.config.languages.Languages;
 import me.whereareiam.yui.model.config.languages.TranslationSettings;
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 
 @Component
-public class LanguagesTemplate implements TemplateProvider<Languages> {
+public class LanguagesTemplate implements DefaultsProvider<Languages> {
 	@Override
 	public Languages supply(Languages config) {
 		if (config.getLanguages() == null) {

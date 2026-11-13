@@ -2,8 +2,8 @@ package me.whereareiam.yui.model.config.languages;
 
 import lombok.Getter;
 import lombok.Setter;
-import me.whereareiam.configura.annotation.Field;
-import me.whereareiam.configura.annotation.MergeStrategy;
+import me.whereareiam.configura.annotation.merge.Merge;
+import me.whereareiam.configura.type.merge.WhenPresent;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 import java.util.HashMap;
@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 public class Languages {
-	@Field(merge = MergeStrategy.SHALLOW)
+	@Merge(present = WhenPresent.KEEP_AS_WRITTEN)
 	private Map<String, LanguageEntry> languages;
 	private TranslationSettings settings;
 

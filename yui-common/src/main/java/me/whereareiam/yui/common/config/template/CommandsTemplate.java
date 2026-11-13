@@ -1,6 +1,6 @@
 package me.whereareiam.yui.common.config.template;
 
-import me.whereareiam.configura.TemplateProvider;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import me.whereareiam.yui.model.command.CommandCooldown;
 import me.whereareiam.yui.model.config.Commands;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class CommandsTemplate implements TemplateProvider<Commands> {
+public class CommandsTemplate implements DefaultsProvider<Commands> {
 	@Override
 	public Commands supply(Commands commands) {
 		// Default values

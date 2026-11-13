@@ -1,13 +1,13 @@
 package me.whereareiam.yui.common.config.template.messages;
 
-import me.whereareiam.configura.TemplateProvider;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
 import me.whereareiam.yui.model.config.messages.GeneralMessages;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class GeneralMessagesTemplate implements TemplateProvider<GeneralMessages> {
+public class GeneralMessagesTemplate implements DefaultsProvider<GeneralMessages> {
 	@Override
 	public GeneralMessages supply(GeneralMessages generalMessages) {
 		GeneralMessages.Conversation conversation = new GeneralMessages.Conversation();

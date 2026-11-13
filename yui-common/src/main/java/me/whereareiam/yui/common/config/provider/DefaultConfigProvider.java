@@ -1,24 +1,20 @@
 package me.whereareiam.yui.common.config.provider;
 
 import jakarta.annotation.PostConstruct;
+import me.whereareiam.configura.Configura;
 import me.whereareiam.yui.Reloadable;
-import me.whereareiam.yui.common.config.ConfiguraBootstrap;
-import me.whereareiam.yui.config.ConfigProvider;
 import me.whereareiam.yui.Registry;
+import me.whereareiam.yui.config.ConfigProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.nio.file.Path;
 
 /**
- * Adapter-layer base that wires {@link ConfigProvider} into our reload registry
- * and exposes the resolved base path for subclasses.
- * <p>
- * By default uses the {@code dataPath} base. Configs that need another base
- * (e.g. styles or languages) can override {@link #getBasePath()}.
- * <p>
- * Also depends on {@link ConfiguraBootstrap} to ensure Configura is initialized
- * (reader/writer, adapters) before any configuration is loaded.
+ * Base of Yui's own configuration providers: registers each for reloads and reads its file through Yui's
+ * Configura instance.
+ *
+ * <p>Files are under the {@code dataPath} base unless a provider names another (styles use their own folder).</p>
  */
 public abstract class DefaultConfigProvider<T> extends ConfigProvider<T> {
 	@Autowired
@@ -28,12 +24,8 @@ public abstract class DefaultConfigProvider<T> extends ConfigProvider<T> {
 	@Autowired
 	private Registry<Reloadable> reloadables;
 
-	/**
-	 * Only injected to enforce lifecycle ordering (ConfiguraBootstrap runs first).
-	 */
 	@Autowired
-	@SuppressWarnings("unused")
-	private ConfiguraBootstrap configuraBootstrap;
+	private Configura configura;
 
 	@PostConstruct
 	private void register() {
@@ -42,5 +34,20 @@ public abstract class DefaultConfigProvider<T> extends ConfigProvider<T> {
 
 	protected Path getBasePath() {
 		return basePath;
+	}
+
+	/**
+	 * Reads a file below the base path, fills in what it lacks from the defaults, and writes the result back.
+	 *
+	 * @param name     the file's name without extension, such as {@code settings}
+	 * @param defaults the values a missing setting takes
+	 * @return the file's content, completed by the defaults
+	 */
+	protected T update(String name, T defaults) {
+		String file = getBasePath().resolve(name).toString();
+		T merged = configura.merge(file, defaults);
+		configura.write(file, merged);
+
+		return merged;
 	}
 }

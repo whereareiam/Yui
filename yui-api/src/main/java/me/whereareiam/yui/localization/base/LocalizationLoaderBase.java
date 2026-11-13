@@ -229,7 +229,7 @@ public final class LocalizationLoaderBase {
 
         try {
             @SuppressWarnings("unchecked")
-            Map<String, Object> content = Config.load(file, Map.class);
+            Map<String, Object> content = Config.configured().read(file, Map.class);
             if (isMultiLocaleStructure(content))
                 return FileFormats.MULTI_LOCALE;
         } catch (Exception e) {

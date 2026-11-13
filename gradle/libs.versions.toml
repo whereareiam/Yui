@@ -17,7 +17,7 @@ postgres = "42.7.14"
 mariadb = "4.0.0"
 h2 = "2.5.252"
 flyway = "13.12.1"
-configura = "dev-3526c23"
+configura = "2.1.0"
 semantica = "dev-ffdb76d"
 attache = "1.3.0"
 
@@ -51,6 +51,7 @@ flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "fly
 flyway-postgresql = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flyway" }
 flyway-mariadb = { group = "org.flywaydb", name = "flyway-mysql", version.ref = "flyway" }
 configura = { group = "me.whereareiam", name = "configura", version.ref = "configura" }
+configura-polymorphic = { group = "me.whereareiam.configura.feature", name = "polymorphic", version.ref = "configura" }
 semantica = { group = "me.whereareiam", name = "semantica", version.ref = "semantica" }
 
 # spring

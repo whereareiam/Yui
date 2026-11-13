@@ -1,13 +1,13 @@
 package me.whereareiam.yui.common.config.template.messages;
 
-import me.whereareiam.configura.TemplateProvider;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
 import me.whereareiam.yui.model.config.messages.AuditMessages;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class AuditMessagesTemplate implements TemplateProvider<AuditMessages> {
+public class AuditMessagesTemplate implements DefaultsProvider<AuditMessages> {
 	@Override
 	public AuditMessages supply(AuditMessages auditMessages) {
 		AuditMessages.User user = new AuditMessages.User();

@@ -1,6 +1,6 @@
 package me.whereareiam.yui.common.config.template.messages.command;
 
-import me.whereareiam.configura.TemplateProvider;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
 import me.whereareiam.yui.model.config.messages.command.HelpCommandMessages;
 import org.springframework.stereotype.Component;
 
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-public class HelpCommandMessagesTemplate implements TemplateProvider<HelpCommandMessages> {
+public class HelpCommandMessagesTemplate implements DefaultsProvider<HelpCommandMessages> {
 	@Override
 	public HelpCommandMessages supply(HelpCommandMessages helpCommand) {
 		helpCommand.setDescription("Shows all commands organized by categories with their descriptions and usage examples.");

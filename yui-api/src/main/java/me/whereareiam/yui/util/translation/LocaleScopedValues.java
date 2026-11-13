@@ -1,6 +1,5 @@
 package me.whereareiam.yui.util.translation;
 
-import me.whereareiam.configura.type.MultiValue;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 import java.util.ArrayList;
@@ -17,11 +16,6 @@ import java.util.List;
  * entries are returned. Blank/null entries are ignored.
  */
 public final class LocaleScopedValues {
-	public static List<String> resolve(MultiValue<String> values, DiscordLocale locale) {
-		if (values == null) return List.of();
-		return resolve(values.asList(), locale);
-	}
-
 	/**
 	 * Extract locales present as prefixes in the values (e.g., "ru:123" -> ru).
 	 *

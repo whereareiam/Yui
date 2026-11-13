@@ -155,13 +155,13 @@ public class YuiTranslationLoader implements TranslationProvider<DiscordLocale> 
                     Object supplied = p.supply(model);
 
                     if (exists) {
-                        Object merged = Config.merge(out, supplied);
-                        Config.getDefaultWriter().write(out, merged);
+                        Object merged = Config.configured().merge(out.toString(), supplied);
+                        Config.configured().write(out.toString(), merged);
                         log.debug("[Localization] Updated default file: {}", out);
                         continue;
                     }
 
-                    Config.save(out, supplied);
+                    Config.configured().save(out.toString(), supplied);
                     log.info("[Localization] Generated default file: {}", out);
                 } catch (Exception e) {
                     log.warn("[Localization] Failed to generate defaults from provider", e);

@@ -197,7 +197,7 @@ class YuiTranslationLoaderIntegrationTest {
         // Verify applyOnce=true providers do not overwrite existing files.
         try {
             @SuppressWarnings("unchecked")
-            Map<String, Object> content = Config.load(languagesDir.resolve("en-US.yml"), Map.class);
+            Map<String, Object> content = Config.configured().read(languagesDir.resolve("en-US.yml"), Map.class);
             assertTrue(content.containsKey("field1"));
             assertFalse(content.containsKey("field2"));
         } catch (Exception e) {
@@ -233,7 +233,7 @@ class YuiTranslationLoaderIntegrationTest {
         loader.provide();
 
         @SuppressWarnings("unchecked")
-        Map<String, Object> content = Config.load(languagesDir.resolve("en-US.yml"), Map.class);
+        Map<String, Object> content = Config.configured().read(languagesDir.resolve("en-US.yml"), Map.class);
         assertEquals("custom", content.get("field1"));
         assertEquals("value2", content.get("field2"));
     }

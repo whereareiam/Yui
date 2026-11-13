@@ -1,6 +1,5 @@
 package me.whereareiam.yui.common.audit;
 
-import me.whereareiam.configura.type.MultiValue;
 import me.whereareiam.yui.model.config.settings.DiscordSettings;
 import me.whereareiam.yui.model.config.settings.Settings;
 import net.dv8tion.jda.api.JDA;
@@ -42,9 +41,9 @@ class AuditServiceTest {
 
     @Test
     void testExactMatch_takesPriorityOverWildcard() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("update_plugin_*_available", MultiValue.of("wildcard-channel"));
-        auditConfig.put("update_plugin_specific_available", MultiValue.of("exact-channel"));
+        Map<String, List<String>> auditConfig = new HashMap<>();
+        auditConfig.put("update_plugin_*_available", List.of("wildcard-channel"));
+        auditConfig.put("update_plugin_specific_available", List.of("exact-channel"));
 
         when(mockChannels.getAudit()).thenReturn(auditConfig);
 
@@ -56,8 +55,8 @@ class AuditServiceTest {
 
     @Test
     void testWildcard_singleStar() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("update_plugin_*_available", MultiValue.of("channel-1"));
+        Map<String, List<String>> auditConfig = new HashMap<>();
+        auditConfig.put("update_plugin_*_available", List.of("channel-1"));
 
         when(mockChannels.getAudit()).thenReturn(auditConfig);
 
@@ -73,8 +72,8 @@ class AuditServiceTest {
 
     @Test
     void testWildcard_multipleParts() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("update_*_*_available", MultiValue.of("channel-1"));
+        Map<String, List<String>> auditConfig = new HashMap<>();
+        auditConfig.put("update_*_*_available", List.of("channel-1"));
 
         when(mockChannels.getAudit()).thenReturn(auditConfig);
 
@@ -88,8 +87,8 @@ class AuditServiceTest {
 
     @Test
     void testWildcard_atStart() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("*_available", MultiValue.of("channel-1"));
+        Map<String, List<String>> auditConfig = new HashMap<>();
+        auditConfig.put("*_available", List.of("channel-1"));
 
         when(mockChannels.getAudit()).thenReturn(auditConfig);
 
@@ -102,8 +101,8 @@ class AuditServiceTest {
 
     @Test
     void testWildcard_atEnd() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("update_*", MultiValue.of("channel-1"));
+        Map<String, List<String>> auditConfig = new HashMap<>();
+        auditConfig.put("update_*", List.of("channel-1"));
 
         when(mockChannels.getAudit()).thenReturn(auditConfig);
 
@@ -116,8 +115,8 @@ class AuditServiceTest {
 
     @Test
     void testWildcard_noMatch() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("update_plugin_*_available", MultiValue.of("channel-1"));
+        Map<String, List<String>> auditConfig = new HashMap<>();
+        auditConfig.put("update_plugin_*_available", List.of("channel-1"));
 
         when(mockChannels.getAudit()).thenReturn(auditConfig);
 
@@ -128,8 +127,8 @@ class AuditServiceTest {
 
     @Test
     void testWildcard_specialCharactersEscaped() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("update.plugin.*", MultiValue.of("channel-1"));
+        Map<String, List<String>> auditConfig = new HashMap<>();
+        auditConfig.put("update.plugin.*", List.of("channel-1"));
 
         when(mockChannels.getAudit()).thenReturn(auditConfig);
 
@@ -144,8 +143,8 @@ class AuditServiceTest {
 
     @Test
     void testIsConfigured_exactMatch() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("user_join", MultiValue.of("channel-1"));
+        Map<String, List<String>> auditConfig = new HashMap<>();
+        auditConfig.put("user_join", List.of("channel-1"));
 
         when(mockChannels.getAudit()).thenReturn(auditConfig);
 
@@ -155,8 +154,8 @@ class AuditServiceTest {
 
     @Test
     void testIsConfigured_wildcardMatch() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("update_*_available", MultiValue.of("channel-1"));
+        Map<String, List<String>> auditConfig = new HashMap<>();
+        auditConfig.put("update_*_available", List.of("channel-1"));
 
         when(mockChannels.getAudit()).thenReturn(auditConfig);
 
@@ -167,9 +166,9 @@ class AuditServiceTest {
 
     @Test
     void testMultipleWildcards_firstMatchWins() {
-        Map<String, MultiValue<String>> auditConfig = new LinkedHashMap<>();
-        auditConfig.put("update_*_available", MultiValue.of("channel-1"));
-        auditConfig.put("update_plugin_*", MultiValue.of("channel-2"));
+        Map<String, List<String>> auditConfig = new LinkedHashMap<>();
+        auditConfig.put("update_*_available", List.of("channel-1"));
+        auditConfig.put("update_plugin_*", List.of("channel-2"));
 
         when(mockChannels.getAudit()).thenReturn(auditConfig);
 

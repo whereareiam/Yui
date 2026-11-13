@@ -44,7 +44,7 @@ public class LocaleFileHandler implements FileTypeHandler {
             }
 
             @SuppressWarnings("unchecked")
-            Map<String, Object> content = Config.load(file, Map.class);
+            Map<String, Object> content = Config.configured().read(file, Map.class);
             Map<String, TextValue> translations = convertToFlatMap(content);
             
             localeProcessor.process(file, locale, translations);

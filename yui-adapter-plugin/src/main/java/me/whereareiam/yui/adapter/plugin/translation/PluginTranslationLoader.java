@@ -177,13 +177,13 @@ public class PluginTranslationLoader {
                     Object supplied = p.supply(model);
 
                     if (exists) {
-                        Object merged = Config.merge(out, supplied);
-                        Config.getDefaultWriter().write(out, merged);
+                        Object merged = Config.configured().merge(out.toString(), supplied);
+                        Config.configured().write(out.toString(), merged);
                         log.debug("[Localization] Updated default file '{}' for plugin: {}", out.getFileName(), pluginName);
                         continue;
                     }
 
-                    Config.save(out, supplied);
+                    Config.configured().save(out.toString(), supplied);
                     log.info("[Localization] Generated default file '{}' for plugin: {}", out.getFileName(), pluginName);
                 } catch (Exception e) {
                     log.warn("[Localization] Failed to generate defaults from provider for plugin: {}", pluginName, e);

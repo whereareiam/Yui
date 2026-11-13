@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.config.template;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.configura.TemplateProvider;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
 import me.whereareiam.yui.common.config.template.messages.AuditMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.ErrorMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.GeneralMessagesTemplate;
@@ -68,7 +68,7 @@ public class MessagesTemplate implements LocalizationProvider<Messages> {
 		return messages;
 	}
 
-	private <T> T supply(TemplateProvider<T> provider, Supplier<T> supplier) {
+	private <T> T supply(DefaultsProvider<T> provider, Supplier<T> supplier) {
 		return provider.supply(supplier.get());
 	}
 }

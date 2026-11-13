@@ -1,6 +1,6 @@
 package me.whereareiam.yui.localization.provider;
 
-import me.whereareiam.configura.TemplateProvider;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
 import me.whereareiam.yui.localization.format.FileFormat;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
@@ -12,7 +12,7 @@ import net.dv8tion.jda.api.interactions.DiscordLocale;
  *
  * @param <T> the model type
  */
-public interface LocalizationProvider<T> extends TemplateProvider<T> {
+public interface LocalizationProvider<T> extends DefaultsProvider<T> {
     /**
      * @return the model class that will be instantiated and passed to {@link #supply(Object)}
      */
