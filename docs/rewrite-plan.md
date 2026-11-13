@@ -430,7 +430,7 @@ pool:
 
 `pool` replaces `hikari` and takes Yui's `Duration` instead of milliseconds; the upgrade maps the old flat keys.
 
-Conversations, decided 13 November 2026 (the file's shape is still open):
+Conversations, decided 13 November 2026:
 
 - A conversation is Yui talking privately with members for a purpose (`"verification"`). It happens in one of
   three types: a DM, a **private thread** or a temporary channel. Discord archives an idle thread itself and keeps
@@ -444,7 +444,42 @@ Conversations, decided 13 November 2026 (the file's shape is still open):
 - A thread has no permissions of its own: staff see private threads through Manage Threads on the parent
   channel, or Yui adds them by name.
 
-Still open, one file at a time: `conversations.yml`'s wording, `style/` (palette and embed
+`conversations.yml`, approved. `types` says what each type needs and whether this server allows it at all
+(`enabled: false` turns it off for plugins too); `defaults` is what an API call leaves out. `via` is the order the
+enabled types are tried; a call whose types are all disabled fails with a clear error. `thread.archive` takes
+Discord's durations (1h, 24h, 3d, 1w); `thread.invitable` is Discord's flag for members adding others.
+
+```yaml
+_version: 1
+types:
+  direct:
+    enabled: true
+  thread:
+    enabled: true
+    parent: "789…"
+    archive: 1h
+    invitable: false
+  channel:
+    enabled: true
+    categories: ["123…", "456…"]
+    purge: true
+defaults:
+  via: [direct, thread, channel]
+  mention: true
+  staff: []
+  close:
+    idle: 15m
+    after: 2h
+    warn: 30s
+  limit:
+    open: 1
+    cooldown: 10m
+  transcript:
+    audit: true
+    member: false
+```
+
+Still open, one file at a time: `style/` (palette and embed
 styles per kind), `languages.yml` in detail, `audiences.yml` in detail, the message files, Verification's files.
 
 ## Build
