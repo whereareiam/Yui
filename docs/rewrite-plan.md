@@ -65,46 +65,22 @@ whole jar. `plugin.json` would become Chassis's YAML descriptor. Most of `yui-ad
   class's package). A main class without it fails to load with the plugin id. Plugins see only Yui's API types,
   through Chassis's export layer, so Yui's internal beans stay out of reach.
 
-Built in Chassis on 9 November 2026 as four stacked draft pull requests, merged into `dev` in order:
-whereareiam/chassis#7 (preparation step), #8 (exports), #9 (`chassis-adapter-attache`), #10 (`chassis-adapter-spring`).
-Yui's export layer must include `org.springframework`, since Spring's generated configuration classes live in a
-plugin's loader.
+Chassis today (13 November 2026, `dev-379d949`) has all of it: exports in the descriptor, `chassis-adapter-attache`,
+`chassis-adapter-spring`, host fields, transformers, the control API (`enable`, `disable`, `reload`, `rescan`), the
+selection file and leak checks. Yui builds on it as it is:
 
-The design below predates that proposal.
-
-- `plugin.json` holds id, version, dependencies, exported packages and libraries.
-- Load order: read descriptors, resolve dependencies, create the classloader (Yui plus the exported
-  packages of declared dependencies), load libraries into it with Attache, then refresh the child context.
-- Beans whose types are in a dependency's exported packages are handed to the dependent context.
-  Nothing is decided by package names or the call stack.
-- Everything a plugin registers (commands, definition providers, JDA listeners, component listeners,
-  requirement evaluators, scheduled tasks, translations) goes through plugin-scoped services that record
-  it and undo it when the plugin unloads.
-- Plugin identity (config folder, translation prefix, listener id namespace) comes from a `PluginContext`
-  bean built from `plugin.json`.
-- Events reach plugins through one ordered bus that Yui owns, not a bridge between multicasters.
-- Errors are logged with the plugin's id, never swallowed.
-
-Attache 1.3.0 already loads a plugin's libraries into the plugin's classloader; no change to Attache is needed.
-A plugin's loader exposes a public `addURL`, and Yui gives it its own manager:
-
-```java
-StandaloneLibraryManager libraries = new StandaloneLibraryManager(logging, librariesPath, ".", pluginLoader, mode);
-libraries.setDescriptorSources(List.of(pluginJar.toUri().toURL())); // the jar, not the descriptor inside it
-libraries.loadDescriptors();
-```
-
-- Only the plugin's own descriptor is read; without `setDescriptorSources` the manager would also read Yui's
-  through the parent loader.
-- A library a parent loader already has is skipped (`skip-if-present`, the default), so plugins do not load a second
-  JDA or Spring.
-- A library only the plugin declares lands in its loader, invisible to Yui and other plugins. After the manager and
-  the loader are closed, the loader is garbage-collected.
-- A plugin asking for another version of a library a parent already has gets that version loaded into its own
-  loader, but parent-first delegation still serves the parent's classes. Yui warns about such a mismatch.
-
-Checked on 7 November 2026 with a plugin jar built by Attache's Gradle plugin: commons-lang3 loaded into the
-plugin's loader only, `annotations` skipped as present in the parent, the loader collected after closing.
+- The kind is `YuiPlugin extends Extension<ExtensionContext>`; a plugin's main class carries Yui's `@Plugin`
+  (`@Configuration`, `@ComponentScan`, `@Import(PluginAttachment.class)`). `PluginAttachment`, a bean in every
+  plugin's context, hands that context to Yui while it starts; Yui registers what the plugin holds (JDA listeners,
+  component listeners, definition providers and commands, texts as owned layers, a Conditia scope) and hands the
+  undoing to `ExtensionContext.onClose`, which Chassis runs before the plugin's Spring context closes.
+- Descriptor `yui-plugin.yml` in the jar (Chassis's fields plus Yui's own: `updater`); `plugin.json` goes.
+- Folder `plugins/`, data `plugins/<id>/`, selection file `plugins.yml`; texts in `plugins/<id>/messages/<locale>/`.
+- The export layer is Yui's API and what it hands plugins: `me.whereareiam.yui`, `me.whereareiam.chassis`,
+  `me.whereareiam.conditia`, `me.whereareiam.semantica`, `org.springframework`, `net.dv8tion.jda`.
+- `/plugin` follows Chassis's states and actions: enabled, disabled, waiting, failed; enable, disable, reload,
+  rescan. Yui's own loader (`yui-adapter-plugin`'s manager, scanner, class loaders, bean bridge) and its plugin
+  events go.
 
 ## Users
 
