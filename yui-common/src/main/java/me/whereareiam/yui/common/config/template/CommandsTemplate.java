@@ -44,6 +44,7 @@ public class CommandsTemplate implements DefaultsProvider<Commands> {
 				.into(commands);
 		command("status", List.of("status"), "{command} {alias}", CommandCategory.ADMINISTRATION, 5).requires(OPERATOR).into(commands);
 		command("language", List.of("language", "lang"), "{alias}", CommandCategory.UTILITY, 5).into(commands);
+		command("audit", List.of("audit"), "{command} {alias} [entry]", CommandCategory.ADMINISTRATION, 5).requires(OPERATOR).into(commands);
 		command("update-check", List.of("update", "check-update"), "{command} {alias} <target>", CommandCategory.ADMINISTRATION, 10)
 				.requires(OPERATOR)
 				.into(commands);

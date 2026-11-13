@@ -11,6 +11,7 @@ import me.whereareiam.yui.common.config.template.messages.ConversationMessagesDe
 import me.whereareiam.yui.common.config.template.messages.EmbedMessagesDefaults;
 import me.whereareiam.yui.common.config.template.messages.ErrorMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.WordsDefaults;
+import me.whereareiam.yui.common.config.template.messages.command.AuditCommandMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.command.ClearCommandMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.command.HelpCommandMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.command.LanguageCommandMessagesTemplate;
@@ -70,7 +71,7 @@ class MessagesTest {
 
 	@Test
 	void everyCoreCommand_HasItsDescriptionAndExample() {
-		for (String id : List.of("main", "help", "clear", "reload", "plugin", "status", "language", "update-check")) {
+		for (String id : List.of("main", "help", "clear", "reload", "plugin", "status", "language", "update-check", "audit")) {
 			CommandTexts keys = CommandTexts.of(CommandTexts.CORE, id);
 
 			assertNotEquals(keys.description(), texts.resolve(Text.of(keys.description()), DiscordLocale.ENGLISH_US), id);
@@ -122,7 +123,8 @@ class MessagesTest {
 						new PluginCommandMessagesTemplate(),
 						new StatusCommandMessagesTemplate(),
 						new LanguageCommandMessagesTemplate(),
-						new UpdateCheckCommandMessagesTemplate()
+						new UpdateCheckCommandMessagesTemplate(),
+						new AuditCommandMessagesTemplate()
 				),
 				new AuditMessagesDefaults(),
 				new ConversationMessagesDefaults(),

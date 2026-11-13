@@ -2,21 +2,31 @@ package me.whereareiam.yui.common.audit;
 
 import me.whereareiam.yui.model.config.audit.AuditRoute;
 import me.whereareiam.yui.model.config.audit.AuditTrail;
+import me.whereareiam.yui.persistence.AuditPersistence;
 import me.whereareiam.yui.type.audit.AuditCategory;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class AuditServiceTest {
 	private AuditTrail trail;
+	private AuditPersistence persistence;
 	private DefaultAuditService service;
 
 	@BeforeEach
@@ -28,7 +38,10 @@ class AuditServiceTest {
 
 		ObjectProvider<AuditTrail> provider = mock(ObjectProvider.class);
 		when(provider.getObject()).thenReturn(trail);
-		service = new DefaultAuditService(provider, mock(JDA.class));
+		persistence = mock(AuditPersistence.class);
+		ObjectProvider<AuditPersistence> stores = mock(ObjectProvider.class);
+		when(stores.getIfAvailable()).thenReturn(persistence);
+		service = new DefaultAuditService(provider, stores, mock(JDA.class), Clock.fixed(Instant.parse("2026-11-13T12:00:00Z"), ZoneOffset.UTC));
 	}
 
 	@Test
@@ -54,6 +67,27 @@ class AuditServiceTest {
 
 		assertFalse(service.isPosted(AuditCategory.MEMBERS, "member.leave"));
 		assertEquals(Optional.of("100"), service.channel(AuditCategory.MEMBERS, "member.join"));
+	}
+
+	@Test
+	void withTheStoreOn_AnEntryWithoutAChannelIsKept() {
+		trail.getStore().setEnabled(true);
+
+		service.audit(AuditCategory.MODERATION, "member.kick", MessageCreateData.fromContent("Kicked"));
+
+		verify(persistence).save(new AuditPersistence.Record(AuditCategory.MODERATION, "member.kick", Instant.parse("2026-11-13T12:00:00Z"), "Kicked"));
+		assertTrue(service.isRecorded(AuditCategory.MODERATION, "member.kick"));
+	}
+
+	@Test
+	void anEntrySwitchedOff_IsNotKeptEither() {
+		trail.getStore().setEnabled(true);
+		trail.getEntries().put("member.leave", new AuditRoute.Off());
+
+		service.audit(AuditCategory.MEMBERS, "member.leave", MessageCreateData.fromContent("Left"));
+
+		verify(persistence, never()).save(any());
+		assertFalse(service.isRecorded(AuditCategory.MEMBERS, "member.leave"));
 	}
 
 	private static AuditTrail.Category category(String channel) {

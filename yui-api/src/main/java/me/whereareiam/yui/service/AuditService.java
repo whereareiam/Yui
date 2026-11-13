@@ -9,7 +9,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Posts entries of the audit trail where {@code audit.yml} says: the channel of the entry's category, unless the file
- * sends that entry to another category or nowhere. Most code writes entries through {@link me.whereareiam.yui.util.Audit}.
+ * sends that entry to another category or nowhere; and keeps them in the database when its {@code store} is on. Most code writes entries through {@link me.whereareiam.yui.util.Audit}.
  *
  * <pre>{@code
  * auditService.audit(AuditCategory.MEMBERS, "member.join", MessageCreateData.fromContent("A member joined"));
@@ -34,7 +34,7 @@ public interface AuditService {
 	@NotNull Optional<String> channel(@NotNull AuditCategory category, @NotNull String entry);
 
 	/**
-	 * Whether an entry is posted at all, to skip building one that is not.
+	 * Whether an entry is posted at all.
 	 *
 	 * @param category the category its writer files it under
 	 * @param entry    the entry
@@ -43,4 +43,13 @@ public interface AuditService {
 	default boolean isPosted(@NotNull AuditCategory category, @NotNull String entry) {
 		return channel(category, entry).isPresent();
 	}
+
+	/**
+	 * Whether an entry is posted or kept, to skip building one that goes nowhere.
+	 *
+	 * @param category the category its writer files it under
+	 * @param entry    the entry
+	 * @return true when it is posted or kept in the database
+	 */
+	boolean isRecorded(@NotNull AuditCategory category, @NotNull String entry);
 }

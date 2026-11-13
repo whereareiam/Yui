@@ -16,6 +16,7 @@ public class CommandMessages {
 	private StatusCommandMessages status;
 	private LanguageCommandMessages language;
 	private UpdateCheckCommandMessages updateCheck;
+	private AuditCommandMessages audit;
 
 	@Getter
 	@Setter

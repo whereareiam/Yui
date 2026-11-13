@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
+import java.time.Clock;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -57,6 +58,11 @@ public class CommonConfiguration {
 
 		log.info("Shutting down YUI");
 		jda.shutdown();
+	}
+
+	@Bean
+	public Clock clock() {
+		return Clock.systemUTC();
 	}
 
 	@Bean(destroyMethod = "shutdown")

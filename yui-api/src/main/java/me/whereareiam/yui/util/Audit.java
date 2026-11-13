@@ -84,7 +84,7 @@ public class Audit {
 	 * @return true when it has a channel
 	 */
 	public static boolean isPosted(AuditCategory category, String entry) {
-		return auditService != null && auditService.isPosted(category, entry);
+		return auditService != null && auditService.isRecorded(category, entry);
 	}
 
 	/**
@@ -200,7 +200,7 @@ public class Audit {
 	 * @return completes once the message is posted, or failed to be
 	 */
 	public CompletableFuture<Void> send() {
-		if (auditService == null || message == null || !auditService.isPosted(category, entry))
+		if (auditService == null || message == null || !auditService.isRecorded(category, entry))
 			return CompletableFuture.completedFuture(null);
 
 		return auditService.audit(category, entry, message.apply(locale()));

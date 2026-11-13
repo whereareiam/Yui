@@ -2,6 +2,7 @@ package me.whereareiam.yui.model.config.audit;
 
 import lombok.Getter;
 import lombok.Setter;
+import me.whereareiam.yui.model.type.Duration;
 import me.whereareiam.yui.type.audit.AuditCategory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,6 +17,9 @@ import java.util.Optional;
  * nowhere. An entry is one line of the trail (who did what to whom, when), such as {@code member.leave}.
  *
  * <pre>{@code
+ * store:
+ *   enabled: true
+ *   keep: 90d
  * categories:
  *   members:
  *     channel: "123456789012345678"
@@ -29,6 +33,7 @@ import java.util.Optional;
 @Getter
 @Setter
 public class AuditTrail {
+	private Store store = new Store();
 	private Map<AuditCategory, Category> categories = new EnumMap<>(AuditCategory.class);
 	private Map<String, AuditRoute> entries = new LinkedHashMap<>();
 
@@ -47,6 +52,23 @@ public class AuditTrail {
 			case AuditRoute.Off ignored -> Optional.empty();
 			case AuditRoute.To to -> Optional.ofNullable(categories.get(to.category())).map(Category::getChannel);
 		};
+	}
+
+	/**
+	 * Whether entries are kept in the database, searchable with {@code /audit}, and for how long.
+	 */
+	@Getter
+	@Setter
+	public static class Store {
+		private boolean enabled;
+		private @Nullable Duration keep;
+	}
+
+	/**
+	 * @return whether the entry is kept in the database: the store is on and the entry is not switched off
+	 */
+	public boolean stores(@NotNull String entry) {
+		return store.isEnabled() && !(entries.get(entry) instanceof AuditRoute.Off);
 	}
 
 	/**
