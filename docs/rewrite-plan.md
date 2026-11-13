@@ -138,9 +138,9 @@ Built on 11 November 2026 (step 4):
 - The cache keeps the 10 000 users read last and drops a changed user when the change commits, or when the member
   leaves.
 - The stored role list is gone (tables, entity, `RoleService`, `ManagedRole`, `roles.yml`), and with it the role
-  sync, ahead of step 5. Language roles follow the languages through `LanguageRoleRule`, a transactional listener
+  sync, ahead of step 6. Language roles follow the languages through `LanguageRoleRule`, a transactional listener
   that gives or takes the role `languages.yml` assigns; a member who joins gets the roles of the languages they
-  speak. The one core service that grants roles for every fact and logs them comes with step 5.
+  speak. The one core service that grants roles for every fact and logs them comes with step 6.
 
 ## Database
 
@@ -312,7 +312,7 @@ Conditia/
 - A failed named list reports its reference (`audience moderator`) with the inner condition's reason.
 - `Place` is closeable, so a host closes the places of a config it reloads.
 - Published as `dev-e42587f` (12 November 2026); the registry rule `whereareiam-conditia-github` lets its
-  GitHub jobs publish, as Chassis's. Yui's step 5 depends on that version.
+  GitHub jobs publish, as Chassis's. Yui's step 6 depends on that version.
 
 ## Configuration
 
@@ -637,7 +637,7 @@ The rules channel lives in the text, per locale, so each language can point to i
 (`plugins/verification/messages/de/journey.yml`: `"Lies bitte die Regeln in <#456…>."`); settings have no
 `rules` key.
 
-Every config file is agreed (13 November 2026); step 6 builds them.
+Every config file is agreed (13 November 2026); step 5 builds them.
 
 ## Build
 
@@ -721,10 +721,11 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
 2. Attache loading into a plugin's own classloader: already in Attache 1.3.0, checked (see Plugin runtime).
 3. Database: Flyway with a clean baseline, H2/PostgreSQL/MariaDB, `validate` (see Database).
 4. Users and events. Built on 11 November 2026 (see Users).
-5. Permissions on Conditia; one core service that grants roles for facts and logs them (the role sync went with
+5. Configuration on Configura 2.1 with file upgrades; texts on Semantica 0.1.0, after its `FileSource` key prefix
+   and with a Discord format (see Messages). Done before permissions (owner, 13 November 2026): the old
+   Configura's adapters read single strings only, so `requires:` lists need Configura 2.1 first.
+6. Permissions on Conditia; one core service that grants roles for facts and logs them (the role sync went with
    step 4).
-6. Configuration on Configura 2.1 with file upgrades; texts on Semantica 0.1.0, after its `FileSource` key prefix
-   and with a Discord format (see Messages).
 7. Plugin runtime with hot reload, on Chassis.
 8. JDA 6 and cloud.
 9. Verification into `plugins/`, `examples/plugin`.
