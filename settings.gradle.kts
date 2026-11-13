@@ -33,3 +33,8 @@ include(":yui-adapter-command")
 include(":yui-adapter-database")
 include(":yui-adapter-plugin")
 include(":yui-launcher")
+
+include(":plugins:plugin-verification")
+include(":plugins:plugin-verification:verification-api")
+
+include(":examples:plugin")

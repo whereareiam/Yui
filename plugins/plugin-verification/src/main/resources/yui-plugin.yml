@@ -1,0 +1,7 @@
+id: verification
+version: ${version}
+main: me.whereareiam.yui.verification.Verification
+exports:
+  - me.whereareiam.yui.verification.api
+updater:
+  release: { provider: GITHUB, id: whereareiam/Yui }
