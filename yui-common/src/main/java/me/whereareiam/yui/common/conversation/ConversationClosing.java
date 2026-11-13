@@ -2,10 +2,12 @@ package me.whereareiam.yui.common.conversation;
 
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.yui.api.event.conversation.ConversationClosedEvent;
 import me.whereareiam.yui.api.message.Translatable;
 import me.whereareiam.yui.api.model.config.conversation.Conversations;
 import me.whereareiam.yui.api.model.type.Duration;
 import me.whereareiam.yui.api.util.style.StyleKit;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -26,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 public class ConversationClosing {
 	private final ConversationLedger ledger;
 	private final ConversationTranscript transcript;
+	private final ApplicationEventPublisher events;
 	private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(runnable -> {
 		Thread thread = new Thread(runnable, "conversation-closing");
 		thread.setDaemon(true);
@@ -34,9 +37,10 @@ public class ConversationClosing {
 	private final Map<OpenConversation, ScheduledFuture<?>> idle = new ConcurrentHashMap<>();
 	private final Map<OpenConversation, ScheduledFuture<?>> lifetime = new ConcurrentHashMap<>();
 
-	public ConversationClosing(ConversationLedger ledger, ConversationTranscript transcript) {
+	public ConversationClosing(ConversationLedger ledger, ConversationTranscript transcript, ApplicationEventPublisher events) {
 		this.ledger = ledger;
 		this.transcript = transcript;
+		this.events = events;
 	}
 
 	/**
@@ -65,7 +69,7 @@ public class ConversationClosing {
 	 */
 	CompletableFuture<Void> close(OpenConversation conversation) {
 		forget(conversation);
-		ledger.remove(conversation);
+		if (ledger.remove(conversation)) events.publishEvent(new ConversationClosedEvent(conversation));
 
 		return transcript.send(conversation).thenCompose(ignored -> conversation.shut());
 	}
@@ -75,7 +79,7 @@ public class ConversationClosing {
 	 */
 	void lost(OpenConversation conversation) {
 		forget(conversation);
-		ledger.remove(conversation);
+		if (ledger.remove(conversation)) events.publishEvent(new ConversationClosedEvent(conversation));
 	}
 
 	private ScheduledFuture<?> schedule(OpenConversation conversation, Duration delay) {

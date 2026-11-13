@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.api.conversation.Conversation;
 import me.whereareiam.yui.api.conversation.ConversationOptions;
 import me.whereareiam.yui.api.conversation.ConversationService;
+import me.whereareiam.yui.api.event.conversation.ConversationOpenedEvent;
 import me.whereareiam.yui.api.exception.ConversationRefusedException.Reason;
 import me.whereareiam.yui.api.exception.ConversationRefusedException;
 import me.whereareiam.yui.api.model.config.conversation.Conversations;
@@ -11,6 +12,7 @@ import me.whereareiam.yui.api.type.ConversationType;
 import me.whereareiam.yui.common.conversation.open.ConversationOpener;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -32,17 +34,20 @@ public class DefaultConversationService implements ConversationService {
 	private final ObjectProvider<Conversations> config;
 	private final ConversationLedger ledger;
 	private final ConversationClosing closing;
+	private final ApplicationEventPublisher events;
 	private final Map<ConversationType, ConversationOpener> openers = new EnumMap<>(ConversationType.class);
 
 	public DefaultConversationService(
 			ObjectProvider<Conversations> config,
 			ConversationLedger ledger,
 			ConversationClosing closing,
+			ApplicationEventPublisher events,
 			List<ConversationOpener> openers
 	) {
 		this.config = config;
 		this.ledger = ledger;
 		this.closing = closing;
+		this.events = events;
 		openers.forEach(opener -> this.openers.put(opener.type(), opener));
 	}
 
@@ -66,6 +71,8 @@ public class DefaultConversationService implements ConversationService {
 		return attempt(purpose, people, setup, 0, null).thenApply(conversation -> {
 			ledger.add(conversation);
 			closing.watch(conversation);
+			events.publishEvent(new ConversationOpenedEvent(conversation));
+
 			return conversation;
 		});
 	}

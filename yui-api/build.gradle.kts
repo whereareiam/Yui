@@ -37,6 +37,7 @@ dependencies {
     providedApi(libs.semantica.icu)
     providedApi(libs.semantica.file)
     providedApi(libs.spring.boot)
+    providedApi(libs.spring.boot.data.jpa)
     providedApi(libs.spring.tx)
 }
 

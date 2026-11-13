@@ -85,6 +85,7 @@ public final class ConfigModule extends SimpleModule {
 	@Override
 	public void setupModule(SetupContext context) {
 		super.setupModule(context);
+		context.addBeanDeserializerModifier(new CamelCaseEnums());
 
 		JsonFormat.Value singleValue = JsonFormat.Value.empty().withFeature(JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
 		for (Class<?> type : List.of(Collection.class, List.class, ArrayList.class))

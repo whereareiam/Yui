@@ -21,6 +21,11 @@ public class LifecycleTaskRegistry implements Registry<LifecycleTask> {
 	}
 
 	@Override
+	public void unregister(LifecycleTask task) {
+		tasksByName.remove(task.getName(), task);
+	}
+
+	@Override
 	public Collection<LifecycleTask> getAll() {
 		return tasksByName.values();
 	}

@@ -21,6 +21,13 @@ public interface Registry<T> {
 	void register(T object);
 
 	/**
+	 * Removes an element, such as one a stopping plugin registered. An element that is not registered changes nothing.
+	 *
+	 * @param object the element to remove
+	 */
+	void unregister(T object);
+
+	/**
 	 * Gets all registered elements from this registry.
 	 *
 	 * @return a collection of all registered elements

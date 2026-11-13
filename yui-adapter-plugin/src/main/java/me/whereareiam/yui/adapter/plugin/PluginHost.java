@@ -38,7 +38,8 @@ public class PluginHost implements PluginManager {
 	// What plugins see of Yui: its API and the libraries it hands them.
 	private static final List<String> EXPORTS = List.of(
 			"me.whereareiam.yui.api", "me.whereareiam.chassis", "me.whereareiam.conditia", "me.whereareiam.semantica",
-			"org.springframework", "net.dv8tion.jda", "org.jetbrains.annotations"
+			"org.springframework", "net.dv8tion.jda", "org.jetbrains.annotations", "jakarta.persistence",
+			"jakarta.annotation", "com.fasterxml.jackson.annotation"
 	);
 
 	private final ChassisHost<ExtensionContext, Fields> host;

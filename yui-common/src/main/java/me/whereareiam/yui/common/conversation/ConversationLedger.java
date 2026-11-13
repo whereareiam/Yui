@@ -74,11 +74,16 @@ public class ConversationLedger {
 		open.add(conversation);
 	}
 
-	void remove(OpenConversation conversation) {
-		if (!open.remove(conversation)) return;
+	/**
+	 * @return false when it was not open, closed already by another call
+	 */
+	boolean remove(OpenConversation conversation) {
+		if (!open.remove(conversation)) return false;
 
 		Instant now = clock.instant();
 		conversation.getMembers().forEach(member -> closed.put(new Key(member, conversation.getPurpose()), now));
+
+		return true;
 	}
 
 	private record Key(long member, String purpose) {
