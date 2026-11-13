@@ -17,11 +17,11 @@ import me.whereareiam.yui.plugin.PluginManager;
 import me.whereareiam.yui.util.Components;
 import me.whereareiam.yui.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
+import net.dv8tion.jda.api.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -58,7 +58,7 @@ public class PluginCommand {
 			interaction.replyCallback()
 					.replyEmbeds(buildMainEmbed(fluctlight).build())
 					.setEphemeral(true)
-					.addActionRow(mainControls(fluctlight))
+					.addComponents(ActionRow.of(mainControls(fluctlight)))
 					.queue();
 			return;
 		}
@@ -132,7 +132,7 @@ public class PluginCommand {
 
 		event.getHook()
 				.editOriginalEmbeds(buildMainEmbed(fluctlight).build())
-				.setActionRow(mainControls(fluctlight))
+				.setComponents(ActionRow.of(mainControls(fluctlight)))
 				.queue();
 	}
 
@@ -243,7 +243,7 @@ public class PluginCommand {
 
 		event.getHook()
 				.editOriginalEmbeds(embed.build())
-				.setActionRow(confirm, cancel)
+				.setComponents(ActionRow.of(confirm, cancel))
 				.queue();
 	}
 
@@ -266,7 +266,7 @@ public class PluginCommand {
 				// After successful reload, show the main embed with category controls
 				event.getHook()
 						.editOriginalEmbeds(buildMainEmbed(fluctlight).build())
-						.setActionRow(mainControls(fluctlight))
+						.setComponents(ActionRow.of(mainControls(fluctlight)))
 						.queue();
 			} catch (Exception e) {
 				EmbedBuilder error = StyleKit.embeds().error();
@@ -326,7 +326,7 @@ public class PluginCommand {
 		embed.addField(heading, shorten(String.join("\n", lines)), true);
 	}
 
-	private Button[] mainControls(Fluctlight fluctlight) {
+	private List<Button> mainControls(Fluctlight fluctlight) {
 		PayloadButton enable = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.text("commands.plugin.controls.enable").resolve(fluctlight), "enable");
 		PayloadButton disable = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.text("commands.plugin.controls.disable").resolve(fluctlight), "disable");
 		PayloadButton reload = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.text("commands.plugin.controls.reload").resolve(fluctlight), "reload");
@@ -334,7 +334,7 @@ public class PluginCommand {
 
 		Button reloadAll = Components.button(ButtonStyle.PRIMARY, RELOAD_ALL_LISTENER, Translatable.text("commands.plugin.controls.reloadAll").resolve(fluctlight));
 
-		return new Button[]{enable.getButton(), disable.getButton(), reload.getButton(), rescan.getButton(), reloadAll};
+		return List.of(enable.getButton(), disable.getButton(), reload.getButton(), rescan.getButton(), reloadAll);
 	}
 
 	private EmbedBuilder buildCategoryEmbed(String action, Fluctlight fluctlight) {

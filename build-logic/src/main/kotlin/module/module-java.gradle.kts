@@ -30,6 +30,12 @@ lombok {
 // classpath, since nothing loads them there.
 val providedLibraries = listOf("spring-boot", "jda", "configura", "conditia-api", "chassis-api", "conditia-common", "conditia-configura", "semantica-api", "semantica-common", "semantica-icu", "semantica-file", "attache-common")
 
+// Yui uses no voice, so none of JDA's voice libraries: Opus and its natives, and Tink's encryption.
+configurations.configureEach {
+    exclude(group = "club.minnced", module = "opus-java")
+    exclude(group = "com.google.crypto.tink", module = "tink")
+}
+
 dependencies {
     compileOnly(catalog.library("annotations"))
     providedLibraries.forEach { compileOnly(catalog.library(it)) }

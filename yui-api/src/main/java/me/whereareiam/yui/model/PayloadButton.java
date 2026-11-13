@@ -2,7 +2,7 @@ package me.whereareiam.yui.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.components.buttons.Button;
 
 @Getter
 @AllArgsConstructor

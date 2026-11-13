@@ -3,9 +3,9 @@ package me.whereareiam.yui.common.service;
 import me.whereareiam.yui.model.Key;
 import me.whereareiam.yui.model.component.ComponentAttributes;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.components.buttons.Button;
+import net.dv8tion.jda.api.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.events.interaction.component.GenericComponentInteractionCreateEvent;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,7 +39,7 @@ class DefaultInteractionServiceAttributesTest {
 		Button button = interactions.createButton(ButtonStyle.PRIMARY, "test:action", "Click", attributes);
 
 		GenericComponentInteractionCreateEvent event = mock(GenericComponentInteractionCreateEvent.class);
-		when(event.getComponentId()).thenReturn(button.getId());
+		when(event.getComponentId()).thenReturn(button.getCustomId());
 
 		assertEquals("value", interactions.getAttributes(event).get(TEST_KEY).orElse(null));
 	}
@@ -56,10 +56,10 @@ class DefaultInteractionServiceAttributesTest {
 		Button secondButton = interactions.createButton(ButtonStyle.PRIMARY, "test:action", "Second", second);
 
 		GenericComponentInteractionCreateEvent firstEvent = mock(GenericComponentInteractionCreateEvent.class);
-		when(firstEvent.getComponentId()).thenReturn(firstButton.getId());
+		when(firstEvent.getComponentId()).thenReturn(firstButton.getCustomId());
 
 		GenericComponentInteractionCreateEvent secondEvent = mock(GenericComponentInteractionCreateEvent.class);
-		when(secondEvent.getComponentId()).thenReturn(secondButton.getId());
+		when(secondEvent.getComponentId()).thenReturn(secondButton.getCustomId());
 
 		interactions.unbindAllByAttribute(TEST_KEY, "first");
 

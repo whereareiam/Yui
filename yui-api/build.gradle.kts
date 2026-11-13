@@ -22,7 +22,11 @@ dependencies {
     api(libs.attache.common)
     api(libs.annotations)
 
-    providedApi(libs.jda)
+    providedApi(libs.jda) {
+        // Yui uses no voice: no Opus or NaCl natives.
+        exclude(group = "club.minnced", module = "opus-java")
+        exclude(group = "com.google.crypto.tink", module = "tink")
+    }
     providedApi(libs.configura)
     providedApi(libs.conditia.api)
     providedApi(libs.chassis.api)
@@ -33,7 +37,6 @@ dependencies {
     providedApi(libs.semantica.icu)
     providedApi(libs.semantica.file)
     providedApi(libs.spring.boot)
-    providedApi(libs.spring.boot.webflux)
     providedApi(libs.spring.tx)
 }
 

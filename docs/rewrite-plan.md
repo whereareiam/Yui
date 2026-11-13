@@ -610,7 +610,6 @@ Every config file is agreed (13 November 2026); step 5 builds them.
 - Publish to `https://registry.whereareiam.me/maven/packages`.
 - Unit tests mirror the code; database tests run on H2, and on PostgreSQL and MariaDB with Testcontainers.
 - AGENTS.md and Scriptorium docs (`scriptorium.project.json`, `docs/content/`).
-- Drop `spring-boot-webflux` unless something needs it; exclude JDA's voice natives if voice is unused.
 - A published Gradle plugin for building Yui plugins (`me.whereareiam.yui.plugin`): writes `yui-plugin.yml`
   from the build (id, version, dependencies, exports), declares runtime libraries through Attache and packages
   the jar. Used by `plugins/`, `examples/plugin` and `arcadeya/yui`.
@@ -717,6 +716,8 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
    audiences; the export layer exports all of `me.whereareiam.yui`, implementation packages included, since Yui's
    root package holds API classes (`Constants`, `Registry`, `Reloadable`).
 8. JDA 6 and cloud.
+   Built on 13 November 2026: JDA 6.7.0 with `cloud-jda6` 1.0.0-beta.4; components come from JDA 6's packages and
+   rows (`addComponents(ActionRow.of(...))`); `spring-boot-webflux` and JDA's voice libraries (Opus, Tink) are gone.
 9. Verification into `plugins/`, `examples/plugin`.
 10. Docs and the rest of AGENTS.md; publishing the distribution. The repository setup after Identica (release
     drafting, labels, templates, Dependabot, workflows) came with step 1.

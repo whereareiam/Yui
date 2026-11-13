@@ -12,9 +12,10 @@ import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.util.Components;
 import me.whereareiam.yui.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -59,7 +60,7 @@ public class ClearCommand {
 		interaction.replyCallback()
 				.replyEmbeds(embed.build())
 				.setEphemeral(true)
-				.addActionRow(confirmButton.getButton(), cancelButton.getButton())
+				.addComponents(ActionRow.of(confirmButton.getButton(), cancelButton.getButton()))
 				.queue();
 	}
 

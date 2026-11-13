@@ -7,19 +7,20 @@ import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.annotation.command.Optional;
 import me.whereareiam.yui.command.CommandService;
+import me.whereareiam.yui.command.CommandTexts;
 import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.message.Translatable;
-import me.whereareiam.yui.command.CommandTexts;
 import me.whereareiam.yui.model.command.CommandDefinition;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.type.CommandCategory;
 import me.whereareiam.yui.util.Components;
 import me.whereareiam.yui.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.selections.SelectOption;
+import net.dv8tion.jda.api.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
-import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
-import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -85,7 +86,7 @@ public class HelpCommand {
 
 		reply.replyEmbeds(embed.build())
 				.setEphemeral(true)
-				.addActionRow(selectMenu)
+				.addComponents(ActionRow.of(selectMenu))
 				.queue();
 	}
 
