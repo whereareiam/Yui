@@ -2,6 +2,8 @@ package me.whereareiam.yui.common.update;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.chassis.model.ExtensionDescriptor;
+import me.whereareiam.chassis.model.InstalledExtension;
 import me.whereareiam.yui.BuildConfig;
 import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.Reloadable;
@@ -10,8 +12,6 @@ import me.whereareiam.yui.event.update.UpdateCheckFailedEvent;
 import me.whereareiam.yui.event.update.UpdateLocalNotificationEvent;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.config.settings.UpdaterSettings;
-import me.whereareiam.yui.model.plugin.InternalPlugin;
-import me.whereareiam.yui.model.plugin.Plugin;
 import me.whereareiam.yui.model.update.UpdateConfiguration;
 import me.whereareiam.yui.model.update.UpdateSource;
 import me.whereareiam.yui.plugin.PluginManager;
@@ -166,18 +166,14 @@ public class UpdateScheduler implements Reloadable {
         UpdaterSettings cfg = settings.getUpdater();
         if (cfg == null) return;
 
-        Optional<InternalPlugin> pluginOpt = pluginManager.plugins().stream()
-                .filter(p -> p.getDescriptor().getId().equals(pluginId))
-                .findFirst();
-
-        if (pluginOpt.isEmpty()) {
+        Optional<ExtensionDescriptor> found = pluginManager.find(pluginId).map(InstalledExtension::getDescriptor);
+        if (found.isEmpty()) {
             log.warn("[Updater] Plugin '{}' not found", pluginId);
             return;
         }
 
-        InternalPlugin plugin = pluginOpt.get();
-        Plugin descriptor = plugin.getDescriptor();
-        UpdateConfiguration updateConfig = descriptor.getUpdater();
+        ExtensionDescriptor descriptor = found.get();
+        UpdateConfiguration updateConfig = pluginManager.updater(pluginId).orElse(null);
 
         if (updateConfig == null) {
             log.debug("[Updater] Plugin '{}' has no update configuration", pluginId);
@@ -187,7 +183,7 @@ public class UpdateScheduler implements Reloadable {
         checkEntry(
                 "plugin_" + pluginId,
                 descriptor.getName(),
-                descriptor.getVersion(),
+                descriptor.getVersion().toString(),
                 updateConfig,
                 cfg
         );
@@ -198,9 +194,9 @@ public class UpdateScheduler implements Reloadable {
      */
     public void checkAllPluginUpdates() {
         pluginManager.plugins().stream()
-                .map(InternalPlugin::getDescriptor)
-                .filter(p -> p.getUpdater() != null)
-                .forEach(p -> checkPluginUpdates(p.getId()));
+                .map(InstalledExtension::getId)
+                .filter(id -> pluginManager.updater(id).isPresent())
+                .forEach(this::checkPluginUpdates);
     }
 
     private void checkEntry(

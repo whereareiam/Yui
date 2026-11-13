@@ -2,7 +2,6 @@ package me.whereareiam.yui.common.service;
 
 import me.whereareiam.yui.model.Key;
 import me.whereareiam.yui.model.component.ComponentAttributes;
-import me.whereareiam.yui.plugin.PluginManager;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.events.interaction.component.GenericComponentInteractionCreateEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -24,14 +23,12 @@ class DefaultInteractionServiceAttributesTest {
 
 	@Mock
 	private JDA jda;
-	@Mock
-	private PluginManager pluginManager;
 
 	private DefaultInteractionService interactions;
 
 	@BeforeEach
 	void setUp() {
-		interactions = new DefaultInteractionService(jda, pluginManager);
+		interactions = new DefaultInteractionService(jda);
 	}
 
 	@Test

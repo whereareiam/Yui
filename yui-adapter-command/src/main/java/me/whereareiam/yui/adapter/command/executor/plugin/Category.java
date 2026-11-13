@@ -1,87 +1,45 @@
 package me.whereareiam.yui.adapter.command.executor.plugin;
 
 import lombok.Getter;
+import me.whereareiam.chassis.model.ExtensionDescriptor;
+import me.whereareiam.chassis.model.InstalledExtension;
+import me.whereareiam.chassis.type.ExtensionState;
 import me.whereareiam.yui.message.Translatable;
-import me.whereareiam.yui.model.plugin.InternalPlugin;
 import me.whereareiam.yui.plugin.PluginManager;
 
-import java.util.*;
-import java.util.function.Function;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.function.Predicate;
 
+/**
+ * A view of {@code /plugin}: the plugins one action applies to, by their state. Enable lists those that do not run,
+ * disable and reload those that do, rescan those still waiting or failed after it.
+ */
 public final class Category {
-	public static final Category ENABLE = new Category(
-			"enable",
-			"commands.plugin.enable.title",
-			"commands.plugin.enable.description",
-			"commands.plugin.enable.empty",
-			"commands.plugin.enable.format",
-			true,
-			Category::enableCandidates
-	);
-
-	public static final Category DISABLE = new Category(
-			"disable",
-			"commands.plugin.disable.title",
-			"commands.plugin.disable.description",
-			"commands.plugin.disable.empty",
-			"commands.plugin.disable.format",
-			true,
-			Category::disableCandidates
-	);
-
-	public static final Category UNLOAD = new Category(
-			"unload",
-			"commands.plugin.unload.title",
-			"commands.plugin.unload.description",
-			"commands.plugin.unload.empty",
-			"commands.plugin.unload.format",
-			true,
-			Category::unloadCandidates
-	);
-	
-	public static final Category LOAD = new Category(
-			"load",
-			"commands.plugin.load.title",
-			"commands.plugin.load.description",
-			null,
-			null,
-			false,
-			_ -> List.of()
-	);
+	public static final Category ENABLE = new Category("enable", plugin -> plugin.getState() != ExtensionState.ENABLED, true);
+	public static final Category DISABLE = new Category("disable", plugin -> plugin.getState() == ExtensionState.ENABLED, true);
+	public static final Category RELOAD = new Category("reload", plugin -> plugin.getState() == ExtensionState.ENABLED, true);
+	public static final Category RESCAN = new Category("rescan", Category::waitingOrFailed, false);
 
 	private static final Map<String, Category> BY_ACTION = Map.of(
 			ENABLE.action, ENABLE,
 			DISABLE.action, DISABLE,
-			UNLOAD.action, UNLOAD,
-			LOAD.action, LOAD
+			RELOAD.action, RELOAD,
+			RESCAN.action, RESCAN
 	);
 
 	@Getter
 	private final String action;
-	@Getter
-	private final String titleKey;
-	private final String descriptionKey;
-	private final String emptyKey;
-	private final String pluginFormatKey;
-	private final boolean listsPlugins;
-	private final Function<PluginManager, List<InternalPlugin>> candidatesProvider;
+	private final Predicate<InstalledExtension> applies;
+	private final boolean selectable;
 
-	private Category(
-			String action,
-			String titleKey,
-			String descriptionKey,
-			String emptyKey,
-			String pluginFormatKey,
-			boolean listsPlugins,
-			Function<PluginManager, List<InternalPlugin>> candidatesProvider
-	) {
+	private Category(String action, Predicate<InstalledExtension> applies, boolean selectable) {
 		this.action = action;
-		this.titleKey = titleKey;
-		this.descriptionKey = descriptionKey;
-		this.emptyKey = emptyKey;
-		this.pluginFormatKey = pluginFormatKey;
-		this.listsPlugins = listsPlugins;
-		this.candidatesProvider = candidatesProvider;
+		this.applies = applies;
+		this.selectable = selectable;
 	}
 
 	public static boolean isSupported(String action) {
@@ -92,70 +50,60 @@ public final class Category {
 		return BY_ACTION.get(action);
 	}
 
+	public String getTitleKey() {
+		return "commands.plugin." + action + ".title";
+	}
+
+	/**
+	 * @return whether each listed plugin gets a button that applies the action to it
+	 */
 	public boolean listsPlugins() {
-		return listsPlugins;
+		return selectable;
 	}
 
-	public List<InternalPlugin> candidates(PluginManager pluginManager) {
-		return candidatesProvider.apply(pluginManager);
+	public List<InstalledExtension> candidates(PluginManager plugins) {
+		return plugins.plugins().stream()
+				.filter(applies)
+				.sorted(Comparator.comparing(plugin -> name(plugin).toLowerCase(Locale.ROOT)))
+				.toList();
 	}
 
-	public String content(PluginManager pluginManager, long userId) {
-		if (!listsPlugins) return Translatable.text(descriptionKey).resolve(userId);
+	public String content(PluginManager plugins, long user) {
+		List<InstalledExtension> listed = candidates(plugins);
+		if (listed.isEmpty()) return Translatable.text("commands.plugin." + action + ".empty").resolve(user);
 
-		List<InternalPlugin> plugins = candidates(pluginManager);
-		if (plugins.isEmpty()) return emptyKey == null ? "" : Translatable.text(emptyKey).resolve(userId);
-
-		String list = formatPlugins(plugins, userId);
-		String description = Translatable.text(descriptionKey).resolve(userId);
-		return description.replace("<list>", list);
-	}
-
-	private String formatPlugins(List<InternalPlugin> plugins, long userId) {
-		String format = pluginFormatKey == null ? "<index>. <name> v<version> (``<id>``)" : Translatable.text(pluginFormatKey).resolve(userId);
+		String format = Translatable.text("commands.plugin." + action + ".format").resolve(user);
 		List<String> lines = new ArrayList<>();
-		for (int i = 0; i < plugins.size(); i++) {
-			InternalPlugin p = plugins.get(i);
-			String authors = p.getPlugin().getAuthors() == null || p.getPlugin().getAuthors().isEmpty()
-					? ""
-					: String.join(", ", p.getPlugin().getAuthors());
+		for (int i = 0; i < listed.size(); i++) lines.add(line(format, i + 1, listed.get(i)));
 
-			String line = format
-					.replace("<index>", String.valueOf(i + 1))
-					.replace("<name>", safe(p.getPlugin().getName()))
-					.replace("<version>", safe(p.getPlugin().getVersion()))
-					.replace("<authors>", authors)
-					.replace("<id>", safe(p.getPlugin().getId()));
-
-			if (authors.isBlank()) line = line.replace(" — ", " ");
-			lines.add(line.trim());
-		}
-		return String.join("\n", lines);
+		return Translatable.text("commands.plugin." + action + ".description").resolve(user).replace("<list>", String.join("\n", lines));
 	}
 
-	private static List<InternalPlugin> enableCandidates(PluginManager pluginManager) {
-		return sortedPlugins(pluginManager).stream()
-				.filter(p -> !p.isEnabled())
-				.toList();
+	static String line(String format, int index, InstalledExtension plugin) {
+		ExtensionDescriptor descriptor = plugin.getDescriptor();
+		String authors = descriptor == null ? "" : String.join(", ", descriptor.getAuthors());
+		String line = format
+				.replace("<index>", String.valueOf(index))
+				.replace("<name>", name(plugin))
+				.replace("<version>", descriptor == null ? "?" : descriptor.getVersion().toString())
+				.replace("<authors>", authors)
+				.replace("<id>", plugin.getId())
+				.replace("<reason>", reason(plugin));
+
+		return line.trim();
 	}
 
-	private static List<InternalPlugin> disableCandidates(PluginManager pluginManager) {
-		return sortedPlugins(pluginManager).stream()
-				.filter(InternalPlugin::isEnabled)
-				.toList();
+	static String name(InstalledExtension plugin) {
+		return plugin.getDescriptor() == null ? plugin.getId() : plugin.getDescriptor().getName();
 	}
 
-	private static List<InternalPlugin> unloadCandidates(PluginManager pluginManager) {
-		return sortedPlugins(pluginManager);
+	private static String reason(InstalledExtension plugin) {
+		if (plugin.getFailure() != null) return String.valueOf(plugin.getFailure().getMessage());
+
+		return String.join(", ", plugin.getWaitingFor());
 	}
 
-	private static List<InternalPlugin> sortedPlugins(PluginManager pluginManager) {
-		return pluginManager.plugins().stream()
-				.sorted(Comparator.comparing(p -> p.getPlugin().getName().toLowerCase(Locale.ROOT)))
-				.toList();
-	}
-
-	private static String safe(String v) {
-		return v == null ? "" : v;
+	private static boolean waitingOrFailed(InstalledExtension plugin) {
+		return plugin.getState() == ExtensionState.WAITING || plugin.getState() == ExtensionState.FAILED;
 	}
 }

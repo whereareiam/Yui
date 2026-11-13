@@ -34,7 +34,8 @@ public class StatusCommandMessages {
 		public static class Status {
 			private String enabled;
 			private String disabled;
-			private String loadable;
+			private String waiting;
+			private String failed;
 		}
 	}
 

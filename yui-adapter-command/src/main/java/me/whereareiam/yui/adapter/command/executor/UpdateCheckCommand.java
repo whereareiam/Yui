@@ -2,6 +2,7 @@ package me.whereareiam.yui.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.chassis.model.InstalledExtension;
 import me.whereareiam.yui.annotation.ComponentListener;
 import me.whereareiam.yui.annotation.command.Argument;
 import me.whereareiam.yui.annotation.command.Command;
@@ -9,7 +10,6 @@ import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.message.Translatable;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
-import me.whereareiam.yui.model.plugin.InternalPlugin;
 import me.whereareiam.yui.plugin.PluginManager;
 import me.whereareiam.yui.type.update.UpdateTarget;
 import me.whereareiam.yui.update.UpdateService;
@@ -85,7 +85,9 @@ public class UpdateCheckCommand {
     }
 
     private void showPluginSelection(Interaction interaction, Fluctlight fluctlight) {
-        Collection<InternalPlugin> plugins = pluginManager.plugins();
+        Collection<InstalledExtension> plugins = pluginManager.plugins().stream()
+                .filter(plugin -> plugin.getDescriptor() != null)
+                .toList();
 
         if (plugins.isEmpty()) {
             EmbedBuilder embed = StyleKit.embeds().warning();

@@ -1,6 +1,9 @@
 package me.whereareiam.yui.adapter.command.executor.plugin;
 
 import lombok.AllArgsConstructor;
+import me.whereareiam.chassis.exception.ExtensionException;
+import me.whereareiam.chassis.model.InstalledExtension;
+import me.whereareiam.chassis.type.ExtensionState;
 import me.whereareiam.yui.annotation.ComponentListener;
 import me.whereareiam.yui.annotation.command.Argument;
 import me.whereareiam.yui.annotation.command.Command;
@@ -10,8 +13,6 @@ import me.whereareiam.yui.fluctlight.FluctlightService;
 import me.whereareiam.yui.message.Translatable;
 import me.whereareiam.yui.model.PayloadButton;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
-import me.whereareiam.yui.model.plugin.InternalPlugin;
-import me.whereareiam.yui.model.plugin.Plugin;
 import me.whereareiam.yui.plugin.PluginManager;
 import me.whereareiam.yui.util.Components;
 import me.whereareiam.yui.util.style.StyleKit;
@@ -36,7 +37,7 @@ public class PluginCommand {
 	private static final String CATEGORY_LISTENER = "command_plugin_category";
 	private static final String SELECT_LISTENER = "command_plugin_select";
 	private static final String BACK_LISTENER = "command_plugin_back";
-	private static final String LOAD_ACTION = "load";
+	private static final String RESCAN_ACTION = "rescan";
 
 	private static final String RELOAD_ALL_LISTENER = "command_plugin_reload_all";
 	private static final String RELOAD_ALL_CONFIRM_LISTENER = "command_plugin_reload_all_confirm";
@@ -161,10 +162,9 @@ public class PluginCommand {
 
 	private Optional<String> executeAction(String action, String value) {
 		return switch (action) {
-			case "enable" -> tryEnable(value);
-			case "disable" -> tryDisable(value);
-			case "unload" -> tryUnload(value);
-			case LOAD_ACTION -> tryLoad(value);
+			case "enable" -> attempt(() -> pluginManager.enable(value));
+			case "disable" -> attempt(() -> pluginManager.disable(value));
+			case "reload" -> attempt(() -> pluginManager.reload(value));
 			default -> Optional.of("unsupported");
 		};
 	}
@@ -209,13 +209,13 @@ public class PluginCommand {
 			rows.add(ActionRow.of(buttons.subList(i, end)));
 		}
 
-		// Extra controls for the load category
-		if (LOAD_ACTION.equals(action)) {
-			Button reload = Components.button(ButtonStyle.PRIMARY, CATEGORY_LISTENER, Translatable.text("commands.plugin.controls.reload").resolve(fluctlight), "load").getButton();
+		// The rescan view can rescan again
+		if (RESCAN_ACTION.equals(action)) {
+			Button rescan = Components.button(ButtonStyle.PRIMARY, CATEGORY_LISTENER, Translatable.text("commands.plugin.controls.rescan").resolve(fluctlight), RESCAN_ACTION).getButton();
 			if (showBack) {
 				Button back = Components.button(ButtonStyle.SUCCESS, BACK_LISTENER, Translatable.text("words.back").resolve(fluctlight));
-				rows.add(ActionRow.of(reload, back));
-			} else rows.add(ActionRow.of(reload));
+				rows.add(ActionRow.of(rescan, back));
+			} else rows.add(ActionRow.of(rescan));
 		} else if (showBack) {
 			rows.add(ActionRow.of(Components.button(ButtonStyle.SUCCESS, BACK_LISTENER, Translatable.text("words.back").resolve(fluctlight))));
 		}
@@ -260,7 +260,8 @@ public class PluginCommand {
 
 		CompletableFuture.runAsync(() -> {
 			try {
-				pluginManager.reload();
+				for (InstalledExtension plugin : pluginManager.plugins())
+					if (plugin.getState() == ExtensionState.ENABLED) pluginManager.reload(plugin.getId());
 
 				// After successful reload, show the main embed with category controls
 				event.getHook()
@@ -302,212 +303,83 @@ public class PluginCommand {
 		embed.setTitle(Translatable.text("commands.plugin.main.title").resolve(fluctlight));
 		embed.setDescription(Translatable.text("commands.plugin.main.description").resolve(fluctlight));
 
-		List<InternalPlugin> all = pluginManager.plugins().stream()
-				.sorted(Comparator.comparing(p -> p.getPlugin().getName().toLowerCase(Locale.ROOT)))
+		List<InstalledExtension> all = pluginManager.plugins().stream()
+				.sorted(Comparator.comparing(plugin -> Category.name(plugin).toLowerCase(Locale.ROOT)))
 				.toList();
-
-		List<InternalPlugin> enabled = all.stream().filter(InternalPlugin::isEnabled).toList();
-		List<InternalPlugin> disabled = all.stream().filter(p -> !p.isEnabled()).toList();
-		Map<String, Plugin> loadable = pluginManager.loadable();
-
-		if (!enabled.isEmpty()) {
-			String listing = enumeratePluginsMain(enabled, fluctlight);
-			listing = shorten(listing);
-			String heading = Translatable.text("commands.plugin.main.fields.enabled")
-				.with("count", enabled.size())
-				.resolve(fluctlight);
-			embed.addField(heading, listing, true);
-		}
-
-		if (!disabled.isEmpty()) {
-			String listing = enumeratePluginsMain(disabled, fluctlight);
-			listing = shorten(listing);
-			String heading = Translatable.text("commands.plugin.main.fields.disabled")
-				.with("count", disabled.size())
-				.resolve(fluctlight);
-			embed.addField(heading, listing, true);
-		}
-
-		if (!loadable.isEmpty()) {
-			String listing = enumerateLoadable(loadable, fluctlight);
-			listing = shorten(listing);
-			String heading = Translatable.text("commands.plugin.main.fields.loadable")
-				.with("count", loadable.size())
-				.resolve(fluctlight);
-			embed.addField(heading, listing, true);
-		}
+		field(embed, fluctlight, "enabled", all.stream().filter(plugin -> plugin.getState() == ExtensionState.ENABLED).toList());
+		field(embed, fluctlight, "disabled", all.stream().filter(plugin -> plugin.getState() == ExtensionState.DISABLED).toList());
+		field(embed, fluctlight, "waiting", all.stream()
+				.filter(plugin -> plugin.getState() == ExtensionState.WAITING || plugin.getState() == ExtensionState.FAILED)
+				.toList());
 
 		return embed;
+	}
+
+	private void field(EmbedBuilder embed, Fluctlight fluctlight, String state, List<InstalledExtension> plugins) {
+		if (plugins.isEmpty()) return;
+
+		String format = Translatable.text("commands.plugin.main.format").resolve(fluctlight);
+		List<String> lines = new ArrayList<>();
+		for (int i = 0; i < plugins.size(); i++) lines.add(Category.line(format, i + 1, plugins.get(i)).replace("\n", "\n    "));
+
+		String heading = Translatable.text("commands.plugin.main.fields." + state).with("count", plugins.size()).resolve(fluctlight);
+		embed.addField(heading, shorten(String.join("\n", lines)), true);
 	}
 
 	private Button[] mainControls(Fluctlight fluctlight) {
 		PayloadButton enable = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.text("commands.plugin.controls.enable").resolve(fluctlight), "enable");
 		PayloadButton disable = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.text("commands.plugin.controls.disable").resolve(fluctlight), "disable");
-		PayloadButton load = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.text("commands.plugin.controls.load").resolve(fluctlight), "load");
-		PayloadButton unload = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.text("commands.plugin.controls.unload").resolve(fluctlight), "unload");
+		PayloadButton reload = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.text("commands.plugin.controls.reload").resolve(fluctlight), "reload");
+		PayloadButton rescan = Components.button(ButtonStyle.SECONDARY, CATEGORY_LISTENER, Translatable.text("commands.plugin.controls.rescan").resolve(fluctlight), RESCAN_ACTION);
 
 		Button reloadAll = Components.button(ButtonStyle.PRIMARY, RELOAD_ALL_LISTENER, Translatable.text("commands.plugin.controls.reloadAll").resolve(fluctlight));
 
-		return new Button[]{enable.getButton(), disable.getButton(), load.getButton(), unload.getButton(), reloadAll};
+		return new Button[]{enable.getButton(), disable.getButton(), reload.getButton(), rescan.getButton(), reloadAll};
 	}
 
 	private EmbedBuilder buildCategoryEmbed(String action, Fluctlight fluctlight) {
-		if (LOAD_ACTION.equals(action)) {
-			String titleKey = "commands.plugin.load.title";
-			String content = buildLoadContent(fluctlight);
-			return buildCategoryEmbed(fluctlight, titleKey, content);
-		}
-
 		Category category = Category.of(action);
-		String titleKey = category.getTitleKey();
-		String content = category.content(pluginManager, fluctlight.getId());
+		if (category == Category.RESCAN) pluginManager.rescan();
 
-		return buildCategoryEmbed(fluctlight, titleKey, content);
-	}
-
-	private EmbedBuilder buildCategoryEmbed(Fluctlight fluctlight, String titleKey, String content) {
 		EmbedBuilder embed = StyleKit.embeds().secondary();
-		embed.setTitle(Translatable.text(titleKey).resolve(fluctlight));
+		embed.setTitle(Translatable.text(category.getTitleKey()).resolve(fluctlight));
 
+		String content = category.content(pluginManager, fluctlight.getId());
 		if (!content.isBlank()) embed.setDescription(content);
 
 		return embed;
 	}
 
 	private List<Button> buildCategoryButtons(String action) {
-		List<Button> buttons = new ArrayList<>();
-		if (LOAD_ACTION.equals(action)) {
-			List<Map.Entry<String, Plugin>> loadable = sortedLoadable();
-			for (int i = 0; i < loadable.size(); i++) {
-				String jarBase = loadable.get(i).getKey();
-				buttons.add(Components.button(ButtonStyle.SECONDARY, SELECT_LISTENER, (i + 1) + ".", action + '|' + jarBase).getButton());
-			}
+		Category category = Category.of(action);
+		if (category == null || !category.listsPlugins()) return List.of();
 
-			return buttons;
-		} else {
-			Category category = Category.of(action);
-			if (category != null && category.listsPlugins()) {
-				List<InternalPlugin> list = category.candidates(pluginManager);
-				for (int i = 0; i < list.size(); i++)
-					buttons.add(Components.button(ButtonStyle.SECONDARY, SELECT_LISTENER, (i + 1) + ".", action + '|' + list.get(i).getPlugin().getId()).getButton());
-			}
-		}
+		List<InstalledExtension> listed = category.candidates(pluginManager);
+		List<Button> buttons = new ArrayList<>();
+		for (int i = 0; i < listed.size(); i++)
+			buttons.add(Components.button(ButtonStyle.SECONDARY, SELECT_LISTENER, (i + 1) + ".", action + '|' + listed.get(i).getId()).getButton());
+
 		return buttons;
 	}
 
-	private List<Map.Entry<String, Plugin>> sortedLoadable() {
-		Map<String, Plugin> map = pluginManager.loadable();
-		List<Map.Entry<String, Plugin>> entries = new ArrayList<>(map.entrySet());
-
-		entries.sort(Comparator.comparing(e -> {
-			String name = e.getValue().getName();
-			return name == null ? e.getKey().toLowerCase(Locale.ROOT) : name.toLowerCase(Locale.ROOT);
-		}));
-
-		return entries;
-	}
-
-	private String buildLoadContent(Fluctlight fluctlight) {
-		List<Map.Entry<String, Plugin>> loadable = sortedLoadable();
-		if (loadable.isEmpty()) return Translatable.text("commands.plugin.load.empty").resolve(fluctlight);
-		String format = Translatable.text("commands.plugin.load.format").resolve(fluctlight);
-		List<String> lines = new ArrayList<>();
-
-		for (int i = 0; i < loadable.size(); i++) {
-			Plugin p = loadable.get(i).getValue();
-			String name = p.getName() == null ? loadable.get(i).getKey() : p.getName();
-			String line = format
-					.replace("<index>", String.valueOf(i + 1))
-					.replace("<name>", name);
-			lines.add(line);
-		}
-
-		String list = String.join("\n", lines);
-		String template = Translatable.text("commands.plugin.load.description").resolve(fluctlight);
-
-		return template.replace("<list>", list);
-	}
-
-	private String enumerateLoadable(Map<String, Plugin> loadable, Fluctlight fluctlight) {
-		List<Map.Entry<String, Plugin>> entries = new ArrayList<>(loadable.entrySet());
-		entries.sort(Comparator.comparing(e -> {
-			String name = e.getValue().getName();
-			return name == null ? e.getKey().toLowerCase(Locale.ROOT) : name.toLowerCase(Locale.ROOT);
-		}));
-		String format = Translatable.text("commands.plugin.load.format").resolve(fluctlight);
-		List<String> lines = new ArrayList<>();
-		for (int i = 0; i < entries.size(); i++) {
-			Plugin p = entries.get(i).getValue();
-			String name = p.getName() == null ? entries.get(i).getKey() : p.getName();
-			String line = format
-					.replace("<index>", String.valueOf(i + 1))
-					.replace("<name>", name);
-			lines.add(line);
-		}
-
-		return String.join("\n", lines);
-	}
-
-	private String enumeratePluginsMain(List<InternalPlugin> list, Fluctlight fluctlight) {
-		String format = Translatable.text("commands.plugin.main.format").resolve(fluctlight);
-		List<String> lines = new ArrayList<>();
-
-		for (int i = 0; i < list.size(); i++) {
-			InternalPlugin p = list.get(i);
-			String authors = p.getPlugin().getAuthors() == null || p.getPlugin().getAuthors().isEmpty()
-					? ""
-					: String.join(", ", p.getPlugin().getAuthors());
-			String authorsPart = authors.isBlank() ? "" : " " + authors;
-			String line = format
-					.replace("<index>", String.valueOf(i + 1))
-					.replace("<name>", safe(p.getPlugin().getName()))
-					.replace("<version>", safe(p.getPlugin().getVersion()))
-					.replace("<authors>", authorsPart)
-					.replace("<id>", safe(p.getPlugin().getId()));
-			String indented = line.replace("\n", "\n    ");
-			lines.add(indented.trim());
-		}
-
-		return String.join("\n", lines);
-	}
-
 	private String shorten(String listing) {
-		if (listing == null || listing.isBlank()) return listing;
 		String[] lines = listing.split("\n");
 		if (lines.length <= 5) return listing;
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < 5; i++) {
-			sb.append(lines[i]);
-			if (i < 5 - 1) sb.append("\n");
-		}
-		sb.append("\n...");
-		return sb.toString();
+
+		return String.join("\n", Arrays.copyOf(lines, 5)) + "\n...";
 	}
 
-	private static String safe(String v) {
-		return v == null ? "" : v;
-	}
-
-	private Optional<String> tryEnable(String id) {
-		return pluginManager.enable(id).isPresent() ? Optional.empty() : Optional.of("fail");
-	}
-
-	private Optional<String> tryDisable(String id) {
-		return pluginManager.disable(id).isPresent() ? Optional.empty() : Optional.of("fail");
-	}
-
-	private Optional<String> tryUnload(String id) {
-		return pluginManager.unload(id).isPresent() ? Optional.empty() : Optional.of("fail");
-	}
-
-	private Optional<String> tryLoad(String pluginName) {
+	private static Optional<String> attempt(Change change) {
 		try {
-			pluginManager.load(pluginName);
+			change.run();
 			return Optional.empty();
-		} catch (Exception e) {
-			return Optional.of(e.getMessage());
+		} catch (ExtensionException exception) {
+			return Optional.of(String.valueOf(exception.getMessage()));
 		}
+	}
+
+	@FunctionalInterface
+	private interface Change {
+		InstalledExtension run() throws ExtensionException;
 	}
 }
-
-

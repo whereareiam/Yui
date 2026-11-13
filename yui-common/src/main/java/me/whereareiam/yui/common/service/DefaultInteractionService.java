@@ -6,7 +6,6 @@ import me.whereareiam.yui.Constants;
 import me.whereareiam.yui.model.Key;
 import me.whereareiam.yui.model.PayloadButton;
 import me.whereareiam.yui.model.component.ComponentAttributes;
-import me.whereareiam.yui.plugin.PluginManager;
 import me.whereareiam.yui.service.InteractionService;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -33,7 +32,6 @@ public class DefaultInteractionService implements InteractionService, Initializi
 	}
 
 	private final JDA jda;
-	private final PluginManager pluginManager;
 	private final Map<String, Registered<?>> handlers = new ConcurrentHashMap<>();
 	private final Map<String, String> payloadStore = new ConcurrentHashMap<>();
 	private final Map<String, ComponentAttributes> attributesByComponentId = new ConcurrentHashMap<>();
@@ -306,27 +304,8 @@ public class DefaultInteractionService implements InteractionService, Initializi
 		return full(path) + '|' + UUID.randomUUID();
 	}
 
+	// Yui's own paths; a plugin's arrive qualified with its id through its own InteractionService.
 	private String pluginId() {
-		List<Class<?>> stackClasses = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE)
-				.walk(stream -> {
-					List<Class<?>> result = new ArrayList<>();
-					stream.skip(2)
-							.map(StackWalker.StackFrame::getDeclaringClass)
-							.filter(Objects::nonNull)
-							.limit(20)
-							.forEach(result::add);
-
-					return result;
-				});
-
-		for (Class<?> cls : stackClasses) {
-			String id = pluginManager.whichPlugin(cls)
-					.map(p -> p.getPlugin().getId())
-					.orElse(null);
-
-			if (id != null) return id;
-		}
-
 		return Constants.PREFIX;
 	}
 }

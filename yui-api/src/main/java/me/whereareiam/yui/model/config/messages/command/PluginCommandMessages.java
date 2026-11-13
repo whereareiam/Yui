@@ -17,8 +17,8 @@ public class PluginCommandMessages {
 	private Controls controls;
 	private Category enable;
 	private Category disable;
-	private Category load;
-	private Category unload;
+	private Category reload;
+	private Category rescan;
 	private Action action;
 
 	@Getter
@@ -34,7 +34,7 @@ public class PluginCommandMessages {
 		public static class Fields {
 			private String enabled;
 			private String disabled;
-			private String loadable;
+			private String waiting;
 		}
 	}
 
@@ -43,9 +43,8 @@ public class PluginCommandMessages {
 	public static class Controls {
 		private String enable;
 		private String disable;
-		private String load;
-		private String unload;
 		private String reload;
+		private String rescan;
 		private String reloadAll;
 	}
 

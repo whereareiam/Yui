@@ -15,15 +15,14 @@ public class PluginCommandMessagesTemplate implements DefaultsProvider<PluginCom
 		plugins.setExample("/yui plugin enable Cardinal");
 		plugins.setVariables(Map.of(
 				"action", "The action to perform on a specific plugin",
-				"plugin", "The plugin identifier or jar base name (for load)"
+				"plugin", "The plugin's id"
 		));
 
 		PluginCommandMessages.Controls controls = new PluginCommandMessages.Controls();
 		controls.setEnable("Enable");
 		controls.setDisable("Disable");
-		controls.setLoad("Load");
-		controls.setUnload("Unload");
-		controls.setReload("Reload list");
+		controls.setReload("Reload");
+		controls.setRescan("Rescan");
 		controls.setReloadAll("Reload all");
 		plugins.setControls(controls);
 
@@ -32,15 +31,15 @@ public class PluginCommandMessagesTemplate implements DefaultsProvider<PluginCom
 		main.setDescription(List.of(
 				"Here you can manage the plugins of the bot.",
 				"",
-				"Use the buttons below to enable, disable, load or unload plugins.",
-				"You can also reload the list of plugins to see any changes made.",
+				"Use the buttons below to enable, disable or reload plugins.",
+				"Rescan the plugins folder to install jars added since.",
 				""
 		));
 		main.setFormat("<index>. <name> [v<version>]\n <authors>");
 		PluginCommandMessages.Main.Fields fields = new PluginCommandMessages.Main.Fields();
 		fields.setEnabled("Active [{count}]");
 		fields.setDisabled("Disabled [{count}]");
-		fields.setLoadable("Loadable [{count}]");
+		fields.setWaiting("Waiting or failed [{count}]");
 		main.setFields(fields);
 		plugins.setMain(main);
 
@@ -66,27 +65,27 @@ public class PluginCommandMessagesTemplate implements DefaultsProvider<PluginCom
 		disable.setFormat("<index>. <name> [v<version>]\n <authors>");
 		plugins.setDisable(disable);
 
-		PluginCommandMessages.Category unload = new PluginCommandMessages.Category();
-		unload.setTitle("Unload Plugins");
-		unload.setEmpty("No plugins available to unload");
-		unload.setDescription(List.of(
-				"Here you can unload plugins that are currently loaded or enabled.",
+		PluginCommandMessages.Category reloading = new PluginCommandMessages.Category();
+		reloading.setTitle("Reload Plugins");
+		reloading.setEmpty("No plugin is running");
+		reloading.setDescription(List.of(
+				"Reloading reads a plugin's jar again and starts it, and the plugins that depend on it, anew.",
 				"",
 				"<list>"
 		));
-		unload.setFormat("<index>. <name> [v<version>]\n <authors>");
-		plugins.setUnload(unload);
+		reloading.setFormat("<index>. <name> [v<version>]\n <authors>");
+		plugins.setReload(reloading);
 
-		PluginCommandMessages.Category load = new PluginCommandMessages.Category();
-		load.setTitle("Load Plugin");
-		load.setEmpty("No loadable plugins found in plugins directory");
-		load.setDescription(List.of(
-				"Here you can load plugins that are currently not loaded.",
+		PluginCommandMessages.Category rescan = new PluginCommandMessages.Category();
+		rescan.setTitle("Rescanned the Plugins Folder");
+		rescan.setEmpty("Every plugin runs or is turned off");
+		rescan.setDescription(List.of(
+				"Jars added to the plugins folder are installed. These plugins wait or failed:",
 				"",
 				"<list>"
 		));
-		load.setFormat("<index>. <name>");
-		plugins.setLoad(load);
+		rescan.setFormat("<index>. <name>: <reason>");
+		plugins.setRescan(rescan);
 
 		PluginCommandMessages.Action action = new PluginCommandMessages.Action();
 		action.setErrorTitle("Action failed for {actionName}");

@@ -3,9 +3,9 @@ package me.whereareiam.yui.common.initialization;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.Registry;
-import me.whereareiam.yui.model.plugin.InternalPlugin;
+import me.whereareiam.chassis.type.ExtensionState;
 import me.whereareiam.yui.LifecycleTask;
+import me.whereareiam.yui.Registry;
 import me.whereareiam.yui.plugin.PluginManager;
 import org.springframework.stereotype.Component;
 
@@ -40,7 +40,7 @@ public class WelcomeTask implements LifecycleTask {
 		log.info("Yui has successfully linked with the Cardinal System.");
 		log.info("『Greetings, Master. I am Yui. All systems are operational. Awaiting your command.』");
 		log.info("");
-		long enabled = pluginManager.plugins().stream().filter(InternalPlugin::isEnabled).count();
+		long enabled = pluginManager.plugins().stream().filter(plugin -> plugin.getState() == ExtensionState.ENABLED).count();
 		log.info("Loaded {} plugin{}", enabled, enabled == 1 ? "" : "s");
 		log.info("");
 		return CompletableFuture.completedFuture(null);

@@ -2,14 +2,13 @@ package me.whereareiam.yui.adapter.command.executor;
 
 import com.sun.management.OperatingSystemMXBean;
 import lombok.AllArgsConstructor;
+import me.whereareiam.chassis.model.InstalledExtension;
 import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.message.Translatable;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
-import me.whereareiam.yui.model.plugin.InternalPlugin;
-import me.whereareiam.yui.model.plugin.Plugin;
 import me.whereareiam.yui.persistence.LanguagePersistence;
 import me.whereareiam.yui.plugin.PluginManager;
 import me.whereareiam.yui.util.style.StyleKit;
@@ -148,65 +147,36 @@ public class StatusCommand {
 
 	private String buildPluginsBlock(Fluctlight fluctlight) {
 		String title = Translatable.text("commands.status.overview.plugins.title").resolve(fluctlight);
-		String statusEnabled = Translatable.text("commands.status.overview.plugins.status.enabled").resolve(fluctlight);
-		String statusDisabled = Translatable.text("commands.status.overview.plugins.status.disabled").resolve(fluctlight);
-		String statusLoadable = Translatable.text("commands.status.overview.plugins.status.loadable").resolve(fluctlight);
 		String format = Translatable.text("commands.status.overview.plugins.format").resolve(fluctlight);
 
 		List<String> lines = new ArrayList<>();
-
-		List<InternalPlugin> enabled = pluginManager.plugins().stream()
-				.filter(InternalPlugin::isEnabled)
-				.sorted(Comparator.comparing(p -> safeLowerName(p.getPlugin().getName(), p.getPlugin().getId())))
-				.toList();
-		for (InternalPlugin plugin : enabled) {
-			addPluginLine(lines, formatPluginLine(
-					format,
-					plugin.getPlugin().getName(),
-					plugin.getPlugin().getVersion(),
-					plugin.getPlugin().getAuthors(),
-					plugin.getPlugin().getId(),
-					null,
-					statusEnabled
-			));
-		}
-
-		List<InternalPlugin> disabled = pluginManager.plugins().stream()
-				.filter(p -> !p.isEnabled())
-				.sorted(Comparator.comparing(p -> safeLowerName(p.getPlugin().getName(), p.getPlugin().getId())))
-				.toList();
-		for (InternalPlugin plugin : disabled) {
-			addPluginLine(lines, formatPluginLine(
-					format,
-					plugin.getPlugin().getName(),
-					plugin.getPlugin().getVersion(),
-					plugin.getPlugin().getAuthors(),
-					plugin.getPlugin().getId(),
-					null,
-					statusDisabled
-			));
-		}
-
-		List<Map.Entry<String, Plugin>> loadable = new ArrayList<>(pluginManager.loadable().entrySet());
-		loadable.sort(Comparator.comparing(entry -> safeLowerName(entry.getValue().getName(), entry.getKey())));
-		for (Map.Entry<String, Plugin> entry : loadable) {
-			Plugin plugin = entry.getValue();
-			addPluginLine(lines, formatPluginLine(
-					format,
-					plugin.getName(),
-					plugin.getVersion(),
-					plugin.getAuthors(),
-					null,
-					entry.getKey(),
-					statusLoadable
-			));
-		}
+		pluginManager.plugins().stream()
+				.sorted(Comparator.comparing(plugin -> safeLowerName(name(plugin), plugin.getId())))
+				.forEach(plugin -> addPluginLine(lines, formatPluginLine(
+						format,
+						name(plugin),
+						plugin.getDescriptor() == null ? null : plugin.getDescriptor().getVersion().toString(),
+						plugin.getDescriptor() == null ? List.of() : plugin.getDescriptor().getAuthors(),
+						plugin.getId(),
+						plugin.getJar().getFileName().toString(),
+						status(plugin, fluctlight)
+				)));
 
 		if (lines.isEmpty()) {
 			lines.add(Translatable.text("commands.status.overview.plugins.empty").resolve(fluctlight));
 		}
 
 		return title + "\n" + String.join("\n", lines);
+	}
+
+	private static String name(InstalledExtension plugin) {
+		return plugin.getDescriptor() == null ? plugin.getId() : plugin.getDescriptor().getName();
+	}
+
+	private static String status(InstalledExtension plugin, Fluctlight fluctlight) {
+		String state = plugin.getState().name().toLowerCase(Locale.ROOT);
+
+		return Translatable.text("commands.status.overview.plugins.status." + state).resolve(fluctlight);
 	}
 
 	private String formatPluginLine(

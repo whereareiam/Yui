@@ -28,7 +28,8 @@ public class StatusCommandMessagesTemplate implements DefaultsProvider<StatusCom
 		StatusCommandMessages.Plugins.Status pluginStatus = new StatusCommandMessages.Plugins.Status();
 		pluginStatus.setEnabled("ENABLED");
 		pluginStatus.setDisabled("DISABLED");
-		pluginStatus.setLoadable("LOADABLE");
+		pluginStatus.setWaiting("WAITING");
+		pluginStatus.setFailed("FAILED");
 		plugins.setStatus(pluginStatus);
 		overview.setPlugins(plugins);
 

@@ -25,6 +25,7 @@ dependencies {
     providedApi(libs.jda)
     providedApi(libs.configura)
     providedApi(libs.conditia.api)
+    providedApi(libs.chassis.api)
     providedApi(libs.conditia.common)
     providedApi(libs.conditia.configura)
     providedApi(libs.semantica.api)

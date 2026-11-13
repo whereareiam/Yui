@@ -13,7 +13,7 @@ Breaking changes are allowed wherever they remove a workaround or give a clearer
 | Deployment | In the cluster, code and deployment in separate repositories, as `arcadeya/stalwart` and `arcadeya/stalwart-deploy`: `arcadeya/yui` builds the image, `arcadeya/yui-deploy` records it and holds the configs. Plugins are built into the image. |
 | Organisation | Both Arcadeya repositories stay in the Forgejo organisation `arcadeya`, beside the other tools it runs (`stalwart`, `oneuptime`). |
 | Users | `Fluctlight` keeps its name. |
-| Plugin runtime | One classloader and one child Spring context per plugin, with hot reload. A plugin declares its exported packages in `plugin.json`; reloading a plugin reloads its dependents in dependency order. |
+| Plugin runtime | On Chassis: one classloader and one child Spring context per plugin, with hot reload. A plugin declares its exported packages in `yui-plugin.yml`; reloading a plugin reloads its dependents in dependency order. |
 | Database | Hibernate stays; H2 (default), PostgreSQL or MariaDB chosen in config. Flyway migrations, one history table per owner. `ddl-auto=validate`. |
 | Servers | One Discord server. |
 | Configuration | Configura 2.1, one provider per file, no global state. No migrations and no compatibility bridges (owner, 13 November 2026): the one installation's files are written anew in the new shape. |
@@ -611,7 +611,7 @@ Every config file is agreed (13 November 2026); step 5 builds them.
 - Unit tests mirror the code; database tests run on H2, and on PostgreSQL and MariaDB with Testcontainers.
 - AGENTS.md and Scriptorium docs (`scriptorium.project.json`, `docs/content/`).
 - Drop `spring-boot-webflux` unless something needs it; exclude JDA's voice natives if voice is unused.
-- A published Gradle plugin for building Yui plugins (`me.whereareiam.yui.plugin`): writes `plugin.json`
+- A published Gradle plugin for building Yui plugins (`me.whereareiam.yui.plugin`): writes `yui-plugin.yml`
   from the build (id, version, dependencies, exports), declares runtime libraries through Attache and packages
   the jar. Used by `plugins/`, `examples/plugin` and `arcadeya/yui`.
 
@@ -708,6 +708,14 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
    example and arguments are texts by key (`commands.<id>.description`, `.example`, `.variables.<argument>`, under a
    plugin's id for its commands); `commands.yml` holds no text and nothing reads `translate(...)`.
 7. Plugin runtime with hot reload, on Chassis.
+   Built on 13 November 2026 on Chassis `dev-379d949` and Attache `dev-940ee5b`: `PluginHost` runs Chassis with
+   `yui-plugin.yml`, Attache libraries, the export layer and `SpringExtensionFactory`; `@Plugin` imports
+   `PluginBeans` (an `InteractionService` qualified with the plugin's id, so the call-stack lookup went) and
+   `PluginAttachment`, which hands the context to `DefaultPluginRegistrations`: texts, condition types, listeners,
+   commands and journeys, each undone on stop. `/plugin`, `/status` and `/update` follow Chassis's states. A test
+   starts a real plugin jar, attaches, detaches and checks that its class loader is collected. Left: plugins'
+   audiences; the export layer exports all of `me.whereareiam.yui`, implementation packages included, since Yui's
+   root package holds API classes (`Constants`, `Registry`, `Reloadable`).
 8. JDA 6 and cloud.
 9. Verification into `plugins/`, `examples/plugin`.
 10. Docs and the rest of AGENTS.md; publishing the distribution. The repository setup after Identica (release

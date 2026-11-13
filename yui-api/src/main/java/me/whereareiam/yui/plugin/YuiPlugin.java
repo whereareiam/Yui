@@ -1,27 +1,25 @@
 package me.whereareiam.yui.plugin;
 
-import me.whereareiam.attache.model.LibraryRequest;
+import me.whereareiam.chassis.Extension;
+import me.whereareiam.chassis.ExtensionContext;
 
-import java.util.List;
-
-public interface YuiPlugin {
-	default void onLoad() {
+/**
+ * A plugin of Yui. Its main class implements this and carries {@link Plugin}, which makes it the Spring configuration
+ * of the plugin's own context; Yui registers the plugin's listeners, commands, texts and condition types itself, so
+ * {@code enable} and {@code disable} only hold what the plugin does beyond them.
+ *
+ * <pre>{@code
+ * @Plugin
+ * public class Verification implements YuiPlugin {
+ * }
+ * }</pre>
+ */
+public interface YuiPlugin extends Extension<ExtensionContext> {
+	@Override
+	default void enable(ExtensionContext context) {
 	}
 
-	default void onEnable() {
-	}
-
-	default void onDisable() {
-	}
-
-	default void onUnload() {
-	}
-
-	default List<String> repositories() {
-		return List.of();
-	}
-
-	default List<LibraryRequest> dependencies() {
-		return List.of();
+	@Override
+	default void disable() {
 	}
 }
