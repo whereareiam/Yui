@@ -4,6 +4,7 @@ import io.leangen.geantyref.TypeToken;
 import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
 import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
 import me.whereareiam.yui.adapter.command.parser.FluctlightParser;
+import me.whereareiam.yui.adapter.command.permission.CommandDefaultPermissions;
 import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.fluctlight.FluctlightService;
 import me.whereareiam.yui.message.Translatable;
@@ -42,15 +43,18 @@ public final class YuiJDACommandFactory implements JDACommandFactory<Interaction
     private final CommandDefinitionRegistry definitionRegistry;
     private final DiscordCommandFactory<Interaction> discordCommandFactory;
     private final NodeProcessor<Interaction> nodeProcessor;
+    private final CommandDefaultPermissions defaultPermissions;
 
     private CommandScopePredicate<Interaction> commandScopePredicate = CommandScopePredicate.alwaysTrue();
 
     public YuiJDACommandFactory(
             @NotNull CommandTree<Interaction> commandTree,
             @NotNull CommandDefinitionRegistry definitionRegistry,
-            @NotNull FluctlightParser fluctlightParser
+            @NotNull FluctlightParser fluctlightParser,
+            @NotNull CommandDefaultPermissions defaultPermissions
     ) {
         this.commandTree = Objects.requireNonNull(commandTree, "commandTree");
+        this.defaultPermissions = Objects.requireNonNull(defaultPermissions, "defaultPermissions");
         this.definitionRegistry = Objects.requireNonNull(definitionRegistry, "definitionRegistry");
 
         // Reuse Cloud's standard option registry setup
@@ -88,6 +92,8 @@ public final class YuiJDACommandFactory implements JDACommandFactory<Interaction
             Map<List<String>, CommandDefinition> definitionsByPath = buildDefinitionLookup(rootNode);
             CommandDefinition definition = definitionForPath(definitionsByPath, List.of(command.name()));
             SlashCommandData data = Commands.slash(command.name(), text(command.description()));
+            if (definition != null)
+                defaultPermissions.of(definition).ifPresent(permissions -> data.setDefaultPermissions(DefaultMemberPermissions.enabledFor(permissions)));
 
             // Apply options
             for (DiscordOption<Interaction> option : command.options()) {

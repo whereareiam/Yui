@@ -7,6 +7,7 @@ import me.whereareiam.yui.adapter.command.cooldown.CommandCooldownPostprocessor;
 import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
 import me.whereareiam.yui.adapter.command.mapper.FluctlightInteractionMapper;
 import me.whereareiam.yui.adapter.command.parser.FluctlightParser;
+import me.whereareiam.yui.adapter.command.permission.CommandDefaultPermissions;
 import me.whereareiam.yui.adapter.command.permission.CommandPermissionPostprocessor;
 import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
@@ -38,6 +39,7 @@ public class CommandManagerFactory implements FactoryBean<JDA6CommandManager<Int
 	private final CommandDefinitionRegistry definitionRegistry;
 	private final FluctlightParser fluctlightParser;
 	private final JDA jda;
+	private final CommandDefaultPermissions defaultPermissions;
 
 	private JDA6CommandManager<Interaction> commandManager;
 
@@ -52,6 +54,7 @@ public class CommandManagerFactory implements FactoryBean<JDA6CommandManager<Int
 					scheduledExecutorService,
 					definitionRegistry,
 					fluctlightParser,
+					defaultPermissions,
 					jda
 			);
 
