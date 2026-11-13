@@ -694,16 +694,17 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
    lifetime closes, limits and transcripts. Texts come from Semantica 0.1.0: English defaults in code, one
    `MessageDefaults` per file, served from memory, with `messages/<locale>/` over them; plugins' texts are owned
    layers prefixed with their id. Nothing has been tried against Discord yet.
-   Left for later: `audit.yml`'s `store` (entries in the database, `/audit`); the embeds' author and footer text
-   and the transcript line becoming texts; the audit texts still say `audit.user.*` where the entries say
-   `member.*`. `commands.yml` takes its final shape with step 6.
+   Since done: `audit.yml`'s `store` keeps entries in `yui_audit_entries` for `keep` and `/audit` searches them;
+   the embeds' author and footer and the transcript line are texts; the audit texts say `audit.member.*` like the
+   entries. `commands.yml` took its final shape with step 6.
 6. Permissions on Conditia; one core service that grants roles for facts and logs them (the role sync went with
    step 4).
    Built on 13 November 2026 on Conditia `dev-3090ccb`: commands bind their `requires:` as deferred places with
    the parts `actor` (`Actor`: user, membership, fluctlight) and `interaction` (JDA's); core's types and
    `audiences.yml` as agreed; cooldowns and `hide` work; `FactRoles` gives and takes roles for facts and posts
-   `member.role`. Left for later: registering a command whose audience reduces
-   to one Discord permission with it as default permission; plugins' audiences (step 7). A command's description,
+   `member.role`. Since done: a command whose top-level lines come down to
+   Discord permissions alone registers them as its default permissions (an `any` is left to Yui's check); plugins'
+   audiences come from `plugins/<id>/audiences.yml`, scoped to the plugin. A command's description,
    example and arguments are texts by key (`commands.<id>.description`, `.example`, `.variables.<argument>`, under a
    plugin's id for its commands); `commands.yml` holds no text and nothing reads `translate(...)`.
 7. Plugin runtime with hot reload, on Chassis.
@@ -712,9 +713,9 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
    `PluginBeans` (an `InteractionService` qualified with the plugin's id, so the call-stack lookup went) and
    `PluginAttachment`, which hands the context to `DefaultPluginRegistrations`: texts, condition types, listeners,
    commands and journeys, each undone on stop. `/plugin`, `/status` and `/update` follow Chassis's states. A test
-   starts a real plugin jar, attaches, detaches and checks that its class loader is collected. Left: plugins'
-   audiences; the export layer exports all of `me.whereareiam.yui`, implementation packages included, since Yui's
-   root package holds API classes (`Constants`, `Registry`, `Reloadable`).
+   starts a real plugin jar, attaches, detaches and checks that its class loader is collected. Left: the
+   export layer exports all of `me.whereareiam.yui`, implementation packages included, since Yui's root package
+   holds API classes (`Constants`, `Registry`, `Reloadable`, `LifecycleTask`); where they move is the owner's pick.
 8. JDA 6 and cloud.
    Built on 13 November 2026: JDA 6.7.0 with `cloud-jda6` 1.0.0-beta.4; components come from JDA 6's packages and
    rows (`addComponents(ActionRow.of(...))`); `spring-boot-webflux` and JDA's voice libraries (Opus, Tink) are gone.
