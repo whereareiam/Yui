@@ -480,8 +480,11 @@ defaults:
 ```
 
 `style/`, approved: `palette.yml` names the colours, `embeds.yml` gives each kind (`StyleKit.embeds().error()`) a
-colour by its palette name, plus icons, links and a timestamp. A colour is only ever a palette name, never a hex
-in place; an unknown name stops startup with its path. Unset values are left out instead of `""`. The author
+colour, plus icons, links and a timestamp. A colour is a palette name (`blue`) or a hex (`"#E03131"`): the `#`
+decides, and palette names (`[a-z][a-z0-9-]*`) never start with one. In code it is the sealed `StyleColor`
+(`Named(name)` or `Hex(rgb)`), which the palette resolves; `StyleColor.named("violet")` and
+`StyleColor.hex("#8A5CF6")` work wherever a colour is taken. An unknown name or a malformed hex stops startup
+with its path. Unset values are left out instead of `""`. The author
 name and the footer text are words, so they move to `messages/<locale>/`. Plugins' embeds and later
 `components.yml` or `emojis.yml` refer to the same palette.
 
@@ -511,7 +514,7 @@ success:
 warning:
   color: amber
 error:
-  color: red
+  color: "#E03131"
 info:
   color: blue
 ```
