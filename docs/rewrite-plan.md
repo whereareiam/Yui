@@ -739,6 +739,13 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
    `member.*`. `commands.yml` takes its final shape with step 6.
 6. Permissions on Conditia; one core service that grants roles for facts and logs them (the role sync went with
    step 4).
+   Built on 13 November 2026 on Conditia `dev-3090ccb`: commands bind their `requires:` as deferred places with
+   the parts `actor` (`Actor`: user, membership, fluctlight) and `interaction` (JDA's); core's types and
+   `audiences.yml` as agreed; cooldowns and `hide` work; `FactRoles` gives and takes roles for facts and posts
+   `member.role`; `yui config upgrade` turns old `requirements` into `requires` and falls back to
+   `audience: operator` where it cannot say a rule. Left for later: registering a command whose audience reduces
+   to one Discord permission with it as default permission; a command's description, example and arguments
+   becoming texts by key (they still name `translate(...)` in `commands.yml`); plugins' audiences (step 7).
 7. Plugin runtime with hot reload, on Chassis.
 8. JDA 6 and cloud.
 9. Verification into `plugins/`, `examples/plugin`.
