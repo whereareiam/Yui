@@ -543,7 +543,30 @@ languages:
   de: "German"
 ```
 
-Still open, one file at a time: `audiences.yml` in detail, the message files, Verification's files.
+`audiences.yml`, approved: a name maps straight to its list of conditions in Conditia's form. A plugin's file
+writes bare names (`verified`); the prefix comes from its folder (`verification:verified`), so a plugin cannot
+claim another's name. An installation tightens a plugin's audience in that plugin's file under
+`app/plugins/<id>/`. An audience may refer to another; cycles and unknown names stop startup with their path.
+
+```yaml
+# audiences.yml
+_version: 1
+operator:
+  - permission: MANAGE_SERVER
+moderator:
+  - any:
+      - audience: operator
+      - permission: MODERATE_MEMBERS
+```
+
+```yaml
+# plugins/verification/audiences.yml
+_version: 1
+verified:
+  - verified: true
+```
+
+Still open, one file at a time: the message files, Verification's files.
 
 ## Build
 
