@@ -724,6 +724,12 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
 5. Configuration on Configura 2.1 with file upgrades; texts on Semantica 0.1.0, after its `FileSource` key prefix
    and with a Discord format (see Messages). Done before permissions (owner, 13 November 2026): the old
    Configura's adapters read single strings only, so `requires:` lists need Configura 2.1 first.
+   Built so far (13 November 2026): Configura 2.1 with Yui's value types as a Jackson module and Strata's
+   `_version`; `settings.yml` and `persistence.yml` in their agreed shape; Yui no longer writes its files, values
+   may name environment variables, and files older than this version stop startup until
+   `yui config upgrade <dir>` runs Strata's stream `yui/config` on them (migration 1). Still to come: `languages.yml`,
+   `style/`, then `audit.yml` and `conversations.yml` with the features they describe, and the texts on Semantica
+   0.1.0 (its key prefix is in `dev-0d7e717`). `commands.yml` takes its final shape with step 6.
 6. Permissions on Conditia; one core service that grants roles for facts and logs them (the role sync went with
    step 4).
 7. Plugin runtime with hot reload, on Chassis.
