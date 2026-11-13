@@ -25,7 +25,7 @@ public class EmbedsProvider extends DefaultConfigProvider<EmbedStyle> {
 
 	@Override
 	protected EmbedStyle load() {
-		return update("embeds", template.supply(new EmbedStyle()));
+		return read("embeds", template.supply(new EmbedStyle()));
 	}
 
 	@Override

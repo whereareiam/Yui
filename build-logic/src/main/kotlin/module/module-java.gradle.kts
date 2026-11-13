@@ -28,7 +28,7 @@ lombok {
 
 // The libraries Yui loads at runtime through Attache. Modules compile against them; tests get them on their
 // classpath, since nothing loads them there.
-val providedLibraries = listOf("spring-boot", "jda", "configura", "configura-polymorphic", "semantica", "attache-common")
+val providedLibraries = listOf("spring-boot", "jda", "configura", "configura-polymorphic", "strata", "strata-configura", "semantica", "attache-common")
 
 dependencies {
     compileOnly(catalog.library("annotations"))

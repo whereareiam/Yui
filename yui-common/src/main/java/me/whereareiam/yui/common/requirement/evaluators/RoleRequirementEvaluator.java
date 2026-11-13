@@ -129,10 +129,10 @@ public class RoleRequirementEvaluator extends BaseRequirementEvaluator {
 
 		// Fallback: resolve member from the configured guild (supports DM interactions)
 		Settings cfg = settings.getIfAvailable();
-		if (cfg == null || cfg.getDiscord() == null)
+		if (cfg == null || cfg.getGuild() == null)
 			return null;
 
-		Guild guild = jda.getGuildById(cfg.getDiscord().getGuildId());
+		Guild guild = jda.getGuildById(cfg.getGuild());
 		if (guild == null)
 			return null;
 

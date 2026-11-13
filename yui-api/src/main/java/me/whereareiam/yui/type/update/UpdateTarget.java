@@ -1,4 +1,4 @@
-package me.whereareiam.yui.type;
+package me.whereareiam.yui.type.update;
 
 /**
  * Target type for update checking.

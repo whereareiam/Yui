@@ -12,7 +12,7 @@ public class SettingsProvider extends DefaultConfigProvider<Settings> {
 
 	@Override
 	protected Settings load() {
-		return update("settings", template.supply(new Settings()));
+		return read("settings", template.supply(new Settings()));
 	}
 
 	@Override

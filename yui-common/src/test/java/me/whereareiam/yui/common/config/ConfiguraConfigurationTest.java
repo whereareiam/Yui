@@ -9,6 +9,8 @@ import me.whereareiam.yui.model.requirement.RequirementEntry;
 import me.whereareiam.yui.model.requirement.type.RoleRequirement;
 import me.whereareiam.yui.model.requirement.type.ScopeRequirement;
 import me.whereareiam.yui.type.ConfigurationType;
+import me.whereareiam.yui.type.update.UpdateCheck;
+import me.whereareiam.yui.type.update.UpdateWarning;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -35,15 +38,18 @@ class ConfiguraConfigurationTest {
 
 	@BeforeEach
 	void setUp() {
-		configura = new ConfiguraConfiguration().configura(() -> ConfigurationType.YAML);
+		configura = ConfiguraConfiguration.build(ConfigurationType.YAML);
 	}
 
 	@Test
 	void settings_KeepWhatTheFileSaysAndTakeDefaultsForTheRest() throws IOException {
 		write("settings.yml", """
+				_version: 1
+				guild: "856839365938118698"
 				locale: de
 				updater:
 				  interval: 1h30m
+				  warn: [updates, localBuilds]
 				discord:
 				  channels:
 				    audit:
@@ -52,10 +58,13 @@ class ConfiguraConfigurationTest {
 
 		Settings settings = configura.merge(file("settings"), new SettingsTemplate().supply(new Settings()));
 
+		assertEquals("856839365938118698", settings.getGuild());
 		assertEquals(DiscordLocale.GERMAN, settings.getLocale());
 		assertEquals(5400, settings.getUpdater().getInterval().getSeconds());
+		assertEquals(Set.of(UpdateWarning.UPDATES, UpdateWarning.LOCAL_BUILDS), settings.getUpdater().getWarn());
+		assertEquals(Set.of(UpdateCheck.YUI, UpdateCheck.PLUGINS), settings.getUpdater().getCheck());
 		assertEquals(List.of("123"), settings.getDiscord().getChannels().getAudit().get("user_join"));
-		assertEquals("SET_YOUR_TOKEN", settings.getDiscord().getToken());
+		assertEquals("SET_YOUR_TOKEN", settings.getToken());
 	}
 
 	@Test

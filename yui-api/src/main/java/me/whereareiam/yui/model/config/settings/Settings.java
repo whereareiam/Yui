@@ -2,14 +2,28 @@ package me.whereareiam.yui.model.config.settings;
 
 import lombok.Getter;
 import lombok.Setter;
-import me.whereareiam.yui.model.config.settings.database.DatabaseSettings;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 
+import java.util.List;
+
+/**
+ * {@code settings.yml}: how Yui connects to Discord, the guild it serves, its default locale and its updater.
+ *
+ * <p>Values may name environment variables ({@code token: "${DISCORD_TOKEN}"}), so secrets stay out of the file.</p>
+ */
 @Getter
 @Setter
 public class Settings {
+	private String token;
+	private String guild;
+	private List<GatewayIntent> intents;
 	private DiscordLocale locale;
-	private DiscordSettings discord;
-	private DatabaseSettings database;
 	private UpdaterSettings updater;
+
+	/**
+	 * The channels of conversations and of the audit trail, until they move into {@code conversations.yml} and
+	 * {@code audit.yml}.
+	 */
+	private DiscordSettings discord;
 }

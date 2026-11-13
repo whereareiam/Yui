@@ -46,15 +46,15 @@ public class CommonConfiguration {
 		Settings settings = settingsProvider.getObject();
 
 		try {
-			if (settings.getDiscord().getGuildId().equals("SET_YOUR_GUILD_ID"))
+			if (settings.getGuild().equals("SET_YOUR_GUILD_ID"))
 				throw new IllegalStateException("Discord guild id is not set");
 
-			if (settings.getDiscord().getToken().equals("SET_YOUR_TOKEN"))
+			if (settings.getToken().equals("SET_YOUR_TOKEN"))
 				throw new IllegalStateException("Discord token is not set");
 
 			JDABuilder builder = JDABuilder
-					.createDefault(settings.getDiscord().getToken())
-					.setEnabledIntents(settings.getDiscord().getIntents())
+					.createDefault(settings.getToken())
+					.setEnabledIntents(settings.getIntents())
 					.setChunkingFilter(ChunkingFilter.ALL)
 					.setMemberCachePolicy(MemberCachePolicy.ALL);
 

@@ -10,7 +10,7 @@ import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.plugin.InternalPlugin;
 import me.whereareiam.yui.plugin.PluginManager;
-import me.whereareiam.yui.type.UpdateTarget;
+import me.whereareiam.yui.type.update.UpdateTarget;
 import me.whereareiam.yui.update.UpdateService;
 import me.whereareiam.yui.util.Components;
 import me.whereareiam.yui.util.style.StyleKit;

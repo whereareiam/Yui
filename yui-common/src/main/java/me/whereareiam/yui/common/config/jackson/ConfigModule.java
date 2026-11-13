@@ -9,6 +9,8 @@ import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
 import me.whereareiam.yui.model.type.Duration;
+import me.whereareiam.yui.type.update.UpdateCheck;
+import me.whereareiam.yui.type.update.UpdateWarning;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 import java.awt.Color;
@@ -20,7 +22,9 @@ import java.util.function.Function;
 
 /**
  * Yui's value types as configuration files write them: a {@link Duration} as {@code 1h30m}, a {@link Color} as
- * {@code #B57E3F}, a {@link DiscordLocale} as its tag ({@code en-US}). A list may also be written as its one value.
+ * {@code #B57E3F}, a {@link DiscordLocale} as its tag ({@code en-US}), the updater's choices in camel case
+ * ({@code localBuilds}). A list may also be written as its one value, and text may name environment variables
+ * ({@code "${DISCORD_TOKEN}"}), which are read when the file is.
  */
 public final class ConfigModule extends SimpleModule {
 	public ConfigModule() {
@@ -29,6 +33,9 @@ public final class ConfigModule extends SimpleModule {
 		scalar(Duration.class, Duration::parse, Duration::toString);
 		scalar(Color.class, Color::decode, ConfigModule::hex);
 		scalar(DiscordLocale.class, DiscordLocale::from, DiscordLocale::getLocale);
+		scalar(String.class, EnvironmentText::resolve, Function.identity());
+		camelCase(UpdateCheck.class);
+		camelCase(UpdateWarning.class);
 	}
 
 	@Override
@@ -56,6 +63,10 @@ public final class ConfigModule extends SimpleModule {
 				generator.writeString(write.apply(value));
 			}
 		});
+	}
+
+	private <E extends Enum<E>> void camelCase(Class<E> type) {
+		scalar(type, text -> Enum.valueOf(type, CamelCase.toConstant(text)), value -> CamelCase.fromConstant(value.name()));
 	}
 
 	private static String hex(Color color) {

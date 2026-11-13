@@ -7,7 +7,6 @@ import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguage
 import me.whereareiam.yui.event.fluctlight.language.FluctlightLanguageChangedEvent;
 import me.whereareiam.yui.model.config.languages.LanguageEntry;
 import me.whereareiam.yui.model.config.languages.Languages;
-import me.whereareiam.yui.model.config.settings.DiscordSettings;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import net.dv8tion.jda.api.JDA;
@@ -76,10 +75,8 @@ class LanguageRoleRuleTest {
 		));
 		when(languagesProvider.get()).thenReturn(languages);
 
-		DiscordSettings discord = new DiscordSettings();
-		discord.setGuildId(GUILD);
 		Settings settings = new Settings();
-		settings.setDiscord(discord);
+		settings.setGuild(GUILD);
 		when(settingsProvider.getIfAvailable()).thenReturn(settings);
 
 		when(jda.getGuildById(GUILD)).thenReturn(guild);

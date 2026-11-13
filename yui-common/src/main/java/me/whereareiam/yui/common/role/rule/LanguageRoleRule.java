@@ -105,9 +105,9 @@ public class LanguageRoleRule {
 
 	private Optional<Guild> guild() {
 		Settings current = settings.getIfAvailable();
-		if (current == null || current.getDiscord() == null || current.getDiscord().getGuildId() == null)
+		if (current == null || current.getGuild() == null)
 			return Optional.empty();
 
-		return Optional.ofNullable(jda.getGuildById(current.getDiscord().getGuildId()));
+		return Optional.ofNullable(jda.getGuildById(current.getGuild()));
 	}
 }

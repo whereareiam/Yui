@@ -33,7 +33,7 @@ public class LeaveUnwantedGuildsTask implements LifecycleTask {
 	@Override
 	public CompletableFuture<Void> start() {
 		Settings settings = settingsProvider.getObject();
-		String targetGuildId = settings.getDiscord().getGuildId();
+		String targetGuildId = settings.getGuild();
 
 		jda.getGuilds()
 				.stream()

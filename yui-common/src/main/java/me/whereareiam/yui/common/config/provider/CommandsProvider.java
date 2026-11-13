@@ -18,7 +18,7 @@ public class CommandsProvider extends DefaultConfigProvider<Commands> implements
 
 	@Override
 	protected Commands load() {
-		return update("commands", template.supply(new Commands()));
+		return read("commands", template.supply(new Commands()));
 	}
 
 	@Override

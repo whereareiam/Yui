@@ -25,7 +25,7 @@ public class PaletteProvider extends DefaultConfigProvider<Palette> {
 
 	@Override
 	protected Palette load() {
-		return update("palette", template.supply(new Palette()));
+		return read("palette", template.supply(new Palette()));
 	}
 
 	@Override

@@ -12,7 +12,7 @@ public class LanguagesProvider extends DefaultConfigProvider<Languages> {
 
 	@Override
 	protected Languages load() {
-		return update("languages", template.supply(new Languages()));
+		return read("languages", template.supply(new Languages()));
 	}
 
 	@Override

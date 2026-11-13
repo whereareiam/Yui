@@ -15,6 +15,8 @@ import me.whereareiam.yui.model.plugin.Plugin;
 import me.whereareiam.yui.model.update.UpdateConfiguration;
 import me.whereareiam.yui.model.update.UpdateSource;
 import me.whereareiam.yui.plugin.PluginManager;
+import me.whereareiam.yui.type.update.UpdateCheck;
+import me.whereareiam.yui.type.update.UpdateWarning;
 import me.whereareiam.yui.update.UpdateProvider;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationEventPublisher;
@@ -87,7 +89,7 @@ public class UpdateScheduler implements Reloadable {
         Settings settings = settingsProvider.getObject();
         UpdaterSettings cfg = settings.getUpdater();
 
-        if (!cfg.isCheckForUpdates() || cfg.getInterval().getSeconds() <= 0) {
+        if (cfg.getCheck().isEmpty() || cfg.getInterval().getSeconds() <= 0) {
             log.debug("[Updater] Update checking is disabled");
             return;
         }
@@ -133,14 +135,14 @@ public class UpdateScheduler implements Reloadable {
         Settings settings = settingsProvider.getObject();
         UpdaterSettings cfg = settings.getUpdater();
 
-        if (cfg == null || !cfg.isCheckForUpdates())
+        if (cfg == null)
             return;
 
-        checkCoreUpdates();
+        if (cfg.getCheck().contains(UpdateCheck.YUI))
+            checkCoreUpdates();
 
-        if (cfg.isCheckPluginUpdates()) {
+        if (cfg.getCheck().contains(UpdateCheck.PLUGINS))
             checkAllPluginUpdates();
-        }
     }
 
     /**
@@ -213,7 +215,7 @@ public class UpdateScheduler implements Reloadable {
 
         // 1) LOCAL DEV exact build
         if ("dev".equalsIgnoreCase(current)) {
-            if (cfg.isWarnAboutLocalBuilds()) {
+            if (cfg.getWarn().contains(UpdateWarning.LOCAL_BUILDS)) {
                 log.warn("[Updater] You are running a local dev build of {}.", name);
             }
 
@@ -229,7 +231,7 @@ public class UpdateScheduler implements Reloadable {
         if (!isReleaseVersion(current)) {
             if (spec.getDev() != null) {
                 UpdateSource devSpec = spec.getDev();
-                boolean warnAboutDevBuilds = cfg.isWarnAboutDevBuilds();
+                boolean warnAboutDevBuilds = cfg.getWarn().contains(UpdateWarning.DEV_BUILDS);
                 providerRegistry.by(devSpec).ifPresent(provider ->
                         warnAheadBehindBranches(componentId, current, name, provider, devSpec, warnAboutDevBuilds)
                 );
@@ -240,7 +242,7 @@ public class UpdateScheduler implements Reloadable {
         // 3) release build
         if (spec.getRelease() != null) {
             UpdateSource relSpec = spec.getRelease();
-            boolean warnAboutUpdates = cfg.isWarnAboutUpdates();
+            boolean warnAboutUpdates = cfg.getWarn().contains(UpdateWarning.UPDATES);
             providerRegistry.by(relSpec).ifPresent(provider ->
                     checkReleaseUpdate(componentId, name, current, provider, relSpec, warnAboutUpdates)
             );

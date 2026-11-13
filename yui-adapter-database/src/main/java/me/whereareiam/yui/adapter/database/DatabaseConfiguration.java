@@ -1,9 +1,10 @@
 package me.whereareiam.yui.adapter.database;
 
 import com.zaxxer.hikari.HikariDataSource;
-import me.whereareiam.yui.model.config.settings.Settings;
-import me.whereareiam.yui.model.config.settings.database.DatabaseSettings;
-import me.whereareiam.yui.model.config.settings.database.HikariSettings;
+import me.whereareiam.yui.model.config.persistence.EmbeddedPersistence;
+import me.whereareiam.yui.model.config.persistence.Persistence;
+import me.whereareiam.yui.model.config.persistence.Pool;
+import me.whereareiam.yui.model.config.persistence.ServerPersistence;
 import me.whereareiam.yui.type.DatabaseType;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -14,47 +15,56 @@ import javax.sql.DataSource;
 import java.nio.file.Path;
 
 /**
- * Connects to the database the settings choose. {@link PersistenceConfiguration} migrates and maps it.
+ * Connects to the database {@code persistence.yml} chooses. {@link PersistenceConfiguration} migrates and maps it.
  */
 @Configuration
 public class DatabaseConfiguration {
 	@Bean
-	public DatabaseType databaseType(Settings settings) {
-		return settings.getDatabase().getType();
+	public DatabaseType databaseType(Persistence persistence) {
+		return persistence.getType();
 	}
 
 	@Bean(destroyMethod = "close")
-	public DataSource dataSource(Settings settings, @Qualifier("dataPath") Path dataPath) {
-		DatabaseSettings database = settings.getDatabase();
-		HikariSettings hikari = database.getHikari();
-
+	public DataSource dataSource(Persistence persistence, @Qualifier("dataPath") Path dataPath) {
+		Pool pool = persistence.getPool();
 		HikariDataSource dataSource = new HikariDataSource();
-		dataSource.setJdbcUrl(jdbcUrl(database, dataPath));
-		dataSource.setMinimumIdle(hikari.getMinimumIdle());
-		dataSource.setMaximumPoolSize(hikari.getMaximumPoolSize());
-		dataSource.setConnectionTimeout(hikari.getConnectionTimeout());
-		dataSource.setIdleTimeout(hikari.getIdleTimeout());
-		dataSource.setMaxLifetime(hikari.getMaxLifetime());
+		dataSource.setJdbcUrl(jdbcUrl(persistence, dataPath));
+		dataSource.setMinimumIdle(pool.getSize().getMin());
+		dataSource.setMaximumPoolSize(pool.getSize().getMax());
+		dataSource.setConnectionTimeout(pool.getTimeouts().getConnect().getSeconds() * 1000);
+		dataSource.setIdleTimeout(pool.getTimeouts().getIdle().getSeconds() * 1000);
+		dataSource.setMaxLifetime(pool.getTimeouts().getLifetime().getSeconds() * 1000);
 
-		// An H2 file belongs to Yui alone; its user is fixed when the file is created.
-		if (database.getType() == DatabaseType.H2) {
-			dataSource.setUsername("sa");
-			dataSource.setPassword("");
-		} else {
-			dataSource.setUsername(database.getUsername());
-			dataSource.setPassword(database.getPassword());
+		switch (persistence) {
+			// An H2 file belongs to Yui alone; its user is fixed when the file is created.
+			case EmbeddedPersistence ignored -> {
+				dataSource.setUsername("sa");
+				dataSource.setPassword("");
+			}
+			case ServerPersistence server -> {
+				dataSource.setUsername(server.getUsername());
+				dataSource.setPassword(server.getPassword());
+			}
 		}
 
 		return dataSource;
 	}
 
-	static @NotNull String jdbcUrl(@NotNull DatabaseSettings database, @NotNull Path dataPath) {
-		return switch (database.getType()) {
-			case H2 -> "jdbc:h2:file:" + dataPath.resolve(database.getFile()).toAbsolutePath();
-			case POSTGRESQL -> "jdbc:postgresql://" + database.getHostname() + ":" + database.getPort() + "/"
-					+ database.getDatabase();
-			case MARIADB -> "jdbc:mariadb://" + database.getHostname() + ":" + database.getPort() + "/"
-					+ database.getDatabase();
+	static @NotNull String jdbcUrl(@NotNull Persistence persistence, @NotNull Path dataPath) {
+		return switch (persistence) {
+			case EmbeddedPersistence embedded -> "jdbc:h2:file:" + dataPath.resolve(embedded.getFile()).toAbsolutePath();
+			case ServerPersistence server -> "jdbc:" + scheme(server.getType()) + "://" + server.getHost() + ":"
+					+ port(server) + "/" + server.getDatabase();
 		};
+	}
+
+	private static String scheme(DatabaseType type) {
+		return type == DatabaseType.MARIADB ? "mariadb" : "postgresql";
+	}
+
+	private static int port(ServerPersistence server) {
+		if (server.getPort() != null) return server.getPort();
+
+		return server.getType() == DatabaseType.MARIADB ? 3306 : 5432;
 	}
 }
