@@ -479,8 +479,44 @@ defaults:
     member: false
 ```
 
-Still open, one file at a time: `style/` (palette and embed
-styles per kind), `languages.yml` in detail, `audiences.yml` in detail, the message files, Verification's files.
+`style/`, approved: `palette.yml` names the colours, `embeds.yml` gives each kind (`StyleKit.embeds().error()`) a
+colour by its palette name, plus icons, links and a timestamp. A colour is only ever a palette name, never a hex
+in place; an unknown name stops startup with its path. Unset values are left out instead of `""`. The author
+name and the footer text are words, so they move to `messages/<locale>/`. Plugins' embeds and later
+`components.yml` or `emojis.yml` refer to the same palette.
+
+```yaml
+# style/palette.yml
+_version: 1
+brand: "#B57E3F"
+sand: "#E6CBA8"
+green: "#00FF00"
+amber: "#FFAA00"
+red: "#FF4C4C"
+blue: "#00AAFF"
+```
+
+```yaml
+# style/embeds.yml
+_version: 1
+primary:
+  color: brand
+  footer:
+    icon: "https://…"
+  timestamp: true
+secondary:
+  color: sand
+success:
+  color: green
+warning:
+  color: amber
+error:
+  color: red
+info:
+  color: blue
+```
+
+Still open, one file at a time: `languages.yml` in detail, `audiences.yml` in detail, the message files, Verification's files.
 
 ## Build
 
