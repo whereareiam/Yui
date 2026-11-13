@@ -331,7 +331,7 @@ The folder, agreed file by file (each file's content is shown to the owner befor
 app/
   settings.yml          token, guild (id), intents, locale, updater
   persistence.yml       the database: type, its connection, pool
-  languages.yml         the languages members declare: name, emoji, role
+  languages.yml         the languages members declare: emoji, role
   audiences.yml         named condition lists
   audit.yml             what is kept, and where each category is posted
   commands.yml          which commands are on and who may use them
@@ -519,7 +519,31 @@ info:
   color: blue
 ```
 
-Still open, one file at a time: `languages.yml` in detail, `audiences.yml` in detail, the message files, Verification's files.
+`languages.yml`, approved: a language is offered when it is listed (no `enabled`), with its emoji and,
+optionally, the role members who speak it get. The `languages:` wrapper goes, and the rendering caches
+(`TranslationSettings`) leave the file as code defaults. A language's name is a word, shown in the viewer's
+language from `messages/<locale>/words.yml`; where a locale has no name for it, Discord's own name
+(`DiscordLocale.getNativeName()`) is shown.
+
+```yaml
+# languages.yml
+_version: 1
+en-US:
+  emoji: "🇺🇸"
+  role: "123…"
+de:
+  emoji: "🇩🇪"
+  role: "456…"
+```
+
+```yaml
+# messages/en-US/words.yml
+languages:
+  en-US: "English"
+  de: "German"
+```
+
+Still open, one file at a time: `audiences.yml` in detail, the message files, Verification's files.
 
 ## Build
 
