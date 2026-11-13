@@ -1,10 +1,10 @@
 package me.whereareiam.yui.common.config.template.messages;
 
 import me.whereareiam.configura.merge.defaults.DefaultsProvider;
-import me.whereareiam.yui.model.config.messages.CommandMessages;
-import me.whereareiam.yui.model.config.messages.CommandMessages.ErrorMessages;
 import me.whereareiam.yui.model.config.messages.CommandMessages.ErrorMessages.RequirementErrorMessages;
 import me.whereareiam.yui.model.config.messages.CommandMessages.ErrorMessages.ValidationErrorMessages;
+import me.whereareiam.yui.model.config.messages.CommandMessages.ErrorMessages;
+import me.whereareiam.yui.model.config.messages.CommandMessages;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -49,7 +49,7 @@ public class ErrorMessagesTemplate implements DefaultsProvider<ErrorMessages> {
 
 		CommandMessages.ErrorMessages.UnexpectedErrorMessages unexpected = new CommandMessages.ErrorMessages.UnexpectedErrorMessages();
 		unexpected.setTitle("Unexpected error");
-		unexpected.setDescription("An unexpected error occurred while processing your command:\n```\n<p:value>\n```");
+		unexpected.setDescription("An unexpected error occurred while processing your command:\n```\n{value}\n```");
 		error.setUnexpected(unexpected);
 
 		RequirementErrorMessages requirement = new RequirementErrorMessages();
@@ -60,27 +60,27 @@ public class ErrorMessagesTemplate implements DefaultsProvider<ErrorMessages> {
 		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields requirementFields = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields();
 		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.RoleField role = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.RoleField();
 		role.setName("**Required Role(s):**");
-		role.setValue("<p:roles>");
+		role.setValue("{roles}");
 		requirementFields.setRole(role);
 
 		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.ScopeField scope = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.ScopeField();
 		scope.setName("**Required Scope(s):**");
-		scope.setValue("<p:scopes>");
+		scope.setValue("{scopes}");
 		requirementFields.setScope(scope);
 
 		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.ChannelField channel = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.ChannelField();
 		channel.setName("**Required Channel Type(s):**");
-		channel.setValue("<p:channelTypes>");
+		channel.setValue("{channelTypes}");
 		requirementFields.setChannel(channel);
 
 		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.UserField user = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.UserField();
 		user.setName("**User Restriction:**");
-		user.setValue("<p:userIds>");
+		user.setValue("{userIds}");
 		requirementFields.setUser(user);
 
 		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.GuildField guild = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.GuildField();
 		guild.setName("**Guild Restriction:**");
-		guild.setValue("<p:guildIds>");
+		guild.setValue("{guildIds}");
 		requirementFields.setGuild(guild);
 		requirement.setFields(requirementFields);
 		error.setRequirement(requirement);

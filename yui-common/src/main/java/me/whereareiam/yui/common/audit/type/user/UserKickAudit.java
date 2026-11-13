@@ -2,10 +2,10 @@ package me.whereareiam.yui.common.audit.type.user;
 
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.Constants;
+import me.whereareiam.yui.message.Translatable;
 import me.whereareiam.yui.type.audit.AuditCategory;
 import me.whereareiam.yui.util.Audit;
 import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.util.translation.Translatable;
 import net.dv8tion.jda.api.audit.ActionType;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.entities.User;

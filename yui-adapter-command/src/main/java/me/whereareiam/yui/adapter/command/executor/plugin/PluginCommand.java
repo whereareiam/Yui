@@ -5,16 +5,16 @@ import me.whereareiam.yui.annotation.ComponentListener;
 import me.whereareiam.yui.annotation.command.Argument;
 import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;
-import me.whereareiam.yui.fluctlight.FluctlightService;
 import me.whereareiam.yui.command.Interaction;
+import me.whereareiam.yui.fluctlight.FluctlightService;
+import me.whereareiam.yui.message.Translatable;
 import me.whereareiam.yui.model.PayloadButton;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.model.plugin.InternalPlugin;
 import me.whereareiam.yui.model.plugin.Plugin;
 import me.whereareiam.yui.plugin.PluginManager;
-import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.util.translation.Translatable;
 import me.whereareiam.yui.util.Components;
+import me.whereareiam.yui.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
@@ -213,11 +213,11 @@ public class PluginCommand {
 		if (LOAD_ACTION.equals(action)) {
 			Button reload = Components.button(ButtonStyle.PRIMARY, CATEGORY_LISTENER, Translatable.text("commands.plugin.controls.reload").resolve(fluctlight), "load").getButton();
 			if (showBack) {
-				Button back = Components.button(ButtonStyle.SUCCESS, BACK_LISTENER, Translatable.text("vocabulary.back").resolve(fluctlight));
+				Button back = Components.button(ButtonStyle.SUCCESS, BACK_LISTENER, Translatable.text("words.back").resolve(fluctlight));
 				rows.add(ActionRow.of(reload, back));
 			} else rows.add(ActionRow.of(reload));
 		} else if (showBack) {
-			rows.add(ActionRow.of(Components.button(ButtonStyle.SUCCESS, BACK_LISTENER, Translatable.text("vocabulary.back").resolve(fluctlight))));
+			rows.add(ActionRow.of(Components.button(ButtonStyle.SUCCESS, BACK_LISTENER, Translatable.text("words.back").resolve(fluctlight))));
 		}
 
 		return rows;
@@ -238,8 +238,8 @@ public class PluginCommand {
 		embed.setTitle(Translatable.text("commands.plugin.action.reload.confirmation.title").resolve(fluctlightId));
 		embed.setDescription(Translatable.text("commands.plugin.action.reload.confirmation.description").resolve(fluctlightId));
 
-		Button confirm = Components.button(ButtonStyle.DANGER, RELOAD_ALL_CONFIRM_LISTENER, Translatable.text("vocabulary.confirm").resolve(fluctlightId));
-		Button cancel = Components.button(ButtonStyle.SECONDARY, RELOAD_ALL_CANCEL_LISTENER, Translatable.text("vocabulary.cancel").resolve(fluctlightId));
+		Button confirm = Components.button(ButtonStyle.DANGER, RELOAD_ALL_CONFIRM_LISTENER, Translatable.text("words.confirm").resolve(fluctlightId));
+		Button cancel = Components.button(ButtonStyle.SECONDARY, RELOAD_ALL_CANCEL_LISTENER, Translatable.text("words.cancel").resolve(fluctlightId));
 
 		event.getHook()
 				.editOriginalEmbeds(embed.build())

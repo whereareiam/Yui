@@ -6,6 +6,7 @@ import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;
 import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.fluctlight.FluctlightService;
+import me.whereareiam.yui.message.Translatable;
 import me.whereareiam.yui.model.PayloadButton;
 import me.whereareiam.yui.model.config.languages.Language;
 import me.whereareiam.yui.model.config.languages.Languages;
@@ -13,7 +14,6 @@ import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.persistence.LanguagePersistence;
 import me.whereareiam.yui.util.Components;
 import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.util.translation.Translatable;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -126,18 +126,18 @@ public class LanguageCommand {
 			footer.add(Components.button(
 					ButtonStyle.SUCCESS,
 					CONTINUE_LISTENER,
-					Translatable.text("vocabulary.proceed").resolve(fluctlight)
+					Translatable.text("words.proceed").resolve(fluctlight)
 			));
 			footer.add(Components.button(
 					ButtonStyle.SECONDARY,
 					CONFIRM_LISTENER,
-					Translatable.text("vocabulary.confirm").resolve(fluctlight)
+					Translatable.text("words.confirm").resolve(fluctlight)
 			));
 		} else {
 			footer.add(Components.button(
 					ButtonStyle.SECONDARY,
 					CANCEL_LISTENER,
-					Translatable.text("vocabulary.cancel").resolve(fluctlight)
+					Translatable.text("words.cancel").resolve(fluctlight)
 			));
 		}
 
@@ -169,13 +169,13 @@ public class LanguageCommand {
 			footer.add(Components.button(
 					ButtonStyle.SECONDARY,
 					CONFIRM_LISTENER,
-					Translatable.text("vocabulary.confirm").resolve(fluctlight)
+					Translatable.text("words.confirm").resolve(fluctlight)
 			));
 		} else {
 			footer.add(Components.button(
 					ButtonStyle.SECONDARY,
 					CANCEL_LISTENER,
-					Translatable.text("vocabulary.cancel").resolve(fluctlight)
+					Translatable.text("words.cancel").resolve(fluctlight)
 			));
 		}
 
@@ -199,7 +199,7 @@ public class LanguageCommand {
 
 	private PayloadButton buildLanguageButton(DiscordLocale lang, String listenerId, Languages languages) {
 		String emoji = languages.get(lang).map(Language::getEmoji).orElse(null);
-		String displayName = lang.getNativeName();
+		String displayName = name(lang);
 
 		if (emoji != null && !emoji.isBlank()) {
 			try {
@@ -289,5 +289,13 @@ public class LanguageCommand {
 				.setEphemeral(true)
 				.setComponents(components)
 				.queue();
+	}
+
+	// A language's name is a text of messages/<locale>/languages.yml, in Yui's default locale; without one, Discord's own.
+	private static String name(DiscordLocale language) {
+		String key = "languages." + language.getLocale();
+		String name = Translatable.text(key).resolveDefault();
+
+		return name.equals(key) ? language.getNativeName() : name;
 	}
 }

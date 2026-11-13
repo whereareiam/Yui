@@ -1,9 +1,9 @@
 package me.whereareiam.yui.adapter.command.executor.plugin;
 
 import lombok.Getter;
+import me.whereareiam.yui.message.Translatable;
 import me.whereareiam.yui.model.plugin.InternalPlugin;
 import me.whereareiam.yui.plugin.PluginManager;
-import me.whereareiam.yui.util.translation.Translatable;
 
 import java.util.*;
 import java.util.function.Function;

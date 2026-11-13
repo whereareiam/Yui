@@ -3,23 +3,9 @@ package me.whereareiam.yui.common;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.semantica.Semantica;
-import me.whereareiam.semantica.SemanticaConfiguration;
-import me.whereareiam.semantica.locale.LocaleParser;
-import me.whereareiam.semantica.translation.TranslationService;
-import me.whereareiam.yui.common.localization.DiscordLocaleAdapter;
-import me.whereareiam.yui.common.localization.YuiSemanticaLogger;
-import me.whereareiam.yui.common.localization.format.LocaleFileHandler;
-import me.whereareiam.yui.common.localization.format.MultiLocaleFileHandler;
-import me.whereareiam.yui.common.localization.format.TemplateFileHandler;
-import me.whereareiam.yui.common.localization.loader.DefaultFileTypeHandlerRegistry;
-import me.whereareiam.yui.common.localization.loader.YuiTranslationLoader;
-import me.whereareiam.yui.localization.loader.FileTypeHandlerRegistry;
-import me.whereareiam.yui.model.config.languages.TranslationSettings;
 import me.whereareiam.yui.model.config.settings.Settings;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.springframework.beans.factory.ObjectProvider;
@@ -90,57 +76,5 @@ public class CommonConfiguration {
 		scheduler.initialize();
 
 		return scheduler;
-	}
-
-	@Bean
-	public LocaleParser<DiscordLocale> localeParser() {
-		return DiscordLocaleAdapter::wrap;
-	}
-
-	@Bean
-	public FileTypeHandlerRegistry fileTypeHandlerRegistry() {
-		FileTypeHandlerRegistry registry = new DefaultFileTypeHandlerRegistry();
-		
-		// Register built-in handlers
-		registry.registerHandler(new LocaleFileHandler());
-		registry.registerHandler(new MultiLocaleFileHandler());
-		registry.registerHandler(new TemplateFileHandler());
-		
-		log.info("[Localization] Registered {} built-in file type handlers", registry.getHandlers().size());
-		
-		return registry;
-	}
-
-	@Bean
-	public TranslationService<DiscordLocale> semanticaService(SemanticaConfiguration<DiscordLocale> config) {
-		return Semantica.createService(config);
-	}
-
-	@Bean
-	public SemanticaConfiguration<DiscordLocale> semanticaConfiguration(
-			YuiTranslationLoader yuiTranslationLoader,
-			LocaleParser<DiscordLocale> localeParser
-	) {
-		Settings settings = settingsProvider.getObject();
-		TranslationSettings translationSettings = new TranslationSettings();
-
-		return SemanticaConfiguration.<DiscordLocale>builder()
-				.defaultLocale(DiscordLocaleAdapter.wrap(settings.getLocale()))
-				.performance(SemanticaConfiguration.PerformanceSettings.builder()
-						.cache(SemanticaConfiguration.PerformanceSettings.CacheSettings.builder()
-								.enabled(translationSettings.isCacheEnabled())
-								.semiStaticSize(translationSettings.getCacheSemiStaticSize())
-								.dynamicSize(translationSettings.getCacheDynamicSize())
-								.semiStaticExpireMinutes(translationSettings.getCacheSemiStaticTtl())
-								.dynamicExpireMinutes(translationSettings.getCacheDynamicTtl())
-								.build())
-						.prerenderStatic(translationSettings.isPrerenderStatic())
-						.buildDependencyGraph(translationSettings.isBuildDependencyGraph())
-						.logTimings(translationSettings.isLogTimings())
-						.build())
-				.localeParser(localeParser)
-				.translationProvider(yuiTranslationLoader)
-				.logger(new YuiSemanticaLogger())
-				.build();
 	}
 }

@@ -5,12 +5,12 @@ import me.whereareiam.yui.annotation.ComponentListener;
 import me.whereareiam.yui.annotation.command.Argument;
 import me.whereareiam.yui.annotation.command.Command;
 import me.whereareiam.yui.annotation.command.Definition;
-import me.whereareiam.yui.fluctlight.FluctlightService;
-import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.command.Interaction;
-import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.util.translation.Translatable;
+import me.whereareiam.yui.fluctlight.FluctlightService;
+import me.whereareiam.yui.message.Translatable;
+import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import me.whereareiam.yui.util.Components;
+import me.whereareiam.yui.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -52,8 +52,8 @@ public class ClearCommand {
 		);
 
 		// Create buttons using the proper Components utility with embedded payload
-		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.text("vocabulary.confirm").resolve(executor), String.valueOf(target.getId()));
-		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.text("vocabulary.cancel").resolve(executor), String.valueOf(target.getId()));
+		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.text("words.confirm").resolve(executor), String.valueOf(target.getId()));
+		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.text("words.cancel").resolve(executor), String.valueOf(target.getId()));
 
 		// Send the confirmation message with buttons
 		interaction.replyCallback()

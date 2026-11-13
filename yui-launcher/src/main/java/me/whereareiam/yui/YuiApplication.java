@@ -104,15 +104,9 @@ public class YuiApplication {
 	}
 
 	@Bean
-	@Qualifier("languagesPath")
-	public Path languagesPath(@Qualifier("dataPath") Path dataPath) {
-		Path languagesPath = dataPath.resolve(Constants.Structure.languagesDir);
-
-		if (!languagesPath.toFile().exists()) {
-			boolean created = languagesPath.toFile().mkdirs();
-			if (!created) throw new RuntimeException("Failed to create languages directory");
-		}
-
-		return languagesPath;
+	@Qualifier("messagesPath")
+	public Path messagesPath(@Qualifier("dataPath") Path dataPath) {
+		// Read only, like every config folder: without it, every text takes its default.
+		return dataPath.resolve(Constants.Structure.messagesDir);
 	}
 }

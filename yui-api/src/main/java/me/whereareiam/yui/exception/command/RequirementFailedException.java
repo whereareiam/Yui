@@ -3,10 +3,10 @@ package me.whereareiam.yui.exception.command;
 import me.whereareiam.yui.command.Interaction;
 import me.whereareiam.yui.command.exception.ExceptionResponse;
 import me.whereareiam.yui.exception.command.base.CommandException;
+import me.whereareiam.yui.message.Translatable;
 import me.whereareiam.yui.model.requirement.Requirements;
 import me.whereareiam.yui.model.requirement.type.*;
 import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.util.translation.Translatable;
 import net.dv8tion.jda.api.EmbedBuilder;
 import org.jetbrains.annotations.NotNull;
 

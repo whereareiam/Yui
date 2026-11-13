@@ -2,10 +2,10 @@ package me.whereareiam.yui.common.conversation;
 
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.yui.message.Translatable;
 import me.whereareiam.yui.model.config.conversation.Conversations;
 import me.whereareiam.yui.model.type.Duration;
 import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.util.translation.Translatable;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -96,8 +96,8 @@ public class ConversationClosing {
 
 	private CompletableFuture<?> warn(OpenConversation conversation, Duration warn) {
 		long member = conversation.getMembers().iterator().next();
-		Translatable title = Translatable.text("general.conversation.close.title");
-		Translatable description = Translatable.text("general.conversation.close.description").with("seconds", warn.getSeconds());
+		Translatable title = Translatable.text("conversations.close.title");
+		Translatable description = Translatable.text("conversations.close.description").with("seconds", warn.getSeconds());
 
 		return conversation.getChannel().sendMessageEmbeds(StyleKit.embeds().warning()
 						.setTitle(title.resolve(member))

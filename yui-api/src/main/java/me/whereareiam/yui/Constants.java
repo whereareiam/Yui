@@ -7,7 +7,7 @@ public final class Constants {
 	public static final class Structure {
 		public static final String pluginsDir = "plugins";
 		public static final String stylesDir = "style";
-		public static final String languagesDir = "languages";
+		public static final String messagesDir = "messages";
 	}
 
 	/**

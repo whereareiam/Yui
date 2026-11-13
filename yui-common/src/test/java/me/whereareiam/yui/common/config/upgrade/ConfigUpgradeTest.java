@@ -95,6 +95,45 @@ class ConfigUpgradeTest {
 	}
 
 	@Test
+	void run_MovesTextsIntoAFolderPerLocaleWithIcuArguments() throws IOException {
+		Files.createDirectories(folder.resolve("languages"));
+		Files.writeString(folder.resolve("languages/en-US.yml"), """
+				general:
+				  conversation:
+				    close:
+				      title: "Closing"
+				      description: ["Closed in *<p:seconds>* seconds."]
+				commands:
+				  clear:
+				    success:
+				      title: "Deleted <p:count>"
+				audit:
+				  user:
+				    join:
+				      title: "Joined"
+				""");
+		Files.writeString(folder.resolve("languages/vocabulary.yml"), """
+				cancel:
+				  en-US: Cancel
+				  de: Abbrechen
+				category:
+				  fun:
+				    en-US: Fun
+				""");
+
+		new ConfigUpgrade(configura, folder).run();
+
+		JsonNode conversations = configura.readNode(folder.resolve("messages/en-US/conversations.yml"));
+		assertEquals("Closed in *{seconds}* seconds.", conversations.path("close").path("description").path(0).asText());
+		assertEquals("Deleted {count}", configura.readNode(folder.resolve("messages/en-US/commands.yml")).path("clear").path("success").path("title").asText());
+		assertEquals("Joined", configura.readNode(folder.resolve("messages/en-US/audit.yml")).path("user").path("join").path("title").asText());
+		assertEquals("Abbrechen", configura.readNode(folder.resolve("messages/de/words.yml")).path("cancel").asText());
+		assertEquals("Fun", configura.readNode(folder.resolve("messages/en-US/words.yml")).path("category").path("fun").asText());
+		assertEquals(1, configura.readNode(folder.resolve("messages/version.yml")).path("_version").asInt());
+		assertFalse(Files.exists(folder.resolve("languages")));
+	}
+
+	@Test
 	void run_KeepsOnlyTheFileOfAnH2Database() throws IOException {
 		writeOldSettings("H2");
 
