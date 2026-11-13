@@ -688,12 +688,16 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
 4. Users and events. Built on 11 November 2026 (see Users).
 5. Permissions on Conditia; one core service that grants roles for facts and logs them (the role sync went with
    step 4).
-6. Configuration on Configura 2.1 with file upgrades.
+6. Configuration on Configura 2.1 with file upgrades; texts on Semantica 0.1.0, after its `FileSource` key prefix
+   and with a Discord format (see Messages).
 7. Plugin runtime with hot reload, on Chassis.
 8. JDA 6 and cloud.
 9. Verification into `plugins/`, `examples/plugin`.
 10. Docs and the rest of AGENTS.md; publishing the distribution. The repository setup after Identica (release
     drafting, labels, templates, Dependabot, workflows) came with step 1.
-11. `arcadeya/yui`: rename, split into `plugins/plugin-products`, Dockerfile, `Deliver`.
+11. `arcadeya/yui` (today YuiArcadeya): a rewrite to the same standards, not only a move. Rename, split into
+    `plugins/plugin-products`, its config files in rounds with the owner as Yui's were, its `owns` condition and
+    `products:customer` audience on Conditia, its texts on Semantica, its facts through core's role service;
+    Dockerfile, `Deliver`.
 12. `arcadeya/yui-deploy`, namespace policy in `arcadeya-cluster`, OpenBao paths, Argo CD following it.
 13. Cutover into the cluster with a way back.
