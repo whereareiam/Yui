@@ -20,41 +20,41 @@ public class AuditMessagesDefaults implements MessageDefaults<AuditMessages> {
 	}
 
 	private AuditMessages supply(AuditMessages auditMessages) {
-		AuditMessages.User user = new AuditMessages.User();
+		AuditMessages.Member member = new AuditMessages.Member();
 		
-		AuditMessages.User.Join join = new AuditMessages.User.Join();
+		AuditMessages.Member.Join join = new AuditMessages.Member.Join();
 		join.setTitle("👋 User Joined");
 		join.setDescription(List.of("{mention} joined the server"));
-		AuditMessages.User.Join.Fields joinFields = new AuditMessages.User.Join.Fields();
+		AuditMessages.Member.Join.Fields joinFields = new AuditMessages.Member.Join.Fields();
 		joinFields.setTarget("Target");
 		joinFields.setAccountCreated("Account Created");
 		join.setFields(joinFields);
-		user.setJoin(join);
+		member.setJoin(join);
 
-		AuditMessages.User.RoleChange role = new AuditMessages.User.RoleChange();
+		AuditMessages.Member.RoleChange role = new AuditMessages.Member.RoleChange();
 		role.setGiven("{mention} got {role} ({fact})");
 		role.setTaken("{mention} lost {role} ({fact})");
-		user.setRole(role);
+		member.setRole(role);
 
-		AuditMessages.User.Leave leave = new AuditMessages.User.Leave();
+		AuditMessages.Member.Leave leave = new AuditMessages.Member.Leave();
 		leave.setTitle("👋 User Left");
 		leave.setDescription(List.of("{mention} left the server"));
-		AuditMessages.User.Leave.Fields leaveFields = new AuditMessages.User.Leave.Fields();
+		AuditMessages.Member.Leave.Fields leaveFields = new AuditMessages.Member.Leave.Fields();
 		leaveFields.setTarget("Target");
 		leave.setFields(leaveFields);
-		user.setLeave(leave);
+		member.setLeave(leave);
 
-		AuditMessages.User.Kick kick = new AuditMessages.User.Kick();
+		AuditMessages.Member.Kick kick = new AuditMessages.Member.Kick();
 		kick.setTitle("🔨 User Kicked");
 		kick.setDescription(List.of("{mention} was kicked from the server"));
-		AuditMessages.User.Kick.Fields kickFields = new AuditMessages.User.Kick.Fields();
+		AuditMessages.Member.Kick.Fields kickFields = new AuditMessages.Member.Kick.Fields();
 		kickFields.setTarget("Target");
 		kickFields.setReason("Reason");
 		kickFields.setModerator("Moderator");
 		kick.setFields(kickFields);
-		user.setKick(kick);
+		member.setKick(kick);
 
-		auditMessages.setUser(user);
+		auditMessages.setMember(member);
 
 		AuditMessages.Update update = new AuditMessages.Update();
 

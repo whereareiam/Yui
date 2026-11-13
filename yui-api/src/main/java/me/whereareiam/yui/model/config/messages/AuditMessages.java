@@ -8,12 +8,12 @@ import java.util.List;
 @Getter
 @Setter
 public class AuditMessages {
-	private User user;
+	private Member member;
 	private Update update;
 
 	@Getter
 	@Setter
-	public static class User {
+	public static class Member {
 		private Join join;
 		private Leave leave;
 		private Kick kick;

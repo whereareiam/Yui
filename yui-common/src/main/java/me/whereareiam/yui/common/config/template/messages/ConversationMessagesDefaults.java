@@ -22,6 +22,7 @@ public class ConversationMessagesDefaults implements MessageDefaults<Conversatio
 
 		ConversationMessages messages = new ConversationMessages();
 		messages.setClose(close);
+		messages.setTranscript("Transcript of the {purpose} conversation");
 
 		return messages;
 	}

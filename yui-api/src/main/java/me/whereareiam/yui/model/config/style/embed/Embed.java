@@ -21,23 +21,21 @@ public class Embed {
 	private boolean timestamp;
 
 	/**
-	 * The line above the title. Its {@code name} is a text and moves into {@code messages/<locale>/embeds.yml}.
+	 * The line above the title: its icon and link. Its name is the text {@code embeds.<kind>.author}.
 	 */
 	@Getter
 	@Setter
 	public static class Author {
-		private @Nullable String name;
 		private @Nullable String icon;
 		private @Nullable String url;
 	}
 
 	/**
-	 * The line below the embed. Its {@code text} moves into {@code messages/<locale>/embeds.yml}.
+	 * The line below the embed: its icon. Its text is the text {@code embeds.<kind>.footer}.
 	 */
 	@Getter
 	@Setter
 	public static class Footer {
-		private @Nullable String text;
 		private @Nullable String icon;
 	}
 }

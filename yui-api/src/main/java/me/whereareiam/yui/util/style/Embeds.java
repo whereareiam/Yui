@@ -1,5 +1,6 @@
 package me.whereareiam.yui.util.style;
 
+import me.whereareiam.yui.message.Translatable;
 import me.whereareiam.yui.model.config.style.Palette;
 import me.whereareiam.yui.model.config.style.StyleColor;
 import me.whereareiam.yui.model.config.style.embed.Embed;
@@ -12,7 +13,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * Embeds of each kind in {@code style/embeds.yml}, coloured through the palette. Each call returns a new builder.
+ * Embeds of each kind in {@code style/embeds.yml}, coloured through the palette, with the author and footer texts
+ * of {@code messages/<locale>/embeds.yml}. Each call returns a new builder.
  * A kind whose colour names no palette colour is refused when the embeds are built, so Yui does not start with it.
  */
 public class Embeds {
@@ -27,35 +29,35 @@ public class Embeds {
 	}
 
 	public EmbedBuilder primary() {
-		return build(embedStyle.getPrimary());
+		return build("primary", embedStyle.getPrimary());
 	}
 
 	public EmbedBuilder secondary() {
-		return build(embedStyle.getSecondary());
+		return build("secondary", embedStyle.getSecondary());
 	}
 
 	public EmbedBuilder success() {
-		return build(embedStyle.getSuccess());
+		return build("success", embedStyle.getSuccess());
 	}
 
 	public EmbedBuilder warning() {
-		return build(embedStyle.getWarning());
+		return build("warning", embedStyle.getWarning());
 	}
 
 	public EmbedBuilder error() {
-		return build(embedStyle.getError());
+		return build("error", embedStyle.getError());
 	}
 
 	public EmbedBuilder info() {
-		return build(embedStyle.getInfo());
+		return build("info", embedStyle.getInfo());
 	}
 
-	private EmbedBuilder build(Embed embed) {
+	private EmbedBuilder build(String kind, Embed embed) {
 		EmbedBuilder builder = new EmbedBuilder();
 		if (embed == null) return builder;
 
-		author(builder, embed.getAuthor());
-		footer(builder, embed.getFooter());
+		author(builder, text(kind, "author"), embed.getAuthor());
+		footer(builder, text(kind, "footer"), embed.getFooter());
 		if (present(embed.getLink())) builder.setUrl(embed.getLink());
 		if (present(embed.getThumbnail())) builder.setThumbnail(embed.getThumbnail());
 		if (present(embed.getImage())) builder.setImage(embed.getImage());
@@ -85,16 +87,24 @@ public class Embeds {
 					+ "' in style/palette.yml");
 	}
 
-	private static void author(EmbedBuilder builder, Embed.Author author) {
-		if (author == null || !present(author.getName())) return;
+	private static void author(EmbedBuilder builder, String name, Embed.Author author) {
+		if (!present(name)) return;
 
-		builder.setAuthor(author.getName(), author.getUrl(), author.getIcon());
+		builder.setAuthor(name, author == null ? null : author.getUrl(), author == null ? null : author.getIcon());
 	}
 
-	private static void footer(EmbedBuilder builder, Embed.Footer footer) {
-		if (footer == null || !present(footer.getText())) return;
+	private static void footer(EmbedBuilder builder, String text, Embed.Footer footer) {
+		if (!present(text)) return;
 
-		builder.setFooter(footer.getText(), footer.getIcon());
+		builder.setFooter(text, footer == null ? null : footer.getIcon());
+	}
+
+	// An embed's author and footer are texts in Yui's default locale; a kind without one shows none.
+	private static String text(String kind, String part) {
+		String key = "embeds." + kind + "." + part;
+		String text = Translatable.text(key).resolveDefault();
+
+		return text.equals(key) ? null : text;
 	}
 
 	private static boolean present(String text) {

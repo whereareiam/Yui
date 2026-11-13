@@ -14,6 +14,11 @@ public class ConversationMessages {
 	private Close close;
 
 	/**
+	 * The line a transcript is posted with; {@code {purpose}} is what the conversation was for.
+	 */
+	private String transcript;
+
+	/**
 	 * The warning before a conversation closes on its own; {@code {seconds}} is how long it has left.
 	 */
 	@Getter

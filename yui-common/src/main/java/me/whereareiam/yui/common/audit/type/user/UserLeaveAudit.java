@@ -39,11 +39,11 @@ public class UserLeaveAudit extends ListenerAdapter {
 					// This is a normal leave
 					Audit.log(AuditCategory.MEMBERS, Constants.AuditEntries.MEMBER_LEAVE)
 							.withLocalizedEmbed(locale -> {
-								String title = Translatable.text("audit.user.leave.title").resolve(locale);
-								String description = Translatable.text("audit.user.leave.description")
+								String title = Translatable.text("audit.member.leave.title").resolve(locale);
+								String description = Translatable.text("audit.member.leave.description")
 										.with("mention", event.getUser().getAsMention())
 										.resolve(locale);
-								String targetField = Translatable.text("audit.user.leave.fields.target").resolve(locale);
+								String targetField = Translatable.text("audit.member.leave.fields.target").resolve(locale);
 
 								return new EmbedBuilder()
 										.setTitle(title)

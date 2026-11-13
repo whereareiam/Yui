@@ -8,6 +8,7 @@ import me.whereareiam.yui.command.CommandTexts;
 import me.whereareiam.yui.common.config.template.messages.AuditMessagesDefaults;
 import me.whereareiam.yui.common.config.template.messages.CommandMessagesDefaults;
 import me.whereareiam.yui.common.config.template.messages.ConversationMessagesDefaults;
+import me.whereareiam.yui.common.config.template.messages.EmbedMessagesDefaults;
 import me.whereareiam.yui.common.config.template.messages.ErrorMessagesTemplate;
 import me.whereareiam.yui.common.config.template.messages.WordsDefaults;
 import me.whereareiam.yui.common.config.template.messages.command.ClearCommandMessagesTemplate;
@@ -125,6 +126,7 @@ class MessagesTest {
 				),
 				new AuditMessagesDefaults(),
 				new ConversationMessagesDefaults(),
+				new EmbedMessagesDefaults(),
 				new WordsDefaults()
 		);
 	}

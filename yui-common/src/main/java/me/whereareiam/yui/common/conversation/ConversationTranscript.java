@@ -2,6 +2,7 @@ package me.whereareiam.yui.common.conversation;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.yui.message.Translatable;
 import me.whereareiam.yui.service.AuditService;
 import me.whereareiam.yui.type.audit.AuditCategory;
 import net.dv8tion.jda.api.JDA;
@@ -63,7 +64,8 @@ public class ConversationTranscript {
 
 	private static MessageCreateData message(OpenConversation conversation, byte[] text) {
 		return new MessageCreateBuilder()
-				.setContent(conversation.getPurpose() + ": " + conversation.getMembers().stream().map(member -> "<@" + member + ">").toList())
+				.setContent(Translatable.text("conversations.transcript").with("purpose", conversation.getPurpose()).resolveDefault()
+						+ " " + String.join(" ", conversation.getMembers().stream().map(member -> "<@" + member + ">").toList()))
 				.addFiles(FileUpload.fromData(text, conversation.getPurpose() + "-transcript.txt"))
 				.build();
 	}

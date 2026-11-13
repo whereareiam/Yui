@@ -7,16 +7,14 @@ import me.whereareiam.yui.model.config.style.embed.EmbedStyle;
 import org.springframework.stereotype.Component;
 
 /**
- * Each embed kind in one of Yui's palette colours; the primary kind carries Yui's footer and a timestamp.
+ * Each embed kind in one of Yui's palette colours; the primary kind carries a timestamp, and its footer text is
+ * {@code embeds.primary.footer}.
  */
 @Component
 public class EmbedsTemplate implements DefaultsProvider<EmbedStyle> {
 	@Override
 	public EmbedStyle supply(EmbedStyle style) {
 		Embed primary = kind("brand");
-		Embed.Footer footer = new Embed.Footer();
-		footer.setText("Yui");
-		primary.setFooter(footer);
 		primary.setTimestamp(true);
 
 		style.setPrimary(primary);

@@ -51,7 +51,7 @@ public class DefaultFactRoles implements FactRoles {
 	private static void logged(long member, Role role, boolean holds, String fact) {
 		log.info("[Roles] {} {} {} for {}", holds ? "Gave" : "Took", member, role.getName(), fact);
 		Audit.log(AuditCategory.MEMBERS, Constants.AuditEntries.MEMBER_ROLE)
-				.withLocalizedText(locale -> Translatable.text(holds ? "audit.user.role.given" : "audit.user.role.taken")
+				.withLocalizedText(locale -> Translatable.text(holds ? "audit.member.role.given" : "audit.member.role.taken")
 						.with("mention", "<@" + member + ">")
 						.with("role", role.getAsMention())
 						.with("fact", fact)
