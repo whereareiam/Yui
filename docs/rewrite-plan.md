@@ -602,7 +602,38 @@ clear:
     done: "Deleted {count, plural, one {# message} other {# messages}}."
 ```
 
-Still open, one file at a time: Verification's files.
+Verification's `settings.yml`, approved (the rules channel still open). `conversation` leaves for core's
+`conversations.yml` and the API; `triggers` names the events that start a verification; `deadline` is the time a
+member has to finish and `action` what happens after it, a closed set (`kick`, `nothing`; more later); the
+member gets `verified-role` for the fact `verified`, through core's role service.
+
+```yaml
+# plugins/verification/settings.yml
+_version: 1
+triggers:
+  member-join: true
+  startup: true
+  member-cleared: true
+deadline:
+  enabled: true
+  after: 1d
+  action: kick
+verified-role: "…"
+```
+
+```text
+plugins/verification/
+  settings.yml
+  audiences.yml          verified
+  commands.yml           verify
+  messages/<locale>/
+    commands.yml         /verify texts
+    journey.yml          welcome, additional languages, end
+    audit.yml            started, completed, failed, abandoned, timed out
+    settings.yml         the text for the deadline's action (the kick reason)
+```
+
+Still open, one file at a time: where Verification's rules channel lives.
 
 ## Build
 
