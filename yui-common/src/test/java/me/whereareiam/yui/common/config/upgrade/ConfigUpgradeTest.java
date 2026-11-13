@@ -32,7 +32,7 @@ class ConfigUpgradeTest {
 	void anOldSettingsFile_NeedsItsMigration() throws IOException {
 		writeOldSettings("POSTGRESQL");
 
-		assertEquals(List.of("yui/config/settings 1 agreed-shape"), new ConfigUpgrade(configura, folder).pending());
+		assertEquals(List.of("yui/config/settings 1 agreed-shape", "yui/config/settings 2 audit-into-its-file"), new ConfigUpgrade(configura, folder).pending());
 	}
 
 	@Test
@@ -48,12 +48,12 @@ class ConfigUpgradeTest {
 		JsonNode settings = configura.readNode(folder.resolve("settings.yml"));
 		JsonNode persistence = configura.readNode(folder.resolve("persistence.yml"));
 
-		assertEquals(1, settings.path("_version").asInt());
+		assertEquals(2, settings.path("_version").asInt());
 		assertEquals("secret", settings.path("token").asText());
 		assertEquals("856839365938118698", settings.path("guild").asText());
 		assertEquals("GUILD_MEMBERS", settings.path("intents").path(0).asText());
 		assertFalse(settings.path("discord").has("token"));
-		assertEquals("123", settings.path("discord").path("channels").path("audit").path("user_join").asText());
+		assertFalse(settings.path("discord").has("channels"));
 		assertEquals("[\"yui\"]", settings.path("updater").path("check").toString());
 		assertEquals("[\"updates\",\"devBuilds\"]", settings.path("updater").path("warn").toString());
 		assertFalse(settings.has("database"));
@@ -67,6 +67,29 @@ class ConfigUpgradeTest {
 		assertEquals("30m", persistence.path("pool").path("timeouts").path("lifetime").asText());
 
 		assertTrue(new ConfigUpgrade(configura, folder).pending().isEmpty());
+	}
+
+	@Test
+	void run_GivesEachAuditCategoryTheChannelOfItsFirstOldType() throws IOException {
+		Files.writeString(folder.resolve("settings.yml"), """
+				discord:
+				  channels:
+				    tempChannelCategories: ["9"]
+				    audit:
+				      user_join: ["ru:11", "10"]
+				      user_kick: "20"
+				      update_*_available: "30"
+				""");
+
+		new ConfigUpgrade(configura, folder).run();
+		JsonNode audit = configura.readNode(folder.resolve("audit.yml"));
+		JsonNode settings = configura.readNode(folder.resolve("settings.yml"));
+
+		assertEquals("10", audit.path("categories").path("members").path("channel").asText());
+		assertEquals("20", audit.path("categories").path("moderation").path("channel").asText());
+		assertEquals("30", audit.path("categories").path("system").path("channel").asText());
+		assertEquals("off", audit.path("entries").path("member.leave").asText());
+		assertEquals("[\"9\"]", settings.path("discord").path("channels").path("tempChannelCategories").toString());
 	}
 
 	@Test

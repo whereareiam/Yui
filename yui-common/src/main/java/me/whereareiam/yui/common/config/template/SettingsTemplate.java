@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 
 /**
  * The values a {@code settings.yml} setting takes when the file does not name it.
@@ -52,12 +51,6 @@ public class SettingsTemplate implements DefaultsProvider<Settings> {
 	private static DiscordSettings discord() {
 		DiscordSettings.Channels channels = new DiscordSettings.Channels();
 		channels.setTempChannelCategories(List.of("SET_YOUR_TEMP_CHANNEL_CATEGORY_ID"));
-		channels.setAudit(Map.of(
-				"user_join", List.of("SET_YOUR_AUDIT_CHANNEL_ID"),
-				"user_leave", List.of("SET_YOUR_AUDIT_CHANNEL_ID"),
-				"user_kick", List.of("SET_YOUR_AUDIT_CHANNEL_ID"),
-				"update_*_available", List.of("SET_YOUR_AUDIT_CHANNEL_ID")
-		));
 
 		DiscordSettings discord = new DiscordSettings();
 		discord.setChannels(channels);

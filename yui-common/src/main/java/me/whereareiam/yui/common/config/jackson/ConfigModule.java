@@ -4,15 +4,19 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.KeyDeserializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.StdKeySerializers;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
+import me.whereareiam.yui.model.config.audit.AuditRoute;
 import me.whereareiam.yui.model.config.languages.Language;
 import me.whereareiam.yui.model.config.languages.Languages;
 import me.whereareiam.yui.model.config.style.Palette;
 import me.whereareiam.yui.model.config.style.StyleColor;
 import me.whereareiam.yui.model.type.Duration;
+import me.whereareiam.yui.type.audit.AuditCategory;
 import me.whereareiam.yui.type.update.UpdateCheck;
 import me.whereareiam.yui.type.update.UpdateWarning;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
@@ -41,6 +45,9 @@ public final class ConfigModule extends SimpleModule {
 		camelCase(UpdateCheck.class);
 		camelCase(UpdateWarning.class);
 		scalar(StyleColor.class, StyleColor::parse, StyleColor::toString);
+		camelCase(AuditCategory.class);
+		camelCaseKeys(AuditCategory.class);
+		scalar(AuditRoute.class, ConfigModule::route, ConfigModule::route);
 
 		MapDocumentBinding.<Languages, DiscordLocale, Language>builder()
 				.document(Languages.class)
@@ -91,6 +98,35 @@ public final class ConfigModule extends SimpleModule {
 
 	private <E extends Enum<E>> void camelCase(Class<E> type) {
 		scalar(type, text -> Enum.valueOf(type, CamelCase.toConstant(text)), value -> CamelCase.fromConstant(value.name()));
+	}
+
+	private <E extends Enum<E>> void camelCaseKeys(Class<E> type) {
+		addKeyDeserializer(type, new KeyDeserializer() {
+			@Override
+			public Object deserializeKey(String key, DeserializationContext context) {
+				return Enum.valueOf(type, CamelCase.toConstant(key));
+			}
+		});
+		addKeySerializer(type, new StdKeySerializers.StringKeySerializer() {
+			@Override
+			public void serialize(Object value, JsonGenerator generator, SerializerProvider provider) throws IOException {
+				generator.writeFieldName(CamelCase.fromConstant(((Enum<?>) value).name()));
+			}
+		});
+	}
+
+	// An entry of audit.yml goes off (YAML may read "off" as false) or to another category.
+	private static AuditRoute route(String text) {
+		if (text.equals("off") || text.equals("false")) return new AuditRoute.Off();
+
+		return new AuditRoute.To(AuditCategory.valueOf(CamelCase.toConstant(text)));
+	}
+
+	private static String route(AuditRoute route) {
+		return switch (route) {
+			case AuditRoute.Off ignored -> "off";
+			case AuditRoute.To to -> CamelCase.fromConstant(to.category().name());
+		};
 	}
 
 	private static DiscordLocale locale(String tag) {

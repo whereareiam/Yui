@@ -2,6 +2,7 @@ package me.whereareiam.yui.common.audit.type.user;
 
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.Constants;
+import me.whereareiam.yui.type.audit.AuditCategory;
 import me.whereareiam.yui.util.Audit;
 import me.whereareiam.yui.util.translation.Translatable;
 import net.dv8tion.jda.api.EmbedBuilder;
@@ -36,7 +37,7 @@ public class UserLeaveAudit extends ListenerAdapter {
 					}
 
 					// This is a normal leave
-					Audit.log(Constants.AuditTypes.USER_LEAVE)
+					Audit.log(AuditCategory.MEMBERS, Constants.AuditEntries.MEMBER_LEAVE)
 							.withLocalizedEmbed(locale -> {
 								String title = Translatable.text("audit.user.leave.title").resolve(locale);
 								String description = Translatable.text("audit.user.leave.description")

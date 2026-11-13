@@ -22,8 +22,7 @@ public class Settings {
 	private UpdaterSettings updater;
 
 	/**
-	 * The channels of conversations and of the audit trail, until they move into {@code conversations.yml} and
-	 * {@code audit.yml}.
+	 * The channels of conversations, until they move into {@code conversations.yml}.
 	 */
 	private DiscordSettings discord;
 }

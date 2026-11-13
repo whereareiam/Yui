@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.OptionalInt;
 
 /**
@@ -21,11 +22,19 @@ import java.util.OptionalInt;
  * {@code yui config upgrade <dir>}; Yui refuses to start on files that still need one.</p>
  */
 public final class ConfigUpgrade {
+	// A migration's name never changes once released: an installation that ran it only remembers its version.
+	private static final Map<String, List<String>> NAMES = Map.of(
+			"settings", List.of("agreed-shape", "audit-into-its-file"),
+			"languages", List.of("agreed-shape"),
+			"style/palette", List.of("agreed-shape"),
+			"style/embeds", List.of("agreed-shape")
+	);
+
 	private final Strata strata;
 
 	public ConfigUpgrade(@NotNull Configura configura, @NotNull Path folder) {
 		this.strata = new Strata(List.of(
-				stream(configura, folder, "settings", "settings.yml", "settings.yml", SettingsMigration::apply),
+				stream(configura, folder, "settings", "settings.yml", "settings.yml", SettingsMigration::apply, AuditMigration::apply),
 				stream(configura, folder, "languages", "languages.yml", "languages.yml", LanguagesMigration::apply),
 				stream(configura, folder, "style/palette", "style/palette.yml", StyleMigration.OLD_PALETTE, StyleMigration::palette),
 				stream(configura, folder, "style/embeds", "style/embeds.yml", StyleMigration.OLD_EMBEDS, StyleMigration::embeds)
@@ -35,20 +44,23 @@ public final class ConfigUpgrade {
 	// One stream per file, so each file carries its own _version. A file without one may still be old, unless neither
 	// it nor its old place exists: then the installation is new. Every migration does nothing to a file already in its
 	// new shape.
+	@SafeVarargs
 	private static MigrationStream<ConfigContext> stream(
 			Configura configura,
 			Path folder,
 			String name,
 			String file,
 			String oldFile,
-			MigrationAction<ConfigContext> first
+			MigrationAction<ConfigContext>... migrations
 	) {
-		return MigrationStream.<ConfigContext>builder()
+		MigrationStream.Builder<ConfigContext> stream = MigrationStream.<ConfigContext>builder()
 				.id("yui/config/" + name)
 				.target(new ConfiguraTarget(configura, folder, file))
-				.baseline((files, latest) -> files.exists(file) || files.exists(oldFile) ? OptionalInt.of(0) : OptionalInt.empty())
-				.migration(1, "agreed-shape", first)
-				.build();
+				.baseline((files, latest) -> files.exists(file) || files.exists(oldFile) ? OptionalInt.of(0) : OptionalInt.empty());
+		for (int version = 1; version <= migrations.length; version++)
+			stream.migration(version, NAMES.get(name).get(version - 1), migrations[version - 1]);
+
+		return stream.build();
 	}
 
 	/**

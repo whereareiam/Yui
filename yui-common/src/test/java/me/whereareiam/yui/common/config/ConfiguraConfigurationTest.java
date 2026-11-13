@@ -6,6 +6,7 @@ import me.whereareiam.yui.common.config.template.SettingsTemplate;
 import me.whereareiam.yui.common.config.template.style.EmbedsTemplate;
 import me.whereareiam.yui.common.config.template.style.PaletteTemplate;
 import me.whereareiam.yui.model.config.Commands;
+import me.whereareiam.yui.model.config.audit.AuditTrail;
 import me.whereareiam.yui.model.config.languages.Languages;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.config.style.Palette;
@@ -15,6 +16,7 @@ import me.whereareiam.yui.model.requirement.RequirementEntry;
 import me.whereareiam.yui.model.requirement.type.RoleRequirement;
 import me.whereareiam.yui.model.requirement.type.ScopeRequirement;
 import me.whereareiam.yui.type.ConfigurationType;
+import me.whereareiam.yui.type.audit.AuditCategory;
 import me.whereareiam.yui.type.update.UpdateCheck;
 import me.whereareiam.yui.type.update.UpdateWarning;
 import me.whereareiam.yui.util.style.Embeds;
@@ -29,6 +31,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -59,10 +62,6 @@ class ConfiguraConfigurationTest {
 				updater:
 				  interval: 1h30m
 				  warn: [updates, localBuilds]
-				discord:
-				  channels:
-				    audit:
-				      user_join: "123"
 				""");
 
 		Settings settings = configura.merge(file("settings"), new SettingsTemplate().supply(new Settings()));
@@ -72,7 +71,6 @@ class ConfiguraConfigurationTest {
 		assertEquals(5400, settings.getUpdater().getInterval().getSeconds());
 		assertEquals(Set.of(UpdateWarning.UPDATES, UpdateWarning.LOCAL_BUILDS), settings.getUpdater().getWarn());
 		assertEquals(Set.of(UpdateCheck.YUI, UpdateCheck.PLUGINS), settings.getUpdater().getCheck());
-		assertEquals(List.of("123"), settings.getDiscord().getChannels().getAudit().get("user_join"));
 		assertEquals("SET_YOUR_TOKEN", settings.getToken());
 	}
 
@@ -121,6 +119,28 @@ class ConfiguraConfigurationTest {
 		write("languages.yml", "german:\n  emoji: x\n");
 
 		assertThrows(ConfigException.class, () -> configura.merge(file("languages"), new Languages()));
+	}
+
+	@Test
+	void audit_PostsCategoriesAndSendsEntriesElsewhereOrNowhere() throws IOException {
+		write("audit.yml", """
+				_version: 1
+				categories:
+				  members:
+				    channel: "100"
+				  system:
+				    channel: "300"
+				entries:
+				  member.leave: off
+				  verification.failed: system
+				""");
+
+		AuditTrail trail = configura.merge(file("audit"), new AuditTrail());
+
+		assertEquals(Optional.of("100"), trail.channel(AuditCategory.MEMBERS, "member.join"));
+		assertEquals(Optional.empty(), trail.channel(AuditCategory.MEMBERS, "member.leave"));
+		assertEquals(Optional.of("300"), trail.channel(AuditCategory.MODERATION, "verification.failed"));
+		assertEquals(Optional.empty(), trail.channel(AuditCategory.MODERATION, "member.kick"));
 	}
 
 	@Test

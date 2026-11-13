@@ -10,9 +10,14 @@ public final class Constants {
 		public static final String languagesDir = "languages";
 	}
 
-	public static final class AuditTypes {
-		public static final String USER_JOIN = "user_join";
-		public static final String USER_LEAVE = "user_leave";
-		public static final String USER_KICK = "user_kick";
+	/**
+	 * Yui's own audit entries; {@code audit.yml} names them to send one elsewhere or nowhere.
+	 */
+	public static final class AuditEntries {
+		public static final String MEMBER_JOIN = "member.join";
+		public static final String MEMBER_LEAVE = "member.leave";
+		public static final String MEMBER_KICK = "member.kick";
+		public static final String UPDATE_AVAILABLE = "update.available";
+		public static final String UPDATE_LOCAL_BUILD = "update.local-build";
 	}
 }

@@ -1,4 +1,4 @@
-package me.whereareiam.yui.type;
+package me.whereareiam.yui.type.audit;
 
 /**
  * Represents the severity level of an audit log entry.

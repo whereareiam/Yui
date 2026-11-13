@@ -1,7 +1,9 @@
 package me.whereareiam.yui.common.audit.type.update;
 
+import me.whereareiam.yui.Constants;
 import me.whereareiam.yui.event.update.UpdateAvailableEvent;
-import me.whereareiam.yui.type.AuditSeverity;
+import me.whereareiam.yui.type.audit.AuditCategory;
+import me.whereareiam.yui.type.audit.AuditSeverity;
 import me.whereareiam.yui.util.Audit;
 import me.whereareiam.yui.util.style.StyleKit;
 import me.whereareiam.yui.util.translation.Translatable;
@@ -18,7 +20,7 @@ public class UpdateReleaseAvailableAudit {
     public void onUpdateAvailableEvent(UpdateAvailableEvent event) {
         if (event.isDevBuild()) return;
 
-        Audit.log("update_" + event.getComponentId() + "_available")
+        Audit.log(AuditCategory.SYSTEM, Constants.AuditEntries.UPDATE_AVAILABLE)
                 .withSeverity(AuditSeverity.WARNING)
                 .withLocalizedEmbed(locale -> {
                     String title = Translatable.text("audit.update.available.release.title")

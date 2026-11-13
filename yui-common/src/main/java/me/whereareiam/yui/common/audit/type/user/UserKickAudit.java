@@ -2,6 +2,7 @@ package me.whereareiam.yui.common.audit.type.user;
 
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.Constants;
+import me.whereareiam.yui.type.audit.AuditCategory;
 import me.whereareiam.yui.util.Audit;
 import me.whereareiam.yui.util.style.StyleKit;
 import me.whereareiam.yui.util.translation.Translatable;
@@ -40,7 +41,7 @@ public class UserKickAudit extends ListenerAdapter {
 							? entry.getReason()
 							: "No reason provided";
 
-					Audit.log(Constants.AuditTypes.USER_KICK)
+					Audit.log(AuditCategory.MODERATION, Constants.AuditEntries.MEMBER_KICK)
 							.withLocalizedEmbed(locale -> {
 								String title = Translatable.text("audit.user.kick.title").resolve(locale);
 								String description = Translatable.text("audit.user.kick.description")
