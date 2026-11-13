@@ -748,5 +748,15 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
     `plugins/plugin-products`, its config files in rounds with the owner as Yui's were, its `owns` condition and
     `products:customer` audience on Conditia, its texts on Semantica, its facts through core's role service;
     Dockerfile, `Deliver`.
+    Built on 14 November 2026: `arcadeya/yui` on Forgejo (made 13 November at the owner's word; arcadeya's
+    Developers hold it, placed by the identity session since `arcadeya/access` is being retired) holds
+    `plugins/plugin-products` (id `arcadeya-products`, `com.arcadeya.yui.plugin.products`): a products step of
+    onboarding after the topics and `/products`, what members use in `arcadeya_products_owners` with each product's
+    role following it, `owns: [ids]` and `arcadeya-products:customer` (verified and owns any product of the file).
+    `products.yml` gives each product `name`, `role`, `kind` (`plugin`, `software`) and `url`; descriptions are texts
+    of `messages/<locale>/products.yml`, kind names of `kinds.yml`; no `settings.yml`. Its build takes Yui from a
+    checkout beside it until Yui is published, through `me.whereareiam.yui.plugin` (`yui-gradle-plugin`), which
+    writes `yui-plugin.yml` for every plugin. Left for step 12: the Dockerfile and `Deliver`.
+
 12. `arcadeya/yui-deploy`, namespace policy in `arcadeya-cluster`, OpenBao paths, Argo CD following it.
 13. Cutover into the cluster with a way back.
