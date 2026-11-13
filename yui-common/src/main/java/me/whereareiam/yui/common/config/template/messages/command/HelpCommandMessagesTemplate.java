@@ -1,14 +1,14 @@
 package me.whereareiam.yui.common.config.template.messages.command;
 
-import me.whereareiam.configura.TemplateProvider;
-import me.whereareiam.yui.model.config.messages.command.HelpCommandMessages;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
+import me.whereareiam.yui.api.model.config.messages.command.HelpCommandMessages;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
 @Component
-public class HelpCommandMessagesTemplate implements TemplateProvider<HelpCommandMessages> {
+public class HelpCommandMessagesTemplate implements DefaultsProvider<HelpCommandMessages> {
 	@Override
 	public HelpCommandMessages supply(HelpCommandMessages helpCommand) {
 		helpCommand.setDescription("Shows all commands organized by categories with their descriptions and usage examples.");
@@ -25,9 +25,9 @@ public class HelpCommandMessagesTemplate implements TemplateProvider<HelpCommand
 
 		HelpCommandMessages.Information.Specific specific = new HelpCommandMessages.Information.Specific();
 		specific.setTitle("Help Information");
-		specific.setDescription(List.of("List of commands in the \"<p:categoryName>\" category."));
-		specific.setHeadFormat("Command: <p:commandName>");
-		specific.setFootFormat("Example: `<p:example>`\n*Description: <p:description>*");
+		specific.setDescription(List.of("List of commands in the \"{categoryName}\" category."));
+		specific.setHeadFormat("Command: {commandName}");
+		specific.setFootFormat("Example: `{example}`\n*Description: {description}*");
 		information.setSpecific(specific);
 
 		HelpCommandMessages.Category category = new HelpCommandMessages.Category();

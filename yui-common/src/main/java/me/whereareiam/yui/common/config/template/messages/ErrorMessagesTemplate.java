@@ -1,14 +1,14 @@
 package me.whereareiam.yui.common.config.template.messages;
 
-import me.whereareiam.configura.TemplateProvider;
-import me.whereareiam.yui.model.config.messages.CommandMessages;
-import me.whereareiam.yui.model.config.messages.CommandMessages.ErrorMessages;
-import me.whereareiam.yui.model.config.messages.CommandMessages.ErrorMessages.RequirementErrorMessages;
-import me.whereareiam.yui.model.config.messages.CommandMessages.ErrorMessages.ValidationErrorMessages;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
+import me.whereareiam.yui.api.model.config.messages.CommandMessages.ErrorMessages.RequirementErrorMessages;
+import me.whereareiam.yui.api.model.config.messages.CommandMessages.ErrorMessages.ValidationErrorMessages;
+import me.whereareiam.yui.api.model.config.messages.CommandMessages.ErrorMessages;
+import me.whereareiam.yui.api.model.config.messages.CommandMessages;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ErrorMessagesTemplate implements TemplateProvider<ErrorMessages> {
+public class ErrorMessagesTemplate implements DefaultsProvider<ErrorMessages> {
 	@Override
 	public ErrorMessages supply(ErrorMessages error) {
 		error.setException("An unexpected error occurred. Please try again later.");
@@ -49,41 +49,18 @@ public class ErrorMessagesTemplate implements TemplateProvider<ErrorMessages> {
 
 		CommandMessages.ErrorMessages.UnexpectedErrorMessages unexpected = new CommandMessages.ErrorMessages.UnexpectedErrorMessages();
 		unexpected.setTitle("Unexpected error");
-		unexpected.setDescription("An unexpected error occurred while processing your command:\n```\n<p:value>\n```");
+		unexpected.setDescription("An unexpected error occurred while processing your command:\n```\n{value}\n```");
 		error.setUnexpected(unexpected);
 
 		RequirementErrorMessages requirement = new RequirementErrorMessages();
 		requirement.setTitle("Seems like you don't have the rights");
 		requirement.setDescription("Unfortunately, you do not meet the requirements to use this command.");
-		requirement.setUnknown("You do not meet the requirements for this command. We could not determine the exact reason, if you think this is an error, please contact the server administrator.");
-
-		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields requirementFields = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields();
-		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.RoleField role = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.RoleField();
-		role.setName("**Required Role(s):**");
-		role.setValue("<p:roles>");
-		requirementFields.setRole(role);
-
-		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.ScopeField scope = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.ScopeField();
-		scope.setName("**Required Scope(s):**");
-		scope.setValue("<p:scopes>");
-		requirementFields.setScope(scope);
-
-		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.ChannelField channel = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.ChannelField();
-		channel.setName("**Required Channel Type(s):**");
-		channel.setValue("<p:channelTypes>");
-		requirementFields.setChannel(channel);
-
-		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.UserField user = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.UserField();
-		user.setName("**User Restriction:**");
-		user.setValue("<p:userIds>");
-		requirementFields.setUser(user);
-
-		CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.GuildField guild = new CommandMessages.ErrorMessages.RequirementErrorMessages.Fields.GuildField();
-		guild.setName("**Guild Restriction:**");
-		guild.setValue("<p:guildIds>");
-		requirementFields.setGuild(guild);
-		requirement.setFields(requirementFields);
 		error.setRequirement(requirement);
+
+		CommandMessages.ErrorMessages.CooldownErrorMessages cooldown = new CommandMessages.ErrorMessages.CooldownErrorMessages();
+		cooldown.setTitle("Not so fast");
+		cooldown.setDescription("You can use this command again in {seconds, plural, one {# second} other {# seconds}}.");
+		error.setCooldown(cooldown);
 
 		ValidationErrorMessages validation = new ValidationErrorMessages();
 		validation.setSameUser("You cannot use this command on yourself!");

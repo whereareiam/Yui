@@ -8,20 +8,21 @@ import me.whereareiam.yui.adapter.command.exception.DefaultExceptionHandlerRegis
 import me.whereareiam.yui.adapter.command.parsing.definition.CommandDefinitionParser;
 import me.whereareiam.yui.adapter.command.registration.AnnotationCommandRegistrar;
 import me.whereareiam.yui.adapter.command.registration.CommandScanner;
-import me.whereareiam.yui.annotation.command.Definition;
-import me.whereareiam.yui.command.CommandService;
-import me.whereareiam.yui.command.DefinitionProvider;
-import me.whereareiam.yui.command.Interaction;
-import me.whereareiam.yui.command.exception.ExceptionResponse;
-import me.whereareiam.yui.exception.command.base.CommandException;
-import me.whereareiam.yui.model.command.CommandDefinition;
-import me.whereareiam.yui.type.Source;
+import me.whereareiam.yui.api.annotation.command.Definition;
+import me.whereareiam.yui.api.command.CommandService;
+import me.whereareiam.yui.api.command.CommandTexts;
+import me.whereareiam.yui.api.command.DefinitionProvider;
+import me.whereareiam.yui.api.command.Interaction;
+import me.whereareiam.yui.api.command.exception.ExceptionResponse;
+import me.whereareiam.yui.api.exception.command.base.CommandException;
+import me.whereareiam.yui.api.model.command.CommandDefinition;
+import me.whereareiam.yui.api.type.Source;
 import org.incendo.cloud.discord.jda6.JDA6CommandManager;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.context.ApplicationContext;
-import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Method;
@@ -42,7 +43,7 @@ public class DefaultCommandService implements CommandService, ApplicationListene
 
 	private AnnotationCommandRegistrar<Interaction> registrar() {
 		if (registrar == null) {
-			CommandDefinitionParser<Interaction> definitionParser = new CommandDefinitionParser<>(commandManager);
+			CommandDefinitionParser<Interaction> definitionParser = new CommandDefinitionParser<>(commandManager, definitionRegistry::texts);
 			this.registrar = new AnnotationCommandRegistrar<>(definitionParser, Interaction.class, _ -> null);
 		}
 
@@ -277,5 +278,10 @@ public class DefaultCommandService implements CommandService, ApplicationListene
 			current = current.getParent();
 		}
 		return false;
+	}
+
+	@Override
+	public @NotNull CommandTexts texts(@NotNull String id) {
+		return definitionRegistry.texts(id);
 	}
 }

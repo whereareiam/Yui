@@ -3,8 +3,8 @@ package me.whereareiam.yui.common.update;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.LifecycleTask;
-import me.whereareiam.yui.Registry;
+import me.whereareiam.yui.api.LifecycleTask;
+import me.whereareiam.yui.api.Registry;
 import me.whereareiam.yui.common.update.provider.GitHubProvider;
 import org.springframework.stereotype.Component;
 

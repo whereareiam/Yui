@@ -1,86 +1,80 @@
-name: Release build
+name: Release
+run-name: "Release ${{ github.event.release.tag_name }}"
 
 on:
   release:
-    types: [ created ]
+    types: [published]
+
+concurrency:
+  group: release-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
-  prepare:
+  resolve:
+    name: Resolve release
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     outputs:
-      name: ${{ steps.details.outputs.name }}
-      version: ${{ steps.details.outputs.version }}
+      tag: ${{ steps.release.outputs.tag }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Extract project details
-        id: details
+      - name: Read release
+        id: release
+        env:
+          BODY: ${{ github.event.release.body }}
+          TAG: ${{ github.event.release.tag_name }}
         run: |
-          echo "name=$(grep 'rootProject.name' settings.gradle.kts | awk -F "=" '{print $2}' | tr -d ' \"\n')" >> $GITHUB_OUTPUT
-          echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+          set -euo pipefail
+          if [[ "$BODY" == *"[Short subtitle]"* || "$BODY" == *"[1-2 sentence summary"* ]]; then
+            echo "::error::Release $TAG still has the subtitle or summary placeholder of the draft; fill in .github/release-notes.md or edit the release, then run this workflow again."
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
-  build:
-    needs: prepare
+  verify:
+    name: Verify
+    needs: resolve
+    permissions:
+      contents: read
+      checks: write
+    uses: ./.github/workflows/reusable-verify.yml
+    with:
+      ref: ${{ needs.resolve.outputs.tag }}
+      version: ${{ needs.resolve.outputs.tag }}
+      distribution: true
+
+  publish:
+    name: Publish
+    needs: verify
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/reusable-publish.yml
+    with:
+      commit: ${{ needs.verify.outputs.commit }}
+      version: ${{ needs.verify.outputs.version }}
+
+  attach:
+    name: Attach Yui.jar to the release
+    needs: [resolve, verify]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write
-      checks: write
-      packages: write
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Set up JDK 25
-        uses: actions/setup-java@v5
+      - uses: actions/download-artifact@v6
         with:
-          java-version: 25
-          distribution: "temurin"
-          check-latest: true
+          name: yui-${{ needs.verify.outputs.version }}
+          path: distribution
 
-      - name: Build
+      - name: Upload Yui.jar
         env:
-          PUBLISH_USER: ${{ secrets.PUBLISH_USER }}
-          PUBLISH_TOKEN: ${{ secrets.PUBLISH_TOKEN }}
-          VERSION: ${{ needs.prepare.outputs.version }}
-          PUBLISH_REALM: release
-        run: ./gradlew --no-daemon test build bootJar :yui-api:jar publish
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v6
-        with:
-          name: Test results
-          path: |
-            **/build/test-results/test/*.xml
-            **/build/reports/tests/test/
-
-      - name: Test report
-        if: ${{ !cancelled() }}
-        uses: dorny/test-reporter@v3
-        with:
-          name: Gradle test report
-          path: "**/build/test-results/test/*.xml"
-          reporter: java-junit
-          use-actions-summary: "true"
-          list-suites: failed
-          list-tests: failed
-          fail-on-error: "false"
-
-      - name: Create output directory
-        run: mkdir output
-
-      - name: Move API
-        run: mv yui-api/build/libs/yui-api-${{ needs.prepare.outputs.version }}.jar output/${{ needs.prepare.outputs.name }}-API-${{ needs.prepare.outputs.version }}.jar
-
-      - name: Move runtime jar
-        run: mv build/libs/Yui.jar output/${{ needs.prepare.outputs.name }}-${{ needs.prepare.outputs.version }}.jar
-
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            output/${{ needs.prepare.outputs.name }}-API-${{ needs.prepare.outputs.version }}.jar
-            output/${{ needs.prepare.outputs.name }}-${{ needs.prepare.outputs.version }}.jar
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.resolve.outputs.tag }}
+          VERSION: ${{ needs.verify.outputs.version }}
+        run: |
+          set -euo pipefail
+          mv distribution/Yui.jar "distribution/Yui-$VERSION.jar"
+          gh release upload "$TAG" distribution/* --clobber --repo "$GITHUB_REPOSITORY"

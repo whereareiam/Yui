@@ -3,9 +3,9 @@ package me.whereareiam.yui.common.initialization;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.LifecycleTask;
-import me.whereareiam.yui.model.config.settings.Settings;
-import me.whereareiam.yui.Registry;
+import me.whereareiam.yui.api.LifecycleTask;
+import me.whereareiam.yui.api.Registry;
+import me.whereareiam.yui.api.model.config.settings.Settings;
 import net.dv8tion.jda.api.JDA;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
@@ -33,7 +33,7 @@ public class LeaveUnwantedGuildsTask implements LifecycleTask {
 	@Override
 	public CompletableFuture<Void> start() {
 		Settings settings = settingsProvider.getObject();
-		String targetGuildId = settings.getDiscord().getGuildId();
+		String targetGuildId = settings.getGuild();
 
 		jda.getGuilds()
 				.stream()

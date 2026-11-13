@@ -1,13 +1,12 @@
 package me.whereareiam.yui.common.service;
 
-import me.whereareiam.yui.Registry;
-import me.whereareiam.yui.Reloadable;
+import me.whereareiam.yui.api.Registry;
+import me.whereareiam.yui.api.Reloadable;
+import me.whereareiam.yui.api.model.config.languages.Language;
+import me.whereareiam.yui.api.model.config.languages.Languages;
+import me.whereareiam.yui.api.model.config.settings.Settings;
+import me.whereareiam.yui.api.persistence.LanguagePersistence;
 import me.whereareiam.yui.common.config.provider.LanguagesProvider;
-import me.whereareiam.yui.model.config.languages.LanguageEntry;
-import me.whereareiam.yui.model.config.languages.Languages;
-import me.whereareiam.yui.model.config.settings.Settings;
-import me.whereareiam.yui.persistence.LanguagePersistence;
-import me.whereareiam.yui.service.RoleService;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +17,7 @@ import org.springframework.beans.factory.ObjectProvider;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.mockito.Mockito.*;
@@ -31,8 +30,6 @@ class LanguageServiceTest {
 	@Mock
 	private LanguagePersistence languagePersistence;
 	
-	@Mock
-	private RoleService roleService;
 	
 	@Mock
 	private ObjectProvider<Settings> settingsProvider;
@@ -48,7 +45,7 @@ class LanguageServiceTest {
 	@BeforeEach
 	void setUp() {
 		languageService = new LanguageService(
-				languagesProvider, languagePersistence, roleService, settingsProvider, reloadableRegistry
+				languagesProvider, languagePersistence, settingsProvider, reloadableRegistry
 		);
 		
 		when(settingsProvider.getObject()).thenReturn(settings);
@@ -56,79 +53,46 @@ class LanguageServiceTest {
 	}
 	
 	@Test
-	void testSyncLanguagesWithDatabase_AddsEnabledLanguagesFromConfig() {
-		// Arrange
-		LanguageEntry enEntry = new LanguageEntry();
-		enEntry.setEnabled(true);
-		
-		LanguageEntry deEntry = new LanguageEntry();
-		deEntry.setEnabled(true);
-		
-		Languages config = new Languages();
-		Map<String, LanguageEntry> languagesMap = new HashMap<>();
-		languagesMap.put("en-US", enEntry);
-		languagesMap.put("de", deEntry);
-		config.setLanguages(languagesMap);
-		
-		when(languagesProvider.get()).thenReturn(config);
-		when(languagePersistence.languageExists(DiscordLocale.ENGLISH_US)).thenReturn(false);
-		when(languagePersistence.languageExists(DiscordLocale.GERMAN)).thenReturn(false);
+	void sync_AddsTheListedLanguages() {
+		when(languagesProvider.get()).thenReturn(languages(DiscordLocale.ENGLISH_US, DiscordLocale.GERMAN));
 		when(languagePersistence.getAvailableLanguages()).thenReturn(new ArrayList<>());
-		
-		// Act
+
 		languageService.syncLanguagesWithDatabase();
-		
-		// Assert
+
 		verify(languagePersistence).addLanguage(DiscordLocale.ENGLISH_US);
 		verify(languagePersistence).addLanguage(DiscordLocale.GERMAN);
 	}
-	
+
 	@Test
-	void testSyncLanguagesWithDatabase_RemovesLanguagesNotInConfig() {
-		// Arrange
-		Languages config = new Languages();
-		Map<String, LanguageEntry> languagesMap = new HashMap<>();
-		languagesMap.put("en-US", new LanguageEntry());
-		config.setLanguages(languagesMap);
-		
-		when(languagesProvider.get()).thenReturn(config);
+	void sync_RemovesLanguagesNoLongerListed() {
+		when(languagesProvider.get()).thenReturn(languages(DiscordLocale.ENGLISH_US));
 		when(languagePersistence.languageExists(DiscordLocale.ENGLISH_US)).thenReturn(true);
 		when(languagePersistence.getAvailableLanguages()).thenReturn(
 				Arrays.asList(DiscordLocale.ENGLISH_US, DiscordLocale.GERMAN, DiscordLocale.FRENCH)
 		);
-		
-		// Act
+
 		languageService.syncLanguagesWithDatabase();
-		
-		// Assert
-		verify(languagePersistence, never()).addLanguage(DiscordLocale.ENGLISH_US); // Already exists
+
+		verify(languagePersistence, never()).addLanguage(DiscordLocale.ENGLISH_US);
 		verify(languagePersistence).removeLanguage(DiscordLocale.GERMAN);
 		verify(languagePersistence).removeLanguage(DiscordLocale.FRENCH);
 	}
-	
+
 	@Test
-	void testSyncLanguagesWithDatabase_FiltersOutUnknownLocales() {
-		// Arrange
-		LanguageEntry unknownEntry = new LanguageEntry();
-		unknownEntry.setEnabled(true);
-		
-		Languages config = new Languages();
-		Map<String, LanguageEntry> languagesMap = new HashMap<>();
-		languagesMap.put("UNKNOWN", unknownEntry); // Invalid locale string
-		languagesMap.put("en-US", new LanguageEntry());
-		config.setLanguages(languagesMap);
-		
-		when(languagesProvider.get()).thenReturn(config);
-		when(languagePersistence.languageExists(DiscordLocale.ENGLISH_US)).thenReturn(false);
+	void sync_OffersTheDefaultLocaleEvenWhenItIsNotListed() {
+		when(languagesProvider.get()).thenReturn(languages(DiscordLocale.GERMAN));
 		when(languagePersistence.getAvailableLanguages()).thenReturn(new ArrayList<>());
-		
-		// Act
+
 		languageService.syncLanguagesWithDatabase();
-		
-		// Assert
-		// Should only add ENGLISH_US, not UNKNOWN
+
+		verify(languagePersistence).addLanguage(DiscordLocale.GERMAN);
 		verify(languagePersistence).addLanguage(DiscordLocale.ENGLISH_US);
-		verify(languagePersistence, never()).addLanguage(DiscordLocale.UNKNOWN);
+	}
+
+	private static Languages languages(DiscordLocale... locales) {
+		Map<DiscordLocale, Language> languages = new LinkedHashMap<>();
+		for (DiscordLocale locale : locales) languages.put(locale, new Language());
+
+		return new Languages(languages);
 	}
 }
-

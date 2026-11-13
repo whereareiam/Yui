@@ -1,69 +1,36 @@
 package me.whereareiam.yui.common.config.template.style;
 
-import me.whereareiam.configura.TemplateProvider;
-import me.whereareiam.yui.model.config.style.embed.Embed;
-import me.whereareiam.yui.model.config.style.embed.EmbedStyle;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
+import me.whereareiam.yui.api.model.config.style.StyleColor;
+import me.whereareiam.yui.api.model.config.style.embed.Embed;
+import me.whereareiam.yui.api.model.config.style.embed.EmbedStyle;
 import org.springframework.stereotype.Component;
 
+/**
+ * Each embed kind in one of Yui's palette colours; the primary kind carries a timestamp, and its footer text is
+ * {@code embeds.primary.footer}.
+ */
 @Component
-public class EmbedsTemplate implements TemplateProvider<EmbedStyle> {
+public class EmbedsTemplate implements DefaultsProvider<EmbedStyle> {
 	@Override
-	public EmbedStyle supply(EmbedStyle embedStyle) {
-		// Default values
-		embedStyle.setPrimary(new Embed(
-				new Embed.Author("", "", ""),
-				new Embed.Footer("Yui", ""),
-				"",
-				"",
-				"",
-				true
-		));
+	public EmbedStyle supply(EmbedStyle style) {
+		Embed primary = kind("brand");
+		primary.setTimestamp(true);
 
-		embedStyle.setSecondary(new Embed(
-				new Embed.Author("", "", ""),
-				new Embed.Footer("", ""),
-				"",
-				"",
-				"",
-				false
-		));
+		style.setPrimary(primary);
+		style.setSecondary(kind("sand"));
+		style.setSuccess(kind("green"));
+		style.setWarning(kind("amber"));
+		style.setError(kind("red"));
+		style.setInfo(kind("blue"));
 
-		embedStyle.setSuccess(new Embed(
-				new Embed.Author("", "", ""),
-				new Embed.Footer("", ""),
-				"",
-				"",
-				"",
-				false
-		));
+		return style;
+	}
 
-		embedStyle.setWarning(new Embed(
-				new Embed.Author("", "", ""),
-				new Embed.Footer("", ""),
-				"",
-				"",
-				"",
-				false
-		));
+	private static Embed kind(String color) {
+		Embed embed = new Embed();
+		embed.setColor(StyleColor.named(color));
 
-		embedStyle.setError(new Embed(
-				new Embed.Author("", "", ""),
-				new Embed.Footer("", ""),
-				"",
-				"",
-				"",
-				false
-		));
-
-		embedStyle.setInfo(new Embed(
-				new Embed.Author("", "", ""),
-				new Embed.Footer("", ""),
-				"",
-				"",
-				"",
-				false
-		));
-
-		return embedStyle;
+		return embed;
 	}
 }

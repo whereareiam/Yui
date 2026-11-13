@@ -1,10 +1,11 @@
 package me.whereareiam.yui.common.audit.type.user;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.Constants;
-import me.whereareiam.yui.util.Audit;
-import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.util.translation.Translatable;
+import me.whereareiam.yui.api.Constants;
+import me.whereareiam.yui.api.message.Translatable;
+import me.whereareiam.yui.api.type.audit.AuditCategory;
+import me.whereareiam.yui.api.util.Audit;
+import me.whereareiam.yui.api.util.style.StyleKit;
 import net.dv8tion.jda.api.audit.ActionType;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
 import net.dv8tion.jda.api.entities.User;
@@ -40,15 +41,15 @@ public class UserKickAudit extends ListenerAdapter {
 							? entry.getReason()
 							: "No reason provided";
 
-					Audit.log(Constants.AuditTypes.USER_KICK)
+					Audit.log(AuditCategory.MODERATION, Constants.AuditEntries.MEMBER_KICK)
 							.withLocalizedEmbed(locale -> {
-								String title = Translatable.text("audit.user.kick.title").resolve(locale);
-								String description = Translatable.text("audit.user.kick.description")
+								String title = Translatable.text("audit.member.kick.title").resolve(locale);
+								String description = Translatable.text("audit.member.kick.description")
 										.with("mention", target.getAsMention())
 										.resolve(locale);
-								String targetField = Translatable.text("audit.user.kick.fields.target").resolve(locale);
-								String reasonField = Translatable.text("audit.user.kick.fields.reason").resolve(locale);
-								String moderatorField = Translatable.text("audit.user.kick.fields.moderator").resolve(locale);
+								String targetField = Translatable.text("audit.member.kick.fields.target").resolve(locale);
+								String reasonField = Translatable.text("audit.member.kick.fields.reason").resolve(locale);
+								String moderatorField = Translatable.text("audit.member.kick.fields.moderator").resolve(locale);
 
 								return StyleKit.embeds().error()
 										.setTitle(title)

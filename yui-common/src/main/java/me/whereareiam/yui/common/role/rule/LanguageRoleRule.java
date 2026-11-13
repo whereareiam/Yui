@@ -2,138 +2,84 @@ package me.whereareiam.yui.common.role.rule;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.whereareiam.yui.api.event.fluctlight.FluctlightClearedEvent;
+import me.whereareiam.yui.api.event.fluctlight.language.FluctlightAdditionalLanguageAddedEvent;
+import me.whereareiam.yui.api.event.fluctlight.language.FluctlightAdditionalLanguageRemovedEvent;
+import me.whereareiam.yui.api.event.fluctlight.language.FluctlightLanguageChangedEvent;
+import me.whereareiam.yui.api.model.config.languages.Language;
+import me.whereareiam.yui.api.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.api.role.FactRoles;
 import me.whereareiam.yui.common.config.provider.LanguagesProvider;
-import me.whereareiam.yui.common.config.provider.RolesProvider;
-import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguageAddedEvent;
-import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguageRemovedEvent;
-import me.whereareiam.yui.event.fluctlight.language.FluctlightLanguageChangedEvent;
-import me.whereareiam.yui.model.config.languages.LanguageEntry;
-import me.whereareiam.yui.model.config.languages.Languages;
-import me.whereareiam.yui.model.config.roles.RoleEntry;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
-import org.springframework.context.event.EventListener;
-import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 /**
- * Coordinates role assignments based on language selections.
- * <p>
- * This coordinator implements the business rule that certain languages
- * should automatically grant corresponding Discord roles. When a user
- * changes their language preferences, this coordinator updates their
- * roles accordingly.
- * <p>
- * <b>Example:</b> User selects German (DE) → Automatically gets German role
- * <p>
- * This is <b>business logic</b>, not infrastructure. It translates domain events
- * (language changes) into role operations, implementing the language-to-role
- * mapping rules defined in the configuration.
+ * Gives a member the role of each language they speak, as {@code languages.yml} assigns it, and takes it away when
+ * they stop speaking it. Roles follow this fact one way: a role removed by hand stays removed until the languages
+ * change again or the member rejoins.
  */
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class LanguageRoleRule {
+	private final FactRoles roles;
 	private final LanguagesProvider languagesProvider;
-	private final RolesProvider rolesProvider;
 
-	/**
-	 * Handles primary language changes.
-	 * <p>
-	 * When a user changes their primary language, this coordinator:
-	 * <ul>
-	 *   <li>Removes the role associated with the old language (if any)</li>
-	 *   <li>Adds the role associated with the new language (if any)</li>
-	 * </ul>
-	 * The role changes are queued and processed asynchronously by RoleSyncScheduler.
-	 *
-	 * @param event The language change event
-	 */
-	@Order(1)
-	@EventListener
+	@TransactionalEventListener
 	public void onLanguageChanged(FluctlightLanguageChangedEvent event) {
-		// Remove role tied to the old primary language (if any)
-		resolveRoleId(event.getOldLanguage())
-				.ifPresent(roleId -> event.getFluctlight().removeAllowedRole(roleId));
-
-		// Add role tied to the new primary language (if any)
-		resolveRoleId(event.getNewLanguage())
-				.ifPresent(roleId -> event.getFluctlight().addAllowedRole(roleId));
-
-		// No explicit sync needed - RoleSyncScheduler handles it after debounce
-		log.debug("Queued role changes for user {} after primary language change", event.getFluctlight().getId());
+		Fluctlight fluctlight = event.getFluctlight();
+		apply(fluctlight, List.of(event.getPreviousLanguage(), fluctlight.getPrimaryLanguage()));
 	}
 
-	/**
-	 * Handles additional language additions.
-	 * <p>
-	 * When a user adds an additional language, this coordinator adds the
-	 * corresponding role (if configured). The role change is queued and
-	 * processed asynchronously by RoleSyncScheduler.
-	 *
-	 * @param event The additional language added event
-	 */
-	@Order(1)
-	@EventListener
+	@TransactionalEventListener
 	public void onAdditionalLanguageAdded(FluctlightAdditionalLanguageAddedEvent event) {
-		if (event.isCancelled())
-			return;
-
-		resolveRoleId(event.getLanguage())
-				.ifPresent(roleId -> event.getFluctlight().addAllowedRole(roleId));
-
-		// No explicit sync needed - RoleSyncScheduler handles it after debounce
-		log.debug("Queued role changes for user {} after additional language added", event.getFluctlight().getId());
+		apply(event.getFluctlight(), List.of(event.getLanguage()));
 	}
 
-	/**
-	 * Handles additional language removals.
-	 * <p>
-	 * When a user removes an additional language, this coordinator removes the
-	 * corresponding role (if configured). The role change is queued and
-	 * processed asynchronously by RoleSyncScheduler.
-	 *
-	 * @param event The additional language removed event
-	 */
-	@Order(1)
-	@EventListener
+	@TransactionalEventListener
 	public void onAdditionalLanguageRemoved(FluctlightAdditionalLanguageRemovedEvent event) {
-		if (event.isCancelled())
-			return;
+		apply(event.getFluctlight(), List.of(event.getLanguage()));
+	}
 
-		resolveRoleId(event.getLanguage())
-				.ifPresent(roleId -> event.getFluctlight().removeAllowedRole(roleId));
+	@TransactionalEventListener
+	public void onCleared(FluctlightClearedEvent event) {
+		Set<DiscordLocale> languages = new HashSet<>(event.getPrevious().getAdditionalLanguages());
+		languages.add(event.getPrevious().getPrimaryLanguage());
+		languages.add(event.getFluctlight().getPrimaryLanguage());
 
-		// No explicit sync needed - RoleSyncScheduler handles it after debounce
-		log.debug("Queued role changes for user {} after additional language removed", event.getFluctlight().getId());
+		apply(event.getFluctlight(), languages);
 	}
 
 	/**
-	 * Resolves the role ID for a given locale.
-	 * <p>
-	 * This method looks up the explicit role mapping defined in languages.yml
-	 * and verifies that the role exists in the roles configuration.
+	 * Gives the member the roles of every language they speak, as when they rejoin the server.
 	 *
-	 * @param locale The Discord locale to resolve
-	 * @return Optional containing the role ID if found and valid, empty otherwise
+	 * @param fluctlight the member
 	 */
-	private Optional<Long> resolveRoleId(DiscordLocale locale) {
-		if (locale == null)
-			return Optional.empty();
+	public void grant(Fluctlight fluctlight) {
+		Set<DiscordLocale> languages = new HashSet<>(fluctlight.getAdditionalLanguages());
+		languages.add(fluctlight.getPrimaryLanguage());
 
-		Languages languages = languagesProvider.get();
-		LanguageEntry entry = languages.toLocaleMap().get(locale);
-		Long roleId = entry != null ? entry.getRole() : null;
+		apply(fluctlight, languages);
+	}
 
-		if (roleId == null || roleId == 0)
-			return Optional.empty();
+	/**
+	 * Makes the member hold the role of each given language exactly when they speak it.
+	 */
+	void apply(Fluctlight fluctlight, Collection<DiscordLocale> languages) {
+		for (DiscordLocale language : languages)
+			role(language).ifPresent(role -> roles.hold(fluctlight.getId(), role, fluctlight.speaks(language), "language " + language.getLocale()));
+	}
 
-		// Verify the role exists in roles.yml (or API-added)
-		Optional<RoleEntry> roleEntry = rolesProvider.get().getRoles().stream()
-				.filter(r -> r != null && r.getId() == roleId)
-				.findFirst();
-
-		return roleEntry.map(RoleEntry::getId);
+	private Optional<String> role(DiscordLocale language) {
+		return languagesProvider.get().get(language)
+				.map(Language::getRole)
+				.filter(role -> !role.isBlank());
 	}
 }

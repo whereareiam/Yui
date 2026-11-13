@@ -1,9 +1,9 @@
 package me.whereareiam.yui.adapter.command.definition;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.model.command.CommandDefinition;
-import me.whereareiam.yui.command.DefinitionProvider;
-import me.whereareiam.yui.type.Source;
+import me.whereareiam.yui.api.command.DefinitionProvider;
+import me.whereareiam.yui.api.model.command.CommandDefinition;
+import me.whereareiam.yui.api.type.Source;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;

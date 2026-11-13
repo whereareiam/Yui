@@ -1,21 +1,21 @@
 package me.whereareiam.yui.common.journey;
 
+import me.whereareiam.yui.api.event.journey.JourneyCompletedEvent;
+import me.whereareiam.yui.api.event.journey.JourneyFailedEvent;
+import me.whereareiam.yui.api.event.journey.session.JourneySessionStartedEvent;
+import me.whereareiam.yui.api.event.journey.step.JourneyStepCompletedEvent;
+import me.whereareiam.yui.api.event.journey.step.JourneyStepEnteredEvent;
+import me.whereareiam.yui.api.journey.definition.group.JourneyGroupDefinition;
+import me.whereareiam.yui.api.journey.definition.group.JourneyStepDefinition;
+import me.whereareiam.yui.api.journey.session.store.JourneySessionStore;
+import me.whereareiam.yui.api.model.journey.*;
+import me.whereareiam.yui.api.model.journey.session.JourneySession;
+import me.whereareiam.yui.api.model.journey.session.JourneySessionRequest;
 import me.whereareiam.yui.common.journey.engine.JourneyEngine;
-import me.whereareiam.yui.event.journey.session.JourneySessionStartedEvent;
-import me.whereareiam.yui.event.journey.step.JourneyStepCompletedEvent;
-import me.whereareiam.yui.event.journey.step.JourneyStepEnteredEvent;
-import me.whereareiam.yui.event.journey.JourneyCompletedEvent;
-import me.whereareiam.yui.event.journey.JourneyFailedEvent;
 import me.whereareiam.yui.common.journey.session.DefaultJourneySessionService;
 import me.whereareiam.yui.common.journey.session.JourneyStoreRouting;
 import me.whereareiam.yui.common.journey.session.store.DefaultJourneySessionStoreRegistry;
 import me.whereareiam.yui.common.journey.session.store.InMemoryJourneySessionStore;
-import me.whereareiam.yui.journey.definition.group.JourneyGroupDefinition;
-import me.whereareiam.yui.journey.definition.group.JourneyStepDefinition;
-import me.whereareiam.yui.journey.session.store.JourneySessionStore;
-import me.whereareiam.yui.model.journey.*;
-import me.whereareiam.yui.model.journey.session.JourneySession;
-import me.whereareiam.yui.model.journey.session.JourneySessionRequest;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -74,16 +74,16 @@ class DefaultJourneyServiceTest {
 	@Test
 	void groupSkipSkipsAllGroupStepsAndCompletes() {
 		ApplicationContext context = mock(ApplicationContext.class);
-		definitions.registerGroup(context, "verification", "optional", 100, new JourneyGroupDefinition<>() {
+		definitions.registerGroup(context, "onboarding", "optional", 100, new JourneyGroupDefinition<>() {
 			@Override
 			public @NonNull JourneyPolicyDecision evaluatePolicy(@NonNull JourneyStepContext<Object> context) {
 				return JourneyPolicyDecision.skip();
 			}
 		});
-		definitions.registerStep(context, "verification", "welcome", 10, "", _ -> JourneyInstruction.next());
-		definitions.registerStep(context, "verification", "optional-step", 20, "optional", _ -> JourneyInstruction.fail());
+		definitions.registerStep(context, "onboarding", "welcome", 10, "", _ -> JourneyInstruction.next());
+		definitions.registerStep(context, "onboarding", "optional-step", 20, "optional", _ -> JourneyInstruction.fail());
 
-		JourneySession<Object> session = service.start(JourneySessionRequest.builder("verification", 1L, Object.class, new Object()).build());
+		JourneySession<Object> session = service.start(JourneySessionRequest.builder("onboarding", 1L, Object.class, new Object()).build());
 
 		assertTrue(service.findSession(session.getId(), Object.class).isEmpty());
 		verify(events).publishEvent(any(JourneyCompletedEvent.class));
@@ -93,7 +93,7 @@ class DefaultJourneyServiceTest {
 	@Test
 	void stepGuardFailPublishesFailedAndCleansSession() {
 		ApplicationContext context = mock(ApplicationContext.class);
-		definitions.registerStep(context, "verification", "welcome", 10, "", new JourneyStepDefinition<>() {
+		definitions.registerStep(context, "onboarding", "welcome", 10, "", new JourneyStepDefinition<>() {
 			@Override
 			public @NonNull JourneyPolicyDecision evaluatePolicy(@NonNull JourneyStepContext<Object> context) {
 				return JourneyPolicyDecision.reject();
@@ -105,7 +105,7 @@ class DefaultJourneyServiceTest {
 			}
 		});
 
-		JourneySession<Object> session = service.start(JourneySessionRequest.builder("verification", 2L, Object.class, new Object()).build());
+		JourneySession<Object> session = service.start(JourneySessionRequest.builder("onboarding", 2L, Object.class, new Object()).build());
 
 		assertTrue(service.findSession(session.getId(), Object.class).isEmpty());
 		verify(events).publishEvent(any(JourneyFailedEvent.class));
@@ -114,9 +114,9 @@ class DefaultJourneyServiceTest {
 	@Test
 	void publishesStepCompletedBeforeJourneyCompleted() {
 		ApplicationContext context = mock(ApplicationContext.class);
-		definitions.registerStep(context, "verification", "welcome", 10, "", _ -> JourneyInstruction.complete());
+		definitions.registerStep(context, "onboarding", "welcome", 10, "", _ -> JourneyInstruction.complete());
 
-		service.start(JourneySessionRequest.builder("verification", 3L, Object.class, new Object()).build());
+		service.start(JourneySessionRequest.builder("onboarding", 3L, Object.class, new Object()).build());
 
 		var inOrder = inOrder(events);
 		inOrder.verify(events).publishEvent(any(JourneySessionStartedEvent.class));
@@ -130,7 +130,7 @@ class DefaultJourneyServiceTest {
 		AtomicInteger inFlight = new AtomicInteger();
 		AtomicInteger maxInFlight = new AtomicInteger();
 		ApplicationContext context = mock(ApplicationContext.class);
-		definitions.registerStep(context, "verification", "welcome", 10, "", new JourneyStepDefinition<>() {
+		definitions.registerStep(context, "onboarding", "welcome", 10, "", new JourneyStepDefinition<>() {
 			@Override
 			public @NonNull JourneyInstruction onEnter(@NonNull JourneyStepContext<Object> context) {
 				return JourneyInstruction.waitForSignal();
@@ -150,7 +150,7 @@ class DefaultJourneyServiceTest {
 			}
 		});
 
-		JourneySession<Object> session = service.start(JourneySessionRequest.builder("verification", 4L, Object.class, new Object()).build());
+		JourneySession<Object> session = service.start(JourneySessionRequest.builder("onboarding", 4L, Object.class, new Object()).build());
 		JourneySignal signal = JourneySignal.of("go");
 		CountDownLatch start = new CountDownLatch(1);
 		Queue<Throwable> failures = new ConcurrentLinkedQueue<>();

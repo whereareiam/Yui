@@ -1,18 +1,18 @@
 package me.whereareiam.yui.adapter.database.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 
 import java.util.Objects;
 
-@Data
+@Getter
+@Setter
 @Entity
-@Table(name = "yui_languages", indexes = {
-		@Index(name = "idx_language_locale", columnList = "locale")
-})
+@Table(name = "yui_languages")
 @SuperBuilder
 @NoArgsConstructor
 public class LanguageEntity {

@@ -1,10 +1,10 @@
 package me.whereareiam.yui.common.service;
 
-import me.whereareiam.yui.model.config.style.Palette;
-import me.whereareiam.yui.model.config.style.embed.EmbedStyle;
-import me.whereareiam.yui.Registry;
-import me.whereareiam.yui.Reloadable;
-import me.whereareiam.yui.util.style.StyleKit;
+import me.whereareiam.yui.api.Registry;
+import me.whereareiam.yui.api.Reloadable;
+import me.whereareiam.yui.api.model.config.style.Palette;
+import me.whereareiam.yui.api.model.config.style.embed.EmbedStyle;
+import me.whereareiam.yui.api.util.style.StyleKit;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

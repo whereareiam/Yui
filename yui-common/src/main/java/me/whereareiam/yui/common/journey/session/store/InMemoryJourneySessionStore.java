@@ -1,8 +1,8 @@
 package me.whereareiam.yui.common.journey.session.store;
 
-import me.whereareiam.yui.journey.session.store.JourneySessionStore;
-import me.whereareiam.yui.model.journey.session.JourneySession;
-import me.whereareiam.yui.type.journey.JourneyStatus;
+import me.whereareiam.yui.api.journey.session.store.JourneySessionStore;
+import me.whereareiam.yui.api.model.journey.session.JourneySession;
+import me.whereareiam.yui.api.type.journey.JourneyStatus;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 

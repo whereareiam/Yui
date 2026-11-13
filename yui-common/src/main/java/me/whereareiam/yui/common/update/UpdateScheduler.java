@@ -2,20 +2,22 @@ package me.whereareiam.yui.common.update;
 
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.BuildConfig;
-import me.whereareiam.yui.Registry;
-import me.whereareiam.yui.Reloadable;
-import me.whereareiam.yui.event.update.UpdateAvailableEvent;
-import me.whereareiam.yui.event.update.UpdateCheckFailedEvent;
-import me.whereareiam.yui.event.update.UpdateLocalNotificationEvent;
-import me.whereareiam.yui.model.config.settings.Settings;
-import me.whereareiam.yui.model.config.settings.UpdaterSettings;
-import me.whereareiam.yui.model.plugin.InternalPlugin;
-import me.whereareiam.yui.model.plugin.Plugin;
-import me.whereareiam.yui.model.update.UpdateConfiguration;
-import me.whereareiam.yui.model.update.UpdateSource;
-import me.whereareiam.yui.plugin.PluginManager;
-import me.whereareiam.yui.update.UpdateProvider;
+import me.whereareiam.chassis.model.ExtensionDescriptor;
+import me.whereareiam.chassis.model.InstalledExtension;
+import me.whereareiam.yui.api.BuildConfig;
+import me.whereareiam.yui.api.Registry;
+import me.whereareiam.yui.api.Reloadable;
+import me.whereareiam.yui.api.event.update.UpdateAvailableEvent;
+import me.whereareiam.yui.api.event.update.UpdateCheckFailedEvent;
+import me.whereareiam.yui.api.event.update.UpdateLocalNotificationEvent;
+import me.whereareiam.yui.api.model.config.settings.Settings;
+import me.whereareiam.yui.api.model.config.settings.UpdaterSettings;
+import me.whereareiam.yui.api.model.update.UpdateConfiguration;
+import me.whereareiam.yui.api.model.update.UpdateSource;
+import me.whereareiam.yui.api.plugin.PluginManager;
+import me.whereareiam.yui.api.type.update.UpdateCheck;
+import me.whereareiam.yui.api.type.update.UpdateWarning;
+import me.whereareiam.yui.api.update.UpdateProvider;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -87,7 +89,7 @@ public class UpdateScheduler implements Reloadable {
         Settings settings = settingsProvider.getObject();
         UpdaterSettings cfg = settings.getUpdater();
 
-        if (!cfg.isCheckForUpdates() || cfg.getInterval().getSeconds() <= 0) {
+        if (cfg.getCheck().isEmpty() || cfg.getInterval().getSeconds() <= 0) {
             log.debug("[Updater] Update checking is disabled");
             return;
         }
@@ -133,14 +135,14 @@ public class UpdateScheduler implements Reloadable {
         Settings settings = settingsProvider.getObject();
         UpdaterSettings cfg = settings.getUpdater();
 
-        if (cfg == null || !cfg.isCheckForUpdates())
+        if (cfg == null)
             return;
 
-        checkCoreUpdates();
+        if (cfg.getCheck().contains(UpdateCheck.YUI))
+            checkCoreUpdates();
 
-        if (cfg.isCheckPluginUpdates()) {
+        if (cfg.getCheck().contains(UpdateCheck.PLUGINS))
             checkAllPluginUpdates();
-        }
     }
 
     /**
@@ -164,18 +166,14 @@ public class UpdateScheduler implements Reloadable {
         UpdaterSettings cfg = settings.getUpdater();
         if (cfg == null) return;
 
-        Optional<InternalPlugin> pluginOpt = pluginManager.plugins().stream()
-                .filter(p -> p.getDescriptor().getId().equals(pluginId))
-                .findFirst();
-
-        if (pluginOpt.isEmpty()) {
+        Optional<ExtensionDescriptor> found = pluginManager.find(pluginId).map(InstalledExtension::getDescriptor);
+        if (found.isEmpty()) {
             log.warn("[Updater] Plugin '{}' not found", pluginId);
             return;
         }
 
-        InternalPlugin plugin = pluginOpt.get();
-        Plugin descriptor = plugin.getDescriptor();
-        UpdateConfiguration updateConfig = descriptor.getUpdater();
+        ExtensionDescriptor descriptor = found.get();
+        UpdateConfiguration updateConfig = pluginManager.updater(pluginId).orElse(null);
 
         if (updateConfig == null) {
             log.debug("[Updater] Plugin '{}' has no update configuration", pluginId);
@@ -185,7 +183,7 @@ public class UpdateScheduler implements Reloadable {
         checkEntry(
                 "plugin_" + pluginId,
                 descriptor.getName(),
-                descriptor.getVersion(),
+                descriptor.getVersion().toString(),
                 updateConfig,
                 cfg
         );
@@ -196,9 +194,9 @@ public class UpdateScheduler implements Reloadable {
      */
     public void checkAllPluginUpdates() {
         pluginManager.plugins().stream()
-                .map(InternalPlugin::getDescriptor)
-                .filter(p -> p.getUpdater() != null)
-                .forEach(p -> checkPluginUpdates(p.getId()));
+                .map(InstalledExtension::getId)
+                .filter(id -> pluginManager.updater(id).isPresent())
+                .forEach(this::checkPluginUpdates);
     }
 
     private void checkEntry(
@@ -213,7 +211,7 @@ public class UpdateScheduler implements Reloadable {
 
         // 1) LOCAL DEV exact build
         if ("dev".equalsIgnoreCase(current)) {
-            if (cfg.isWarnAboutLocalBuilds()) {
+            if (cfg.getWarn().contains(UpdateWarning.LOCAL_BUILDS)) {
                 log.warn("[Updater] You are running a local dev build of {}.", name);
             }
 
@@ -229,7 +227,7 @@ public class UpdateScheduler implements Reloadable {
         if (!isReleaseVersion(current)) {
             if (spec.getDev() != null) {
                 UpdateSource devSpec = spec.getDev();
-                boolean warnAboutDevBuilds = cfg.isWarnAboutDevBuilds();
+                boolean warnAboutDevBuilds = cfg.getWarn().contains(UpdateWarning.DEV_BUILDS);
                 providerRegistry.by(devSpec).ifPresent(provider ->
                         warnAheadBehindBranches(componentId, current, name, provider, devSpec, warnAboutDevBuilds)
                 );
@@ -240,7 +238,7 @@ public class UpdateScheduler implements Reloadable {
         // 3) release build
         if (spec.getRelease() != null) {
             UpdateSource relSpec = spec.getRelease();
-            boolean warnAboutUpdates = cfg.isWarnAboutUpdates();
+            boolean warnAboutUpdates = cfg.getWarn().contains(UpdateWarning.UPDATES);
             providerRegistry.by(relSpec).ifPresent(provider ->
                     checkReleaseUpdate(componentId, name, current, provider, relSpec, warnAboutUpdates)
             );

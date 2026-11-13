@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.journey.session;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.journey.definition.JourneyConfigurationDefinition;
+import me.whereareiam.yui.api.journey.definition.JourneyConfigurationDefinition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.core.env.Environment;

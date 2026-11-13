@@ -2,24 +2,24 @@ package me.whereareiam.yui.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.annotation.ComponentListener;
-import me.whereareiam.yui.annotation.command.Argument;
-import me.whereareiam.yui.annotation.command.Command;
-import me.whereareiam.yui.annotation.command.Definition;
-import me.whereareiam.yui.command.Interaction;
-import me.whereareiam.yui.model.fluctlight.Fluctlight;
-import me.whereareiam.yui.model.plugin.InternalPlugin;
-import me.whereareiam.yui.plugin.PluginManager;
-import me.whereareiam.yui.type.UpdateTarget;
-import me.whereareiam.yui.update.UpdateService;
-import me.whereareiam.yui.util.Components;
-import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.util.translation.Translatable;
+import me.whereareiam.chassis.model.InstalledExtension;
+import me.whereareiam.yui.api.annotation.ComponentListener;
+import me.whereareiam.yui.api.annotation.command.Argument;
+import me.whereareiam.yui.api.annotation.command.Command;
+import me.whereareiam.yui.api.annotation.command.Definition;
+import me.whereareiam.yui.api.command.Interaction;
+import me.whereareiam.yui.api.message.Translatable;
+import me.whereareiam.yui.api.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.api.plugin.PluginManager;
+import me.whereareiam.yui.api.type.update.UpdateTarget;
+import me.whereareiam.yui.api.update.UpdateService;
+import me.whereareiam.yui.api.util.Components;
+import me.whereareiam.yui.api.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.selections.SelectOption;
+import net.dv8tion.jda.api.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
-import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
-import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -51,7 +51,7 @@ public class UpdateCheckCommand {
     }
 
     private void checkYui(Interaction interaction, Fluctlight fluctlight) {
-        log.debug("Checking core updates (triggered by {})", fluctlight.getJdaUser().getAsTag());
+        log.debug("Checking core updates (triggered by {})", fluctlight.getUser().getAsTag());
 
         try {
             updateService.checkUpdates();
@@ -68,7 +68,7 @@ public class UpdateCheckCommand {
     }
 
     private void checkAllPlugins(Interaction interaction, Fluctlight fluctlight) {
-        log.debug("Checking all plugin updates (triggered by {})", fluctlight.getJdaUser().getAsTag());
+        log.debug("Checking all plugin updates (triggered by {})", fluctlight.getUser().getAsTag());
 
         try {
             updateService.checkAllPluginUpdates();
@@ -85,7 +85,9 @@ public class UpdateCheckCommand {
     }
 
     private void showPluginSelection(Interaction interaction, Fluctlight fluctlight) {
-        Collection<InternalPlugin> plugins = pluginManager.plugins();
+        Collection<InstalledExtension> plugins = pluginManager.plugins().stream()
+                .filter(plugin -> plugin.getDescriptor() != null)
+                .toList();
 
         if (plugins.isEmpty()) {
             EmbedBuilder embed = StyleKit.embeds().warning();
@@ -127,7 +129,7 @@ public class UpdateCheckCommand {
 
         try {
             log.debug("Checking updates for plugin '{}' (triggered by {})",
-                    pluginId, fluctlight.getJdaUser().getAsTag());
+                    pluginId, fluctlight.getUser().getAsTag());
             updateService.checkPluginUpdates(pluginId);
 
             EmbedBuilder embed = StyleKit.embeds().success();

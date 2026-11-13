@@ -1,7 +1,7 @@
 package me.whereareiam.yui.common.journey.registry;
 
+import me.whereareiam.yui.api.model.journey.JourneyInstruction;
 import me.whereareiam.yui.common.journey.JourneyDefinitionRegistry;
-import me.whereareiam.yui.model.journey.JourneyInstruction;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -19,18 +19,18 @@ class JourneyDefinitionRegistryTest {
 	void duplicateStepRegistrationThrows() {
 		JourneyDefinitionRegistry registry = new JourneyDefinitionRegistry();
 
-		registry.registerStep(context, "verification", "welcome", 10, "", _ -> JourneyInstruction.waitForSignal());
+		registry.registerStep(context, "onboarding", "welcome", 10, "", _ -> JourneyInstruction.waitForSignal());
 
 		assertThrows(IllegalStateException.class, () ->
-				registry.registerStep(context, "verification", "welcome", 10, "", _ -> JourneyInstruction.waitForSignal()));
+				registry.registerStep(context, "onboarding", "welcome", 10, "", _ -> JourneyInstruction.waitForSignal()));
 	}
 
 	@Test
 	void unknownGroupReferenceThrowsWhenLoadingDefinition() {
 		JourneyDefinitionRegistry registry = new JourneyDefinitionRegistry();
 
-		registry.registerStep(context, "verification", "additional", 20, "languages", _ -> JourneyInstruction.waitForSignal());
+		registry.registerStep(context, "onboarding", "additional", 20, "languages", _ -> JourneyInstruction.waitForSignal());
 
-		assertThrows(IllegalStateException.class, () -> registry.get("verification"));
+		assertThrows(IllegalStateException.class, () -> registry.get("onboarding"));
 	}
 }

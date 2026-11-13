@@ -1,0 +1,52 @@
+{
+  "name": "Yui",
+  "description": "A Discord bot for one server, built from plugins.",
+  "state": {
+    "bundling": {
+      "captions": [
+        "Asking every member which language they speak.",
+        "Opening a thread nobody will see.",
+        "Giving roles to facts, not to people.",
+        "Teaching a plugin where its tables are.",
+        "Reading settings.yml, never writing it."
+      ]
+    }
+  },
+  "urls": {
+    "github": "https://github.com/whereareiam/Yui"
+  },
+  "links": [
+    {
+      "type": "icon",
+      "label": "GitHub",
+      "icon": "github",
+      "url": "https://github.com/whereareiam/Yui",
+      "external": true
+    },
+    {
+      "type": "icon",
+      "label": "Discord",
+      "icon": "discord",
+      "url": "https://discord.arcadeya.com",
+      "external": true
+    }
+  ],
+  "i18n": {
+    "default": "en",
+    "languages": {
+      "en": { "label": "English" }
+    }
+  },
+  "versions": {
+    "home": "dev",
+    "include": [
+      { "type": "branch", "pattern": "release/*" },
+      { "type": "tag", "pattern": "*" }
+    ],
+    "meta": {
+      "dev": {
+        "label": "Development"
+      }
+    }
+  }
+}

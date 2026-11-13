@@ -1,11 +1,13 @@
 package me.whereareiam.yui.common.audit.type.update;
 
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.event.update.UpdateAvailableEvent;
-import me.whereareiam.yui.type.AuditSeverity;
-import me.whereareiam.yui.util.Audit;
-import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.util.translation.Translatable;
+import me.whereareiam.yui.api.Constants;
+import me.whereareiam.yui.api.event.update.UpdateAvailableEvent;
+import me.whereareiam.yui.api.message.Translatable;
+import me.whereareiam.yui.api.type.audit.AuditCategory;
+import me.whereareiam.yui.api.type.audit.AuditSeverity;
+import me.whereareiam.yui.api.util.Audit;
+import me.whereareiam.yui.api.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -26,7 +28,7 @@ public class UpdateDevAvailableAudit {
             return;
         }
 
-        Audit.log("update_" + event.getComponentId() + "_available")
+        Audit.log(AuditCategory.SYSTEM, Constants.AuditEntries.UPDATE_AVAILABLE)
                 .withSeverity(AuditSeverity.WARNING)
                 .withLocalizedEmbed(locale -> {
                     String title = Translatable.text("audit.update.available.dev.title")

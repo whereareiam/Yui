@@ -1,9 +1,10 @@
 package me.whereareiam.yui.common.audit.type.user;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.Constants;
-import me.whereareiam.yui.util.Audit;
-import me.whereareiam.yui.util.translation.Translatable;
+import me.whereareiam.yui.api.Constants;
+import me.whereareiam.yui.api.message.Translatable;
+import me.whereareiam.yui.api.type.audit.AuditCategory;
+import me.whereareiam.yui.api.util.Audit;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -17,14 +18,14 @@ import java.time.Instant;
 public class UserJoinAudit extends ListenerAdapter {
 	@Override
 	public void onGuildMemberJoin(@NonNull GuildMemberJoinEvent event) {
-		Audit.log(Constants.AuditTypes.USER_JOIN)
+		Audit.log(AuditCategory.MEMBERS, Constants.AuditEntries.MEMBER_JOIN)
 				.withLocalizedEmbed(locale -> {
-					String title = Translatable.text("audit.user.join.title").resolve(locale);
-					String description = Translatable.text("audit.user.join.description")
+					String title = Translatable.text("audit.member.join.title").resolve(locale);
+					String description = Translatable.text("audit.member.join.description")
 							.with("mention", event.getUser().getAsMention())
 							.resolve(locale);
-					String targetField = Translatable.text("audit.user.join.fields.target").resolve(locale);
-					String accountCreatedField = Translatable.text("audit.user.join.fields.accountCreated").resolve(locale);
+					String targetField = Translatable.text("audit.member.join.fields.target").resolve(locale);
+					String accountCreatedField = Translatable.text("audit.member.join.fields.accountCreated").resolve(locale);
 					return new EmbedBuilder()
 							.setTitle(title)
 							.setDescription(description)

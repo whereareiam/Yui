@@ -1,9 +1,9 @@
 package me.whereareiam.yui.adapter.command.exception;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.command.exception.ExceptionResponse;
-import me.whereareiam.yui.exception.command.base.CommandException;
-import me.whereareiam.yui.command.Interaction;
+import me.whereareiam.yui.api.command.Interaction;
+import me.whereareiam.yui.api.command.exception.ExceptionResponse;
+import me.whereareiam.yui.api.exception.command.base.CommandException;
 import net.dv8tion.jda.api.EmbedBuilder;
 import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.discord.jda6.JDA6CommandManager;
@@ -22,7 +22,7 @@ import java.util.function.Function;
  * Internal registry for custom exception handlers.
  * <p>
  * This is used internally by the command system. Users should register
- * exception handlers through {@link me.whereareiam.yui.command.CommandService#registerExceptionHandler}.
+ * exception handlers through {@link me.whereareiam.yui.api.command.CommandService#registerExceptionHandler}.
  */
 @Component
 @RequiredArgsConstructor
@@ -34,7 +34,7 @@ public final class DefaultExceptionHandlerRegistry {
 	/**
 	 * Registers a handler for a specific exception type.
 	 * <p>
-	 * This is called internally by {@link me.whereareiam.yui.command.CommandService}.
+	 * This is called internally by {@link me.whereareiam.yui.api.command.CommandService}.
 	 *
 	 * @param exceptionType The exception type
 	 * @param handler       The handler function that creates a response

@@ -1,8 +1,8 @@
 package me.whereareiam.yui.adapter.command.parsing.annotation;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.annotation.command.Argument;
-import me.whereareiam.yui.annotation.command.Default;
+import me.whereareiam.yui.api.annotation.command.Argument;
+import me.whereareiam.yui.api.annotation.command.Default;
 import org.incendo.cloud.annotations.AnnotationParser;
 import org.incendo.cloud.annotations.ArgumentMode;
 import org.incendo.cloud.annotations.SyntaxFragment;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Custom argument extractor that recognizes Yui's {@link me.whereareiam.yui.annotation.command.Argument}
+ * Custom argument extractor that recognizes Yui's {@link me.whereareiam.yui.api.annotation.command.Argument}
  * annotation and adapts it to Cloud's argument descriptor format.
  * <p>
  * This implementation mirrors Cloud's StandardArgumentExtractor but works with Yui annotations.

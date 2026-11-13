@@ -1,13 +1,13 @@
 package me.whereareiam.yui.common.config.template.messages.command;
 
-import me.whereareiam.configura.TemplateProvider;
-import me.whereareiam.yui.model.config.messages.command.ReloadCommandMessages;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
+import me.whereareiam.yui.api.model.config.messages.command.ReloadCommandMessages;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class ReloadCommandMessagesTemplate implements TemplateProvider<ReloadCommandMessages> {
+public class ReloadCommandMessagesTemplate implements DefaultsProvider<ReloadCommandMessages> {
 	@Override
 	public ReloadCommandMessages supply(ReloadCommandMessages reload) {
 		reload.setDescription("Reloads all bot components.");

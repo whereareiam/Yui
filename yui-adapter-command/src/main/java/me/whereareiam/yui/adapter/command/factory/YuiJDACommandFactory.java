@@ -4,11 +4,12 @@ import io.leangen.geantyref.TypeToken;
 import me.whereareiam.yui.adapter.command.definition.CommandDefinitionRegistry;
 import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
 import me.whereareiam.yui.adapter.command.parser.FluctlightParser;
-import me.whereareiam.yui.command.Interaction;
-import me.whereareiam.yui.fluctlight.FluctlightService;
-import me.whereareiam.yui.model.fluctlight.Fluctlight;
-import me.whereareiam.yui.model.command.CommandDefinition;
-import me.whereareiam.yui.util.translation.TranslationResolver;
+import me.whereareiam.yui.adapter.command.permission.CommandDefaultPermissions;
+import me.whereareiam.yui.api.command.Interaction;
+import me.whereareiam.yui.api.fluctlight.FluctlightService;
+import me.whereareiam.yui.api.message.Translatable;
+import me.whereareiam.yui.api.model.command.CommandDefinition;
+import me.whereareiam.yui.api.model.fluctlight.Fluctlight;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.InteractionContextType;
 import net.dv8tion.jda.api.interactions.commands.Command;
@@ -22,8 +23,8 @@ import org.incendo.cloud.discord.jda6.JDAOptionType;
 import org.incendo.cloud.discord.jda6.JDAParser;
 import org.incendo.cloud.discord.slash.*;
 import org.incendo.cloud.internal.CommandNode;
-import org.incendo.cloud.permission.Permission;
 import org.incendo.cloud.parser.ParserDescriptor;
+import org.incendo.cloud.permission.Permission;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,22 +36,25 @@ import java.util.stream.Collectors;
  * Custom JDA command factory that adds multilanguage support for Discord commands.
  * <p>
  * Wraps Cloud's standard implementation and adds localization support from CommandDefinition
- * when descriptions contain translate(...) tags.
+ * from the texts its descriptions name.
  */
 public final class YuiJDACommandFactory implements JDACommandFactory<Interaction> {
     private final CommandTree<Interaction> commandTree;
     private final CommandDefinitionRegistry definitionRegistry;
     private final DiscordCommandFactory<Interaction> discordCommandFactory;
     private final NodeProcessor<Interaction> nodeProcessor;
+    private final CommandDefaultPermissions defaultPermissions;
 
     private CommandScopePredicate<Interaction> commandScopePredicate = CommandScopePredicate.alwaysTrue();
 
     public YuiJDACommandFactory(
             @NotNull CommandTree<Interaction> commandTree,
             @NotNull CommandDefinitionRegistry definitionRegistry,
-            @NotNull FluctlightParser fluctlightParser
+            @NotNull FluctlightParser fluctlightParser,
+            @NotNull CommandDefaultPermissions defaultPermissions
     ) {
         this.commandTree = Objects.requireNonNull(commandTree, "commandTree");
+        this.defaultPermissions = Objects.requireNonNull(defaultPermissions, "defaultPermissions");
         this.definitionRegistry = Objects.requireNonNull(definitionRegistry, "definitionRegistry");
 
         // Reuse Cloud's standard option registry setup
@@ -87,7 +91,9 @@ public final class YuiJDACommandFactory implements JDACommandFactory<Interaction
             DiscordCommand<Interaction> command = this.discordCommandFactory.create(rootNode);
             Map<List<String>, CommandDefinition> definitionsByPath = buildDefinitionLookup(rootNode);
             CommandDefinition definition = definitionForPath(definitionsByPath, List.of(command.name()));
-            SlashCommandData data = Commands.slash(command.name(), command.description());
+            SlashCommandData data = Commands.slash(command.name(), text(command.description()));
+            if (definition != null)
+                defaultPermissions.of(definition).ifPresent(permissions -> data.setDefaultPermissions(DefaultMemberPermissions.enabledFor(permissions)));
 
             // Apply options
             for (DiscordOption<Interaction> option : command.options()) {
@@ -130,9 +136,8 @@ public final class YuiJDACommandFactory implements JDACommandFactory<Interaction
             if (rootScope instanceof CommandScope.Guilds)
                 data.setContexts(InteractionContextType.GUILD);
 
-            // Apply localizations if definition exists and contains translate tags
-            // Check both definition description and command description (which may differ)
-            applyLocalizations(data, definition, command.description());
+            // Descriptions are keys of texts, set in every locale they have
+            localize(data, command.description());
 
             commands.add(data);
         }
@@ -141,59 +146,23 @@ public final class YuiJDACommandFactory implements JDACommandFactory<Interaction
     }
 
     /**
-     * Applies localizations to command data if description contains translate tags.
-     * Priority: commandDescription > definitionDescription
+     * Sets a component's descriptions in every locale its text has: a description is the key of a text
+     * ({@code commands.clear.description}), or plain text that stays as written.
      */
-    private void applyLocalizations(SlashCommandData data, @Nullable CommandDefinition definition, @Nullable String commandDescription) {
-        String descriptionToLocalize = commandDescription;
-        if (descriptionToLocalize == null && definition != null)
-            descriptionToLocalize = definition.getDescription();
+    private static void localize(@NotNull Object localizable, @Nullable String description) {
+        if (description == null || description.isBlank()) return;
 
-        applyLocalization(data, descriptionToLocalize, definition, null);
-    }
-
-    /**
-     * Generic method to apply localization to any localizable command component.
-     * Priority: primaryDescription > variableDescription (for options) > definitionDescription
-     */
-    private void applyLocalization(
-            @NotNull Object localizable,
-            @Nullable String primaryDescription,
-            @Nullable CommandDefinition definition,
-            @Nullable String variableDescription
-    ) {
-        String descriptionToLocalize = null;
-
-        // For options: check variable description first, then primary
-        if (containsTranslateTag(variableDescription))
-            descriptionToLocalize = variableDescription;
-
-        if (descriptionToLocalize == null && containsTranslateTag(primaryDescription))
-            descriptionToLocalize = primaryDescription;
-
-        if (!(localizable instanceof OptionData) && descriptionToLocalize == null && definition != null) {
-            String definitionDescription = definition.getDescription();
-            if (containsTranslateTag(definitionDescription))
-                descriptionToLocalize = definitionDescription;
-        }
-
-        if (descriptionToLocalize == null) return;
-
-        Map<DiscordLocale, String> localizations = buildLocalizations(descriptionToLocalize);
+        Map<DiscordLocale, String> localizations = localizations(description);
         if (localizations.isEmpty()) return;
 
-        // Apply to the appropriate type
-        if (localizable instanceof SlashCommandData data)
-            data.setDescriptionLocalizations(localizations);
-
-        if (localizable instanceof SubcommandData data)
-            data.setDescriptionLocalizations(localizations);
-
-        if (localizable instanceof SubcommandGroupData data)
-            data.setDescriptionLocalizations(localizations);
-
-        if (localizable instanceof OptionData data)
-            data.setDescriptionLocalizations(localizations);
+        switch (localizable) {
+            case SlashCommandData data -> data.setDescriptionLocalizations(localizations);
+            case SubcommandData data -> data.setDescriptionLocalizations(localizations);
+            case SubcommandGroupData data -> data.setDescriptionLocalizations(localizations);
+            case OptionData data -> data.setDescriptionLocalizations(localizations);
+            default -> {
+            }
+        }
     }
 
     /**
@@ -204,8 +173,8 @@ public final class YuiJDACommandFactory implements JDACommandFactory<Interaction
             DiscordOption.SubCommand<Interaction> option,
             @Nullable CommandDefinition definition
     ) {
-        SubcommandData subcommandData = new SubcommandData(option.name(), option.description());
-        applyLocalization(subcommandData, option.description(), definition, null);
+        SubcommandData subcommandData = new SubcommandData(option.name(), text(option.description()));
+        localize(subcommandData, option.description());
 
         for (DiscordOption<Interaction> child : option.options()) {
             if (child instanceof DiscordOption.SubCommand)
@@ -230,8 +199,8 @@ public final class YuiJDACommandFactory implements JDACommandFactory<Interaction
             Map<List<String>, CommandDefinition> definitionsByPath,
             List<String> currentPath
     ) {
-        SubcommandGroupData subcommandGroupData = new SubcommandGroupData(option.name(), option.description());
-        applyLocalization(subcommandGroupData, option.description(), definition, null);
+        SubcommandGroupData subcommandGroupData = new SubcommandGroupData(option.name(), text(option.description()));
+        localize(subcommandGroupData, option.description());
 
         for (DiscordOption<Interaction> child : option.options()) {
             if (child instanceof DiscordOption.Variable)
@@ -260,14 +229,10 @@ public final class YuiJDACommandFactory implements JDACommandFactory<Interaction
         OptionData optionData = new OptionData(
                 OptionType.fromKey(option.type().value()),
                 option.name(),
-                option.description()
+                text(option.description())
         ).setRequired(option.required());
 
-        // Apply localization - check variables map first, then option description
-        String variableDescription = definition != null && definition.getVariables() != null
-                ? definition.getVariables().get(option.name())
-                : null;
-        applyLocalization(optionData, option.description(), definition, variableDescription);
+        localize(optionData, option.description());
 
         // Standard option configuration (mirrors StandardJDACommandFactory)
         if (option.range() != null)
@@ -349,30 +314,24 @@ public final class YuiJDACommandFactory implements JDACommandFactory<Interaction
     }
 
     /**
-     * Checks if a string contains translate(...) tags.
+     * The description in Yui's default locale: its text, or the description itself when it is no key of one.
      */
-    private boolean containsTranslateTag(@Nullable String text) {
-        if (text == null || text.isBlank()) return false;
-        return text.contains("translate(");
+    private static @NotNull String text(@Nullable String description) {
+        if (description == null || description.isBlank()) return "";
+
+        return Translatable.text(description).resolveDefault();
     }
 
     /**
-     * Builds localizations map for all Discord locales.
-     * Only includes locales where the translation resolves to a non-empty value.
-     * Excludes UNKNOWN locale as it's not a valid Discord locale.
+     * The description in each Discord locale the text resolves in.
      */
-    private @NotNull Map<DiscordLocale, String> buildLocalizations(@NotNull String text) {
+    private static @NotNull Map<DiscordLocale, String> localizations(@NotNull String description) {
         Map<DiscordLocale, String> localizations = new HashMap<>();
-
         for (DiscordLocale locale : DiscordLocale.values()) {
-            // Skip UNKNOWN locale as JDA doesn't allow it in localizations
             if (locale == DiscordLocale.UNKNOWN) continue;
 
-            String translated = TranslationResolver.text(text).resolve(locale);
-            // Only add if translation resolved to something meaningful
-            // (not empty and not the same as the original key)
-            if (translated != null && !translated.isBlank() && !translated.equals(text))
-                localizations.put(locale, translated);
+            String translated = Translatable.text(description).resolve(locale);
+            if (!translated.isBlank() && !translated.equals(description)) localizations.put(locale, translated);
         }
 
         return localizations;

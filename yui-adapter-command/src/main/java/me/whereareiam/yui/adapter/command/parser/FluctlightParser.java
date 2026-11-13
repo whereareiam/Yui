@@ -1,9 +1,9 @@
 package me.whereareiam.yui.adapter.command.parser;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.command.Interaction;
-import me.whereareiam.yui.fluctlight.FluctlightService;
-import me.whereareiam.yui.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.api.command.Interaction;
+import me.whereareiam.yui.api.fluctlight.FluctlightService;
+import me.whereareiam.yui.api.model.fluctlight.Fluctlight;
 import org.incendo.cloud.context.CommandContext;
 import org.incendo.cloud.context.CommandInput;
 import org.incendo.cloud.discord.jda6.JDA6CommandManager;
@@ -38,7 +38,7 @@ public class FluctlightParser extends NullableParser<Interaction, Fluctlight> {
 		ArgumentParseResult<Fluctlight> result = jdaInteraction.getOptionMapping(optionName)
 				.map(mapping -> {
 					try {
-						Fluctlight fluctlight = fluctlightService.getOrCreate(mapping.getAsUser().getIdLong());
+						Fluctlight fluctlight = fluctlightService.get(mapping.getAsUser().getIdLong()).orElseThrow();
 						return ArgumentParseResult.success(fluctlight);
 					} catch (final Exception e) {
 						return ArgumentParseResult.<Fluctlight>failure(e);

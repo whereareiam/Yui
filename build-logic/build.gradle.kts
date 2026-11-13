@@ -5,9 +5,11 @@ plugins {
 repositories {
     gradlePluginPortal()
     mavenCentral()
+    maven("https://registry.whereareiam.me/maven/packages")
 }
 
 dependencies {
-    implementation(libs.spring.boot.gradle.plugin)
-    implementation(libs.spring.dependency.management.gradle.plugin)
+    implementation(libs.lombok.plugin)
+    implementation(libs.toolkit.architecture)
+    implementation(libs.toolkit.publish.maven)
 }

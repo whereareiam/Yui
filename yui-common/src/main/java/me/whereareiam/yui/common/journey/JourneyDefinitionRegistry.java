@@ -1,12 +1,12 @@
 package me.whereareiam.yui.common.journey;
 
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.journey.definition.JourneyConfigurationDefinition;
-import me.whereareiam.yui.journey.definition.group.JourneyGroupDefinition;
-import me.whereareiam.yui.journey.definition.group.JourneyStepDefinition;
-import me.whereareiam.yui.model.journey.definition.JourneyDefinition;
-import me.whereareiam.yui.model.journey.definition.descriptor.JourneyGroupDescriptor;
-import me.whereareiam.yui.model.journey.definition.descriptor.JourneyStepDescriptor;
+import me.whereareiam.yui.api.journey.definition.JourneyConfigurationDefinition;
+import me.whereareiam.yui.api.journey.definition.group.JourneyGroupDefinition;
+import me.whereareiam.yui.api.journey.definition.group.JourneyStepDefinition;
+import me.whereareiam.yui.api.model.journey.definition.JourneyDefinition;
+import me.whereareiam.yui.api.model.journey.definition.descriptor.JourneyGroupDescriptor;
+import me.whereareiam.yui.api.model.journey.definition.descriptor.JourneyStepDescriptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.context.ApplicationContext;

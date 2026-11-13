@@ -1,9 +1,9 @@
 package me.whereareiam.yui.common.scanner;
 
-import me.whereareiam.yui.annotation.ComponentListener;
-import me.whereareiam.yui.fluctlight.FluctlightService;
-import me.whereareiam.yui.model.fluctlight.Fluctlight;
-import me.whereareiam.yui.service.InteractionService;
+import me.whereareiam.yui.api.annotation.ComponentListener;
+import me.whereareiam.yui.api.fluctlight.FluctlightService;
+import me.whereareiam.yui.api.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.api.service.InteractionService;
 import net.dv8tion.jda.api.events.interaction.component.GenericComponentInteractionCreateEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotatedElementUtils;
@@ -83,7 +83,7 @@ public class ComponentListenerScanner extends BaseContextScanner {
 			try {
 				GenericComponentInteractionCreateEvent event = (GenericComponentInteractionCreateEvent) e;
 				long userId = event.getUser().getIdLong();
-				Fluctlight fluctlight = fluctlightService.getOrCreate(userId);
+				Fluctlight fluctlight = fluctlightService.get(userId).orElseThrow();
 				method.invoke(bean, fluctlight, e);
 			} catch (Exception ignored) {
 			}

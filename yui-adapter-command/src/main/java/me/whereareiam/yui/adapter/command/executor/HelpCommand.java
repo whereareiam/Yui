@@ -1,25 +1,26 @@
 package me.whereareiam.yui.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.annotation.ComponentListener;
-import me.whereareiam.yui.annotation.command.Argument;
-import me.whereareiam.yui.annotation.command.Command;
-import me.whereareiam.yui.annotation.command.Definition;
-import me.whereareiam.yui.annotation.command.Optional;
-import me.whereareiam.yui.model.command.CommandDefinition;
-import me.whereareiam.yui.command.CommandService;
-import me.whereareiam.yui.command.Interaction;
-import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.util.translation.Translatable;
-import me.whereareiam.yui.util.translation.TranslationResolver;
-import me.whereareiam.yui.type.CommandCategory;
-import me.whereareiam.yui.util.Components;
+import me.whereareiam.yui.api.annotation.ComponentListener;
+import me.whereareiam.yui.api.annotation.command.Argument;
+import me.whereareiam.yui.api.annotation.command.Command;
+import me.whereareiam.yui.api.annotation.command.Definition;
+import me.whereareiam.yui.api.annotation.command.Optional;
+import me.whereareiam.yui.api.command.CommandService;
+import me.whereareiam.yui.api.command.CommandTexts;
+import me.whereareiam.yui.api.command.Interaction;
+import me.whereareiam.yui.api.message.Translatable;
+import me.whereareiam.yui.api.model.command.CommandDefinition;
+import me.whereareiam.yui.api.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.api.type.CommandCategory;
+import me.whereareiam.yui.api.util.Components;
+import me.whereareiam.yui.api.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.selections.SelectOption;
+import net.dv8tion.jda.api.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
-import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
-import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
-import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -85,7 +86,7 @@ public class HelpCommand {
 
 		reply.replyEmbeds(embed.build())
 				.setEphemeral(true)
-				.addActionRow(selectMenu)
+				.addComponents(ActionRow.of(selectMenu))
 				.queue();
 	}
 
@@ -105,6 +106,7 @@ public class HelpCommand {
 		// Get commands for this category, showing only primary command names (first alias)
 		for (Map.Entry<String, CommandDefinition> entry : commandService.getDefinitions().entrySet().stream()
 				.filter(e -> e.getValue().getCategory() == category)
+				.filter(e -> !e.getValue().isHide())
 				.sorted(Comparator.comparing(e -> {
 					List<String> aliases = e.getValue().getAliases();
 					return (aliases == null || aliases.isEmpty()) ? "" : aliases.getFirst();
@@ -117,12 +119,11 @@ public class HelpCommand {
 				continue;
 
 			String primaryName = aliases.getFirst();
-			String example = def.getExample();
-			String description = def.getDescription();
+			CommandTexts texts = commandService.texts(entry.getKey());
 
 			String commandName = Translatable.text(primaryName).resolve(fluctlight);
-			String exampleText = TranslationResolver.text(example).resolve(fluctlight);
-			String descriptionText = TranslationResolver.text(description).resolve(fluctlight);
+			String exampleText = Translatable.text(texts.example()).resolve(fluctlight);
+			String descriptionText = Translatable.text(texts.description()).resolve(fluctlight);
 
 			embed.addField(
 				Translatable.text("commands.help.information.specific.headFormat")

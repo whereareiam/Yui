@@ -1,3 +1,10 @@
 plugins {
-    id("yui.java-common")
+    id("module-java")
+}
+
+dependencies {
+    compileOnly(projects.yuiApi)
+
+    testImplementation(projects.yuiApi)
+    testImplementation(libs.spring.tx)
 }

@@ -2,8 +2,8 @@ package me.whereareiam.yui.common.initialization;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.LifecycleTask;
-import me.whereareiam.yui.Registry;
+import me.whereareiam.yui.api.LifecycleTask;
+import me.whereareiam.yui.api.Registry;
 import me.whereareiam.yui.common.scanner.JourneyAnnotationScanner;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;

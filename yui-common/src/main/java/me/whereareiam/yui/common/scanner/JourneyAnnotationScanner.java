@@ -1,13 +1,13 @@
 package me.whereareiam.yui.common.scanner;
 
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.annotation.journey.JourneyConfiguration;
-import me.whereareiam.yui.annotation.journey.JourneyGroup;
-import me.whereareiam.yui.annotation.journey.JourneyStep;
+import me.whereareiam.yui.api.annotation.journey.JourneyConfiguration;
+import me.whereareiam.yui.api.annotation.journey.JourneyGroup;
+import me.whereareiam.yui.api.annotation.journey.JourneyStep;
+import me.whereareiam.yui.api.journey.definition.JourneyConfigurationDefinition;
+import me.whereareiam.yui.api.journey.definition.group.JourneyGroupDefinition;
+import me.whereareiam.yui.api.journey.definition.group.JourneyStepDefinition;
 import me.whereareiam.yui.common.journey.JourneyDefinitionRegistry;
-import me.whereareiam.yui.journey.definition.JourneyConfigurationDefinition;
-import me.whereareiam.yui.journey.definition.group.JourneyGroupDefinition;
-import me.whereareiam.yui.journey.definition.group.JourneyStepDefinition;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.annotation.AnnotatedElementUtils;

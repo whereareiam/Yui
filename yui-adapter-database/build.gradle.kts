@@ -1,27 +1,22 @@
-import me.whereareiam.attache.plugin.gradle.extension.AttacheMetadataExtension
-
 plugins {
-    id("yui.java-common")
+    id("module-java")
     alias(libs.plugins.attache)
 }
 
 dependencies {
-    compileOnly(libs.spring.boot.data.jpa)
-    attache(libs.spring.boot.data.jpa)
-    attache(libs.postgres)
+    compileOnly(projects.yuiApi)
 
-    testImplementation(libs.postgres)
+    attache(libs.spring.boot.data.jpa)
+    attache(libs.bundles.database)
+
+    testImplementation(projects.yuiApi)
     testImplementation(libs.spring.boot.data.jpa)
+    testImplementation(libs.bundles.database)
     testImplementation(libs.testcontainers.junit)
     testImplementation(libs.testcontainers.postgres)
+    testImplementation(libs.testcontainers.mariadb)
 }
 
-extensions.configure<AttacheMetadataExtension>("attacheMetadata") {
-    library(libs.spring.boot.data.jpa) {
-        transitive.set(true)
-    }
-
-    library(libs.postgres) {
-        transitive.set(true)
-    }
+attache {
+    transitive.set(true)
 }

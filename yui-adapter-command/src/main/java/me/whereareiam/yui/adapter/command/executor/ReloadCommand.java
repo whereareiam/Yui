@@ -2,19 +2,20 @@ package me.whereareiam.yui.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.whereareiam.yui.Reloadable;
-import me.whereareiam.yui.annotation.ComponentListener;
-import me.whereareiam.yui.annotation.command.Command;
-import me.whereareiam.yui.annotation.command.Definition;
-import me.whereareiam.yui.Registry;
-import me.whereareiam.yui.command.Interaction;
-import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.util.translation.Translatable;
-import me.whereareiam.yui.util.Components;
+import me.whereareiam.yui.api.Registry;
+import me.whereareiam.yui.api.Reloadable;
+import me.whereareiam.yui.api.annotation.ComponentListener;
+import me.whereareiam.yui.api.annotation.command.Command;
+import me.whereareiam.yui.api.annotation.command.Definition;
+import me.whereareiam.yui.api.command.Interaction;
+import me.whereareiam.yui.api.message.Translatable;
+import me.whereareiam.yui.api.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.api.util.Components;
+import me.whereareiam.yui.api.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
-import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
@@ -51,14 +52,14 @@ public class ReloadCommand {
 		embed.setDescription(Translatable.text("commands.reload.confirmation.description").resolve(fluctlight));
 
 		// Create buttons
-		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.text("vocabulary.confirm").resolve(fluctlight));
-		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.text("vocabulary.cancel").resolve(fluctlight));
+		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.text("words.confirm").resolve(fluctlight));
+		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.text("words.cancel").resolve(fluctlight));
 
 		// Send the confirmation message with buttons
 		interaction.replyCallback()
 				.replyEmbeds(embed.build())
 				.setEphemeral(true)
-				.addActionRow(confirmButton, cancelButton)
+				.addComponents(ActionRow.of(confirmButton, cancelButton))
 				.queue();
 	}
 

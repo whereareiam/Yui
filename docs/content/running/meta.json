@@ -1,0 +1,20 @@
+{
+  "title": "Running Yui",
+  "description": "Start Yui for your server and decide how it behaves",
+  "icon": "Server",
+  "root": true,
+  "pages": [
+    "---Getting Started---",
+    "index",
+    "configuration",
+    "---Members---",
+    "permissions",
+    "texts",
+    "conversations",
+    "audit",
+    "---Plugins---",
+    "plugins",
+    "onboarding",
+    "interests"
+  ]
+}

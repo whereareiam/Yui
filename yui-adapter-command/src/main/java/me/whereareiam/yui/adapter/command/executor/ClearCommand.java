@@ -1,20 +1,21 @@
 package me.whereareiam.yui.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.annotation.ComponentListener;
-import me.whereareiam.yui.annotation.command.Argument;
-import me.whereareiam.yui.annotation.command.Command;
-import me.whereareiam.yui.annotation.command.Definition;
-import me.whereareiam.yui.fluctlight.FluctlightService;
-import me.whereareiam.yui.model.fluctlight.Fluctlight;
-import me.whereareiam.yui.command.Interaction;
-import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.util.translation.Translatable;
-import me.whereareiam.yui.util.Components;
+import me.whereareiam.yui.api.annotation.ComponentListener;
+import me.whereareiam.yui.api.annotation.command.Argument;
+import me.whereareiam.yui.api.annotation.command.Command;
+import me.whereareiam.yui.api.annotation.command.Definition;
+import me.whereareiam.yui.api.command.Interaction;
+import me.whereareiam.yui.api.fluctlight.FluctlightService;
+import me.whereareiam.yui.api.message.Translatable;
+import me.whereareiam.yui.api.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.api.util.Components;
+import me.whereareiam.yui.api.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -52,14 +53,14 @@ public class ClearCommand {
 		);
 
 		// Create buttons using the proper Components utility with embedded payload
-		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.text("vocabulary.confirm").resolve(executor), String.valueOf(target.getId()));
-		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.text("vocabulary.cancel").resolve(executor), String.valueOf(target.getId()));
+		var confirmButton = Components.button(ButtonStyle.DANGER, CONFIRM_LISTENER, Translatable.text("words.confirm").resolve(executor), String.valueOf(target.getId()));
+		var cancelButton = Components.button(ButtonStyle.SECONDARY, CANCEL_LISTENER, Translatable.text("words.cancel").resolve(executor), String.valueOf(target.getId()));
 
 		// Send the confirmation message with buttons
 		interaction.replyCallback()
 				.replyEmbeds(embed.build())
 				.setEphemeral(true)
-				.addActionRow(confirmButton.getButton(), cancelButton.getButton())
+				.addComponents(ActionRow.of(confirmButton.getButton(), cancelButton.getButton()))
 				.queue();
 	}
 
@@ -81,7 +82,7 @@ public class ClearCommand {
 
 		long targetUserId = Long.parseLong(payload);
 
-		var result = fluctlightService.clear(targetUserId);
+		var result = fluctlightService.get(targetUserId).map(fluctlightService::clear);
 
 		if (result.isPresent()) {
 			Fluctlight target = result.get();

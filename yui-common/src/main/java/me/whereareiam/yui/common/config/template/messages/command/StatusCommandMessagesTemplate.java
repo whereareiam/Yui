@@ -1,13 +1,13 @@
 package me.whereareiam.yui.common.config.template.messages.command;
 
-import me.whereareiam.configura.TemplateProvider;
-import me.whereareiam.yui.model.config.messages.command.StatusCommandMessages;
+import me.whereareiam.configura.merge.defaults.DefaultsProvider;
+import me.whereareiam.yui.api.model.config.messages.command.StatusCommandMessages;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class StatusCommandMessagesTemplate implements TemplateProvider<StatusCommandMessages> {
+public class StatusCommandMessagesTemplate implements DefaultsProvider<StatusCommandMessages> {
 	@Override
 	public StatusCommandMessages supply(StatusCommandMessages status) {
 		status.setDescription("Show Yui runtime environment and debug information");
@@ -28,7 +28,8 @@ public class StatusCommandMessagesTemplate implements TemplateProvider<StatusCom
 		StatusCommandMessages.Plugins.Status pluginStatus = new StatusCommandMessages.Plugins.Status();
 		pluginStatus.setEnabled("ENABLED");
 		pluginStatus.setDisabled("DISABLED");
-		pluginStatus.setLoadable("LOADABLE");
+		pluginStatus.setWaiting("WAITING");
+		pluginStatus.setFailed("FAILED");
 		plugins.setStatus(pluginStatus);
 		overview.setPlugins(plugins);
 
@@ -37,40 +38,40 @@ public class StatusCommandMessagesTemplate implements TemplateProvider<StatusCom
 		StatusCommandMessages.Fields.Memory memory = new StatusCommandMessages.Fields.Memory();
 		memory.setTitle("Memory");
 		memory.setValue(List.of(
-				"Used: <p:used> / <p:allocated> (<p:percent>%)",
-				"Max: <p:max>"
+				"Used: {used} / {allocated} ({percent}%)",
+				"Max: {max}"
 		));
 		fields.setMemory(memory);
 
 		StatusCommandMessages.Fields.Cpu cpu = new StatusCommandMessages.Fields.Cpu();
 		cpu.setTitle("CPU");
 		cpu.setValue(List.of(
-				"Process: <p:process>",
-				"Cores: <p:cores>"
+				"Process: {process}",
+				"Cores: {cores}"
 		));
 		fields.setCpu(cpu);
 
 		StatusCommandMessages.Fields.Java java = new StatusCommandMessages.Fields.Java();
 		java.setTitle("Java");
 		java.setValue(List.of(
-				"Runtime: <p:runtime>",
-				"Vendor: <p:vendor>",
-				"VM: <p:vm>"
+				"Runtime: {runtime}",
+				"Vendor: {vendor}",
+				"VM: {vm}"
 		));
 		fields.setJava(java);
 
 		StatusCommandMessages.Fields.Os os = new StatusCommandMessages.Fields.Os();
 		os.setTitle("OS");
 		os.setValue(List.of(
-				"System: <p:system>"
+				"System: {system}"
 		));
 		fields.setOs(os);
 
 		StatusCommandMessages.Fields.Locale locale = new StatusCommandMessages.Fields.Locale();
 		locale.setTitle("Locale");
 		locale.setValue(List.of(
-				"Default: <p:default>",
-				"Available: <p:available>"
+				"Default: {default}",
+				"Available: {available}"
 		));
 		fields.setLocale(locale);
 

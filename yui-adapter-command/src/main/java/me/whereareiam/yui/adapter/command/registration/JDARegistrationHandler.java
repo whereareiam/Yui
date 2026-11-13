@@ -3,7 +3,7 @@ package me.whereareiam.yui.adapter.command.registration;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.whereareiam.yui.adapter.command.YuiCommandManager;
-import me.whereareiam.yui.command.Interaction;
+import me.whereareiam.yui.api.command.Interaction;
 import net.dv8tion.jda.api.JDA;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.component.CommandComponent;
@@ -11,10 +11,10 @@ import org.incendo.cloud.discord.slash.DiscordSetting;
 import org.incendo.cloud.internal.CommandRegistrationHandler;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.RejectedExecutionException;
 
 /**
  * Command registration handler that integrates Cloud's root command deletion

@@ -1,20 +1,18 @@
 package me.whereareiam.yui.common.config.provider;
 
-import me.whereareiam.configura.Config;
+import me.whereareiam.yui.api.model.config.settings.Settings;
 import me.whereareiam.yui.common.config.template.SettingsTemplate;
-import me.whereareiam.yui.model.config.settings.Settings;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class SettingsProvider extends DefaultConfigProvider<Settings> {
-	@Override
-	protected Settings load() {
-		return Config.update(getBasePath().resolve("settings"), Settings.class);
-	}
+	@Autowired
+	private SettingsTemplate template;
 
 	@Override
-	protected void registerTemplate() {
-		Config.registerTemplate(SettingsTemplate.class);
+	protected Settings load() {
+		return read("settings", template.supply(new Settings()));
 	}
 
 	@Override

@@ -1,8 +1,8 @@
 package me.whereareiam.yui.adapter.command.mapper;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.fluctlight.FluctlightService;
-import me.whereareiam.yui.command.Interaction;
+import me.whereareiam.yui.api.command.Interaction;
+import me.whereareiam.yui.api.fluctlight.FluctlightService;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.incendo.cloud.discord.jda6.JDAInteraction;
 import org.springframework.stereotype.Component;
@@ -21,7 +21,7 @@ public class FluctlightInteractionMapper implements JDAInteraction.InteractionMa
 	@Override
 	public @NonNull Interaction map(@NonNull JDAInteraction cloudInteraction) {
 		long userId = cloudInteraction.user().getIdLong();
-		var fluctlight = fluctlightService.getOrCreate(userId);
+		var fluctlight = fluctlightService.get(userId).orElseThrow();
 
 		return new Interaction(
 				fluctlight,

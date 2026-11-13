@@ -1,9 +1,9 @@
 package me.whereareiam.yui.adapter.command.parsing.definition;
 
-import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
 import me.whereareiam.yui.adapter.command.parsing.annotation.YuiAnnotationParser;
-import me.whereareiam.yui.model.command.CommandDefinition;
+import me.whereareiam.yui.api.command.CommandTexts;
+import me.whereareiam.yui.api.model.command.CommandDefinition;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.component.CommandComponent;
@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import io.leangen.geantyref.TypeToken;
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * Applies overrides from {@link CommandDefinition} to Cloud commands.
@@ -24,9 +25,25 @@ import java.util.*;
  *
  * @param <S> sender type
  */
-@RequiredArgsConstructor
 public final class CommandDefinitionParser<S> {
     private final CommandManager<S> commandManager;
+    private final Function<String, CommandTexts> texts;
+
+    /**
+     * @param commandManager the manager commands are built with
+     * @param texts          the keys of a command's texts, by its id
+     */
+    public CommandDefinitionParser(@NotNull CommandManager<S> commandManager, @NotNull Function<String, CommandTexts> texts) {
+        this.commandManager = commandManager;
+        this.texts = texts;
+    }
+
+    /**
+     * A parser for Yui's own commands, whose texts are under {@code commands.}.
+     */
+    public CommandDefinitionParser(@NotNull CommandManager<S> commandManager) {
+        this(commandManager, id -> CommandTexts.of(CommandTexts.CORE, id));
+    }
 
     public @NotNull CommandManager<S> getCommandManager() {
         return commandManager;
@@ -64,12 +81,13 @@ public final class CommandDefinitionParser<S> {
 
         // Build commands for each alias group
         List<Command.Builder<S>> builders = new ArrayList<>();
+        CommandTexts described = texts.apply(definitionId);
         builders.addAll(buildCommandsForAliases(
-                definition, definitionId, parsedCommand, variableComponents, usageTokens,
+                described, definitionId, parsedCommand, variableComponents, usageTokens,
                 structure.singleWord(), rootCommand
         ));
         builders.addAll(buildCommandsForAliases(
-                definition, definitionId, parsedCommand, variableComponents, usageTokens,
+                described, definitionId, parsedCommand, variableComponents, usageTokens,
                 structure.multiWord(), rootCommand
         ));
 
@@ -82,7 +100,7 @@ public final class CommandDefinitionParser<S> {
      * For multi-word aliases, groups them by prefix to create subcommands.
      */
     private List<Command.Builder<S>> buildCommandsForAliases(
-            CommandDefinition definition,
+            CommandTexts definition,
             String definitionId,
             Command<S> parsedCommand,
             Map<String, CommandComponent<S>> variableComponents,
@@ -135,7 +153,7 @@ public final class CommandDefinitionParser<S> {
      */
     private Command.Builder<S> buildPrefixPath(
             List<String> prefixParts,
-            CommandDefinition definition,
+            CommandTexts definition,
             @Nullable String rootCommand
     ) {
         Description componentDescription = getComponentDescription(definition);
@@ -193,7 +211,7 @@ public final class CommandDefinitionParser<S> {
      */
     private Command.Builder<S> createCommandBuilder(
             String alias,
-            CommandDefinition definition,
+            CommandTexts definition,
             @Nullable String rootCommand
     ) {
         List<String> aliasParts = splitAlias(alias);
@@ -228,7 +246,7 @@ public final class CommandDefinitionParser<S> {
             Command.Builder<S> builder,
             List<VariableToken> usageTokens,
             Map<String, CommandComponent<S>> variableComponents,
-            CommandDefinition definition
+            CommandTexts definition
     ) {
         for (VariableToken token : usageTokens) {
             CommandComponent<S> component = variableComponents.get(token.name());
@@ -250,14 +268,12 @@ public final class CommandDefinitionParser<S> {
      */
     private Command.Builder<S> applyOverrides(
             Command.Builder<S> builder,
-            CommandDefinition definition,
+            CommandTexts definition,
             String definitionId
     ) {
         builder = builder.meta(YuiCommandMetaKeys.DEFINITION, definitionId);
 
-        String description = definition.getDescription();
-        if (description != null)
-            builder = builder.commandDescription(Description.of(description));
+        builder = builder.commandDescription(Description.of(definition.description()));
 
         return builder;
     }
@@ -268,7 +284,7 @@ public final class CommandDefinitionParser<S> {
     @SuppressWarnings({"rawtypes", "unchecked"})
     private CommandComponent.Builder<?, ?> createComponentBuilder(
             CommandComponent<S> component,
-            CommandDefinition definition
+            CommandTexts definition
     ) {
         ArgumentParser rawParser = component.parser();
         TypeToken rawValueType = component.valueType();
@@ -287,16 +303,8 @@ public final class CommandDefinitionParser<S> {
      * Gets the variable description from CommandDefinition.
      * If not specified in the variables map, uses the variable name as description.
      */
-    private Description getVariableDescription(String variableName, CommandDefinition definition) {
-        Map<String, String> variables = definition.getVariables();
-        if (variables != null && variables.containsKey(variableName)) {
-            String description = variables.get(variableName);
-            if (description != null && !description.isBlank())
-                return Description.of(description);
-        }
-
-        // Fallback to variable name if not specified in map
-        return Description.of(variableName);
+    private Description getVariableDescription(String variableName, CommandTexts definition) {
+        return Description.of(definition.variable(variableName));
     }
 
     /**
@@ -341,12 +349,8 @@ public final class CommandDefinitionParser<S> {
     /**
      * Gets the component description from CommandDefinition.
      */
-    private Description getComponentDescription(CommandDefinition definition) {
-        String description = definition.getDescription();
-        if (description != null && !description.isBlank())
-            return Description.of(description);
-
-        return Description.empty();
+    private Description getComponentDescription(CommandTexts definition) {
+        return Description.of(definition.description());
     }
 
     /**

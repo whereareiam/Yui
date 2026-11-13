@@ -1,27 +1,28 @@
 package me.whereareiam.yui.adapter.command.executor;
 
 import lombok.AllArgsConstructor;
-import me.whereareiam.yui.annotation.ComponentListener;
-import me.whereareiam.yui.annotation.command.Command;
-import me.whereareiam.yui.annotation.command.Definition;
-import me.whereareiam.yui.command.Interaction;
-import me.whereareiam.yui.model.PayloadButton;
-import me.whereareiam.yui.model.config.languages.LanguageEntry;
-import me.whereareiam.yui.model.config.languages.Languages;
-import me.whereareiam.yui.model.fluctlight.Fluctlight;
-import me.whereareiam.yui.persistence.LanguagePersistence;
-import me.whereareiam.yui.util.style.StyleKit;
-import me.whereareiam.yui.util.translation.Translatable;
-import me.whereareiam.yui.util.Components;
-import net.dv8tion.jda.api.entities.emoji.Emoji;
+import me.whereareiam.yui.api.annotation.ComponentListener;
+import me.whereareiam.yui.api.annotation.command.Command;
+import me.whereareiam.yui.api.annotation.command.Definition;
+import me.whereareiam.yui.api.command.Interaction;
+import me.whereareiam.yui.api.fluctlight.FluctlightService;
+import me.whereareiam.yui.api.message.Translatable;
+import me.whereareiam.yui.api.model.PayloadButton;
+import me.whereareiam.yui.api.model.config.languages.Language;
+import me.whereareiam.yui.api.model.config.languages.Languages;
+import me.whereareiam.yui.api.model.fluctlight.Fluctlight;
+import me.whereareiam.yui.api.persistence.LanguagePersistence;
+import me.whereareiam.yui.api.util.Components;
+import me.whereareiam.yui.api.util.style.StyleKit;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
+import net.dv8tion.jda.api.components.buttons.ButtonStyle;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import net.dv8tion.jda.api.interactions.callbacks.IReplyCallback;
-import net.dv8tion.jda.api.interactions.components.ActionRow;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +31,7 @@ import java.util.*;
 @Component
 @AllArgsConstructor
 public class LanguageCommand {
+	private final FluctlightService fluctlightService;
 	private final LanguagePersistence languagePersistence;
 	private final ObjectProvider<Languages> languagesProvider;
 
@@ -55,16 +57,16 @@ public class LanguageCommand {
 
 		DiscordLocale selectedLanguage = DiscordLocale.from(payload);
 
-		// Remove all additional languages before changing primary so we don't drop the new primary role
-		DiscordLocale[] additionals = fluctlight.getAdditionalLanguages();
-		if (additionals != null)
-			for (DiscordLocale lang : additionals)
-				if (lang != null)
-					fluctlight.removeAdditionalLanguage(lang);
+		// Picking a primary language starts the choice over. The new primary leaves the additional languages with the
+		// change itself, so its role is never taken away in between.
+		Fluctlight changed = fluctlight;
+		for (DiscordLocale language : fluctlight.getAdditionalLanguages())
+			if (language != selectedLanguage)
+				changed = fluctlightService.removeAdditionalLanguage(changed, language);
 
-		fluctlight.setPrimaryLanguage(selectedLanguage);
+		changed = fluctlightService.changePrimaryLanguage(changed, selectedLanguage);
 
-		showPrimaryLanguageSelection(event, fluctlight, true);
+		showPrimaryLanguageSelection(event, changed, true);
 	}
 
 	@ComponentListener(CONTINUE_LISTENER)
@@ -81,9 +83,9 @@ public class LanguageCommand {
 		}
 
 		DiscordLocale selectedLanguage = DiscordLocale.from(payload);
-		fluctlight.addAdditionalLanguage(selectedLanguage);
+		Fluctlight changed = fluctlightService.addAdditionalLanguage(fluctlight, selectedLanguage);
 
-		showAdditionalLanguageSelection(event, fluctlight);
+		showAdditionalLanguageSelection(event, changed);
 	}
 
 	@ComponentListener(CONFIRM_LISTENER)
@@ -110,8 +112,7 @@ public class LanguageCommand {
 
 		// Exclude ONLY the current primary (ignore additional languages here)
 		Set<DiscordLocale> excluded = new HashSet<>();
-		if (fluctlight.getPrimaryLanguage() != null)
-			excluded.add(fluctlight.getPrimaryLanguage());
+		excluded.add(fluctlight.getPrimaryLanguage());
 
 		List<Button> languageButtons = buildLanguageButtons(
 				languagePersistence.getAvailableLanguages(),
@@ -125,18 +126,18 @@ public class LanguageCommand {
 			footer.add(Components.button(
 					ButtonStyle.SUCCESS,
 					CONTINUE_LISTENER,
-					Translatable.text("vocabulary.proceed").resolve(fluctlight)
+					Translatable.text("words.proceed").resolve(fluctlight)
 			));
 			footer.add(Components.button(
 					ButtonStyle.SECONDARY,
 					CONFIRM_LISTENER,
-					Translatable.text("vocabulary.confirm").resolve(fluctlight)
+					Translatable.text("words.confirm").resolve(fluctlight)
 			));
 		} else {
 			footer.add(Components.button(
 					ButtonStyle.SECONDARY,
 					CANCEL_LISTENER,
-					Translatable.text("vocabulary.cancel").resolve(fluctlight)
+					Translatable.text("words.cancel").resolve(fluctlight)
 			));
 		}
 
@@ -150,14 +151,11 @@ public class LanguageCommand {
 				.setTitle(Translatable.text("commands.language.additional.title").resolve(fluctlight))
 				.setDescription(Translatable.text("commands.language.additional.description").resolve(fluctlight));
 
-		Set<DiscordLocale> currentAdditionals = fluctlight.getAdditionalLanguages() != null
-				? new HashSet<>(Arrays.asList(fluctlight.getAdditionalLanguages()))
-				: new HashSet<>();
+		Set<DiscordLocale> currentAdditionals = fluctlight.getAdditionalLanguages();
 
 		// Exclude primary + already-selected additionals
 		Set<DiscordLocale> excluded = new HashSet<>(currentAdditionals);
-		if (fluctlight.getPrimaryLanguage() != null)
-			excluded.add(fluctlight.getPrimaryLanguage());
+		excluded.add(fluctlight.getPrimaryLanguage());
 
 		List<Button> languageButtons = buildLanguageButtons(
 				languagePersistence.getAvailableLanguages(),
@@ -171,13 +169,13 @@ public class LanguageCommand {
 			footer.add(Components.button(
 					ButtonStyle.SECONDARY,
 					CONFIRM_LISTENER,
-					Translatable.text("vocabulary.confirm").resolve(fluctlight)
+					Translatable.text("words.confirm").resolve(fluctlight)
 			));
 		} else {
 			footer.add(Components.button(
 					ButtonStyle.SECONDARY,
 					CANCEL_LISTENER,
-					Translatable.text("vocabulary.cancel").resolve(fluctlight)
+					Translatable.text("words.cancel").resolve(fluctlight)
 			));
 		}
 
@@ -189,20 +187,19 @@ public class LanguageCommand {
 	private List<Button> buildLanguageButtons(Collection<DiscordLocale> all, Set<DiscordLocale> excluded, String listenerId) {
 		if (all == null || all.isEmpty()) return Collections.emptyList();
 
-		Map<DiscordLocale, LanguageEntry> languageConfig = languagesProvider.getObject().toLocaleMap();
+		Languages languages = languagesProvider.getObject();
 
 		return all.stream()
 				.filter(Objects::nonNull)
 				.filter(lang -> excluded == null || !excluded.contains(lang))
-				.map(lang -> buildLanguageButton(lang, listenerId, languageConfig))
+				.map(lang -> buildLanguageButton(lang, listenerId, languages))
 				.map(PayloadButton::getButton)
 				.toList();
 	}
 
-	private PayloadButton buildLanguageButton(DiscordLocale lang, String listenerId, Map<DiscordLocale, LanguageEntry> languageConfig) {
-		LanguageEntry entry = languageConfig.get(lang);
-		String emoji = entry != null ? entry.getEmoji() : null;
-		String displayName = entry != null ? entry.getDisplayName() : null;
+	private PayloadButton buildLanguageButton(DiscordLocale lang, String listenerId, Languages languages) {
+		String emoji = languages.get(lang).map(Language::getEmoji).orElse(null);
+		String displayName = name(lang);
 
 		if (emoji != null && !emoji.isBlank()) {
 			try {
@@ -292,5 +289,13 @@ public class LanguageCommand {
 				.setEphemeral(true)
 				.setComponents(components)
 				.queue();
+	}
+
+	// A language's name is a text of messages/<locale>/languages.yml, in Yui's default locale; without one, Discord's own.
+	private static String name(DiscordLocale language) {
+		String key = "languages." + language.getLocale();
+		String name = Translatable.text(key).resolveDefault();
+
+		return name.equals(key) ? language.getNativeName() : name;
 	}
 }

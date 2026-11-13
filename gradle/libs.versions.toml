@@ -1,52 +1,71 @@
 [versions]
 
-# plugins
-buildconfig = "5.7.1"
+# language
+java = "25"
 
-# general
-lombok = "1.18.38"
-annotations = "26.0.2-1"
-jda = "5.6.1"
-postgres = "42.7.7"
-configura = "dev-3526c23"
-semantica = "dev-ffdb76d"
-attache = "dev-4c06bae"
-
-# testing
-junit-platform = "6.0.1"
-testcontainers = "2.0.3"
-
-# spring
-spring = "4.0.1"
+# build
+toolkit = "0.3.0"
+freefair = "9.8.3"
+buildconfig = "6.1.2"
 spring-dependency-management = "1.1.7"
 
+# general
+lombok = "1.18.48"
+annotations = "26.1.0"
+jda = "6.7.0"
+postgres = "42.7.14"
+mariadb = "4.0.0"
+h2 = "2.5.252"
+flyway = "13.12.1"
+configura = "2.1.0"
+conditia = "dev-3090ccb"
+semantica = "dev-0d7e717"
+attache = "dev-940ee5b"
+chassis = "dev-379d949"
+
+# spring
+spring = "4.1.2"
+spring-framework = "7.0.10"
+
 # cloud
-cloud = "2.0.0"
+cloud = "2.1.0"
 cloud-discord = "1.0.0-beta.4"
 cloud-cooldown = "1.0.0-rc.1"
 
+# testing
+junit = "6.1.3"
+testcontainers = "2.0.5"
+
 [libraries]
 
+# build
+toolkit-architecture = { group = "me.whereareiam.toolkit", name = "architecture", version.ref = "toolkit" }
+toolkit-publish-maven = { group = "me.whereareiam.toolkit", name = "publish-maven", version.ref = "toolkit" }
+lombok-plugin = { group = "io.freefair.gradle", name = "lombok-plugin", version.ref = "freefair" }
+
 # general
-lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 annotations = { group = "org.jetbrains", name = "annotations", version.ref = "annotations" }
 jda = { group = "net.dv8tion", name = "JDA", version.ref = "jda" }
 postgres = { group = "org.postgresql", name = "postgresql", version.ref = "postgres" }
+mariadb = { group = "org.mariadb.jdbc", name = "mariadb-java-client", version.ref = "mariadb" }
+h2 = { group = "com.h2database", name = "h2", version.ref = "h2" }
+flyway-core = { group = "org.flywaydb", name = "flyway-core", version.ref = "flyway" }
+flyway-postgresql = { group = "org.flywaydb", name = "flyway-database-postgresql", version.ref = "flyway" }
+flyway-mariadb = { group = "org.flywaydb", name = "flyway-mysql", version.ref = "flyway" }
 configura = { group = "me.whereareiam", name = "configura", version.ref = "configura" }
-semantica = { group = "me.whereareiam", name = "semantica", version.ref = "semantica" }
-spring-boot-gradle-plugin = { group = "org.springframework.boot", name = "spring-boot-gradle-plugin", version.ref = "spring" }
-spring-dependency-management-gradle-plugin = { group = "io.spring.gradle", name = "dependency-management-plugin", version.ref = "spring-dependency-management" }
-
-# testing
-junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junit-platform" }
-testcontainers-junit = { group = "org.testcontainers", name = "testcontainers-junit-jupiter", version.ref = "testcontainers" }
-testcontainers-postgres = { group = "org.testcontainers", name = "testcontainers-postgresql", version.ref = "testcontainers" }
+conditia-api = { group = "me.whereareiam.conditia", name = "conditia-api", version.ref = "conditia" }
+conditia-common = { group = "me.whereareiam.conditia", name = "conditia-common", version.ref = "conditia" }
+conditia-configura = { group = "me.whereareiam.conditia", name = "conditia-adapter-configura", version.ref = "conditia" }
+semantica-api = { group = "me.whereareiam.semantica", name = "semantica-api", version.ref = "semantica" }
+semantica-common = { group = "me.whereareiam.semantica", name = "semantica-common", version.ref = "semantica" }
+semantica-icu = { group = "me.whereareiam.semantica", name = "syntax-icu", version.ref = "semantica" }
+semantica-file = { group = "me.whereareiam.semantica", name = "source-file", version.ref = "semantica" }
 
 # spring
 spring-boot = { group = "org.springframework.boot", name = "spring-boot-starter", version.ref = "spring" }
 spring-boot-test = { group = "org.springframework.boot", name = "spring-boot-starter-test", version.ref = "spring" }
 spring-boot-data-jpa = { group = "org.springframework.boot", name = "spring-boot-starter-data-jpa", version.ref = "spring" }
-spring-boot-webflux = { group = "org.springframework.boot", name = "spring-boot-starter-webflux", version.ref = "spring" }
+spring-tx = { group = "org.springframework", name = "spring-tx", version.ref = "spring-framework" }
 
 # cloud
 cloud-core = { group = "org.incendo", name = "cloud-core", version.ref = "cloud" }
@@ -57,13 +76,39 @@ cloud-discord = { group = "org.incendo", name = "cloud-jda6", version.ref = "clo
 # attache
 attache-spring = { group = "me.whereareiam", name = "attache-spring", version.ref = "attache" }
 attache-common = { group = "me.whereareiam", name = "attache-common", version.ref = "attache" }
+attache-launcher = { group = "me.whereareiam", name = "attache-launcher", version.ref = "attache" }
 
+# chassis
+chassis-api = { group = "me.whereareiam.chassis", name = "chassis-api", version.ref = "chassis" }
+chassis-common = { group = "me.whereareiam.chassis", name = "chassis-common", version.ref = "chassis" }
+chassis-spring = { group = "me.whereareiam.chassis", name = "chassis-adapter-spring", version.ref = "chassis" }
+chassis-attache = { group = "me.whereareiam.chassis", name = "chassis-adapter-attache", version.ref = "chassis" }
+chassis-testing = { group = "me.whereareiam.chassis", name = "chassis-testing", version.ref = "chassis" }
+
+# testing
+junit-platform = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junit" }
+testcontainers-junit = { group = "org.testcontainers", name = "testcontainers-junit-jupiter", version.ref = "testcontainers" }
+testcontainers-postgres = { group = "org.testcontainers", name = "testcontainers-postgresql", version.ref = "testcontainers" }
+testcontainers-mariadb = { group = "org.testcontainers", name = "testcontainers-mariadb", version.ref = "testcontainers" }
 
 [plugins]
+toolkit-architecture = { id = "me.whereareiam.toolkit.architecture", version.ref = "toolkit" }
+toolkit-versioning = { id = "me.whereareiam.toolkit.versioning", version.ref = "toolkit" }
 buildconfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildconfig" }
 attache = { id = "me.whereareiam.attache", version.ref = "attache" }
+spring-boot = { id = "org.springframework.boot", version.ref = "spring" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
 
 [bundles]
+
+database = [
+    "h2",
+    "postgres",
+    "mariadb",
+    "flyway-core",
+    "flyway-postgresql",
+    "flyway-mariadb"
+]
 
 cloud = [
     "cloud-core",

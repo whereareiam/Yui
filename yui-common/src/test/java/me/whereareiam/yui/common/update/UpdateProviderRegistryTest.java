@@ -1,9 +1,9 @@
 package me.whereareiam.yui.common.update;
 
-import me.whereareiam.yui.event.update.UpdateProviderRegisteredEvent;
-import me.whereareiam.yui.event.update.UpdateProviderUnregisteredEvent;
-import me.whereareiam.yui.model.update.UpdateSource;
-import me.whereareiam.yui.update.UpdateProvider;
+import me.whereareiam.yui.api.event.update.UpdateProviderRegisteredEvent;
+import me.whereareiam.yui.api.event.update.UpdateProviderUnregisteredEvent;
+import me.whereareiam.yui.api.model.update.UpdateSource;
+import me.whereareiam.yui.api.update.UpdateProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationEventPublisher;

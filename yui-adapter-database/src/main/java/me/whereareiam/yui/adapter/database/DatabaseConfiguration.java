@@ -1,64 +1,70 @@
 package me.whereareiam.yui.adapter.database;
 
 import com.zaxxer.hikari.HikariDataSource;
-import me.whereareiam.yui.model.config.settings.Settings;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration;
-import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
-import org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration;
+import me.whereareiam.yui.api.model.config.persistence.EmbeddedPersistence;
+import me.whereareiam.yui.api.model.config.persistence.Persistence;
+import me.whereareiam.yui.api.model.config.persistence.Pool;
+import me.whereareiam.yui.api.model.config.persistence.ServerPersistence;
+import me.whereareiam.yui.api.type.DatabaseType;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 
+import java.nio.file.Path;
 import javax.sql.DataSource;
 
+/**
+ * Connects to the database {@code persistence.yml} chooses. {@link PersistenceConfiguration} migrates and maps it.
+ */
 @Configuration
-@EnableJpaRepositories
-@EnableAutoConfiguration(exclude = {
-		DataSourceAutoConfiguration.class,
-		HibernateJpaAutoConfiguration.class,
-		DataSourceTransactionManagerAutoConfiguration.class
-})
 public class DatabaseConfiguration {
 	@Bean
-	public DataSource dataSource(Settings settings) {
+	public DatabaseType databaseType(Persistence persistence) {
+		return persistence.getType();
+	}
+
+	@Bean(destroyMethod = "close")
+	public DataSource dataSource(Persistence persistence, @Qualifier("dataPath") Path dataPath) {
+		Pool pool = persistence.getPool();
 		HikariDataSource dataSource = new HikariDataSource();
+		dataSource.setJdbcUrl(jdbcUrl(persistence, dataPath));
+		dataSource.setMinimumIdle(pool.getSize().getMin());
+		dataSource.setMaximumPoolSize(pool.getSize().getMax());
+		dataSource.setConnectionTimeout(pool.getTimeouts().getConnect().getSeconds() * 1000);
+		dataSource.setIdleTimeout(pool.getTimeouts().getIdle().getSeconds() * 1000);
+		dataSource.setMaxLifetime(pool.getTimeouts().getLifetime().getSeconds() * 1000);
 
-		String url = "jdbc:postgresql://" + settings.getDatabase().getHostname() + ":" +
-				settings.getDatabase().getPort() + "/" + settings.getDatabase().getDatabase();
-
-		dataSource.setJdbcUrl(url);
-		dataSource.setUsername(settings.getDatabase().getUsername());
-		dataSource.setPassword(settings.getDatabase().getPassword());
-
-		dataSource.setMaximumPoolSize(10);
-		dataSource.setMinimumIdle(2);
+		switch (persistence) {
+			// An H2 file belongs to Yui alone; its user is fixed when the file is created.
+			case EmbeddedPersistence ignored -> {
+				dataSource.setUsername("sa");
+				dataSource.setPassword("");
+			}
+			case ServerPersistence server -> {
+				dataSource.setUsername(server.getUsername());
+				dataSource.setPassword(server.getPassword());
+			}
+		}
 
 		return dataSource;
 	}
 
-	@Bean
-	public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
-		LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-		em.setDataSource(dataSource);
-		em.setPackagesToScan(getClass().getPackage().getName() + ".entity");
-
-		HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-		vendorAdapter.setGenerateDdl(true);
-
-		em.setJpaVendorAdapter(vendorAdapter);
-
-		return em;
+	static @NotNull String jdbcUrl(@NotNull Persistence persistence, @NotNull Path dataPath) {
+		return switch (persistence) {
+			case EmbeddedPersistence embedded -> "jdbc:h2:file:" + dataPath.resolve(embedded.getFile()).toAbsolutePath();
+			case ServerPersistence server -> "jdbc:" + scheme(server.getType()) + "://" + server.getHost() + ":"
+					+ port(server) + "/" + server.getDatabase();
+		};
 	}
 
-	@Bean(name = "transactionManager")
-	public JpaTransactionManager transactionManager(LocalContainerEntityManagerFactoryBean entityManagerFactory) {
-		JpaTransactionManager txManager = new JpaTransactionManager();
-		txManager.setEntityManagerFactory(entityManagerFactory.getObject());
+	private static String scheme(DatabaseType type) {
+		return type == DatabaseType.MARIADB ? "mariadb" : "postgresql";
+	}
 
-		return txManager;
+	private static int port(ServerPersistence server) {
+		if (server.getPort() != null) return server.getPort();
+
+		return server.getType() == DatabaseType.MARIADB ? 3306 : 5432;
 	}
 }

@@ -1,7 +1,7 @@
 package me.whereareiam.yui.adapter.command.parsing.annotation;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.annotation.command.Command;
+import me.whereareiam.yui.api.annotation.command.Command;
 import org.incendo.cloud.annotations.AnnotationParser;
 import org.incendo.cloud.annotations.descriptor.CommandDescriptor;
 import org.incendo.cloud.annotations.descriptor.ImmutableCommandDescriptor;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Custom command extractor that recognizes Yui's {@link me.whereareiam.yui.annotation.command.Command}
+ * Custom command extractor that recognizes Yui's {@link me.whereareiam.yui.api.annotation.command.Command}
  * annotation instead of Cloud's annotation.
  */
 @RequiredArgsConstructor

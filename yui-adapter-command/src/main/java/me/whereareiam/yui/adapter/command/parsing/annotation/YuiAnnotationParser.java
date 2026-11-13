@@ -2,7 +2,7 @@ package me.whereareiam.yui.adapter.command.parsing.annotation;
 
 import lombok.RequiredArgsConstructor;
 import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
-import me.whereareiam.yui.annotation.command.Definition;
+import me.whereareiam.yui.api.annotation.command.Definition;
 import org.incendo.cloud.Command;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.annotations.AnnotationParser;
@@ -14,7 +14,7 @@ import java.util.Collection;
 
 /**
  * Wrapper around Cloud's AnnotationParser that recognizes Yui's custom annotations
- * ({@link me.whereareiam.yui.annotation.command.Command}, {@link me.whereareiam.yui.annotation.command.Argument})
+ * ({@link me.whereareiam.yui.api.annotation.command.Command}, {@link me.whereareiam.yui.api.annotation.command.Argument})
  * instead of Cloud's annotations.
  * <p>
  * This allows Yui to use Cloud's annotation parser without exposing cloud-annotations

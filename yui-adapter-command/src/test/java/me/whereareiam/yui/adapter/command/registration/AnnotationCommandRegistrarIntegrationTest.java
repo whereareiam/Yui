@@ -1,12 +1,14 @@
 package me.whereareiam.yui.adapter.command.registration;
 
+import me.whereareiam.conditia.model.Requirements;
 import me.whereareiam.yui.adapter.command.manager.YuiCommandMetaKeys;
 import me.whereareiam.yui.adapter.command.parsing.definition.CommandDefinitionParser;
-import me.whereareiam.yui.annotation.command.Command;
-import me.whereareiam.yui.annotation.command.Definition;
-import me.whereareiam.yui.model.command.CommandCooldown;
-import me.whereareiam.yui.model.command.CommandDefinition;
-import me.whereareiam.yui.type.CommandCategory;
+import me.whereareiam.yui.api.annotation.command.Command;
+import me.whereareiam.yui.api.annotation.command.Definition;
+import me.whereareiam.yui.api.model.command.CommandCooldown;
+import me.whereareiam.yui.api.model.command.CommandDefinition;
+import me.whereareiam.yui.api.model.type.Duration;
+import me.whereareiam.yui.api.type.CommandCategory;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.component.CommandComponent;
 import org.incendo.cloud.context.CommandContext;
@@ -85,13 +87,11 @@ class AnnotationCommandRegistrarIntegrationTest {
 		CommandDefinition disabled = new CommandDefinition(
 				false,
 				java.util.List.of("offcmd"),
-				null,
-				null,
 				"",
-				Map.of(),
 				CommandCategory.NONE,
-				new CommandCooldown(false, 0, ""),
-				null
+				new CommandCooldown(false, Duration.ofSeconds(0), null),
+				Requirements.none(),
+				false
 		);
 
 		Map<String, CommandDefinition> defs = new HashMap<>();
@@ -117,13 +117,11 @@ class AnnotationCommandRegistrarIntegrationTest {
 		CommandDefinition enabled = new CommandDefinition(
 				true,
 				java.util.List.of("reload"),
-				null,
-				null,
 				"{command} reload",
-				Map.of(),
 				CommandCategory.NONE,
-				new CommandCooldown(false, 0, ""),
-				null
+				new CommandCooldown(false, Duration.ofSeconds(0), null),
+				Requirements.none(),
+				false
 		);
 
 		Map<String, CommandDefinition> defs = Map.of("reload-def", enabled);

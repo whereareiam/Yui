@@ -1,13 +1,13 @@
 package me.whereareiam.yui.adapter.command.registration;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.annotation.command.Command;
+import me.whereareiam.yui.api.annotation.command.Command;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

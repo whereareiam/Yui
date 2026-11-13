@@ -1,181 +1,99 @@
 package me.whereareiam.yui.common.audit;
 
-import me.whereareiam.configura.type.MultiValue;
-import me.whereareiam.yui.model.config.settings.DiscordSettings;
-import me.whereareiam.yui.model.config.settings.Settings;
+import me.whereareiam.yui.api.model.config.audit.AuditRoute;
+import me.whereareiam.yui.api.model.config.audit.AuditTrail;
+import me.whereareiam.yui.api.persistence.AuditPersistence;
+import me.whereareiam.yui.api.type.audit.AuditCategory;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.ObjectProvider;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * Tests for wildcard matching in DefaultAuditService.
- */
 class AuditServiceTest {
-    private DefaultAuditService auditService;
-	private DiscordSettings.Channels mockChannels;
+	private AuditTrail trail;
+	private AuditPersistence persistence;
+	private DefaultAuditService service;
 
 	@BeforeEach
-    void setUp() {
-	    ObjectProvider<Settings> mockSettingsProvider = mock(ObjectProvider.class);
-	    Settings mockSettings = mock(Settings.class);
-	    DiscordSettings mockDiscordSettings = mock(DiscordSettings.class);
-        mockChannels = mock(DiscordSettings.Channels.class);
-		JDA mockJDA = mock(JDA.class);
+	@SuppressWarnings("unchecked")
+	void setUp() {
+		trail = new AuditTrail();
+		trail.getCategories().put(AuditCategory.MEMBERS, category("100"));
+		trail.getCategories().put(AuditCategory.SYSTEM, category("300"));
 
-        when(mockSettingsProvider.getObject()).thenReturn(mockSettings);
-        when(mockSettings.getDiscord()).thenReturn(mockDiscordSettings);
-        when(mockDiscordSettings.getChannels()).thenReturn(mockChannels);
+		ObjectProvider<AuditTrail> provider = mock(ObjectProvider.class);
+		when(provider.getObject()).thenReturn(trail);
+		persistence = mock(AuditPersistence.class);
+		ObjectProvider<AuditPersistence> stores = mock(ObjectProvider.class);
+		when(stores.getIfAvailable()).thenReturn(persistence);
+		service = new DefaultAuditService(provider, stores, mock(JDA.class), Clock.fixed(Instant.parse("2026-11-13T12:00:00Z"), ZoneOffset.UTC));
+	}
 
-        auditService = new DefaultAuditService(mockSettingsProvider, mockJDA);
-    }
+	@Test
+	void channel_IsTheCategorysOwn() {
+		assertEquals(Optional.of("100"), service.channel(AuditCategory.MEMBERS, "member.join"));
+	}
 
-    @Test
-    void testExactMatch_takesPriorityOverWildcard() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("update_plugin_*_available", MultiValue.of("wildcard-channel"));
-        auditConfig.put("update_plugin_specific_available", MultiValue.of("exact-channel"));
+	@Test
+	void channel_OfACategoryWithoutOne_IsEmpty() {
+		assertFalse(service.isPosted(AuditCategory.MODERATION, "member.kick"));
+	}
 
-        when(mockChannels.getAudit()).thenReturn(auditConfig);
+	@Test
+	void channel_OfAnEntrySentElsewhere_IsThatCategorys() {
+		trail.getEntries().put("member.join", new AuditRoute.To(AuditCategory.SYSTEM));
 
-        // Exact match should be used
-        Optional<List<String>> result = auditService.getChannelIds("update_plugin_specific_available", null);
-        assertTrue(result.isPresent());
-        assertEquals("exact-channel", result.get().getFirst());
-    }
+		assertEquals(Optional.of("300"), service.channel(AuditCategory.MEMBERS, "member.join"));
+	}
 
-    @Test
-    void testWildcard_singleStar() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("update_plugin_*_available", MultiValue.of("channel-1"));
+	@Test
+	void channel_OfAnEntrySwitchedOff_IsEmpty() {
+		trail.getEntries().put("member.leave", new AuditRoute.Off());
 
-        when(mockChannels.getAudit()).thenReturn(auditConfig);
+		assertFalse(service.isPosted(AuditCategory.MEMBERS, "member.leave"));
+		assertEquals(Optional.of("100"), service.channel(AuditCategory.MEMBERS, "member.join"));
+	}
 
-        // Should match plugin with any name
-        Optional<List<String>> result1 = auditService.getChannelIds("update_plugin_yuiverification_available", null);
-        assertTrue(result1.isPresent());
-        assertEquals("channel-1", result1.get().getFirst());
+	@Test
+	void withTheStoreOn_AnEntryWithoutAChannelIsKept() {
+		trail.getStore().setEnabled(true);
 
-        Optional<List<String>> result2 = auditService.getChannelIds("update_plugin_another_available", null);
-        assertTrue(result2.isPresent());
-        assertEquals("channel-1", result2.get().getFirst());
-    }
+		service.audit(AuditCategory.MODERATION, "member.kick", MessageCreateData.fromContent("Kicked"));
 
-    @Test
-    void testWildcard_multipleParts() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("update_*_*_available", MultiValue.of("channel-1"));
+		verify(persistence).save(new AuditPersistence.Record(AuditCategory.MODERATION, "member.kick", Instant.parse("2026-11-13T12:00:00Z"), "Kicked"));
+		assertTrue(service.isRecorded(AuditCategory.MODERATION, "member.kick"));
+	}
 
-        when(mockChannels.getAudit()).thenReturn(auditConfig);
+	@Test
+	void anEntrySwitchedOff_IsNotKeptEither() {
+		trail.getStore().setEnabled(true);
+		trail.getEntries().put("member.leave", new AuditRoute.Off());
 
-        // Should match both plugin and core updates
-        Optional<List<String>> result1 = auditService.getChannelIds("update_plugin_test_available", null);
-        assertTrue(result1.isPresent());
+		service.audit(AuditCategory.MEMBERS, "member.leave", MessageCreateData.fromContent("Left"));
 
-        Optional<List<String>> result2 = auditService.getChannelIds("update_core_yui_available", null);
-        assertTrue(result2.isPresent());
-    }
+		verify(persistence, never()).save(any());
+		assertFalse(service.isRecorded(AuditCategory.MEMBERS, "member.leave"));
+	}
 
-    @Test
-    void testWildcard_atStart() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("*_available", MultiValue.of("channel-1"));
+	private static AuditTrail.Category category(String channel) {
+		AuditTrail.Category category = new AuditTrail.Category();
+		category.setChannel(channel);
 
-        when(mockChannels.getAudit()).thenReturn(auditConfig);
-
-        Optional<List<String>> result1 = auditService.getChannelIds("update_plugin_available", null);
-        assertTrue(result1.isPresent());
-
-        Optional<List<String>> result2 = auditService.getChannelIds("anything_available", null);
-        assertTrue(result2.isPresent());
-    }
-
-    @Test
-    void testWildcard_atEnd() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("update_*", MultiValue.of("channel-1"));
-
-        when(mockChannels.getAudit()).thenReturn(auditConfig);
-
-        Optional<List<String>> result1 = auditService.getChannelIds("update_available", null);
-        assertTrue(result1.isPresent());
-
-        Optional<List<String>> result2 = auditService.getChannelIds("update_anything", null);
-        assertTrue(result2.isPresent());
-    }
-
-    @Test
-    void testWildcard_noMatch() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("update_plugin_*_available", MultiValue.of("channel-1"));
-
-        when(mockChannels.getAudit()).thenReturn(auditConfig);
-
-        // Should not match - different structure
-        Optional<List<String>> result = auditService.getChannelIds("update_core_available", null);
-        assertFalse(result.isPresent());
-    }
-
-    @Test
-    void testWildcard_specialCharactersEscaped() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("update.plugin.*", MultiValue.of("channel-1"));
-
-        when(mockChannels.getAudit()).thenReturn(auditConfig);
-
-        // Dot should be treated literally, not as regex wildcard
-        Optional<List<String>> result1 = auditService.getChannelIds("update.plugin.test", null);
-        assertTrue(result1.isPresent());
-
-        // Should not match if dot is different character
-        Optional<List<String>> result2 = auditService.getChannelIds("updateXplugin.test", null);
-        assertFalse(result2.isPresent());
-    }
-
-    @Test
-    void testIsConfigured_exactMatch() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("user_join", MultiValue.of("channel-1"));
-
-        when(mockChannels.getAudit()).thenReturn(auditConfig);
-
-        assertTrue(auditService.isConfigured("user_join"));
-        assertFalse(auditService.isConfigured("user_leave"));
-    }
-
-    @Test
-    void testIsConfigured_wildcardMatch() {
-        Map<String, MultiValue<String>> auditConfig = new HashMap<>();
-        auditConfig.put("update_*_available", MultiValue.of("channel-1"));
-
-        when(mockChannels.getAudit()).thenReturn(auditConfig);
-
-        assertTrue(auditService.isConfigured("update_plugin_available"));
-        assertTrue(auditService.isConfigured("update_core_available"));
-        assertFalse(auditService.isConfigured("user_join"));
-    }
-
-    @Test
-    void testMultipleWildcards_firstMatchWins() {
-        Map<String, MultiValue<String>> auditConfig = new LinkedHashMap<>();
-        auditConfig.put("update_*_available", MultiValue.of("channel-1"));
-        auditConfig.put("update_plugin_*", MultiValue.of("channel-2"));
-
-        when(mockChannels.getAudit()).thenReturn(auditConfig);
-
-        // The first matching pattern should be used
-        Optional<List<String>> result = auditService.getChannelIds("update_plugin_available", null);
-        assertTrue(result.isPresent());
-        assertEquals("channel-1", result.get().getFirst());
-    }
+		return category;
+	}
 }

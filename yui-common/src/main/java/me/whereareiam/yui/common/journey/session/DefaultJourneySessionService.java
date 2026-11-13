@@ -1,15 +1,15 @@
 package me.whereareiam.yui.common.journey.session;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.event.journey.session.JourneySessionRemovedEvent;
-import me.whereareiam.yui.event.journey.session.JourneySessionStartedEvent;
-import me.whereareiam.yui.journey.session.JourneySessionService;
-import me.whereareiam.yui.journey.session.store.JourneySessionStore;
-import me.whereareiam.yui.journey.session.store.JourneySessionStoreRegistry;
-import me.whereareiam.yui.model.journey.definition.JourneyDefinition;
-import me.whereareiam.yui.model.journey.session.JourneySession;
-import me.whereareiam.yui.model.journey.session.JourneySessionRequest;
-import me.whereareiam.yui.type.journey.JourneyStatus;
+import me.whereareiam.yui.api.event.journey.session.JourneySessionRemovedEvent;
+import me.whereareiam.yui.api.event.journey.session.JourneySessionStartedEvent;
+import me.whereareiam.yui.api.journey.session.JourneySessionService;
+import me.whereareiam.yui.api.journey.session.store.JourneySessionStore;
+import me.whereareiam.yui.api.journey.session.store.JourneySessionStoreRegistry;
+import me.whereareiam.yui.api.model.journey.definition.JourneyDefinition;
+import me.whereareiam.yui.api.model.journey.session.JourneySession;
+import me.whereareiam.yui.api.model.journey.session.JourneySessionRequest;
+import me.whereareiam.yui.api.type.journey.JourneyStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.context.ApplicationEventPublisher;

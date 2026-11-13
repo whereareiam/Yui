@@ -1,9 +1,10 @@
 package me.whereareiam.yui.common.audit.type.user;
 
 import lombok.RequiredArgsConstructor;
-import me.whereareiam.yui.Constants;
-import me.whereareiam.yui.util.Audit;
-import me.whereareiam.yui.util.translation.Translatable;
+import me.whereareiam.yui.api.Constants;
+import me.whereareiam.yui.api.message.Translatable;
+import me.whereareiam.yui.api.type.audit.AuditCategory;
+import me.whereareiam.yui.api.util.Audit;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.audit.ActionType;
 import net.dv8tion.jda.api.audit.AuditLogEntry;
@@ -36,13 +37,13 @@ public class UserLeaveAudit extends ListenerAdapter {
 					}
 
 					// This is a normal leave
-					Audit.log(Constants.AuditTypes.USER_LEAVE)
+					Audit.log(AuditCategory.MEMBERS, Constants.AuditEntries.MEMBER_LEAVE)
 							.withLocalizedEmbed(locale -> {
-								String title = Translatable.text("audit.user.leave.title").resolve(locale);
-								String description = Translatable.text("audit.user.leave.description")
+								String title = Translatable.text("audit.member.leave.title").resolve(locale);
+								String description = Translatable.text("audit.member.leave.description")
 										.with("mention", event.getUser().getAsMention())
 										.resolve(locale);
-								String targetField = Translatable.text("audit.user.leave.fields.target").resolve(locale);
+								String targetField = Translatable.text("audit.member.leave.fields.target").resolve(locale);
 
 								return new EmbedBuilder()
 										.setTitle(title)

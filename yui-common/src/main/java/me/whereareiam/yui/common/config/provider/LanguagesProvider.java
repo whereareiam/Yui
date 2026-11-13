@@ -1,20 +1,16 @@
 package me.whereareiam.yui.common.config.provider;
 
-import me.whereareiam.configura.Config;
-import me.whereareiam.yui.common.config.template.LanguagesTemplate;
-import me.whereareiam.yui.model.config.languages.Languages;
+import me.whereareiam.yui.api.model.config.languages.Languages;
 import org.springframework.stereotype.Component;
 
+/**
+ * Reads {@code languages.yml}. Without a file no language is listed, and Yui offers only its default locale.
+ */
 @Component
 public class LanguagesProvider extends DefaultConfigProvider<Languages> {
 	@Override
 	protected Languages load() {
-		return Config.update(getBasePath().resolve("languages"), Languages.class);
-	}
-
-	@Override
-	protected void registerTemplate() {
-		Config.registerTemplate(LanguagesTemplate.class);
+		return read("languages", new Languages());
 	}
 
 	@Override
@@ -22,4 +18,3 @@ public class LanguagesProvider extends DefaultConfigProvider<Languages> {
 		return Languages.class;
 	}
 }
-
