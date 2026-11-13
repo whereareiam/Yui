@@ -24,7 +24,7 @@ import java.util.OptionalInt;
 public final class ConfigUpgrade {
 	// A migration's name never changes once released: an installation that ran it only remembers its version.
 	private static final Map<String, List<String>> NAMES = Map.of(
-			"settings", List.of("agreed-shape", "audit-into-its-file"),
+			"settings", List.of("agreed-shape", "audit-into-its-file", "conversations-into-their-file"),
 			"languages", List.of("agreed-shape"),
 			"style/palette", List.of("agreed-shape"),
 			"style/embeds", List.of("agreed-shape")
@@ -34,7 +34,7 @@ public final class ConfigUpgrade {
 
 	public ConfigUpgrade(@NotNull Configura configura, @NotNull Path folder) {
 		this.strata = new Strata(List.of(
-				stream(configura, folder, "settings", "settings.yml", "settings.yml", SettingsMigration::apply, AuditMigration::apply),
+				stream(configura, folder, "settings", "settings.yml", "settings.yml", SettingsMigration::apply, AuditMigration::apply, ConversationsMigration::apply),
 				stream(configura, folder, "languages", "languages.yml", "languages.yml", LanguagesMigration::apply),
 				stream(configura, folder, "style/palette", "style/palette.yml", StyleMigration.OLD_PALETTE, StyleMigration::palette),
 				stream(configura, folder, "style/embeds", "style/embeds.yml", StyleMigration.OLD_EMBEDS, StyleMigration::embeds)

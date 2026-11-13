@@ -2,24 +2,39 @@ package me.whereareiam.yui.conversation;
 
 import me.whereareiam.yui.type.ConversationType;
 import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
-@SuppressWarnings("unused")
+/**
+ * Yui talking privately with members for one purpose, in a direct message, a private thread or a temporary
+ * channel. {@link ConversationService} opens and closes it; it closes on its own when {@code conversations.yml} or
+ * the options it was opened with say.
+ */
 public interface Conversation {
-	Collection<Long> getParticipants();
+	/**
+	 * @return what the conversation is for, such as {@code verification}
+	 */
+	@NotNull String getPurpose();
 
-	ConversationType getType();
+	/**
+	 * @return the members in it, by user id
+	 */
+	@NotNull Set<Long> getMembers();
 
-	MessageChannelUnion getChannel();
+	@NotNull ConversationType getType();
 
-	CompletableFuture<Message> sendMessage(String content);
+	/**
+	 * @return where its messages are
+	 */
+	@NotNull MessageChannel getChannel();
 
-	CompletableFuture<Void> close();
+	@NotNull CompletableFuture<Message> send(@NotNull String content);
 
-	CompletableFuture<Void> close(long delaySeconds);
-
-	boolean isActive();
+	/**
+	 * @return false once it is closed
+	 */
+	boolean isOpen();
 }

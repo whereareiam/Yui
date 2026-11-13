@@ -1,7 +1,6 @@
 package me.whereareiam.yui.common.config.template;
 
 import me.whereareiam.configura.merge.defaults.DefaultsProvider;
-import me.whereareiam.yui.model.config.settings.DiscordSettings;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.config.settings.UpdaterSettings;
 import me.whereareiam.yui.model.type.Duration;
@@ -34,7 +33,6 @@ public class SettingsTemplate implements DefaultsProvider<Settings> {
 		));
 		settings.setLocale(DiscordLocale.ENGLISH_US);
 		settings.setUpdater(updater());
-		settings.setDiscord(discord());
 
 		return settings;
 	}
@@ -46,15 +44,5 @@ public class SettingsTemplate implements DefaultsProvider<Settings> {
 		updater.setWarn(EnumSet.allOf(UpdateWarning.class));
 
 		return updater;
-	}
-
-	private static DiscordSettings discord() {
-		DiscordSettings.Channels channels = new DiscordSettings.Channels();
-		channels.setTempChannelCategories(List.of("SET_YOUR_TEMP_CHANNEL_CATEGORY_ID"));
-
-		DiscordSettings discord = new DiscordSettings();
-		discord.setChannels(channels);
-
-		return discord;
 	}
 }

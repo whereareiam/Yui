@@ -1,186 +1,64 @@
 package me.whereareiam.yui.conversation;
 
-import me.whereareiam.yui.model.ConversationConfig;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Service for managing conversations with Discord users through multiple channels.
- * <p>
- * This service provides a flexible system to communicate with users via either
- * private messages (DMs) or temporary text channels. It automatically handles
- * fallback scenarios when private messages are not available.
- * <p>
- * <b>Key Features:</b>
- * <ul>
- *   <li>Automatic PM/channel fallback - tries PM first if preferred, falls back to temp channel</li>
- *   <li>Multi-user conversations - supports temporary channels with multiple participants</li>
- *   <li>Context-based isolation - multiple conversations per user for different purposes</li>
- *   <li>Automatic lifecycle management - handles channel cleanup and timeout</li>
- *   <li>Thread-safe operations - all operations are concurrent-safe</li>
- * </ul>
- * <p>
- * <b>Conversation Contexts:</b>
- * <p>
- * Each conversation is associated with a context string that identifies its purpose.
- * This allows multiple simultaneous conversations with the same user for different
- * purposes (e.g., "verification", "support", "moderation").
- * <p>
- * If a conversation with the same user and context already exists and is active,
- * the existing conversation will be returned instead of creating a new one.
- * <p>
- * <b>Usage Example:</b>
+ * Opens conversations: Yui talking privately with members for a purpose. {@code conversations.yml} says which types
+ * this server allows and how a conversation behaves by default; each call may change that for its own use case.
+ *
  * <pre>{@code
- * // Create a verification conversation
- * conversationService.create(userId, "verification")
- *     .thenAccept(conversation -> {
- *         conversation.sendMessage("Hello!");
- *     });
- *
- * // Create a support conversation (can coexist with verification)
- * conversationService.create(userId, "support")
- *     .thenAccept(conversation -> {
- *         conversation.sendMessage("How can we help?");
- *     });
- *
- * // Create with custom configuration
- * ConversationConfig config = ConversationConfig.builder()
- *     .preferPrivateMessage(true)
- *     .allowTemporaryChannel(true)
- *     .initialMessage("Welcome to verification!")
- *     .timeoutSeconds(300)
- *     .closeDelaySeconds(10)
- *     .build();
- *
- * conversationService.create(userId, "verification", config)
- *     .thenAccept(conversation -> {
- *         // Use the conversation
- *     });
- *
- * // Create a multi-user conversation
- * conversationService.create(Arrays.asList(user1Id, user2Id), "team-discussion", config)
- *     .thenAccept(conversation -> {
- *         // Temporary channel will be created with all users
- *     });
+ * conversations.open("verification", List.of(memberId))
+ *         .thenAccept(conversation -> conversation.send("Welcome!"));
  * }</pre>
  *
- * @see Conversation
- * @see ConversationConfig
+ * <p>The types are tried in order until one works; a conversation with more than one member is never direct. A
+ * member who already has an open conversation of that purpose gets it back, and one still in the purpose's cooldown
+ * gets none.</p>
  */
-@SuppressWarnings("unused")
 public interface ConversationService {
 	/**
-	 * Creates a conversation with a single user using default configuration.
-	 * <p>
-	 * This method will attempt to create a temporary channel conversation by default.
+	 * Opens a conversation the way {@code conversations.yml} says.
 	 *
-	 * @param userId The Discord user ID to create a conversation with
-	 * @param context The context identifier for this conversation (e.g., "verification", "support")
-	 * @return A CompletableFuture containing the created Conversation
-	 * @see #create(long, String, ConversationConfig)
+	 * @param purpose what it is for, such as {@code verification}
+	 * @param members the members in it, by user id
+	 * @return the conversation, or failed with {@link me.whereareiam.yui.exception.ConversationRefusedException} when no type works or a limit
+	 * keeps it closed
 	 */
-	CompletableFuture<Conversation> create(long userId, String context);
+	default @NotNull CompletableFuture<Conversation> open(@NotNull String purpose, @NotNull Collection<Long> members) {
+		return open(purpose, members, ConversationOptions.none());
+	}
 
 	/**
-	 * Creates a conversation with a single user using custom configuration.
-	 * <p>
-	 * The service will attempt to create a conversation according to the configuration:
-	 * <ol>
-	 *   <li>If {@code preferPrivateMessage} is true, tries to create a PM first</li>
-	 *   <li>If PM fails or is not preferred, and {@code allowTemporaryChannel} is true,
-	 *       creates a temporary channel</li>
-	 *   <li>If PM is not preferred but temp channels are disabled, tries PM anyway</li>
-	 *   <li>If all options fail, returns a failed CompletableFuture</li>
-	 * </ol>
-	 * <p>
-	 * If a conversation already exists for the user with the same context and is
-	 * still active, returns the existing conversation instead of creating a new one.
+	 * Opens a conversation, with what the options change over {@code conversations.yml}.
 	 *
-	 * @param userId The Discord user ID to create a conversation with
-	 * @param context The context identifier for this conversation (e.g., "verification", "support")
-	 * @param config The configuration for the conversation (behavior, messages, timeouts)
-	 * @return A CompletableFuture containing the created or existing Conversation
-	 * @throws IllegalArgumentException if userId is invalid or context is null/empty
+	 * @param purpose what it is for
+	 * @param members the members in it, by user id
+	 * @param options what this use case changes
+	 * @return the conversation, or failed with {@link me.whereareiam.yui.exception.ConversationRefusedException}
 	 */
-	CompletableFuture<Conversation> create(long userId, String context, ConversationConfig config);
+	@NotNull CompletableFuture<Conversation> open(
+			@NotNull String purpose,
+			@NotNull Collection<Long> members,
+			@NotNull ConversationOptions options
+	);
 
 	/**
-	 * Creates a conversation with multiple users using default configuration.
-	 * <p>
-	 * Since private messages only support one-to-one communication, this method
-	 * will always create a temporary text channel with all specified users.
-	 *
-	 * @param userIds Collection of Discord user IDs to include in the conversation
-	 * @param context The context identifier for this conversation
-	 * @return A CompletableFuture containing the created Conversation
-	 * @see #create(Collection, String, ConversationConfig)
+	 * @param member  a user id
+	 * @param purpose what the conversation is for
+	 * @return the member's open conversation of that purpose
 	 */
-	CompletableFuture<Conversation> create(Collection<Long> userIds, String context);
+	@NotNull Optional<Conversation> find(long member, @NotNull String purpose);
 
 	/**
-	 * Creates a conversation with multiple users using custom configuration.
-	 * <p>
-	 * For single-user collections, behaves like {@link #create(long, String, ConversationConfig)}.
-	 * For multi-user collections, creates a temporary text channel with all users,
-	 * ignoring the {@code preferPrivateMessage} setting.
-	 * <p>
-	 * If a conversation already exists for any of the users with the same context
-	 * and is still active, returns the existing conversation.
+	 * Closes a conversation now: a thread is archived and locked, a channel deleted. Its transcript goes where the
+	 * options say.
 	 *
-	 * @param userIds Collection of Discord user IDs to include in the conversation
-	 * @param context The context identifier for this conversation
-	 * @param config The configuration for the conversation
-	 * @return A CompletableFuture containing the created or existing Conversation
-	 * @throws IllegalArgumentException if userIds is empty or context is null/empty
-	 * @throws IllegalStateException if conversation cannot be created with given constraints
+	 * @param conversation the conversation
+	 * @return completes once it is closed
 	 */
-	CompletableFuture<Conversation> create(Collection<Long> userIds, String context, ConversationConfig config);
-
-	/**
-	 * Finds an active conversation for the specified user and context.
-	 * <p>
-	 * Returns the conversation if:
-	 * <ul>
-	 *   <li>A conversation exists for the user with the specified context</li>
-	 *   <li>The conversation is still active ({@link Conversation#isActive()} returns true)</li>
-	 * </ul>
-	 * If the conversation exists but is no longer active, it will be cleaned up
-	 * and an empty Optional will be returned.
-	 *
-	 * @param userId The Discord user ID to search for
-	 * @param context The context identifier of the conversation
-	 * @return An Optional containing the active Conversation, or empty if none exists
-	 */
-	Optional<Conversation> findByUser(long userId, String context);
-
-	/**
-	 * Closes a conversation immediately.
-	 * <p>
-	 * For private message conversations, this marks the conversation as inactive.
-	 * For temporary channel conversations, this deletes the channel immediately.
-	 * <p>
-	 * The conversation is removed from the active conversations registry.
-	 *
-	 * @param conversation The conversation to close
-	 * @return A CompletableFuture that completes when the conversation is closed
-	 * @see #close(Conversation, long)
-	 */
-	CompletableFuture<Void> close(Conversation conversation);
-
-	/**
-	 * Closes a conversation after a specified delay.
-	 * <p>
-	 * For temporary channel conversations, sends a warning message to the channel
-	 * indicating when it will be closed, then closes it after the delay.
-	 * For private message conversations, the delay is ignored and it closes immediately.
-	 * <p>
-	 * If delaySeconds is 0 or negative, behaves like {@link #close(Conversation)}.
-	 *
-	 * @param conversation The conversation to close
-	 * @param delaySeconds The delay in seconds before closing
-	 * @return A CompletableFuture that completes when the conversation is closed
-	 */
-	CompletableFuture<Void> close(Conversation conversation, long delaySeconds);
+	@NotNull CompletableFuture<Void> close(@NotNull Conversation conversation);
 }

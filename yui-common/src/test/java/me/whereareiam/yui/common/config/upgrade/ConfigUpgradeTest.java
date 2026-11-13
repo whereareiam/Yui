@@ -32,7 +32,8 @@ class ConfigUpgradeTest {
 	void anOldSettingsFile_NeedsItsMigration() throws IOException {
 		writeOldSettings("POSTGRESQL");
 
-		assertEquals(List.of("yui/config/settings 1 agreed-shape", "yui/config/settings 2 audit-into-its-file"), new ConfigUpgrade(configura, folder).pending());
+		assertEquals(List.of("yui/config/settings 1 agreed-shape", "yui/config/settings 2 audit-into-its-file",
+				"yui/config/settings 3 conversations-into-their-file"), new ConfigUpgrade(configura, folder).pending());
 	}
 
 	@Test
@@ -48,12 +49,11 @@ class ConfigUpgradeTest {
 		JsonNode settings = configura.readNode(folder.resolve("settings.yml"));
 		JsonNode persistence = configura.readNode(folder.resolve("persistence.yml"));
 
-		assertEquals(2, settings.path("_version").asInt());
+		assertEquals(3, settings.path("_version").asInt());
 		assertEquals("secret", settings.path("token").asText());
 		assertEquals("856839365938118698", settings.path("guild").asText());
 		assertEquals("GUILD_MEMBERS", settings.path("intents").path(0).asText());
-		assertFalse(settings.path("discord").has("token"));
-		assertFalse(settings.path("discord").has("channels"));
+		assertFalse(settings.has("discord"));
 		assertEquals("[\"yui\"]", settings.path("updater").path("check").toString());
 		assertEquals("[\"updates\",\"devBuilds\"]", settings.path("updater").path("warn").toString());
 		assertFalse(settings.has("database"));
@@ -89,7 +89,9 @@ class ConfigUpgradeTest {
 		assertEquals("20", audit.path("categories").path("moderation").path("channel").asText());
 		assertEquals("30", audit.path("categories").path("system").path("channel").asText());
 		assertEquals("off", audit.path("entries").path("member.leave").asText());
-		assertEquals("[\"9\"]", settings.path("discord").path("channels").path("tempChannelCategories").toString());
+		JsonNode conversations = configura.readNode(folder.resolve("conversations.yml"));
+		assertEquals("[\"9\"]", conversations.path("types").path("channel").path("categories").toString());
+		assertFalse(settings.has("discord"));
 	}
 
 	@Test

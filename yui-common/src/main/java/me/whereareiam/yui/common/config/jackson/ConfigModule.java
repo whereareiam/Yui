@@ -16,6 +16,7 @@ import me.whereareiam.yui.model.config.languages.Languages;
 import me.whereareiam.yui.model.config.style.Palette;
 import me.whereareiam.yui.model.config.style.StyleColor;
 import me.whereareiam.yui.model.type.Duration;
+import me.whereareiam.yui.type.ConversationType;
 import me.whereareiam.yui.type.audit.AuditCategory;
 import me.whereareiam.yui.type.update.UpdateCheck;
 import me.whereareiam.yui.type.update.UpdateWarning;
@@ -46,6 +47,7 @@ public final class ConfigModule extends SimpleModule {
 		camelCase(UpdateWarning.class);
 		scalar(StyleColor.class, StyleColor::parse, StyleColor::toString);
 		camelCase(AuditCategory.class);
+		camelCase(ConversationType.class);
 		camelCaseKeys(AuditCategory.class);
 		scalar(AuditRoute.class, ConfigModule::route, ConfigModule::route);
 

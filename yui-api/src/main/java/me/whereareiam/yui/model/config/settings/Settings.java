@@ -20,9 +20,4 @@ public class Settings {
 	private List<GatewayIntent> intents;
 	private DiscordLocale locale;
 	private UpdaterSettings updater;
-
-	/**
-	 * The channels of conversations, until they move into {@code conversations.yml}.
-	 */
-	private DiscordSettings discord;
 }
