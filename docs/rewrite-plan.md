@@ -338,7 +338,7 @@ app/
   conversations.yml     where temporary channels go, and how each purpose talks to members
   style/                palette.yml, embeds.yml; later emojis.yml, components.yml, one file each
   messages/
-    <locale>/           words.yml (was vocabulary.yml), commands.yml, general.yml, log.yml, ...
+    <locale>/           a text file per config file it speaks for, plus words.yml
   plugins/<id>/         the same shape: settings.yml, audiences.yml, commands.yml, messages/<locale>/
 ```
 
@@ -522,7 +522,7 @@ info:
 `languages.yml`, approved: a language is offered when it is listed (no `enabled`), with its emoji and,
 optionally, the role members who speak it get. The `languages:` wrapper goes, and the rendering caches
 (`TranslationSettings`) leave the file as code defaults. A language's name is a word, shown in the viewer's
-language from `messages/<locale>/words.yml`; where a locale has no name for it, Discord's own name
+language from `messages/<locale>/languages.yml`; where a locale has no name for it, Discord's own name
 (`DiscordLocale.getNativeName()`) is shown.
 
 ```yaml
@@ -537,10 +537,9 @@ de:
 ```
 
 ```yaml
-# messages/en-US/words.yml
-languages:
-  en-US: "English"
-  de: "German"
+# messages/en-US/languages.yml
+en-US: "English"
+de: "German"
 ```
 
 `audiences.yml`, approved: a name maps straight to its list of conditions in Conditia's form. A plugin's file
@@ -566,7 +565,44 @@ verified:
   - verified: true
 ```
 
-Still open, one file at a time: the message files, Verification's files.
+Messages, approved: texts come from **Semantica 0.1.0** (`me.whereareiam.semantica:*`, replacing the old
+`me.whereareiam:semantica:dev-ffdb76d`). A text file mirrors the config file it speaks for, and the path of a file
+is the prefix of its keys (`messages/en-US/commands.yml` → `commands.clear.description`):
+
+```text
+messages/<locale>/
+  commands.yml         descriptions, usage, arguments, denied, replies, errors
+  conversations.yml    thread and channel name, first message, close warning
+  audit.yml            one line per entry kind
+  languages.yml        each language's name
+  embeds.yml           author name, footer text per kind
+  words.yml            words the others refer to: cancel, confirm, yes, no, back, next
+messages/all/          texts that are the same in every language
+```
+
+- ICU MessageFormat replaces `<p:name>`: `{count}`, plurals per language, references such as `{@words.cancel}`.
+- Message files hold only strings, so they have no `_version`; `yui config upgrade` rewrites old texts.
+- `general.yml` and `log.yml` go: the close warning belongs to conversations, and log was a second name for audit.
+- The folder stays `messages/`: in Yui `languages.yml` means the languages members speak.
+- Each plugin's texts are an owned layer (`Layer.owned("<id>", ...)`), removed with the plugin. Its keys carry
+  its id (`verification.commands.*`) through a key prefix that `FileSource` needs first (Semantica follow-up).
+- Discord's markdown is Yui's: a Discord format escapes the values code inserts (a member named `**x**` is shown
+  as written), either in Yui or as a Semantica format.
+- An organisation's translations repository (Weblate, `HttpSource`) can be layered on top later.
+
+```yaml
+# messages/en-US/commands.yml
+clear:
+  description: "Delete recent messages"
+  usage: "/clear <amount>"
+  arguments:
+    amount: "How many messages to delete"
+  denied: "Only moderators can clear messages."
+  replies:
+    done: "Deleted {count, plural, one {# message} other {# messages}}."
+```
+
+Still open, one file at a time: Verification's files.
 
 ## Build
 
