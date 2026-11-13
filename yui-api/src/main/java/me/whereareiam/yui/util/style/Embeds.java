@@ -1,14 +1,20 @@
 package me.whereareiam.yui.util.style;
 
 import me.whereareiam.yui.model.config.style.Palette;
+import me.whereareiam.yui.model.config.style.StyleColor;
 import me.whereareiam.yui.model.config.style.embed.Embed;
 import me.whereareiam.yui.model.config.style.embed.EmbedStyle;
 import net.dv8tion.jda.api.EmbedBuilder;
 
-import java.awt.*;
 import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Embeds of each kind in {@code style/embeds.yml}, coloured through the palette. Each call returns a new builder.
+ * A kind whose colour names no palette colour is refused when the embeds are built, so Yui does not start with it.
+ */
 public class Embeds {
 	private final Palette palette;
 	private final EmbedStyle embedStyle;
@@ -16,90 +22,82 @@ public class Embeds {
 	public Embeds(Palette palette, EmbedStyle embedStyle) {
 		this.palette = Objects.requireNonNull(palette, "palette must not be null");
 		this.embedStyle = Objects.requireNonNull(embedStyle, "embedStyle must not be null");
+
+		kinds().forEach(this::check);
 	}
 
 	public EmbedBuilder primary() {
-		return build(embedStyle.getPrimary(), palette.getPrimary());
+		return build(embedStyle.getPrimary());
 	}
 
 	public EmbedBuilder secondary() {
-		return build(embedStyle.getSecondary(), palette.getSecondary());
+		return build(embedStyle.getSecondary());
 	}
 
 	public EmbedBuilder success() {
-		return build(embedStyle.getSuccess(), palette.getSuccess());
+		return build(embedStyle.getSuccess());
 	}
 
 	public EmbedBuilder warning() {
-		return build(embedStyle.getWarning(), palette.getWarning());
+		return build(embedStyle.getWarning());
 	}
 
 	public EmbedBuilder error() {
-		return build(embedStyle.getError(), palette.getError());
+		return build(embedStyle.getError());
 	}
 
 	public EmbedBuilder info() {
-		return build(embedStyle.getInfo(), palette.getInfo());
+		return build(embedStyle.getInfo());
 	}
 
-	private EmbedBuilder build(Embed embed, Color color) {
+	private EmbedBuilder build(Embed embed) {
 		EmbedBuilder builder = new EmbedBuilder();
+		if (embed == null) return builder;
 
-		if (embed == null)
-			return builder;
-
-		setAuthorIfPresent(builder, embed.getAuthor());
-		setFooterIfPresent(builder, embed.getFooter());
-		setUrlIfPresent(builder, embed.getTitleUrl());
-		setThumbnailIfPresent(builder, embed.getThumbnailUrl());
-		setImageIfPresent(builder, embed.getImageUrl());
-
-		if (embed.isTimestamp())
-			builder.setTimestamp(Instant.now());
-
-		builder.setColor(color);
+		author(builder, embed.getAuthor());
+		footer(builder, embed.getFooter());
+		if (present(embed.getLink())) builder.setUrl(embed.getLink());
+		if (present(embed.getThumbnail())) builder.setThumbnail(embed.getThumbnail());
+		if (present(embed.getImage())) builder.setImage(embed.getImage());
+		if (embed.isTimestamp()) builder.setTimestamp(Instant.now());
+		if (embed.getColor() != null) builder.setColor(palette.resolve(embed.getColor()));
 
 		return builder;
 	}
 
-	private void setAuthorIfPresent(EmbedBuilder b, Embed.Author a) {
-		if (a == null || isBlank(a.getName())) return;
+	private Map<String, Embed> kinds() {
+		Map<String, Embed> kinds = new LinkedHashMap<>();
+		kinds.put("primary", embedStyle.getPrimary());
+		kinds.put("secondary", embedStyle.getSecondary());
+		kinds.put("success", embedStyle.getSuccess());
+		kinds.put("warning", embedStyle.getWarning());
+		kinds.put("error", embedStyle.getError());
+		kinds.put("info", embedStyle.getInfo());
 
-		b.setAuthor(
-				a.getName(),
-				blankToNull(a.getUrl()),
-				blankToNull(a.getIconUrl())
-		);
+		return kinds;
 	}
 
-	private void setFooterIfPresent(EmbedBuilder b, Embed.Footer f) {
-		if (f == null || isBlank(f.getText())) return;
-		b.setFooter(
-				f.getText(),
-				blankToNull(f.getIconUrl())
-		);
+	private void check(String kind, Embed embed) {
+		if (!(embed != null && embed.getColor() instanceof StyleColor.Named named)) return;
+
+		if (palette.get(named.name()).isEmpty())
+			throw new IllegalStateException("style/embeds.yml: " + kind + ".color names no colour '" + named.name()
+					+ "' in style/palette.yml");
 	}
 
-	private void setUrlIfPresent(EmbedBuilder b, String url) {
-		if (!isBlank(url))
-			b.setUrl(url);
+	private static void author(EmbedBuilder builder, Embed.Author author) {
+		if (author == null || !present(author.getName())) return;
+
+		builder.setAuthor(author.getName(), author.getUrl(), author.getIcon());
 	}
 
-	private void setThumbnailIfPresent(EmbedBuilder b, String url) {
-		if (!isBlank(url))
-			b.setThumbnail(url);
+	private static void footer(EmbedBuilder builder, Embed.Footer footer) {
+		if (footer == null || !present(footer.getText())) return;
+
+		builder.setFooter(footer.getText(), footer.getIcon());
 	}
 
-	private void setImageIfPresent(EmbedBuilder b, String url) {
-		if (!isBlank(url))
-			b.setImage(url);
-	}
-
-	private static boolean isBlank(String s) {
-		return s == null || s.trim().isEmpty();
-	}
-
-	private static String blankToNull(String s) {
-		return isBlank(s) ? null : s;
+	private static boolean present(String text) {
+		return text != null && !text.isBlank();
 	}
 }

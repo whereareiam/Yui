@@ -1,39 +1,43 @@
 package me.whereareiam.yui.model.config.style.embed;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import me.whereareiam.yui.model.config.style.StyleColor;
+import org.jetbrains.annotations.Nullable;
 
-@Setter
+/**
+ * How one kind of embed looks: its colour, and optionally an author, a footer, a title link, a thumbnail, an image
+ * and a timestamp. Unset values are left out of the file.
+ */
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
+@Setter
 public class Embed {
-	private Author author;
-	private Footer footer;
-	private String titleUrl;
-	private String thumbnailUrl;
-	private String imageUrl;
+	private @Nullable StyleColor color;
+	private @Nullable Author author;
+	private @Nullable Footer footer;
+	private @Nullable String link;
+	private @Nullable String thumbnail;
+	private @Nullable String image;
 	private boolean timestamp;
 
-	@Setter
+	/**
+	 * The line above the title. Its {@code name} is a text and moves into {@code messages/<locale>/embeds.yml}.
+	 */
 	@Getter
-	@NoArgsConstructor
-	@AllArgsConstructor
+	@Setter
 	public static class Author {
-		private String name;
-		private String iconUrl;
-		private String url;
+		private @Nullable String name;
+		private @Nullable String icon;
+		private @Nullable String url;
 	}
 
-	@Setter
+	/**
+	 * The line below the embed. Its {@code text} moves into {@code messages/<locale>/embeds.yml}.
+	 */
 	@Getter
-	@NoArgsConstructor
-	@AllArgsConstructor
+	@Setter
 	public static class Footer {
-		private String text;
-		private String iconUrl;
+		private @Nullable String text;
+		private @Nullable String icon;
 	}
-
 }

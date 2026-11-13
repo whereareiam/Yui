@@ -1,38 +1,54 @@
 package me.whereareiam.yui.model.config.languages;
 
-import lombok.Getter;
-import lombok.Setter;
-import me.whereareiam.configura.annotation.merge.Merge;
-import me.whereareiam.configura.type.merge.WhenPresent;
+import me.whereareiam.configura.annotation.PreserveUnknownFields;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
-@Getter
-@Setter
+/**
+ * {@code languages.yml}: the languages members may declare, keyed by Discord locale. A language is offered when it
+ * is listed.
+ *
+ * <pre>{@code
+ * _version: 1
+ * en-US:
+ *   emoji: "🇺🇸"
+ *   role: "123456789012345678"
+ * de:
+ *   emoji: "🇩🇪"
+ * }</pre>
+ */
+@PreserveUnknownFields
 public class Languages {
-	@Merge(present = WhenPresent.KEEP_AS_WRITTEN)
-	private Map<String, LanguageEntry> languages;
-	private TranslationSettings settings;
+	private final Map<DiscordLocale, Language> languages;
+
+	public Languages() {
+		this(Map.of());
+	}
 
 	/**
-	 * Converts languages map to use DiscordLocale keys.
-	 * Filters out any invalid locales (UNKNOWN).
+	 * @param languages the languages, in the order they are offered
 	 */
-	public Map<DiscordLocale, LanguageEntry> toLocaleMap() {
-		if (languages == null) return new HashMap<>();
-		
-		return languages.entrySet().stream()
-				.filter(entry -> {
-					DiscordLocale locale = DiscordLocale.from(entry.getKey());
-					return locale != DiscordLocale.UNKNOWN;
-				})
-				.collect(Collectors.toMap(
-						entry -> DiscordLocale.from(entry.getKey()),
-						Map.Entry::getValue
-				));
+	public Languages(@NotNull Map<DiscordLocale, Language> languages) {
+		this.languages = Collections.unmodifiableMap(new LinkedHashMap<>(languages));
+	}
+
+	/**
+	 * @return the listed languages in the file's order, unmodifiable
+	 */
+	public @NotNull Map<DiscordLocale, Language> all() {
+		return languages;
+	}
+
+	/**
+	 * @param locale a Discord locale
+	 * @return the language listed for it, if any
+	 */
+	public @NotNull Optional<Language> get(@NotNull DiscordLocale locale) {
+		return Optional.ofNullable(languages.get(locale));
 	}
 }
-

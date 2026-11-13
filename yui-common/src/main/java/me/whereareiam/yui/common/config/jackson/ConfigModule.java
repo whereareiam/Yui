@@ -8,6 +8,10 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdScalarSerializer;
+import me.whereareiam.yui.model.config.languages.Language;
+import me.whereareiam.yui.model.config.languages.Languages;
+import me.whereareiam.yui.model.config.style.Palette;
+import me.whereareiam.yui.model.config.style.StyleColor;
 import me.whereareiam.yui.model.type.Duration;
 import me.whereareiam.yui.type.update.UpdateCheck;
 import me.whereareiam.yui.type.update.UpdateWarning;
@@ -36,6 +40,26 @@ public final class ConfigModule extends SimpleModule {
 		scalar(String.class, EnvironmentText::resolve, Function.identity());
 		camelCase(UpdateCheck.class);
 		camelCase(UpdateWarning.class);
+		scalar(StyleColor.class, StyleColor::parse, StyleColor::toString);
+
+		MapDocumentBinding.<Languages, DiscordLocale, Language>builder()
+				.document(Languages.class)
+				.value(Language.class)
+				.readKey(ConfigModule::locale)
+				.writeKey(DiscordLocale::getLocale)
+				.create(Languages::new)
+				.entries(Languages::all)
+				.build()
+				.register(this);
+		MapDocumentBinding.<Palette, String, Color>builder()
+				.document(Palette.class)
+				.value(Color.class)
+				.readKey(ConfigModule::paletteName)
+				.writeKey(Function.identity())
+				.create(Palette::new)
+				.entries(Palette::all)
+				.build()
+				.register(this);
 	}
 
 	@Override
@@ -67,6 +91,21 @@ public final class ConfigModule extends SimpleModule {
 
 	private <E extends Enum<E>> void camelCase(Class<E> type) {
 		scalar(type, text -> Enum.valueOf(type, CamelCase.toConstant(text)), value -> CamelCase.fromConstant(value.name()));
+	}
+
+	private static DiscordLocale locale(String tag) {
+		DiscordLocale locale = DiscordLocale.from(tag);
+		if (locale == DiscordLocale.UNKNOWN)
+			throw new IllegalArgumentException("'" + tag + "' is no Discord locale, such as en-US or de");
+
+		return locale;
+	}
+
+	private static String paletteName(String name) {
+		if (!StyleColor.NAME.matcher(name).matches())
+			throw new IllegalArgumentException("'" + name + "' is no palette name; write lowercase letters, digits and -");
+
+		return name;
 	}
 
 	private static String hex(Color color) {

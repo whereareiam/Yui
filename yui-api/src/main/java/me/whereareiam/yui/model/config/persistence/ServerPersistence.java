@@ -8,7 +8,6 @@ import lombok.Setter;
  * MariaDB.
  *
  * <pre>{@code
- * _version: 1
  * type: POSTGRESQL
  * host: "postgres.yui.svc"
  * database: "yui"

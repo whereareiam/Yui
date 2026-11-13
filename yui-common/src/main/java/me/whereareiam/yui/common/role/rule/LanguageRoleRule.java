@@ -7,7 +7,7 @@ import me.whereareiam.yui.event.fluctlight.FluctlightClearedEvent;
 import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguageAddedEvent;
 import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguageRemovedEvent;
 import me.whereareiam.yui.event.fluctlight.language.FluctlightLanguageChangedEvent;
-import me.whereareiam.yui.model.config.languages.LanguageEntry;
+import me.whereareiam.yui.model.config.languages.Language;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
 import net.dv8tion.jda.api.JDA;
@@ -97,10 +97,10 @@ public class LanguageRoleRule {
 	}
 
 	private Optional<Role> role(Guild guild, DiscordLocale language) {
-		LanguageEntry entry = languagesProvider.get().toLocaleMap().get(language);
-		if (entry == null || entry.getRole() == null || entry.getRole() == 0) return Optional.empty();
-
-		return Optional.ofNullable(guild.getRoleById(entry.getRole()));
+		return languagesProvider.get().get(language)
+				.map(Language::getRole)
+				.filter(role -> !role.isBlank())
+				.map(guild::getRoleById);
 	}
 
 	private Optional<Guild> guild() {

@@ -7,8 +7,8 @@ import me.whereareiam.attache.type.VerbosityMode;
 import me.whereareiam.yui.launcher.YuiLauncher;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -99,14 +99,8 @@ public class YuiApplication {
 	@Bean
 	@Qualifier("stylesPath")
 	public Path stylesPath(@Qualifier("dataPath") Path dataPath) {
-		Path stylesPath = dataPath.resolve(Constants.Structure.stylesDir);
-
-		if (!stylesPath.toFile().exists()) {
-			boolean created = stylesPath.toFile().mkdirs();
-			if (!created) throw new RuntimeException("Failed to create styles directory");
-		}
-
-		return stylesPath;
+		// Read only, like every config folder: without it, the style takes its defaults.
+		return dataPath.resolve(Constants.Structure.stylesDir);
 	}
 
 	@Bean

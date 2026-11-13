@@ -7,7 +7,6 @@ import lombok.Setter;
  * An H2 database in a file of Yui's data folder.
  *
  * <pre>{@code
- * _version: 1
  * type: H2
  * file: "database/yui"
  * }</pre>

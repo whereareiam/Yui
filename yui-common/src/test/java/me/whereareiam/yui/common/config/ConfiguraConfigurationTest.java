@@ -1,16 +1,23 @@
 package me.whereareiam.yui.common.config;
 
 import me.whereareiam.configura.Configura;
+import me.whereareiam.configura.exception.ConfigException;
 import me.whereareiam.yui.common.config.template.SettingsTemplate;
+import me.whereareiam.yui.common.config.template.style.EmbedsTemplate;
+import me.whereareiam.yui.common.config.template.style.PaletteTemplate;
 import me.whereareiam.yui.model.config.Commands;
+import me.whereareiam.yui.model.config.languages.Languages;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.config.style.Palette;
+import me.whereareiam.yui.model.config.style.StyleColor;
+import me.whereareiam.yui.model.config.style.embed.EmbedStyle;
 import me.whereareiam.yui.model.requirement.RequirementEntry;
 import me.whereareiam.yui.model.requirement.type.RoleRequirement;
 import me.whereareiam.yui.model.requirement.type.ScopeRequirement;
 import me.whereareiam.yui.type.ConfigurationType;
 import me.whereareiam.yui.type.update.UpdateCheck;
 import me.whereareiam.yui.type.update.UpdateWarning;
+import me.whereareiam.yui.util.style.Embeds;
 import net.dv8tion.jda.api.interactions.DiscordLocale;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +33,8 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Reads files the way Yui's providers do, through the instance {@link ConfiguraConfiguration} builds.
@@ -90,14 +99,67 @@ class ConfiguraConfigurationTest {
 	}
 
 	@Test
-	void colours_AreWrittenAsHex() throws IOException {
-		write("palette.yml", "primary: \"#B57E3F\"\n");
+	void languages_AreKeyedByLocaleInTheFilesOrder() throws IOException {
+		write("languages.yml", """
+				_version: 2
+				de:
+				  emoji: "🇩🇪"
+				en-US:
+				  emoji: "🇺🇸"
+				  role: "200"
+				""");
 
-		Palette palette = configura.merge(file("palette"), new Palette());
-		configura.write(file("palette"), palette);
+		Languages languages = configura.merge(file("languages"), new Languages());
 
-		assertEquals(new Color(0xB57E3F), palette.getPrimary());
-		assertEquals("primary: \"#B57E3F\"", Files.readString(folder.resolve("palette.yml")).lines().filter(line -> line.startsWith("primary")).findFirst().orElseThrow());
+		assertEquals(List.of(DiscordLocale.GERMAN, DiscordLocale.ENGLISH_US), List.copyOf(languages.all().keySet()));
+		assertEquals("200", languages.get(DiscordLocale.ENGLISH_US).orElseThrow().getRole());
+		assertNull(languages.get(DiscordLocale.GERMAN).orElseThrow().getRole());
+	}
+
+	@Test
+	void languages_ThatAreNoLocale_StopTheFile() throws IOException {
+		write("languages.yml", "german:\n  emoji: x\n");
+
+		assertThrows(ConfigException.class, () -> configura.merge(file("languages"), new Languages()));
+	}
+
+	@Test
+	void palette_NamesItsColoursAndKeepsYuisOwn() throws IOException {
+		write("palette.yml", "_version: 2\nviolet: \"#8A5CF6\"\nred: \"#E03131\"\n");
+
+		Palette palette = configura.merge(file("palette"), new PaletteTemplate().supply(new Palette()));
+
+		assertEquals(new Color(0x8A5CF6), palette.get("violet").orElseThrow());
+		assertEquals(new Color(0xE03131), palette.get("red").orElseThrow());
+		assertEquals(new Color(0xB57E3F), palette.get("brand").orElseThrow());
+	}
+
+	@Test
+	void embeds_TakeAPaletteNameOrAHex() throws IOException {
+		write("embeds.yml", """
+				error:
+				  color: "#E03131"
+				  thumbnail: "https://example.org/x.png"
+				info:
+				  color: violet
+				""");
+
+		EmbedStyle style = configura.merge(file("embeds"), new EmbedsTemplate().supply(new EmbedStyle()));
+
+		assertEquals(new StyleColor.Hex(0xE03131), style.getError().getColor());
+		assertEquals("https://example.org/x.png", style.getError().getThumbnail());
+		assertEquals(StyleColor.named("violet"), style.getInfo().getColor());
+		assertEquals(StyleColor.named("brand"), style.getPrimary().getColor());
+	}
+
+	@Test
+	void embeds_WhoseColourIsNotInThePalette_AreRefused() {
+		EmbedStyle style = new EmbedsTemplate().supply(new EmbedStyle());
+		style.getInfo().setColor(StyleColor.named("violet"));
+		Palette palette = new PaletteTemplate().supply(new Palette());
+
+		IllegalStateException refused = assertThrows(IllegalStateException.class, () -> new Embeds(palette, style));
+		assertEquals("style/embeds.yml: info.color names no colour 'violet' in style/palette.yml", refused.getMessage());
 	}
 
 	private void write(String name, String content) throws IOException {

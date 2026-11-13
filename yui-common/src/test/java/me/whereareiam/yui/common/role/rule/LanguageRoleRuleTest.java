@@ -5,7 +5,7 @@ import me.whereareiam.yui.event.fluctlight.FluctlightClearedEvent;
 import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguageAddedEvent;
 import me.whereareiam.yui.event.fluctlight.language.FluctlightAdditionalLanguageRemovedEvent;
 import me.whereareiam.yui.event.fluctlight.language.FluctlightLanguageChangedEvent;
-import me.whereareiam.yui.model.config.languages.LanguageEntry;
+import me.whereareiam.yui.model.config.languages.Language;
 import me.whereareiam.yui.model.config.languages.Languages;
 import me.whereareiam.yui.model.config.settings.Settings;
 import me.whereareiam.yui.model.fluctlight.Fluctlight;
@@ -68,20 +68,18 @@ class LanguageRoleRuleTest {
 
 	@BeforeEach
 	void setUp() {
-		Languages languages = mock(Languages.class);
-		when(languages.toLocaleMap()).thenReturn(Map.of(
-				DiscordLocale.GERMAN, entry(100L),
-				DiscordLocale.ENGLISH_US, entry(200L)
-		));
-		when(languagesProvider.get()).thenReturn(languages);
+		when(languagesProvider.get()).thenReturn(new Languages(Map.of(
+				DiscordLocale.GERMAN, language("100"),
+				DiscordLocale.ENGLISH_US, language("200")
+		)));
 
 		Settings settings = new Settings();
 		settings.setGuild(GUILD);
 		when(settingsProvider.getIfAvailable()).thenReturn(settings);
 
 		when(jda.getGuildById(GUILD)).thenReturn(guild);
-		when(guild.getRoleById(100L)).thenReturn(german);
-		when(guild.getRoleById(200L)).thenReturn(english);
+		when(guild.getRoleById("100")).thenReturn(german);
+		when(guild.getRoleById("200")).thenReturn(english);
 		when(guild.addRoleToMember(any(UserSnowflake.class), any(Role.class))).thenReturn(action);
 		when(guild.removeRoleFromMember(any(UserSnowflake.class), any(Role.class))).thenReturn(action);
 		when(action.reason(anyString())).thenReturn(action);
@@ -164,10 +162,10 @@ class LanguageRoleRuleTest {
 				.build();
 	}
 
-	private static LanguageEntry entry(long role) {
-		LanguageEntry entry = new LanguageEntry();
-		entry.setRole(role);
+	private static Language language(String role) {
+		Language language = new Language();
+		language.setRole(role);
 
-		return entry;
+		return language;
 	}
 }

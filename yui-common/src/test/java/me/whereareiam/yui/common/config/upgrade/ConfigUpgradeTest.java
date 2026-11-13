@@ -29,10 +29,10 @@ class ConfigUpgradeTest {
 	}
 
 	@Test
-	void anOldFolder_NeedsMigrationOne() throws IOException {
+	void anOldSettingsFile_NeedsItsMigration() throws IOException {
 		writeOldSettings("POSTGRESQL");
 
-		assertEquals(List.of("1 settings-and-persistence"), new ConfigUpgrade(configura, folder).pending());
+		assertEquals(List.of("yui/config/settings 1 agreed-shape"), new ConfigUpgrade(configura, folder).pending());
 	}
 
 	@Test
@@ -79,6 +79,90 @@ class ConfigUpgradeTest {
 		assertEquals("H2", persistence.path("type").asText());
 		assertEquals("database/yui", persistence.path("file").asText());
 		assertFalse(persistence.has("host"));
+	}
+
+	@Test
+	void run_LeavesAFileInItsNewShapeAsItIs() throws IOException {
+		Files.writeString(folder.resolve("settings.yml"), """
+				token: secret
+				guild: "1"
+				updater:
+				  check: [plugins]
+				  warn: []
+				""");
+
+		new ConfigUpgrade(configura, folder).run();
+		JsonNode settings = configura.readNode(folder.resolve("settings.yml"));
+
+		assertEquals("[\"plugins\"]", settings.path("updater").path("check").toString());
+		assertEquals("[]", settings.path("updater").path("warn").toString());
+		assertFalse(Files.exists(folder.resolve("persistence.yml")));
+	}
+
+	@Test
+	void run_ListsLanguagesAtTheTopAndLeavesOutDisabledOnes() throws IOException {
+		writeOldSettings("H2");
+		Files.writeString(folder.resolve("languages.yml"), """
+				languages:
+				  en-US:
+				    enabled: true
+				    role: 200
+				    displayName: English
+				    emoji: "🇺🇸"
+				  de:
+				    enabled: false
+				    emoji: "🇩🇪"
+				  fr:
+				    enabled: true
+				settings:
+				  cacheEnabled: true
+				""");
+
+		new ConfigUpgrade(configura, folder).run();
+		JsonNode languages = configura.readNode(folder.resolve("languages.yml"));
+
+		assertEquals(1, languages.path("_version").asInt());
+		assertEquals("200", languages.path("en-US").path("role").asText());
+		assertEquals("🇺🇸", languages.path("en-US").path("emoji").asText());
+		assertFalse(languages.path("en-US").has("displayName"));
+		assertFalse(languages.has("de"));
+		assertTrue(languages.has("fr"));
+		assertFalse(languages.has("languages"));
+		assertFalse(languages.has("settings"));
+	}
+
+	@Test
+	void run_MovesTheStyleAndKeepsEveryKindsColour() throws IOException {
+		writeOldSettings("H2");
+		Files.createDirectories(folder.resolve("styles"));
+		Files.writeString(folder.resolve("styles/palette.yml"), "primary: \"#B57E3F\"\nerror: \"#123456\"\n");
+		Files.writeString(folder.resolve("styles/embeds.yml"), """
+				primary:
+				  author: { name: "", iconUrl: "", url: "" }
+				  footer: { text: "Yui", iconUrl: "" }
+				  titleUrl: ""
+				  thumbnailUrl: "https://example.org/t.png"
+				  imageUrl: ""
+				  timestamp: true
+				secondary:
+				  footer: { text: "", iconUrl: "" }
+				  timestamp: false
+				""");
+
+		new ConfigUpgrade(configura, folder).run();
+		JsonNode palette = configura.readNode(folder.resolve("style/palette.yml"));
+		JsonNode embeds = configura.readNode(folder.resolve("style/embeds.yml"));
+
+		assertEquals(1, palette.path("_version").asInt());
+		assertEquals(1, embeds.path("_version").asInt());
+		assertEquals("#123456", palette.path("error").asText());
+		assertEquals("primary", embeds.path("primary").path("color").asText());
+		assertEquals("Yui", embeds.path("primary").path("footer").path("text").asText());
+		assertEquals("https://example.org/t.png", embeds.path("primary").path("thumbnail").asText());
+		assertFalse(embeds.path("primary").has("author"));
+		assertFalse(embeds.path("primary").has("link"));
+		assertFalse(embeds.has("secondary"));
+		assertFalse(Files.exists(folder.resolve("styles")));
 	}
 
 	private void writeOldSettings(String databaseType) throws IOException {

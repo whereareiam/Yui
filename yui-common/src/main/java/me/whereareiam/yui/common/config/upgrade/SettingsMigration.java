@@ -12,7 +12,7 @@ import me.whereareiam.yui.model.type.Duration;
 import java.util.List;
 
 /**
- * Migration 1: {@code settings.yml} takes the token, guild and intents out of {@code discord}, the updater says what
+ * {@code settings.yml}, migration 1: it takes the token, guild and intents out of {@code discord}, the updater says what
  * it checks and warns about as lists, and the database moves into {@code persistence.yml}.
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -21,6 +21,8 @@ final class SettingsMigration {
 	private static final String PERSISTENCE = "persistence.yml";
 
 	static void apply(ConfigContext files) {
+		if (!files.exists(SETTINGS)) return;
+
 		files.move(SETTINGS, "/discord/token", SETTINGS, "/token");
 		files.move(SETTINGS, "/discord/guildId", SETTINGS, "/guild");
 		files.move(SETTINGS, "/discord/intents", SETTINGS, "/intents");
@@ -31,7 +33,7 @@ final class SettingsMigration {
 	}
 
 	private static void updater(ObjectNode settings) {
-		if (!(settings.get("updater") instanceof ObjectNode updater)) return;
+		if (!(settings.get("updater") instanceof ObjectNode updater) || !updater.has("checkForUpdates")) return;
 
 		boolean checking = updater.path("checkForUpdates").asBoolean(true);
 		ArrayNode check = updater.putArray("check");
@@ -51,25 +53,25 @@ final class SettingsMigration {
 		String type = database.path("type").asText("H2");
 		persistence.put("type", type);
 
-		if (type.equals("H2")) copy(database, "file", persistence, "file");
+		if (type.equals("H2")) Nodes.copy(database, "file", persistence, "file");
 		else server(database, persistence);
 
 		if (database.get("hikari") instanceof ObjectNode hikari) persistence.set("pool", pool(hikari));
 	}
 
 	private static void server(ObjectNode database, ObjectNode persistence) {
-		copy(database, "hostname", persistence, "host");
-		copy(database, "port", persistence, "port");
-		copy(database, "database", persistence, "database");
-		copy(database, "username", persistence, "username");
-		copy(database, "password", persistence, "password");
+		Nodes.copy(database, "hostname", persistence, "host");
+		Nodes.copy(database, "port", persistence, "port");
+		Nodes.copy(database, "database", persistence, "database");
+		Nodes.copy(database, "username", persistence, "username");
+		Nodes.copy(database, "password", persistence, "password");
 	}
 
 	private static ObjectNode pool(ObjectNode hikari) {
 		ObjectNode pool = JsonNodeFactory.instance.objectNode();
 		ObjectNode size = pool.putObject("size");
-		copy(hikari, "minimumIdle", size, "min");
-		copy(hikari, "maximumPoolSize", size, "max");
+		Nodes.copy(hikari, "minimumIdle", size, "min");
+		Nodes.copy(hikari, "maximumPoolSize", size, "max");
 
 		ObjectNode timeouts = pool.putObject("timeouts");
 		duration(hikari, "connectionTimeout", timeouts, "connect");
@@ -77,11 +79,6 @@ final class SettingsMigration {
 		duration(hikari, "maxLifetime", timeouts, "lifetime");
 
 		return pool;
-	}
-
-	private static void copy(ObjectNode from, String key, ObjectNode to, String target) {
-		JsonNode value = from.get(key);
-		if (value != null && !value.isNull()) to.set(target, value);
 	}
 
 	private static void duration(ObjectNode from, String key, ObjectNode to, String target) {
