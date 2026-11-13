@@ -349,7 +349,7 @@ app/
   `guilds/<name>/`, and no guild key on services, facts or events. `interaction/` is gone as well; a folder
   exists only where its files share a subject (`style/`, `messages/`, `plugins/`).
 - `roles.yml` and `guild.yml` go away. A role or channel id lives with its only user and moves up only when a
-  second appears (Verification keeps `rules` and the welcome channels per locale in its settings).
+  second appears (Verification's rules channel lives in its texts, per locale).
 
 `settings.yml`, approved:
 
@@ -602,7 +602,7 @@ clear:
     done: "Deleted {count, plural, one {# message} other {# messages}}."
 ```
 
-Verification's `settings.yml`, approved (the rules channel still open). `conversation` leaves for core's
+Verification's `settings.yml`, approved. `conversation` leaves for core's
 `conversations.yml` and the API; `triggers` names the events that start a verification; `deadline` is the time a
 member has to finish and `action` what happens after it, a closed set (`kick`, `nothing`; more later); the
 member gets `verified-role` for the fact `verified`, through core's role service.
@@ -633,7 +633,11 @@ plugins/verification/
     settings.yml         the text for the deadline's action (the kick reason)
 ```
 
-Still open, one file at a time: where Verification's rules channel lives.
+The rules channel lives in the text, per locale, so each language can point to its own rules
+(`plugins/verification/messages/de/journey.yml`: `"Lies bitte die Regeln in <#456…>."`); settings have no
+`rules` key.
+
+Every config file is agreed (13 November 2026); step 6 builds them.
 
 ## Build
 
