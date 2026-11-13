@@ -5,6 +5,8 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     includeBuild("build-logic")
+    // The Gradle plugin that builds Yui's plugins, and any other's.
+    includeBuild("yui-gradle-plugin")
 
     repositories {
         gradlePluginPortal()

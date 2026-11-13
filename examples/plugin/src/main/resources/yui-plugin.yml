@@ -1,3 +1,0 @@
-id: greeting
-version: ${version}
-main: me.whereareiam.yui.example.Greeting
