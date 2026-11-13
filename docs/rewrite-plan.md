@@ -744,6 +744,13 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
    with `ConfigReader.readMap`.
 10. Docs and the rest of AGENTS.md; publishing the distribution. The repository setup after Identica (release
     drafting, labels, templates, Dependabot, workflows) came with step 1.
+    Docs built on 14 November 2026: `scriptorium.project.json` and `docs/content/` with three sections, Running Yui
+    (getting started, every config file, permissions, texts, conversations, audit, plugins, Onboarding, Interests),
+    Writing plugins (first plugin, configuration, texts, commands, conditions, journeys, events, tables) and
+    Contributing (building, modules); the README starts Yui and points to them; AGENTS.md has the layout, the build and
+    the product's rules. Left for this step: publishing Yui's API, `onboarding-api`, the Gradle plugin, `Yui.jar` and
+    the plugin jars, so that `arcadeya/yui` builds without a Yui checkout beside it.
+
 11. `arcadeya/yui` (today YuiArcadeya): a rewrite to the same standards, not only a move. Rename, split into
     `plugins/plugin-products`, its config files in rounds with the owner as Yui's were, its `owns` condition and
     `products:customer` audience on Conditia, its texts on Semantica, its facts through core's role service;

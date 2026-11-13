@@ -1,0 +1,19 @@
+{
+  "title": "Writing plugins",
+  "description": "Add commands, steps, conditions and tables to Yui",
+  "icon": "Code",
+  "root": true,
+  "pages": [
+    "---Getting Started---",
+    "index",
+    "configuration",
+    "texts",
+    "---Members---",
+    "commands",
+    "conditions",
+    "journeys",
+    "events",
+    "---Data---",
+    "tables"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "title": "Contributing",
+  "description": "Build Yui and find your way around its code",
+  "icon": "Hammer",
+  "root": true,
+  "pages": [
+    "building",
+    "modules"
+  ]
+}

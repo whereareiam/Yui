@@ -1,6 +1,39 @@
 # AGENTS.md
 
-Rules for contributing to Yui. The rewrite in progress and its decisions are in `docs/rewrite-plan.md`.
+Rules for contributing to Yui. The rewrite in progress and its decisions are in `docs/rewrite-plan.md`; the guides
+for server owners, plugin developers and contributors are in `docs/content/` (Scriptorium, `scriptorium.project.json`).
+
+## Working on the code
+
+### Layout
+
+The modules and which way they depend are in `docs/content/contributing/modules/index.md`. In short: `yui-api` is
+all a plugin sees of Yui; `yui-common` implements it; each `yui-adapter-*` holds one technology; `yui-launcher`
+assembles them; Yui's own plugins live in `plugins/plugin-<name>/`, each with its `-api` when other plugins use it.
+
+### Building
+
+- `./gradlew build` builds and tests everything and checks the layout (`verifyArchitecture`).
+- `yui-gradle-plugin/` is a build of its own (`cd yui-gradle-plugin && ../gradlew test`); every plugin, Yui's and
+  others', builds with it, and it writes `yui-plugin.yml`. Never write that file by hand.
+- Database tests run on H2, PostgreSQL and MariaDB; the latter two need Docker and are skipped without it.
+
+### Rules of the product
+
+- Yui never writes its configuration files. A file that is missing, or a setting it leaves out, takes its default.
+  Nothing reads an old shape of a file or of stored data: there are no upgrades and no `_version` keys.
+- Each config file has a text file of the same name in `messages/<locale>/`; nothing a member reads is in a config
+  file. A plugin's keys start with its id.
+- A role follows a fact: the owner of the fact (Yui for languages, a plugin for its own) calls `FactRoles` when the
+  fact changes, and keeps the fact itself in its own table, never in the role.
+- Whatever a plugin needs from Yui belongs in `yui-api`; plugins cannot see `yui-common`.
+- A plugin's tables start with its id; its migrations cover H2, PostgreSQL and MariaDB, and a shipped migration is
+  never changed.
+
+### Documentation
+
+A change a server owner or plugin developer notices updates the guide of its task in `docs/content/` in the same
+pull request. Guides describe Yui as it is, not how it changed.
 
 ## Contributing
 
