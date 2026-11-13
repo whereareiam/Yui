@@ -9,7 +9,7 @@ Breaking changes are allowed wherever they remove a workaround or give a clearer
 | --- | --- |
 | Wiring | Spring Boot stays. No feature model. |
 | Plugin runtime base | Chassis (`whereareiam/chassis`); its gaps for Yui are closed in Chassis. |
-| Plugins | Live in this repository under `plugins/`. Only Verification moves in; Synapse and Blabber are dropped. YuiArcadeya stays separate on `repository.arcadeya.com`, in a repository renamed to `arcadeya/yui`. |
+| Plugins | Live in this repository under `plugins/`. Only Onboarding moves in; Synapse and Blabber are dropped. YuiArcadeya stays separate on `repository.arcadeya.com`, in a repository renamed to `arcadeya/yui`. |
 | Deployment | In the cluster, code and deployment in separate repositories, as `arcadeya/stalwart` and `arcadeya/stalwart-deploy`: `arcadeya/yui` builds the image, `arcadeya/yui-deploy` records it and holds the configs. Plugins are built into the image. |
 | Organisation | Both Arcadeya repositories stay in the Forgejo organisation `arcadeya`, beside the other tools it runs (`stalwart`, `oneuptime`). |
 | Users | `Fluctlight` keeps its name. |
@@ -32,9 +32,9 @@ Yui/
   yui-adapter-plugin/          loads plugin jars
   yui-launcher/                was yui-bootstrap
   plugins/
-    plugin-verification/
+    plugin-onboarding/
       src/                     builds the plugin jar
-      verification-api/        what YuiArcadeya compiles against
+      onboarding-api/        what YuiArcadeya compiles against
   examples/plugin/             was the YuiPlugin template, built in CI
 ```
 
@@ -96,7 +96,7 @@ selection file and leak checks. Yui builds on it as it is:
   in its own tables. The stored role list (`yui_fluctlights_roles`, `yui_roles`) goes away; Discord's member
   roles are the only record of roles.
 - Roles follow facts one way: the owner of a fact grants or removes its role when the fact changes (core for
-  languages, Verification for `verified`, a products plugin for its products), through one core service that
+  languages, Onboarding for `verified`, a products plugin for its products), through one core service that
   also logs it. Yui grants them again when a member rejoins. A role removed by hand stays removed.
 - Drop `@Data` on entities. (`additionalLanguages` is `@ManyToMany` since the database step.)
 
@@ -145,7 +145,7 @@ Built on 11 November 2026 (step 4):
   `<plugin id>_schema_history` with hyphens as underscores. Both locations can be overridden
   (`@Tables(migrations = ..., entities = ...)`). Without `@Tables` a plugin gets no Flyway run and no Hibernate unit;
   with it, a missing migrations folder or entity package stops startup with the plugin id. A plugin's tables carry its
-  id as prefix (`verification_journeys`), checked at startup against Hibernate's mapped table names.
+  id as prefix (`onboarding_journeys`), checked at startup against Hibernate's mapped table names.
 
 ## Events
 
@@ -170,20 +170,20 @@ Socialismus share; Socialismus has a near copy of today's Yui system (`Requireme
 - One language everywhere: commands, buttons, journey steps, role grants. `requires:` is a list of conditions in
   Conditia's form (below). Cooldown is not a condition but its own block.
 - **Audiences** are named lists of conditions (`audiences.yml`); `audience: moderator` reuses one. A plugin's
-  audiences carry its id as prefix (`verification:verified`).
+  audiences carry its id as prefix (`onboarding:verified`).
 - Plugins add condition types in Java (a name, a settings record, what it needs, an async `test`); they and the
   plugin's audiences are removed on unload.
 - Every condition type states what it needs (member, interaction), every place states what it supplies; a
   mismatch or an unknown type stops startup with the config path.
 - Core's defaults never name a plugin type. An installation tightens them in its own config
-  (`/language` requires `audience: verification:verified` on Arcadeya's guild).
+  (`/language` requires `audience: onboarding:verified` on Arcadeya's guild).
 
 | Condition type | From |
 | --- | --- |
 | `any`, `not`, `audience` | core (Conditia) |
 | `permission` (Discord permission), `role`, `user`, `language`, `joined`, `account` | core, about the member |
 | `scope` (guild or DM), `channels`, `channel-type` | core, about the interaction |
-| `verified` | Verification |
+| `verified` | Onboarding |
 | `owns` | the Arcadeya products plugin |
 
 No `boosting`: Discord's managed "Server Booster" role covers it.
@@ -192,7 +192,7 @@ No `boosting`: Discord's managed "Server Booster" role covers it.
 | --- | --- | --- |
 | `operator` | `permission: MANAGE_SERVER` | core |
 | `moderator` | `permission: MODERATE_MEMBERS` | core |
-| `verification:verified` | `verified: true` | Verification |
+| `onboarding:verified` | `verified: true` | Onboarding |
 | `products:customer` | verified and owns a product | Arcadeya products |
 
 A command whose audience reduces to one Discord permission is registered with it as default permission, so
@@ -269,7 +269,7 @@ Conditia/
   (`audience` in Yui); Conditia itself never says "audience". A list refers to the place's parts like any other
   conditions, so `target: [audience: moderator]` asks it of the target.
 - Registrations live in a scope per owner (agreed). The host opens `conditions.scope("<owner id>")` when a plugin
-  or module loads; types and named lists registered through it carry the owner's prefix (`verification:verified`)
+  or module loads; types and named lists registered through it carry the owner's prefix (`onboarding:verified`)
   and all go when the host closes the scope on unload. A plugin cannot forget one. After any change every place is
   bound again: a condition that refers to a removed type or list denies everyone and is logged with its path until
   the owner loads again. A host creates its places after its plugins have started, so a place that cannot be bound
@@ -326,7 +326,7 @@ app/
   `guilds/<name>/`, and no guild key on services, facts or events. `interaction/` is gone as well; a folder
   exists only where its files share a subject (`style/`, `messages/`, `plugins/`).
 - `roles.yml` and `guild.yml` go away. A role or channel id lives with its only user and moves up only when a
-  second appears (Verification's rules channel lives in its texts, per locale).
+  second appears (Onboarding's rules channel lives in its texts, per locale).
 
 `settings.yml`, approved:
 
@@ -373,7 +373,7 @@ categories:
   system:     { channel: "1452800701833936906" }
 entries:                                 # exceptions only
   member.leave: off
-  verification.failed: system
+  onboarding.failed: system
 ```
 
 `persistence.yml`, approved: one shape per database type, as Identica's, picked by `type` through Configura's
@@ -404,14 +404,14 @@ pool:
 
 Conversations, decided 13 November 2026:
 
-- A conversation is Yui talking privately with members for a purpose (`"verification"`). It happens in one of
+- A conversation is Yui talking privately with members for a purpose (`"onboarding"`). It happens in one of
   three types: a DM, a **private thread** or a temporary channel. Discord archives an idle thread itself and keeps
   it readable, and a server holds 1000 active threads; a channel has permissions of its own, 50 per category.
 - Configured once, in core's `conversations.yml`: what each type needs (the threads' parent channel, the channels'
   categories) and how a conversation behaves by default (the types tried in order, staff, mention, close,
   limits, transcript). Plugins have no conversations file.
 - A plugin overrides any of it through the API for its own use case
-  (`conversations.open("verification", members, options)`): what it leaves out comes from the file.
+  (`conversations.open("onboarding", members, options)`): what it leaves out comes from the file.
 - Members opening a purpose themselves (command, panel, `requires`) can come later without reshaping the file.
 - A thread has no permissions of its own: staff see private threads through Manage Threads on the parent
   channel, or Yui adds them by name.
@@ -511,7 +511,7 @@ de: "German"
 ```
 
 `audiences.yml`, approved: a name maps straight to its list of conditions in Conditia's form. A plugin's file
-writes bare names (`verified`); the prefix comes from its folder (`verification:verified`), so a plugin cannot
+writes bare names (`verified`); the prefix comes from its folder (`onboarding:verified`), so a plugin cannot
 claim another's name. An installation tightens a plugin's audience in that plugin's file under
 `app/plugins/<id>/`. An audience may refer to another; cycles and unknown names stop startup with their path.
 
@@ -526,7 +526,7 @@ moderator:
 ```
 
 ```yaml
-# plugins/verification/audiences.yml
+# plugins/onboarding/audiences.yml
 verified:
   - verified: true
 ```
@@ -551,7 +551,7 @@ messages/all/          texts that are the same in every language
 - `general.yml` and `log.yml` go: the close warning belongs to conversations, and log was a second name for audit.
 - The folder stays `messages/`: in Yui `languages.yml` means the languages members speak.
 - Each plugin's texts are an owned layer (`Layer.owned("<id>", ...)`), removed with the plugin. Its keys carry
-  its id (`verification.commands.*`) through a key prefix that `FileSource` needs first (Semantica follow-up).
+  its id (`onboarding.commands.*`) through a key prefix that `FileSource` needs first (Semantica follow-up).
 - Discord's markdown is Yui's: a Discord format escapes the values code inserts (a member named `**x**` is shown
   as written), either in Yui or as a Semantica format.
 - An organisation's translations repository (Weblate, `HttpSource`) can be layered on top later.
@@ -568,13 +568,13 @@ clear:
     done: "Deleted {count, plural, one {# message} other {# messages}}."
 ```
 
-Verification's `settings.yml`, approved. `conversation` leaves for core's
-`conversations.yml` and the API; `triggers` names the events that start a verification; `deadline` is the time a
+Onboarding's `settings.yml`, approved. `conversation` leaves for core's
+`conversations.yml` and the API; `triggers` names the events that start onboarding; `deadline` is the time a
 member has to finish and `action` what happens after it, a closed set (`kick`, `nothing`; more later); the
 member gets `verified-role` for the fact `verified`, through core's role service.
 
 ```yaml
-# plugins/verification/settings.yml
+# plugins/onboarding/settings.yml
 triggers:
   member-join: true
   startup: true
@@ -587,7 +587,7 @@ verified-role: "…"
 ```
 
 ```text
-plugins/verification/
+plugins/onboarding/
   settings.yml
   audiences.yml          verified
   commands.yml           verify
@@ -599,7 +599,7 @@ plugins/verification/
 ```
 
 The rules channel lives in the text, per locale, so each language can point to its own rules
-(`plugins/verification/messages/de/journey.yml`: `"Lies bitte die Regeln in <#456…>."`); settings have no
+(`plugins/onboarding/messages/de/journey.yml`: `"Lies bitte die Regeln in <#456…>."`); settings have no
 `rules` key.
 
 Every config file is agreed (13 November 2026); step 5 builds them.
@@ -627,7 +627,7 @@ arcadeya/yui                   code; today arcadeya/yuiarcadeya
     plugin-products/           id "arcadeya-products", com.arcadeya.yui.plugin.products
                                (today's products step and /products)
     plugin-<next>/
-  Dockerfile                   Liberica JRE 25 + Yui distribution <version> + Verification + every jar of plugins/,
+  Dockerfile                   Liberica JRE 25 + Yui distribution <version> + Onboarding + every jar of plugins/,
                                libraries resolved at build time
   .forgejo/workflows/deliver.yml
                                a version tag builds the image and opens a pull request in arcadeya/yui-deploy
@@ -674,7 +674,7 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
 - Way back: scale the deployment to 0, start the Compose bot again.
 - Before the cutover, **remind the owner** that conversations can now use private threads: pick the parent
   channel (the one unverified members already see), give staff Manage Threads on it, and decide whether
-  Verification keeps temporary channels or moves to threads.
+  Onboarding keeps temporary channels or moves to threads.
 - Afterwards, at the owner's word: retire the Compose setup and its backup timer, and delete the old
   `yui` namespace (`arcadeya-cluster/unmanaged/yui`). The new deployment carries a priority class, so it does
   not hold back `pod-priority.yaml`.
@@ -720,19 +720,21 @@ Yui and its own PostgreSQL run under Docker Compose on node-worker-1 in `/data/a
 8. JDA 6 and cloud.
    Built on 13 November 2026: JDA 6.7.0 with `cloud-jda6` 1.0.0-beta.4; components come from JDA 6's packages and
    rows (`addComponents(ActionRow.of(...))`); `spring-boot-webflux` and JDA's voice libraries (Opus, Tink) are gone.
-9. Verification into `plugins/`, `examples/plugin`.
-   Built on 13 November 2026: `plugins/plugin-verification` (with `verification-api`) replaces
+9. Onboarding into `plugins/`, `examples/plugin`.
+   Built on 13 November 2026: `plugins/plugin-onboarding` (with `onboarding-api`) replaces
    `whereareiam/YuiVerification`, and `examples/plugin` the `YuiPlugin` template; `module-plugin` builds a plugin's
-   jar with its own -api and `yui-plugin.yml`. Verification runs the welcome, languages and end steps in a
-   conversation that stays open until the journey ends, keeps `verified` in `verification_members` with the role
+   jar with its own -api and `yui-plugin.yml`. Onboarding runs the welcome, languages and end steps in a
+   conversation that stays open until the journey ends, keeps `verified` in `onboarding_members` with the role
    following it through `FactRoles` (a rejoining member gets it back), registers `verified` and
-   `verification:verified`, posts `verification.started`, `.completed`, `.failed`, `.abandoned` and `.timeout`, and
+   `onboarding:verified`, posts `onboarding.started`, `.completed`, `.failed`, `.abandoned` and `.timeout`, and
    kicks after the deadline when `action: kick`. What the plugin runtime lacked came with it: `ConfigReader` and
    `PluginConfigProvider` (a plugin's files, reread on `/reload`), `AudienceDefaults`, `@Tables` with
    `PluginDatabase` (Flyway baselines a plugin's history below its V1, since Yui's tables are there first), Yui's
    events reaching plugins' listeners (Spring hands events up, never down), `ConversationOpenedEvent` and
    `ConversationClosedEvent`, and camel case for every enum of a config file. `yui-api` provides Spring Data JPA to
    plugins. Not tried yet: a plugin jar's entities in its own class loader, against Discord.
+   Renamed on 13 November 2026 (owner): the plugin is `onboarding`, what a member has at its end stays `verified`
+   (`verified: true`, `onboarding:verified`, `/verify`, `verified-role`, `MemberVerifiedEvent`).
 10. Docs and the rest of AGENTS.md; publishing the distribution. The repository setup after Identica (release
     drafting, labels, templates, Dependabot, workflows) came with step 1.
 11. `arcadeya/yui` (today YuiArcadeya): a rewrite to the same standards, not only a move. Rename, split into

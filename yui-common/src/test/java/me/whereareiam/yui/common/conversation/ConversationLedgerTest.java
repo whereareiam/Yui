@@ -29,31 +29,31 @@ class ConversationLedgerTest {
 
 	@Test
 	void refusal_WhileOneIsOpen_IsTheLimit() {
-		ledger.add(conversation("verification"));
+		ledger.add(conversation("onboarding"));
 
-		assertEquals(Optional.of(Reason.LIMIT), ledger.refusal(List.of(MEMBER), "verification", limit));
+		assertEquals(Optional.of(Reason.LIMIT), ledger.refusal(List.of(MEMBER), "onboarding", limit));
 		assertEquals(Optional.empty(), ledger.refusal(List.of(MEMBER), "support", limit));
 	}
 
 	@Test
 	void refusal_SoonAfterOneClosed_IsTheCooldown() {
-		OpenConversation conversation = conversation("verification");
+		OpenConversation conversation = conversation("onboarding");
 		ledger.add(conversation);
 		ledger.remove(conversation);
 
-		assertEquals(Optional.of(Reason.COOLDOWN), ledger.refusal(List.of(MEMBER), "verification", limit));
+		assertEquals(Optional.of(Reason.COOLDOWN), ledger.refusal(List.of(MEMBER), "onboarding", limit));
 
 		clock.now = clock.now.plusSeconds(limit.getCooldown().getSeconds() + 1);
-		assertEquals(Optional.empty(), ledger.refusal(List.of(MEMBER), "verification", limit));
+		assertEquals(Optional.empty(), ledger.refusal(List.of(MEMBER), "onboarding", limit));
 	}
 
 	@Test
 	void find_GivesTheMembersOpenConversationOfThatPurpose() {
-		OpenConversation conversation = conversation("verification");
+		OpenConversation conversation = conversation("onboarding");
 		ledger.add(conversation);
 
-		assertEquals(Optional.of(conversation), ledger.find(MEMBER, "verification"));
-		assertEquals(Optional.empty(), ledger.find(2L, "verification"));
+		assertEquals(Optional.of(conversation), ledger.find(MEMBER, "onboarding"));
+		assertEquals(Optional.empty(), ledger.find(2L, "onboarding"));
 	}
 
 	private OpenConversation conversation(String purpose) {

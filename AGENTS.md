@@ -38,7 +38,7 @@ read.
 Areas for server owners and members:
 
 `Audit`, `Commands`, `Configuration`, `Database`, `Journeys`, `Languages`, `Plugins`, `Roles`, `Updates`,
-`Verification`
+`Onboarding`
 
 - reuse an existing area whenever one fits; a new command is `Commands`, a new setting in a plugin's file belongs to
   that plugin's area
@@ -73,7 +73,7 @@ Add `major` next to the category when server owners or plugin developers must ac
 reset without an upgrade, stored data that is not carried over, or an incompatible public API change. One `major`
 pull request makes the draft a major version.
 
-Plugin labels (`plugin:verification`) mark which plugin a pull request or issue is about; they do not change the
+Plugin labels (`plugin:onboarding`) mark which plugin a pull request or issue is about; they do not change the
 draft.
 
 #### Release notes file

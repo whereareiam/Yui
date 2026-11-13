@@ -10,7 +10,7 @@ import me.whereareiam.chassis.ExtensionContext;
  *
  * <pre>{@code
  * @Plugin
- * public class Verification implements YuiPlugin {
+ * public class Onboarding implements YuiPlugin {
  * }
  * }</pre>
  */

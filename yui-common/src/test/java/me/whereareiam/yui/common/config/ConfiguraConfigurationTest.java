@@ -126,14 +126,14 @@ class ConfiguraConfigurationTest {
 				    channel: "300"
 				entries:
 				  member.leave: off
-				  verification.failed: system
+				  onboarding.failed: system
 				""");
 
 		AuditTrail trail = configura.merge(file("audit"), new AuditTrail());
 
 		assertEquals(Optional.of("100"), trail.channel(AuditCategory.MEMBERS, "member.join"));
 		assertEquals(Optional.empty(), trail.channel(AuditCategory.MEMBERS, "member.leave"));
-		assertEquals(Optional.of("300"), trail.channel(AuditCategory.MODERATION, "verification.failed"));
+		assertEquals(Optional.of("300"), trail.channel(AuditCategory.MODERATION, "onboarding.failed"));
 		assertEquals(Optional.empty(), trail.channel(AuditCategory.MODERATION, "member.kick"));
 	}
 

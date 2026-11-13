@@ -31,12 +31,12 @@ class ConditionsPartTest {
 		Files.writeString(folder.resolve("audiences.yml"), "staff:\n  - permission: MANAGE_ROLES\n");
 		Configura configura = ConfiguraConfiguration.build(ConfigurationType.YAML);
 		Conditions conditions = new PermissionConfiguration().conditions(configura, List.of(new PermissionCondition()));
-		ExtensionContext extension = extension("verification");
+		ExtensionContext extension = extension("onboarding");
 		GenericApplicationContext plugin = new GenericApplicationContext();
 		plugin.refresh();
 
 		AutoCloseable scope = new ConditionsPart(conditions, configura).attach(plugin, extension);
-		Requirements requires = configura.mapper().readValue("- audience: verification:staff", Requirements.class);
+		Requirements requires = configura.mapper().readValue("- audience: onboarding:staff", Requirements.class);
 
 		assertDoesNotThrow(() -> conditions.deferredPlace("test.requires", requires, PermissionParts.ACTOR, PermissionParts.INTERACTION));
 		scope.close();

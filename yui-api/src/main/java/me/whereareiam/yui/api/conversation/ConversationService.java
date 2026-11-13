@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture;
  * this server allows and how a conversation behaves by default; each call may change that for its own use case.
  *
  * <pre>{@code
- * conversations.open("verification", List.of(memberId))
+ * conversations.open("onboarding", List.of(memberId))
  *         .thenAccept(conversation -> conversation.send("Welcome!"));
  * }</pre>
  *
@@ -23,7 +23,7 @@ public interface ConversationService {
 	/**
 	 * Opens a conversation the way {@code conversations.yml} says.
 	 *
-	 * @param purpose what it is for, such as {@code verification}
+	 * @param purpose what it is for, such as {@code onboarding}
 	 * @param members the members in it, by user id
 	 * @return the conversation, or failed with {@link me.whereareiam.yui.api.exception.ConversationRefusedException} when no type works or a limit
 	 * keeps it closed

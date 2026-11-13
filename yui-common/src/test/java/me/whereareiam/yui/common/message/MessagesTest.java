@@ -101,14 +101,14 @@ class MessagesTest {
 
 	@Test
 	void aPlugin_GetsItsOwnKeys() throws IOException {
-		Path plugin = folder.resolve("plugins/verification/messages");
+		Path plugin = folder.resolve("plugins/onboarding/messages");
 		Files.createDirectories(plugin.resolve("de"));
 		Files.writeString(plugin.resolve("de/words.yml"), "cancel: \"Verwerfen\"\n");
 
-		new SemanticaMessageLayers(semantica).add("verification", List.of(new WordsDefaults()), plugin);
+		new SemanticaMessageLayers(semantica).add("onboarding", List.of(new WordsDefaults()), plugin);
 
-		assertEquals("Cancel", texts.resolve(Text.of("verification.words.cancel"), DiscordLocale.ENGLISH_US));
-		assertEquals("Verwerfen", texts.resolve(Text.of("verification.words.cancel"), DiscordLocale.GERMAN));
+		assertEquals("Cancel", texts.resolve(Text.of("onboarding.words.cancel"), DiscordLocale.ENGLISH_US));
+		assertEquals("Verwerfen", texts.resolve(Text.of("onboarding.words.cancel"), DiscordLocale.GERMAN));
 		assertEquals("Abbrechen", texts.resolve(Text.of("words.cancel"), DiscordLocale.GERMAN));
 	}
 

@@ -49,13 +49,13 @@ class JourneyEngineTimeoutTest {
 		};
 		JourneyStepDescriptor<Object> step = new JourneyStepDescriptor<>("welcome", stepDefinition, "", 1);
 		JourneyDefinition<Object> definition = new JourneyDefinition<>(
-				"verification",
+				"onboarding",
 				List.of(step),
 				List.of(),
 				new JourneyConfigurationDefinition() {
 				}
 		);
-		JourneySession<Object> session = new JourneySession<>("s1", "verification", 1L, Object.class, new Object(), null, "in-memory");
+		JourneySession<Object> session = new JourneySession<>("s1", "onboarding", 1L, Object.class, new Object(), null, "in-memory");
 		session.getRuntime().getEnteredSteps().add("welcome");
 
 		engine.cancel(session, definition);

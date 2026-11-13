@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface MessageLayers {
 	/**
-	 * @param owner    the owner's id, the first segment of its keys, such as {@code verification}
+	 * @param owner    the owner's id, the first segment of its keys, such as {@code onboarding}
 	 * @param defaults its default texts
 	 * @param folder   its folder of {@code <locale>/} files, read only; it need not exist
 	 */

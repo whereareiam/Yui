@@ -13,13 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * <pre>{@code
  * @Component
- * public class SettingsProvider extends PluginConfigProvider<VerificationSettings> {
- *     protected VerificationSettings load() {
- *         return read("settings", new VerificationSettings());
+ * public class SettingsProvider extends PluginConfigProvider<OnboardingSettings> {
+ *     protected OnboardingSettings load() {
+ *         return read("settings", new OnboardingSettings());
  *     }
  *
- *     public Class<VerificationSettings> getObjectType() {
- *         return VerificationSettings.class;
+ *     public Class<OnboardingSettings> getObjectType() {
+ *         return OnboardingSettings.class;
  *     }
  * }
  * }</pre>

@@ -1,0 +1,7 @@
+id: onboarding
+version: ${version}
+main: me.whereareiam.yui.onboarding.Onboarding
+exports:
+  - me.whereareiam.yui.onboarding.api
+updater:
+  release: { provider: GITHUB, id: whereareiam/Yui }

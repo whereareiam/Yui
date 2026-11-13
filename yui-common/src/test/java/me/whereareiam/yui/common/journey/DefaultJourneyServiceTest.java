@@ -74,16 +74,16 @@ class DefaultJourneyServiceTest {
 	@Test
 	void groupSkipSkipsAllGroupStepsAndCompletes() {
 		ApplicationContext context = mock(ApplicationContext.class);
-		definitions.registerGroup(context, "verification", "optional", 100, new JourneyGroupDefinition<>() {
+		definitions.registerGroup(context, "onboarding", "optional", 100, new JourneyGroupDefinition<>() {
 			@Override
 			public @NonNull JourneyPolicyDecision evaluatePolicy(@NonNull JourneyStepContext<Object> context) {
 				return JourneyPolicyDecision.skip();
 			}
 		});
-		definitions.registerStep(context, "verification", "welcome", 10, "", _ -> JourneyInstruction.next());
-		definitions.registerStep(context, "verification", "optional-step", 20, "optional", _ -> JourneyInstruction.fail());
+		definitions.registerStep(context, "onboarding", "welcome", 10, "", _ -> JourneyInstruction.next());
+		definitions.registerStep(context, "onboarding", "optional-step", 20, "optional", _ -> JourneyInstruction.fail());
 
-		JourneySession<Object> session = service.start(JourneySessionRequest.builder("verification", 1L, Object.class, new Object()).build());
+		JourneySession<Object> session = service.start(JourneySessionRequest.builder("onboarding", 1L, Object.class, new Object()).build());
 
 		assertTrue(service.findSession(session.getId(), Object.class).isEmpty());
 		verify(events).publishEvent(any(JourneyCompletedEvent.class));
@@ -93,7 +93,7 @@ class DefaultJourneyServiceTest {
 	@Test
 	void stepGuardFailPublishesFailedAndCleansSession() {
 		ApplicationContext context = mock(ApplicationContext.class);
-		definitions.registerStep(context, "verification", "welcome", 10, "", new JourneyStepDefinition<>() {
+		definitions.registerStep(context, "onboarding", "welcome", 10, "", new JourneyStepDefinition<>() {
 			@Override
 			public @NonNull JourneyPolicyDecision evaluatePolicy(@NonNull JourneyStepContext<Object> context) {
 				return JourneyPolicyDecision.reject();
@@ -105,7 +105,7 @@ class DefaultJourneyServiceTest {
 			}
 		});
 
-		JourneySession<Object> session = service.start(JourneySessionRequest.builder("verification", 2L, Object.class, new Object()).build());
+		JourneySession<Object> session = service.start(JourneySessionRequest.builder("onboarding", 2L, Object.class, new Object()).build());
 
 		assertTrue(service.findSession(session.getId(), Object.class).isEmpty());
 		verify(events).publishEvent(any(JourneyFailedEvent.class));
@@ -114,9 +114,9 @@ class DefaultJourneyServiceTest {
 	@Test
 	void publishesStepCompletedBeforeJourneyCompleted() {
 		ApplicationContext context = mock(ApplicationContext.class);
-		definitions.registerStep(context, "verification", "welcome", 10, "", _ -> JourneyInstruction.complete());
+		definitions.registerStep(context, "onboarding", "welcome", 10, "", _ -> JourneyInstruction.complete());
 
-		service.start(JourneySessionRequest.builder("verification", 3L, Object.class, new Object()).build());
+		service.start(JourneySessionRequest.builder("onboarding", 3L, Object.class, new Object()).build());
 
 		var inOrder = inOrder(events);
 		inOrder.verify(events).publishEvent(any(JourneySessionStartedEvent.class));
@@ -130,7 +130,7 @@ class DefaultJourneyServiceTest {
 		AtomicInteger inFlight = new AtomicInteger();
 		AtomicInteger maxInFlight = new AtomicInteger();
 		ApplicationContext context = mock(ApplicationContext.class);
-		definitions.registerStep(context, "verification", "welcome", 10, "", new JourneyStepDefinition<>() {
+		definitions.registerStep(context, "onboarding", "welcome", 10, "", new JourneyStepDefinition<>() {
 			@Override
 			public @NonNull JourneyInstruction onEnter(@NonNull JourneyStepContext<Object> context) {
 				return JourneyInstruction.waitForSignal();
@@ -150,7 +150,7 @@ class DefaultJourneyServiceTest {
 			}
 		});
 
-		JourneySession<Object> session = service.start(JourneySessionRequest.builder("verification", 4L, Object.class, new Object()).build());
+		JourneySession<Object> session = service.start(JourneySessionRequest.builder("onboarding", 4L, Object.class, new Object()).build());
 		JourneySignal signal = JourneySignal.of("go");
 		CountDownLatch start = new CountDownLatch(1);
 		Queue<Throwable> failures = new ConcurrentLinkedQueue<>();

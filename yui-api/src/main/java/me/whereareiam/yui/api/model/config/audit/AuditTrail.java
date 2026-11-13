@@ -27,7 +27,7 @@ import java.util.Optional;
  *     channel: "1452800701833936906"
  * entries:
  *   member.leave: off
- *   verification.failed: system
+ *   onboarding.failed: system
  * }</pre>
  */
 @Getter

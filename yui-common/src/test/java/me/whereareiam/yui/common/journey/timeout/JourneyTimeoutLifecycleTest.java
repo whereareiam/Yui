@@ -54,10 +54,10 @@ class JourneyTimeoutLifecycleTest {
 		lifecycle = new JourneyTimeoutLifecycle(sessionService, definitionRegistry, engine, eventPublisher, taskScheduler());
 
 		JourneySession<Object> session = sessionWithTimeout("s1");
-		JourneyDefinition<Object> definition = new JourneyDefinition<>("verification", List.of(), List.of(), new JourneyConfigurationDefinition() {
+		JourneyDefinition<Object> definition = new JourneyDefinition<>("onboarding", List.of(), List.of(), new JourneyConfigurationDefinition() {
 		});
 
-		when(definitionRegistry.get("verification")).thenReturn(Optional.of(definition));
+		when(definitionRegistry.get("onboarding")).thenReturn(Optional.of(definition));
 		when(sessionService.findAny("s1")).thenReturn(Optional.of(session));
 		when(sessionService.withLock(eq("s1"), any(JourneySessionService.SessionSupplier.class))).thenAnswer(invocation -> {
 			JourneySessionService.SessionSupplier<?> supplier = invocation.getArgument(1);
@@ -74,7 +74,7 @@ class JourneyTimeoutLifecycleTest {
 	void doesNotScheduleWhenTimeoutMissing() {
 		lifecycle = new JourneyTimeoutLifecycle(sessionService, definitionRegistry, engine, eventPublisher, taskScheduler());
 
-		JourneySession<Object> session = new JourneySession<>("s2", "verification", 2L, Object.class, new Object(), null, "in-memory");
+		JourneySession<Object> session = new JourneySession<>("s2", "onboarding", 2L, Object.class, new Object(), null, "in-memory");
 
 		lifecycle.onSessionStarted(new JourneySessionStartedEvent(session));
 
@@ -113,7 +113,7 @@ class JourneyTimeoutLifecycleTest {
 		JourneyAttributes attributes = JourneyAttributes.builder()
 				.put(JourneyKeys.TIMEOUT_SECONDS, 1L)
 				.build();
-		return new JourneySession<>(sessionId, "verification", 1L, Object.class, new Object(), attributes, "in-memory");
+		return new JourneySession<>(sessionId, "onboarding", 1L, Object.class, new Object(), attributes, "in-memory");
 	}
 
 	private static void waitForTimeoutWindow() {

@@ -14,10 +14,10 @@ import java.util.List;
  * given here replaces the default one as a whole.
  *
  * <pre>{@code
- * conversations.open("verification", List.of(memberId), ConversationOptions.builder()
+ * conversations.open("onboarding", List.of(memberId), ConversationOptions.builder()
  *         .via(List.of(ConversationType.THREAD, ConversationType.DIRECT))
  *         .parent(verifyChannelId)
- *         .name("verification-" + member.getEffectiveName())
+ *         .name("onboarding-" + member.getEffectiveName())
  *         .message(welcome)
  *         .build());
  * }</pre>

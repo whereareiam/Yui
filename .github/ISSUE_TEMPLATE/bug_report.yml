@@ -42,7 +42,7 @@ body:
     attributes:
       label: Plugins
       description: Names and versions of the plugins in the `plugins` folder.
-      placeholder: Verification 1.0.0
+      placeholder: Onboarding 1.0.0
 
   - type: textarea
     id: steps

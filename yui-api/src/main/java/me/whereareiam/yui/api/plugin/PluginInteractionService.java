@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 
 /**
  * A plugin's {@link InteractionService}: every listener path it names is qualified with the plugin's id
- * ({@code verification:start}), so plugins cannot take each other's paths.
+ * ({@code onboarding:start}), so plugins cannot take each other's paths.
  */
 public class PluginInteractionService implements InteractionService {
 	private final @NotNull String pluginId;

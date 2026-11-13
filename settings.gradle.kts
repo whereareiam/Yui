@@ -34,7 +34,7 @@ include(":yui-adapter-database")
 include(":yui-adapter-plugin")
 include(":yui-launcher")
 
-include(":plugins:plugin-verification")
-include(":plugins:plugin-verification:verification-api")
+include(":plugins:plugin-onboarding")
+include(":plugins:plugin-onboarding:onboarding-api")
 
 include(":examples:plugin")

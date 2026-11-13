@@ -15,7 +15,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public interface Conversation {
 	/**
-	 * @return what the conversation is for, such as {@code verification}
+	 * @return what the conversation is for, such as {@code onboarding}
 	 */
 	@NotNull String getPurpose();
 

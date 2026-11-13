@@ -20,7 +20,7 @@ import java.util.Map;
 
 /**
  * A plugin's condition types and its audiences (its {@link AudienceDefaults} under {@code plugins/<id>/audiences.yml}), in a Conditia scope of its
- * id, so they are named {@code <id>:<name>} ({@code audience: verification:verified}) and go with it.
+ * id, so they are named {@code <id>:<name>} ({@code audience: onboarding:verified}) and go with it.
  */
 @Component
 @Order(2)

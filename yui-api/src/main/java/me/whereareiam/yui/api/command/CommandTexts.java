@@ -12,7 +12,7 @@ import java.util.Locale;
  *
  * <pre>{@code
  * CommandTexts.of("internal", "update-check").description();   // commands.updateCheck.description
- * CommandTexts.of("verification", "verify").variable("user");  // verification.commands.verify.variables.user
+ * CommandTexts.of("onboarding", "verify").variable("user");    // onboarding.commands.verify.variables.user
  * }</pre>
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)

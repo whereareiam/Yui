@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.interactions.Interaction;
  * a plugin's {@code ConditionType.Single<Actor, Settings>} is asked of the actor.
  *
  * <pre>{@code
- * conditions.scope("verification").register(new VerifiedCondition(accounts)); // verified: true, about the actor
+ * conditions.scope("onboarding").register(new VerifiedCondition(accounts)); // verified: true, about the actor
  * }</pre>
  */
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
